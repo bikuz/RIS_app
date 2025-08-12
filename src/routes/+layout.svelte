@@ -10,9 +10,9 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="bg-gray-50 min-h-screen">
-	<header class="bg-white shadow-sm border-b border-gray-200">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-gray-50">
+	<header class="border-b border-gray-200 bg-white shadow-sm">
+		<div class=" mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex h-24 items-center justify-between">
 				<!-- Left side - RDS Logo and Title -->
 				<div class="flex items-center space-x-6">
@@ -22,8 +22,8 @@
 						text-6xl leading-none font-bold tracking-[0.1em] text-transparent"
 						> -->
 						<div
-							class="scale-x-110 bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text
-						text-6xl leading-none font-bold tracking-[0.1em] text-transparent ml-1"
+							class="ml-1 scale-x-110 bg-gradient-to-r from-blue-500 to-green-500
+						bg-clip-text text-6xl leading-none font-bold tracking-[0.1em] text-transparent"
 						>
 							RIS
 						</div>
@@ -33,13 +33,11 @@
 
 				<!-- Right side - ICIMOD Logo -->
 				<div class="">
-					<img src={icimod} alt="ICIMOD" class="h-7 w-auto"/>
+					<img src={icimod} alt="ICIMOD" class="h-7 w-auto" />
 				</div>
 			</div>
-        </div>
-    </header>
+		</div>
+	</header>
 
 	{@render children?.()}
-
 </div>
-
