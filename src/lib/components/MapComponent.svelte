@@ -151,7 +151,7 @@
 	<div
 		bind:this={mapContainer}
 		class="map-element overflow-hidden rounded-2xl border border-slate-200/50"
-		style="width: {width}; {height === '100%' ? 'min-height: 400px;' : `height: ${height};`}"
+		style="width: {width}; {height === '100%' ? 'min-height: 800px;' : `height: ${height};`}"
 		class:flex-1={height === '100%'}
 	></div>
 </div>
