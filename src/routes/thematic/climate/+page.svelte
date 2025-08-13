@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import climate_1 from '$lib/assets/images/climate_1.png';
+	import climate_2 from '$lib/assets/images/climate_2.png';
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
@@ -352,52 +354,105 @@
 </script>
 
 <!-- 3-Column Layout -->
-<div class="grid grid-cols-12 items-stretch gap-8">
-	<!-- Left Sidebar -->
+<div class="grid grid-cols-12 items-stretch gap-6">
+	<!-- Left Sidebar - Story + Questions -->
 	<div class="col-span-3 flex">
-		<div
-			class="sticky top-6 h-fit max-h-[calc(100vh-3rem)] flex-1 overflow-y-auto rounded-2xl border border-white/20 bg-white/70 p-6 shadow-xl backdrop-blur-sm"
-		>
-			<div class="mb-6 flex items-center space-x-3">
-				<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
-					<Cloud class="h-5 w-5 text-white" />
+		<div class="sticky top-6 h-fit max-h-[calc(100vh-16rem)] flex-1 space-y-6 overflow-y-auto">
+			<!-- Story Section -->
+			<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
+				<div class="mb-6 flex items-center space-x-3">
+					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
+						<Cloud class="h-5 w-5 text-white" />
+					</div>
+					<h3 class="text-lg font-bold text-slate-800">Climate Change in HKH</h3>
 				</div>
-				<h3 class="text-lg font-bold text-slate-800">Climate Abstract</h3>
-			</div>
 
-			<div class="space-y-4">
-				<p class="text-sm leading-relaxed text-slate-600">
-					The Hindu Kush Himalaya (HKH) region experiences diverse climate patterns due to its
-					complex topography and elevation gradients.
-				</p>
-				<p class="text-sm leading-relaxed text-slate-600">
-					Climate change impacts in this region include rising temperatures, changing precipitation
-					patterns, and accelerated glacial melting.
-				</p>
+				<div class="space-y-4">
+					<p class="text-justify text-sm leading-relaxed text-slate-600">
+						Historically, the climate of the HKH has experienced significant changes that are
+						closely related to the rise and fall of regional cultures and civilizations. The region
+						is one of the most climate-sensitive mountain systems in the world. Known as the “Third
+						Pole” for its vast ice reserves, the HKH plays a critical role in regulating Asia’s
+						climate and serves as the source of ten major river systems that sustain the livelihoods
+						of over 1.6 billion people downstream. However, the impacts of climate change are being
+						felt here more intensely than the global average, with temperatures rising significantly
+						faster than elsewhere.
+					</p>
+					<p class="text-justify text-sm leading-relaxed text-slate-600">
+						In the future, even if global warming is kept to 1.5 °C, warming in the Hindu Kush
+						Himalaya (HKH) region will likely be at least 0.3 °C higher, and in the northwest
+						Himalaya and Karakoram at least 0.7 °C higher. Such large warming could trigger a
+						multitude of biophysical and socio-economic impacts, such as biodiversity loss,
+						increased glacial melting, and less predictable water availability—all of which will
+						impact livelihoods and well-being in the HKH.
+					</p>
+					<p class="text-justify text-sm leading-relaxed text-slate-600">
+						Glaciers in the HKH are retreating at unprecedented rates, snow cover is diminishing,
+						and permafrost is degrading, all of which are altering river flows and threatening water
+						security.
+					</p>
 
-				<div
-					class="rounded-xl border border-blue-200/30 bg-gradient-to-r from-blue-50/80 to-cyan-50/80 p-4 backdrop-blur-sm"
-				>
-					<h4 class="mb-3 flex items-center space-x-2 text-sm font-bold text-blue-800">
-						<span>Key Climate Indicators</span>
-					</h4>
-					<ul class="space-y-2 text-sm text-blue-700">
-						<li class="flex items-center space-x-2">
-							<CheckCircle class="h-3 w-3" />
-							<span>Temperature trends</span>
-						</li>
-						<li class="flex items-center space-x-2">
-							<CheckCircle class="h-3 w-3" />
-							<span>Area with temperature rise more than 1.5 degrees</span>
-						</li>
-					</ul>
+					<p class="text-justify text-sm leading-relaxed text-slate-600">
+						Climate change is also amplifying the frequency and severity of extreme weather events,
+						including floods, droughts, and landslides, which pose immediate risks to lives,
+						infrastructure, and economies. The loss of cryospheric mass not only threatens long-term
+						water availability but also increases the risk of glacial lake outburst floods (GLOFs)
+						that can devastate downstream communities.
+					</p>
+					<p class="text-justify text-sm leading-relaxed text-slate-600">
+						The impacts extend beyond the physical environment to agriculture, biodiversity, and
+						cultural heritage. Shifts in seasonal patterns are affecting crop yields, while warming
+						temperatures are pushing species to higher altitudes, disrupting delicate alpine
+						ecosystems. Many communities in the HKH rely on climate-sensitive livelihoods such as
+						farming, herding, and tourism, making them particularly vulnerable.
+					</p>
+					<p class="text-justify text-sm leading-relaxed text-slate-600">
+						Addressing climate change in the HKH requires urgent, coordinated, and region-wide
+						action. This includes investing in climate-resilient infrastructure, expanding early
+						warning systems, improving water management, and enhancing scientific monitoring of
+						glaciers and weather patterns. Regional cooperation is essential for sharing data,
+						aligning adaptation strategies, and managing shared water resources sustainably. Equally
+						important is empowering local communities with knowledge, technology, and resources to
+						adapt to changing conditions while preserving the environmental and cultural richness of
+						the HKH.
+					</p>
+				</div>
+
+				<!-- Images Section - Stacked -->
+				<div class="mt-6 space-y-3">
+					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+						<img
+							src={climate_1}
+							alt="Himalayan glacial retreat"
+							class="h-50 w-full object-contain"
+						/>
+						<div class="p-2">
+							<p class="text-center text-xs text-slate-600">
+								<span
+									>We see <span class="font-semibold">less snow on the mountain peaks </span> in recent
+									years
+								</span>
+							</p>
+						</div>
+					</div>
+					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+						<img src={climate_2} alt="Climate impacts" class="h-55 w-full object-contain" />
+						<div class="p-2">
+							<p class="text-center text-xs text-slate-600">
+								<span>
+									<span class="font-semibold"> Flooded street in Kathmandu </span> after a less than
+									an hour heavy downpour</span
+								>
+							</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<!-- Main Content Area - Split into Map and Chart sections -->
-	<div class="col-span-6 flex flex-col gap-4">
+	<!-- Main Content Area - Map and Chart sections -->
+	<div class="col-span-7 flex flex-col gap-6">
 		<!-- Map Section -->
 		<div
 			class="relative flex-1 overflow-hidden rounded-xl border border-slate-200/50 bg-white shadow-sm"
@@ -413,72 +468,12 @@
 					class:flex-1={height === '100%'}
 				></div>
 			</div>
-
-			<!-- Map Data Container - Bottom Right (Collapsible) -->
-			{#if currentMapData && currentMapData.length > 0}
-				<div
-					class="absolute right-4 bottom-4 w-64 rounded-xl border border-white/20 bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-300"
-				>
-					<!-- Header with collapse toggle -->
-					<button
-						on:click={() => (isMapDataCollapsed = !isMapDataCollapsed)}
-						class="flex w-full items-center justify-between rounded-t-xl p-3 transition-colors duration-200 hover:bg-white/50"
-					>
-						<div class="flex items-center space-x-2">
-							<!-- <div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-1">
-								<Layers class="h-3 w-3 text-white" />
-							</div> -->
-							<h4 class="text-sm font-bold text-slate-800">Indicators</h4>
-						</div>
-						{#if isMapDataCollapsed}
-							<ChevronDown class="h-4 w-4 text-slate-600" />
-						{:else}
-							<ChevronUp class="h-4 w-4 text-slate-600" />
-						{/if}
-					</button>
-
-					<!-- Collapsible content -->
-					{#if !isMapDataCollapsed}
-						<div class="border-t border-white/30 p-3">
-							<div class="max-h-40 space-y-2 overflow-y-auto">
-								{#each currentMapData as mapLayer, index}
-									<button
-										on:click={() => toggleMapLayer(mapLayer.layer_name)}
-										class="w-full rounded-lg border px-3 py-2 backdrop-blur-sm transition-all duration-200 hover:shadow-sm {activeMapLayers.has(
-											mapLayer.layer_name
-										)
-											? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-sm'
-											: 'border-slate-200/30 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/50'}"
-									>
-										<div class="flex items-center justify-between text-left">
-											<div class="flex items-center space-x-2">
-												{#if activeMapLayers.has(mapLayer.layer_name)}
-													<Eye class="h-3 w-3 flex-shrink-0 text-green-600" />
-												{:else}
-													<EyeOff class="h-3 w-3 flex-shrink-0 text-slate-400" />
-												{/if}
-												<span
-													class="text-xs font-medium {activeMapLayers.has(mapLayer.layer_name)
-														? 'text-green-800'
-														: 'text-slate-800'} truncate"
-												>
-													{mapLayer.name}
-												</span>
-											</div>
-										</div>
-									</button>
-								{/each}
-							</div>
-						</div>
-					{/if}
-				</div>
-			{/if}
 		</div>
 
 		<!-- Chart Section -->
-		<div class="flex-1 rounded-xl border border-slate-200/50 bg-white p-4 shadow-sm">
-			<h3 class="mb-3 text-lg font-semibold text-slate-700">Climate Charts & Analytics</h3>
-			<div class="rounded-lg bg-slate-50/50 p-2">
+		<div class="flex-1 rounded-xl border border-slate-200/50 bg-white p-6 shadow-sm">
+			<h3 class="mb-4 text-lg font-semibold text-slate-700">Climate Analytics</h3>
+			<div class="rounded-lg bg-slate-50/50 p-4">
 				{#if currentCharts && currentCharts.length > 0}
 					<div class="space-y-6">
 						{#each currentCharts as chart, index}
@@ -503,30 +498,110 @@
 		</div>
 	</div>
 
-	<!-- Right Sidebar -->
-	<div class="col-span-3 flex">
-		<div class="flex-1 rounded-xl border border-slate-200/50 bg-white p-4 shadow-sm">
-			<h3 class="mb-4 text-sm font-semibold text-slate-700">Possible Questions</h3>
-			<div class="space-y-3">
-				{#each climateQuestions as questionItem, index}
-					<div
-						class="group cursor-pointer rounded-lg border p-3 transition-all {selectedQuestionId ===
-						questionItem.id
-							? 'border-blue-500 bg-blue-50 shadow-md'
-							: 'border-slate-100 hover:border-blue-200 hover:bg-blue-50/50'}"
-						role="button"
-						tabindex="0"
-						on:click={() => selectQuestion(questionItem.id, questionItem.question)}
-					>
-						<p
-							class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-								? 'font-medium text-blue-700'
-								: 'text-slate-600'}"
-						>
-							{questionItem.question}
-						</p>
+	<!-- Right Sidebar - Indicators -->
+	<div class="col-span-2 flex">
+		<div
+			class="sticky top-6 flex max-h-[calc(100vh-14rem)] min-h-[calc(100vh-14rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 p-6 shadow-xl backdrop-blur-sm"
+		>
+			<!-- Information Layer Header -->
+			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+				<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
+					<Layers class="h-5 w-5 text-white" />
+				</div>
+				<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
+			</div>
+
+			<!-- Information Layer Content -->
+
+			<div class="flex-1 overflow-y-auto">
+				{#if currentMapData && currentMapData.length > 0}
+					<div class="space-y-3">
+						{#each currentMapData as mapLayer, index}
+							<button
+								on:click={() => toggleMapLayer(mapLayer.layer_name)}
+								class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {activeMapLayers.has(
+									mapLayer.layer_name
+								)
+									? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
+									: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+							>
+								<div class="flex items-start space-x-3 text-left">
+									<div class="mt-1 flex-shrink-0">
+										{#if activeMapLayers.has(mapLayer.layer_name)}
+											<Eye class="h-5 w-5 text-green-600" />
+										{:else}
+											<EyeOff class="h-5 w-5 text-slate-400" />
+										{/if}
+									</div>
+									<div class="flex-1">
+										<h4
+											class="text-sm font-medium {activeMapLayers.has(mapLayer.layer_name)
+												? 'text-green-800'
+												: 'text-slate-800'} mb-1"
+										>
+											{mapLayer.name}
+										</h4>
+										{#if mapLayer.description}
+											<p class="text-xs leading-relaxed text-slate-600">
+												{mapLayer.description}
+											</p>
+										{/if}
+									</div>
+								</div>
+							</button>
+						{/each}
 					</div>
-				{/each}
+				{:else}
+					<div class="flex h-40 items-center justify-center">
+						<div class="text-center text-slate-500">
+							<Layers class="mx-auto mb-2 h-8 w-8 text-slate-400" />
+							<p class="text-sm">No indicators available</p>
+							<p class="text-xs">Select a question to view map layers</p>
+						</div>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Questions Section -->
+			<div class="mt-6 flex min-h-0 flex-1 flex-col border-t border-slate-200/50 pt-6">
+				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+					<div class="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 p-2">
+						<Info class="h-4 w-4 text-white" />
+					</div>
+					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
+				</div>
+				<div class="flex-1 space-y-3 overflow-y-auto">
+					{#each climateQuestions as questionItem, index}
+						<div
+							class="group cursor-pointer rounded-lg border p-3 transition-all duration-200 {selectedQuestionId ===
+							questionItem.id
+								? 'border-blue-500 bg-blue-50 shadow-md'
+								: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+							role="button"
+							tabindex="0"
+							on:click={() => selectQuestion(questionItem.id, questionItem.question)}
+						>
+							<div class="flex items-start space-x-2">
+								<div class="mt-1 flex-shrink-0">
+									{#if selectedQuestionId === questionItem.id}
+										<CheckCircle class="h-4 w-4 text-blue-600" />
+									{:else}
+										<div
+											class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
+										></div>
+									{/if}
+								</div>
+								<p
+									class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+										? 'font-medium text-blue-700'
+										: 'text-slate-600 group-hover:text-slate-800'}"
+								>
+									{questionItem.question}
+								</p>
+							</div>
+						</div>
+					{/each}
+				</div>
 			</div>
 		</div>
 	</div>

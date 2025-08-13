@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import climate_1 from '$lib/assets/images/climate_1.png';
+	import climate_2 from '$lib/assets/images/climate_2.png';
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
@@ -356,41 +358,94 @@
 	<!-- Left Sidebar -->
 	<div class="col-span-3 flex">
 		<div
-			class="sticky top-6 h-fit max-h-[calc(100vh-3rem)] flex-1 overflow-y-auto rounded-2xl border border-white/20 bg-white/70 p-6 shadow-xl backdrop-blur-sm"
+			class="sticky top-6 h-fit max-h-[calc(100vh-14rem)] flex-1 overflow-y-auto rounded-2xl border border-white/20 bg-white/70 p-6 shadow-xl backdrop-blur-sm"
 		>
 			<div class="mb-6 flex items-center space-x-3">
 				<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
 					<Cloud class="h-5 w-5 text-white" />
 				</div>
-				<h3 class="text-lg font-bold text-slate-800">Climate Abstract</h3>
+				<h3 class="text-lg font-bold text-slate-800">
+					Climate Change in the Hindu Kush Himalaya (HKH)
+				</h3>
 			</div>
 
 			<div class="space-y-4">
-				<p class="text-sm leading-relaxed text-slate-600">
-					The Hindu Kush Himalaya (HKH) region experiences diverse climate patterns due to its
-					complex topography and elevation gradients.
+				<p class="text-justify text-sm leading-relaxed text-slate-600">
+					Historically, the climate of the HKH has experienced significant changes that are closely
+					related to the rise and fall of regional cultures and civilizations. The region is one of
+					the most climate-sensitive mountain systems in the world. Known as the “Third Pole” for
+					its vast ice reserves, the HKH plays a critical role in regulating Asia’s climate and
+					serves as the source of ten major river systems that sustain the livelihoods of over 1.6
+					billion people downstream. However, the impacts of climate change are being felt here more
+					intensely than the global average, with temperatures rising significantly faster than
+					elsewhere.
 				</p>
-				<p class="text-sm leading-relaxed text-slate-600">
-					Climate change impacts in this region include rising temperatures, changing precipitation
-					patterns, and accelerated glacial melting.
+				<p class="text-justify text-sm leading-relaxed text-slate-600">
+					In the future, even if global warming is kept to 1.5 °C, warming in the Hindu Kush
+					Himalaya (HKH) region will likely be at least 0.3 °C higher, and in the northwest Himalaya
+					and Karakoram at least 0.7 °C higher. Such large warming could trigger a multitude of
+					biophysical and socio-economic impacts, such as biodiversity loss, increased glacial
+					melting, and less predictable water availability—all of which will impact livelihoods and
+					well-being in the HKH.
 				</p>
+				<p class="text-justify text-sm leading-relaxed text-slate-600">
+					Glaciers in the HKH are retreating at unprecedented rates, snow cover is diminishing, and
+					permafrost is degrading, all of which are altering river flows and threatening water
+					security.
+				</p>
+				<p class="text-justify text-sm leading-relaxed text-slate-600">
+					Climate change is also amplifying the frequency and severity of extreme weather events,
+					including floods, droughts, and landslides, which pose immediate risks to lives,
+					infrastructure, and economies. The loss of cryospheric mass not only threatens long-term
+					water availability but also increases the risk of glacial lake outburst floods (GLOFs)
+					that can devastate downstream communities.
+				</p>
+				<p class="text-justify text-sm leading-relaxed text-slate-600">
+					The impacts extend beyond the physical environment to agriculture, biodiversity, and
+					cultural heritage. Shifts in seasonal patterns are affecting crop yields, while warming
+					temperatures are pushing species to higher altitudes, disrupting delicate alpine
+					ecosystems. Many communities in the HKH rely on climate-sensitive livelihoods such as
+					farming, herding, and tourism, making them particularly vulnerable.
+				</p>
+				<p class="text-justify text-sm leading-relaxed text-slate-600">
+					Addressing climate change in the HKH requires urgent, coordinated, and region-wide action.
+					This includes investing in climate-resilient infrastructure, expanding early warning
+					systems, improving water management, and enhancing scientific monitoring of glaciers and
+					weather patterns. Regional cooperation is essential for sharing data, aligning adaptation
+					strategies, and managing shared water resources sustainably. Equally important is
+					empowering local communities with knowledge, technology, and resources to adapt to
+					changing conditions while preserving the environmental and cultural richness of the HKH.
+				</p>
+			</div>
 
-				<div
-					class="rounded-xl border border-blue-200/30 bg-gradient-to-r from-blue-50/80 to-cyan-50/80 p-4 backdrop-blur-sm"
-				>
-					<h4 class="mb-3 flex items-center space-x-2 text-sm font-bold text-blue-800">
-						<span>Key Climate Indicators</span>
-					</h4>
-					<ul class="space-y-2 text-sm text-blue-700">
-						<li class="flex items-center space-x-2">
-							<CheckCircle class="h-3 w-3" />
-							<span>Temperature trends</span>
-						</li>
-						<li class="flex items-center space-x-2">
-							<CheckCircle class="h-3 w-3" />
-							<span>Area with temperature rise more than 1.5 degrees</span>
-						</li>
-					</ul>
+			<!-- Images Section -->
+			<div class="mt-6 space-y-4">
+				<!-- Image 1 -->
+				<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+					<img src={climate_1} alt="Himalayan glacial retreat" class="h-40 w-full object-cover" />
+					<div class="p-3">
+						<p class="text-xs text-slate-600">
+							<span class="font-medium"
+								>We see <span>less snow</span> on the mountain peaks in recent years.
+							</span>
+						</p>
+					</div>
+				</div>
+
+				<!-- Image 2 -->
+				<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+					<img
+						src={climate_2}
+						alt="Hindu Kush Himalaya climate impacts"
+						class="h-40 w-full object-cover"
+					/>
+					<div class="p-3">
+						<p class="text-xs text-slate-600">
+							Flooded street in Kathmandu after a less than an hour <span class="font-medium">
+								heavy downpour
+							</span>
+						</p>
+					</div>
 				</div>
 			</div>
 		</div>
