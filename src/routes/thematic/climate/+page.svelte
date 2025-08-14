@@ -175,20 +175,20 @@
 					layer_name: 'springs:hkh_lc_2021'
 				},
 				{
-					name: 'Temp Rise > 0.5°C',
+					name: 'Annual Temperature Time Series',
 					wms_url: 'https://example.com/geoserver/climate/wms',
 					layer_name: 'climate:temp_anomaly_30y'
 				},
 				{
-					name: 'Temp Rise > 1.5°C',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
-				},
-				{
-					name: 'Temp Rise > 2.5°C',
+					name: 'Temperature Rise',
 					wms_url: 'https://example.com/geoserver/climate/wms',
 					layer_name: 'climate:temp_anomaly_30y'
 				}
+				// {
+				// 	name: 'Temp Rise > 2.5°C',
+				// 	wms_url: 'https://example.com/geoserver/climate/wms',
+				// 	layer_name: 'climate:temp_anomaly_30y'
+				// }
 			]
 		},
 		{
@@ -245,6 +245,47 @@
 		}
 	];
 
+	const questions = [
+		{
+			id: 'question-1',
+			question: 'What is the annual average temperature trend over the past 30 years?'
+		},
+		{
+			id: 'question-2',
+			question: 'Which areas have observed temperature rise more than 0.5 degrees in last decade?'
+		},
+		{
+			id: 'question-3',
+			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?'
+		},
+		{
+			id: 'question-4',
+			question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?'
+		}
+	];
+	const information_layers = [
+		{
+			id: 'map-indicator-1',
+			title: 'Annual Temperature Trend'
+		},
+		{
+			id: 'map-indicator-2',
+			title: 'Temperature Rise'
+		},
+		{
+			id: 'map-indicator-3',
+			title: 'Annual Temperature Time Series'
+		}
+	];
+	const map_indicators = [
+		{
+			map_data: [],
+			control: '',
+			chart_data: [],
+			question: '',
+			info_layer: ''
+		}
+	];
 	// Extract questions for UI (now simpler)
 	const climateQuestions = climateDataset.map((item) => ({
 		id: item.id,
@@ -254,8 +295,8 @@
 	// Track selected question - default to first question
 	let selectedQuestionId = $state('temp-trend-30y');
 
-	// Track active/visible map layers
-	let activeMapLayers = $state(new Set<string>());
+	// Track selected information layer (single selection)
+	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
 
 	// Track map data container collapse state
 	let isMapDataCollapsed = $state(false);
@@ -367,36 +408,29 @@
 		console.log('Question selected:', questionId, questionText);
 		console.log('Map data:', currentMapData);
 
-		// Reset active layers when question changes
-		// First remove all WMS layers
-		activeMapLayers.forEach((layerName: string) => {
-			removeWMSLayer(layerName);
-		});
-		activeMapLayers.clear();
+		// Reset selected layer when question changes
+		if (selectedInformationLayer) {
+			removeWMSLayer(selectedInformationLayer);
+			selectedInformationLayer = null;
+		}
 	}
 
-	// Function to toggle map layer visibility
-	function toggleMapLayer(layerName: string) {
-		// Find the layer data
-		const layerData = currentMapData?.find((layer) => layer.layer_name === layerName);
-		if (!layerData) {
-			console.error('Layer data not found for:', layerName);
+	// Function to select information layer
+	function selectInformationLayer(layerId: string) {
+		// If clicking the same layer, deselect it
+		if (selectedInformationLayer === layerId) {
+			selectedInformationLayer = null;
 			return;
 		}
 
-		if (activeMapLayers.has(layerName)) {
-			// Remove layer
-			activeMapLayers.delete(layerName);
-			removeWMSLayer(layerName);
+		// Find the corresponding map data for this information layer
+		const layerData = currentMapData?.find((layer) => layer.name === layerId);
+		if (layerData) {
+			selectedInformationLayer = layerId;
+			console.log('Information layer selected:', layerId);
 		} else {
-			// Add layer
-			activeMapLayers.add(layerName);
-			addWMSLayer(layerData);
+			console.error('Map data not found for information layer:', layerId);
 		}
-
-		// Trigger reactivity
-		activeMapLayers = new Set(activeMapLayers);
-		console.log('Layer toggled:', layerName, 'Active:', activeMapLayers.has(layerName));
 	}
 
 	// Function to cycle through layout states
@@ -741,32 +775,24 @@
 
 						<!-- Information Layer Content -->
 						<div class="flex-1 overflow-y-auto">
-							{#if currentMapData && currentMapData.length > 0}
+							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
-									{#each currentMapData as mapLayer, index}
+									{#each information_layers as layer, index}
 										<button
-											on:click={() => toggleMapLayer(mapLayer.layer_name)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {activeMapLayers.has(
-												mapLayer.layer_name
-											)
+											on:click={() => selectInformationLayer(layer.title)}
+											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+											layer.title
 												? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
 												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
 										>
 											<div class="flex items-start space-x-3 text-left">
-												<div class="mt-1 flex-shrink-0">
-													{#if activeMapLayers.has(mapLayer.layer_name)}
-														<Eye class="h-5 w-5 text-green-600" />
-													{:else}
-														<EyeOff class="h-5 w-5 text-slate-400" />
-													{/if}
-												</div>
 												<div class="flex-1">
 													<h4
-														class="text-sm font-medium {activeMapLayers.has(mapLayer.layer_name)
+														class="text-sm font-medium {selectedInformationLayer === layer.title
 															? 'text-green-800'
 															: 'text-slate-800'} mb-1"
 													>
-														{mapLayer.name}
+														{layer.title}
 													</h4>
 												</div>
 											</div>
