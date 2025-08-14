@@ -2,7 +2,6 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import icimod from '$lib/assets/logo/icimod_logo.svg';
-
 	let { children } = $props();
 </script>
 

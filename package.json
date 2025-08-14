@@ -37,6 +37,7 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"@arcgis/core": "^4.33.12",
 		"@lucide/svelte": "^0.514.0",
 		"highcharts": "^12.3.0",
 		"ol": "^10.6.1"
