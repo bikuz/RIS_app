@@ -18,7 +18,9 @@
 		Eye,
 		EyeOff,
 		ChevronUp,
-		ChevronDown
+		ChevronDown,
+		ChevronLeft,
+		ChevronRight
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
@@ -257,6 +259,12 @@
 	// Track map data container collapse state
 	let isMapDataCollapsed = $state(false);
 
+	// Track left sidebar collapsed state
+	let isLeftSidebarCollapsed = $state(false);
+
+	// Layout states: 'default' | 'hide-left' | 'left-full'
+	let layoutState = $state('default');
+
 	// Get current dataset based on selected question
 	let currentDataset = $derived(
 		selectedQuestionId
@@ -267,6 +275,38 @@
 	// Extract current data from dataset
 	let currentCharts = $derived(currentDataset?.charts || []);
 	let currentMapData = $derived(currentDataset?.map_data);
+
+	// Watch for layout state changes and update map size
+	$effect(() => {
+		// This effect runs whenever layoutState changes
+		layoutState;
+
+		// Multiple resize attempts with different timings
+		if (map && mapContainer) {
+			// Immediate attempt
+			requestAnimationFrame(() => {
+				if (map) {
+					map.updateSize();
+				}
+			});
+
+			// Delayed attempt
+			setTimeout(() => {
+				if (map) {
+					map.updateSize();
+					map.render();
+				}
+			}, 150);
+
+			// Final attempt after all transitions
+			setTimeout(() => {
+				if (map) {
+					map.updateSize();
+					map.render();
+				}
+			}, 400);
+		}
+	});
 
 	// Get layer by ID from map (your better approach)
 	const getLayerById = (layerID: string): any | null => {
@@ -351,20 +391,129 @@
 		activeMapLayers = new Set(activeMapLayers);
 		console.log('Layer toggled:', layerName, 'Active:', activeMapLayers.has(layerName));
 	}
+
+	// Function to cycle through layout states
+	function toggleLayoutState() {
+		if (layoutState === 'default') {
+			layoutState = 'hide-left';
+		} else if (layoutState === 'hide-left') {
+			layoutState = 'left-full';
+		} else {
+			layoutState = 'default';
+		}
+	}
+
+	// Function to set specific layout state
+	function setLayoutState(state: 'default' | 'hide-left' | 'left-full') {
+		layoutState = state;
+
+		// Force map resize with multiple attempts to ensure it works
+		const forceMapResize = () => {
+			if (map && mapContainer) {
+				// Clear any existing size constraints
+				const mapElement = mapContainer;
+				mapElement.style.width = '100%';
+				mapElement.style.maxWidth = '100%';
+
+				// First immediate update
+				map.updateSize();
+
+				// Second update after a short delay
+				setTimeout(() => {
+					if (map) {
+						map.updateSize();
+						// Force a render
+						map.render();
+					}
+				}, 100);
+
+				// Third update after CSS transitions complete
+				setTimeout(() => {
+					if (map) {
+						// Force complete resize
+						const view = map.getView();
+						const currentCenter = view.getCenter();
+						const currentZoom = view.getZoom();
+
+						map.updateSize();
+						map.render();
+
+						// Restore view if it changed
+						if (currentCenter && currentZoom) {
+							view.setCenter(currentCenter);
+							view.setZoom(currentZoom);
+						}
+
+						console.log('Map resized for layout:', state);
+					}
+				}, 350);
+			}
+		};
+
+		// Use requestAnimationFrame to ensure DOM updates are complete
+		requestAnimationFrame(() => {
+			forceMapResize();
+		});
+	}
 </script>
 
-<!-- 3-Column Layout -->
-<div class="grid grid-cols-12 items-stretch gap-6">
+<!-- 3-Column Layout with Dynamic States -->
+<div class="relative grid grid-cols-12 items-stretch gap-6">
+	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
+	{#if layoutState === 'hide-left'}
+		<button
+			on:click={() => setLayoutState('default')}
+			class="fixed top-1/2 left-0 z-50 -translate-y-1/2 rounded-r-lg border border-l-0 border-slate-300 bg-white p-3 text-slate-700 shadow-xl transition-all duration-200 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 hover:shadow-2xl"
+			title="Show Story Panel"
+		>
+			<ChevronRight class="h-5 w-5" />
+		</button>
+	{/if}
 	<!-- Left Sidebar - Story + Questions -->
-	<div class="col-span-3 flex">
-		<div class="sticky top-6 h-fit max-h-[calc(100vh-16rem)] flex-1 space-y-6 overflow-y-auto">
+	<div
+		class="col-span-3"
+		class:hidden={layoutState === 'hide-left'}
+		class:col-span-12={layoutState === 'left-full'}
+	>
+		<div class="top-6 h-fit flex-1 space-y-6 overflow-y-auto">
 			<!-- Story Section -->
 			<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
-				<div class="mb-6 flex items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
-						<Cloud class="h-5 w-5 text-white" />
+				<div class="mb-6 flex items-center justify-between">
+					<div class="flex items-center space-x-3">
+						<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
+							<Cloud class="h-5 w-5 text-white" />
+						</div>
+						<h3 class="text-lg font-bold text-slate-800">Climate Change in HKH</h3>
 					</div>
-					<h3 class="text-lg font-bold text-slate-800">Climate Change in HKH</h3>
+					<div class="flex items-center space-x-2">
+						{#if layoutState !== 'left-full'}
+							<!-- Hide Left Panel Button -->
+							<button
+								on:click={() => setLayoutState('hide-left')}
+								class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+								title="Hide Story Panel"
+							>
+								<ChevronLeft class="h-4 w-4" />
+							</button>
+							<!-- Expand Story Button -->
+							<button
+								on:click={() => setLayoutState('left-full')}
+								class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+								title="Expand Story"
+							>
+								<ChevronRight class="h-4 w-4" />
+							</button>
+						{:else}
+							<!-- Back to Default Button -->
+							<button
+								on:click={() => setLayoutState('default')}
+								class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+								title="Back to Default"
+							>
+								<ChevronLeft class="h-4 w-4" />
+							</button>
+						{/if}
+					</div>
 				</div>
 
 				<div class="space-y-4">
@@ -451,156 +600,158 @@
 		</div>
 	</div>
 
-	<!-- Main Content Area - Map and Chart sections -->
-	<div class="col-span-7 flex flex-col gap-6">
-		<!-- Map Section -->
-		<div
-			class="relative flex-1 overflow-hidden rounded-xl border border-slate-200/50 bg-white shadow-sm"
-		>
-			<div
-				class="map-container flex flex-col bg-white/70 backdrop-blur-sm"
-				class:h-full={height === '100%'}
-			>
+	<!-- Main Content Area - Unified container with common white background -->
+	<div
+		class="col-span-9"
+		class:col-span-12={layoutState === 'hide-left'}
+		class:hidden={layoutState === 'left-full'}
+	>
+		<div class="rounded-2xl border border-white/20 bg-white p-6 shadow-xl backdrop-blur-sm">
+			<div class="flex gap-6">
+				<!-- Left part: Map and Charts -->
 				<div
-					bind:this={mapContainer}
-					class="map-element overflow-hidden rounded-2xl border border-slate-200/50"
-					style="width: {width}; {height === '100%' ? 'min-height: 600px;' : `height: ${height};`}"
-					class:flex-1={height === '100%'}
-				></div>
-			</div>
-		</div>
-
-		<!-- Chart Section -->
-		<div class="flex-1 rounded-xl border border-slate-200/50 bg-white p-6 shadow-sm">
-			<h3 class="mb-4 text-lg font-semibold text-slate-700">Climate Analytics</h3>
-			<div class="rounded-lg bg-slate-50/50 p-4">
-				{#if currentCharts && currentCharts.length > 0}
-					<div class="space-y-6">
-						{#each currentCharts as chart, index}
-							<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
-								<Chart
-									chartData={chart.chart_data}
-									title={chart.title}
-									subtitle="Hindu Kush Himalaya Region Climate Data"
-									chart_type={chart.chart_type}
-								/>
-							</div>
-						{/each}
-					</div>
-				{:else}
-					<div class="flex h-80 items-center justify-center">
-						<div class="text-center text-slate-500">
-							<p class="text-sm">Select a question to view related charts</p>
+					class="flex min-w-0 flex-col gap-6 {layoutState === 'hide-left' ? 'flex-1' : 'flex-1'}"
+				>
+					<!-- Map Section -->
+					<div class="relative flex-1 overflow-hidden rounded-xl border border-slate-200/30">
+						<div class="map-container flex flex-col" class:h-full={height === '100%'}>
+							<div
+								bind:this={mapContainer}
+								class="map-element w-full overflow-hidden rounded-xl"
+								style={height === '100%' ? 'min-height: 600px;' : `height: ${height};`}
+								class:flex-1={height === '100%'}
+							></div>
 						</div>
 					</div>
-				{/if}
-			</div>
-		</div>
-	</div>
 
-	<!-- Right Sidebar - Indicators -->
-	<div class="col-span-2 flex">
-		<div
-			class="sticky top-6 flex max-h-[calc(100vh-14rem)] min-h-[calc(100vh-14rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 p-6 shadow-xl backdrop-blur-sm"
-		>
-			<!-- Information Layer Header -->
-			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-				<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
-					<Layers class="h-5 w-5 text-white" />
-				</div>
-				<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
-			</div>
-
-			<!-- Information Layer Content -->
-
-			<div class="flex-1 overflow-y-auto">
-				{#if currentMapData && currentMapData.length > 0}
-					<div class="space-y-3">
-						{#each currentMapData as mapLayer, index}
-							<button
-								on:click={() => toggleMapLayer(mapLayer.layer_name)}
-								class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {activeMapLayers.has(
-									mapLayer.layer_name
-								)
-									? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
-									: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
-							>
-								<div class="flex items-start space-x-3 text-left">
-									<div class="mt-1 flex-shrink-0">
-										{#if activeMapLayers.has(mapLayer.layer_name)}
-											<Eye class="h-5 w-5 text-green-600" />
-										{:else}
-											<EyeOff class="h-5 w-5 text-slate-400" />
-										{/if}
+					<!-- Chart Section -->
+					<div class="flex-1 rounded-xl border border-slate-200/30 bg-slate-50/30 p-6">
+						<h3 class="mb-4 text-lg font-semibold text-slate-700">Climate Analytics</h3>
+						<div class="rounded-lg bg-slate-50/50">
+							{#if currentCharts && currentCharts.length > 0}
+								<div class="space-y-6">
+									{#each currentCharts as chart, index}
+										<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
+											<Chart
+												chartData={chart.chart_data}
+												title={chart.title}
+												subtitle="Hindu Kush Himalaya Region Climate Data"
+												chart_type={chart.chart_type}
+											/>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<div class="flex h-80 items-center justify-center">
+									<div class="text-center text-slate-500">
+										<p class="text-sm">Select a question to view related charts</p>
 									</div>
-									<div class="flex-1">
-										<h4
-											class="text-sm font-medium {activeMapLayers.has(mapLayer.layer_name)
-												? 'text-green-800'
-												: 'text-slate-800'} mb-1"
+								</div>
+							{/if}
+						</div>
+					</div>
+				</div>
+
+				<!-- Right part: Information Layer and Questions -->
+				<div class="w-80 flex-shrink-0">
+					<div class="h-fit space-y-6">
+						<!-- Information Layer Header -->
+						<div class="flex items-center justify-between">
+							<div class="flex items-center space-x-3">
+								<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
+									<Layers class="h-5 w-5 text-white" />
+								</div>
+								<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
+							</div>
+						</div>
+
+						<!-- Information Layer Content -->
+						<div>
+							{#if currentMapData && currentMapData.length > 0}
+								<div class="space-y-3">
+									{#each currentMapData as mapLayer, index}
+										<button
+											on:click={() => toggleMapLayer(mapLayer.layer_name)}
+											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {activeMapLayers.has(
+												mapLayer.layer_name
+											)
+												? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
+												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
 										>
-											{mapLayer.name}
-										</h4>
-										{#if mapLayer.description}
-											<p class="text-xs leading-relaxed text-slate-600">
-												{mapLayer.description}
-											</p>
-										{/if}
+											<div class="flex items-start space-x-3 text-left">
+												<div class="mt-1 flex-shrink-0">
+													{#if activeMapLayers.has(mapLayer.layer_name)}
+														<Eye class="h-5 w-5 text-green-600" />
+													{:else}
+														<EyeOff class="h-5 w-5 text-slate-400" />
+													{/if}
+												</div>
+												<div class="flex-1">
+													<h4
+														class="text-sm font-medium {activeMapLayers.has(mapLayer.layer_name)
+															? 'text-green-800'
+															: 'text-slate-800'} mb-1"
+													>
+														{mapLayer.name}
+													</h4>
+												</div>
+											</div>
+										</button>
+									{/each}
+								</div>
+							{:else}
+								<div class="flex h-40 items-center justify-center">
+									<div class="text-center text-slate-500">
+										<Layers class="mx-auto mb-2 h-8 w-8 text-slate-400" />
+										<p class="text-sm">No indicators available</p>
+										<p class="text-xs">Select a question to view map layers</p>
 									</div>
 								</div>
-							</button>
-						{/each}
-					</div>
-				{:else}
-					<div class="flex h-40 items-center justify-center">
-						<div class="text-center text-slate-500">
-							<Layers class="mx-auto mb-2 h-8 w-8 text-slate-400" />
-							<p class="text-sm">No indicators available</p>
-							<p class="text-xs">Select a question to view map layers</p>
+							{/if}
 						</div>
-					</div>
-				{/if}
-			</div>
 
-			<!-- Questions Section -->
-			<div class="mt-6 flex min-h-0 flex-1 flex-col border-t border-slate-200/50 pt-6">
-				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 p-2">
-						<Info class="h-4 w-4 text-white" />
-					</div>
-					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
-				</div>
-				<div class="flex-1 space-y-3 overflow-y-auto">
-					{#each climateQuestions as questionItem, index}
-						<div
-							class="group cursor-pointer rounded-lg border p-3 transition-all duration-200 {selectedQuestionId ===
-							questionItem.id
-								? 'border-blue-500 bg-blue-50 shadow-md'
-								: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-							role="button"
-							tabindex="0"
-							on:click={() => selectQuestion(questionItem.id, questionItem.question)}
-						>
-							<div class="flex items-start space-x-2">
-								<div class="mt-1 flex-shrink-0">
-									{#if selectedQuestionId === questionItem.id}
-										<CheckCircle class="h-4 w-4 text-blue-600" />
-									{:else}
-										<div
-											class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
-										></div>
-									{/if}
+						<!-- Questions Section -->
+						<div class="border-t border-slate-200/50 pt-6">
+							<div class="mb-4 flex items-center space-x-3">
+								<div class="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 p-2">
+									<Info class="h-4 w-4 text-white" />
 								</div>
-								<p
-									class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-										? 'font-medium text-blue-700'
-										: 'text-slate-600 group-hover:text-slate-800'}"
-								>
-									{questionItem.question}
-								</p>
+								<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
+							</div>
+							<div class="space-y-3">
+								{#each climateQuestions as questionItem, index}
+									<div
+										class="group cursor-pointer rounded-lg border p-3 transition-all duration-200 {selectedQuestionId ===
+										questionItem.id
+											? 'border-blue-500 bg-blue-50 shadow-md'
+											: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+										role="button"
+										tabindex="0"
+										on:click={() => selectQuestion(questionItem.id, questionItem.question)}
+									>
+										<div class="flex items-start space-x-2">
+											<div class="mt-1 flex-shrink-0">
+												{#if selectedQuestionId === questionItem.id}
+													<CheckCircle class="h-4 w-4 text-blue-600" />
+												{:else}
+													<div
+														class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
+													></div>
+												{/if}
+											</div>
+											<p
+												class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+													? 'font-medium text-blue-700'
+													: 'text-slate-600 group-hover:text-slate-800'}"
+											>
+												{questionItem.question}
+											</p>
+										</div>
+									</div>
+								{/each}
 							</div>
 						</div>
-					{/each}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -608,4 +759,38 @@
 </div>
 
 <style>
+	/* Ensure map containers resize properly */
+	.map-container {
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.map-element {
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
+		transition: all 0.3s ease;
+		overflow: hidden;
+	}
+
+	/* Force OpenLayers map to be responsive */
+	:global(.ol-viewport) {
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
+		overflow: hidden !important;
+	}
+
+	:global(.ol-overlaycontainer-stopevent) {
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
+	}
+
+	/* Ensure flex children don't overflow */
+	:global(.flex > *) {
+		min-width: 0;
+	}
 </style>
