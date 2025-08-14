@@ -20,7 +20,8 @@
 		ChevronUp,
 		ChevronDown,
 		ChevronLeft,
-		ChevronRight
+		ChevronRight,
+		HelpCircle
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
@@ -264,6 +265,12 @@
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
+
+	// Track questions panel state
+	let isQuestionsPanelOpen = $state(false);
+	function toggleQuestionsPanel() {
+		isQuestionsPanelOpen = !isQuestionsPanelOpen;
+	}
 
 	// Get current dataset based on selected question
 	let currentDataset = $derived(
@@ -725,19 +732,19 @@
 
 				<!-- Right part: Information Layer and Questions -->
 				<div class="w-80 flex-shrink-0">
-					<div class="h-fit space-y-6">
+					<div
+						class=" top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4 shadow-xl backdrop-blur-sm"
+					>
 						<!-- Information Layer Header -->
-						<div class="flex items-center justify-between">
-							<div class="flex items-center space-x-3">
-								<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
-									<Layers class="h-5 w-5 text-white" />
-								</div>
-								<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
+						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+							<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
+								<Layers class="h-5 w-5 text-white" />
 							</div>
+							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
 						</div>
 
 						<!-- Information Layer Content -->
-						<div>
+						<div class="flex-1 overflow-y-auto">
 							{#if currentMapData && currentMapData.length > 0}
 								<div class="space-y-3">
 									{#each currentMapData as mapLayer, index}
@@ -781,52 +788,71 @@
 							{/if}
 						</div>
 
-						<!-- Questions Section -->
-						<div class="border-t border-slate-200/50 pt-6">
-							<div class="mb-4 flex items-center space-x-3">
-								<div class="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 p-2">
-									<Info class="h-4 w-4 text-white" />
-								</div>
-								<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
-							</div>
-							<div class="space-y-3">
-								{#each climateQuestions as questionItem, index}
-									<div
-										class="group cursor-pointer rounded-lg border p-3 transition-all duration-200 {selectedQuestionId ===
-										questionItem.id
-											? 'border-blue-500 bg-blue-50 shadow-md'
-											: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-										role="button"
-										tabindex="0"
-										on:click={() => selectQuestion(questionItem.id, questionItem.question)}
-									>
-										<div class="flex items-start space-x-2">
-											<div class="mt-1 flex-shrink-0">
-												{#if selectedQuestionId === questionItem.id}
-													<CheckCircle class="h-4 w-4 text-blue-600" />
-												{:else}
-													<div
-														class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
-													></div>
-												{/if}
-											</div>
-											<p
-												class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-													? 'font-medium text-blue-700'
-													: 'text-slate-600 group-hover:text-slate-800'}"
-											>
-												{questionItem.question}
-											</p>
-										</div>
-									</div>
-								{/each}
-							</div>
-						</div>
+						<!-- Questions section - now empty, button moved to fixed position -->
+						<div class="relative mt-6 flex min-h-0 flex-1 flex-col pt-6"></div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
+</div>
+
+<!-- Fixed Floating Questions Button and Panel -->
+<div class="fixed right-6 bottom-6 z-50 flex flex-col items-end">
+	<div
+		class="questions-panel mb-4 flex h-80 w-60 origin-bottom-right transform flex-col rounded-lg bg-white/95 p-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+		class:scale-0={!isQuestionsPanelOpen}
+		class:scale-100={isQuestionsPanelOpen}
+		class:opacity-0={!isQuestionsPanelOpen}
+		class:opacity-100={isQuestionsPanelOpen}
+		class:pointer-events-none={!isQuestionsPanelOpen}
+	>
+		<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+			<div class="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 p-2">
+				<Info class="h-4 w-4 text-white" />
+			</div>
+			<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
+		</div>
+
+		<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
+			{#each climateQuestions as questionItem, index}
+				<button
+					class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
+					questionItem.id
+						? 'border-blue-500 bg-blue-50 shadow-md'
+						: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+					on:click={() => selectQuestion(questionItem.id, questionItem.question)}
+				>
+					<div class="flex items-start space-x-2">
+						<div class="mt-1 flex-shrink-0">
+							{#if selectedQuestionId === questionItem.id}
+								<CheckCircle class="h-4 w-4 text-blue-600" />
+							{:else}
+								<div
+									class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
+								></div>
+							{/if}
+						</div>
+						<p
+							class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+								? 'font-medium text-blue-700'
+								: 'text-slate-600 group-hover:text-slate-800'}"
+						>
+							{questionItem.question}
+						</p>
+					</div>
+				</button>
+			{/each}
+		</div>
+	</div>
+
+	<button
+		on:click={toggleQuestionsPanel}
+		class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg transition-all duration-300 hover:scale-110"
+		aria-label="Toggle questions panel"
+	>
+		<HelpCircle class="h-6 w-6" />
+	</button>
 </div>
 
 <style>
