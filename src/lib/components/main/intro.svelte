@@ -1,7 +1,15 @@
-<script>
+<script lang="ts">
 	import {  Mountain, Globe, Users, Snowflake, Trees, Shield, MapPin, Waves } from '@lucide/svelte';
-	import Map from './Map.svelte';
+	import { onMount } from 'svelte';
 
+	// import Map from './Map.svelte';
+	let Map3D: any=$state();
+
+	onMount(async () => {
+		const module = await import('./Map.svelte');
+		Map3D = module.default;
+	});
+	
 	const stats = [
     // {
     //   icon: Mountain,
@@ -88,15 +96,14 @@
 </script>
 
 <section class="relative pt-16 pb-24 bg-gradient-to-br from-blue-200 to-green-200 ">
-	<div class="px-8">
+	<div class="container mx-auto px-8">
 		<div class="text-center mb-12">
 			<h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
-				HKH at a glance?
+				HKH at a glance
 			</h2>
 			<p class="text-lg text-gray-600 max-w-6xl mx-auto leading-relaxed">
-				RIS is a comprehensive platform that integrates, processes, and disseminates critical information 
-				about the Hindu Kush Himalaya region. Our mission is to support evidence-based decision-making 
-				through accessible, reliable, and timely regional data.
+				Often called the "Third Pole," the HKH region is home to the world's highest peaks and 
+			largest concentration of glaciers outside the polar regions.
 			</p>
 		</div>
 
@@ -145,7 +152,10 @@
 				</div>
 				<div class="lg:col-span-5">
 					<div class="space-y-4">
-						<Map/>
+						<!-- <Map/> -->
+						{#if Map3D}
+							<svelte:component this={Map3D} />
+						{/if}
 					</div>
 				</div>
 			</div>
