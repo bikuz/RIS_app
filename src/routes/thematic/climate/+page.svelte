@@ -478,209 +478,205 @@
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
 	<div
-		class="col-span-3"
+		class=" top-6 col-span-3 h-fit flex-1 space-y-6"
 		class:hidden={layoutState === 'hide-left'}
 		class:col-span-12={layoutState === 'left-full'}
 	>
-		<div class="top-6 h-fit flex-1 space-y-6 overflow-y-auto">
-			<!-- Story Section -->
-			<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
-				<div class="mb-6 flex items-center justify-between">
-					<div class="flex items-center space-x-3">
-						<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
-							<Cloud class="h-5 w-5 text-white" />
-						</div>
-						<h3
-							class="{layoutState === 'left-full'
-								? 'text-2xl'
-								: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+		<!-- Story Section -->
+		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
+			<div class="mb-6 flex items-center justify-between">
+				<div class="flex items-center space-x-3">
+					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
+						<Cloud class="h-5 w-5 text-white" />
+					</div>
+					<h3
+						class="{layoutState === 'left-full'
+							? 'text-2xl'
+							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+					>
+						Climate Change in HKH
+					</h3>
+				</div>
+				<div class="flex items-center space-x-2">
+					{#if layoutState !== 'left-full'}
+						<!-- Hide Left Panel Button -->
+						<button
+							on:click={() => setLayoutState('hide-left')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Hide Story Panel"
 						>
-							Climate Change in HKH
-						</h3>
-					</div>
-					<div class="flex items-center space-x-2">
-						{#if layoutState !== 'left-full'}
-							<!-- Hide Left Panel Button -->
-							<button
-								on:click={() => setLayoutState('hide-left')}
-								class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
-								title="Hide Story Panel"
-							>
-								<ChevronLeft class="h-4 w-4" />
-							</button>
-							<!-- Expand Story Button -->
-							<button
-								on:click={() => setLayoutState('left-full')}
-								class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
-								title="Expand Story"
-							>
-								<ChevronRight class="h-4 w-4" />
-							</button>
-						{:else}
-							<!-- Back to Default Button -->
-							<button
-								on:click={() => setLayoutState('default')}
-								class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
-								title="Back to Default"
-							>
-								<ChevronLeft class="h-4 w-4" />
-							</button>
-						{/if}
-					</div>
-				</div>
-
-				<div
-					class="{layoutState === 'left-full'
-						? 'space-y-6'
-						: 'space-y-4'} transition-all duration-300"
-				>
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						Historically, the climate of the HKH has experienced significant changes that are
-						closely related to the rise and fall of regional cultures and civilizations. The region
-						is one of the most climate-sensitive mountain systems in the world. Known as the “Third
-						Pole” for its vast ice reserves, the HKH plays a critical role in regulating Asia’s
-						climate and serves as the source of ten major river systems that sustain the livelihoods
-						of over 1.6 billion people downstream. However, the impacts of climate change are being
-						felt here more intensely than the global average, with temperatures rising significantly
-						faster than elsewhere.
-					</p>
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						In the future, even if global warming is kept to 1.5 °C, warming in the Hindu Kush
-						Himalaya (HKH) region will likely be at least 0.3 °C higher, and in the northwest
-						Himalaya and Karakoram at least 0.7 °C higher. Such large warming could trigger a
-						multitude of biophysical and socio-economic impacts, such as biodiversity loss,
-						increased glacial melting, and less predictable water availability—all of which will
-						impact livelihoods and well-being in the HKH.
-					</p>
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						Glaciers in the HKH are retreating at unprecedented rates, snow cover is diminishing,
-						and permafrost is degrading, all of which are altering river flows and threatening water
-						security.
-					</p>
-
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						Climate change is also amplifying the frequency and severity of extreme weather events,
-						including floods, droughts, and landslides, which pose immediate risks to lives,
-						infrastructure, and economies. The loss of cryospheric mass not only threatens long-term
-						water availability but also increases the risk of glacial lake outburst floods (GLOFs)
-						that can devastate downstream communities.
-					</p>
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						The impacts extend beyond the physical environment to agriculture, biodiversity, and
-						cultural heritage. Shifts in seasonal patterns are affecting crop yields, while warming
-						temperatures are pushing species to higher altitudes, disrupting delicate alpine
-						ecosystems. Many communities in the HKH rely on climate-sensitive livelihoods such as
-						farming, herding, and tourism, making them particularly vulnerable.
-					</p>
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						Addressing climate change in the HKH requires urgent, coordinated, and region-wide
-						action. This includes investing in climate-resilient infrastructure, expanding early
-						warning systems, improving water management, and enhancing scientific monitoring of
-						glaciers and weather patterns. Regional cooperation is essential for sharing data,
-						aligning adaptation strategies, and managing shared water resources sustainably. Equally
-						important is empowering local communities with knowledge, technology, and resources to
-						adapt to changing conditions while preserving the environmental and cultural richness of
-						the HKH.
-					</p>
-				</div>
-
-				<!-- Images Section - Responsive Layout -->
-				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
-					{#if layoutState === 'left-full'}
-						<!-- Full Width Layout - One Image Per Row -->
-						<div class="flex flex-col items-center gap-6">
-							<div
-								class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-							>
-								<img src={climate_1} alt="Himalayan glacial retreat" class="h-80 object-contain" />
-								<div class="p-4">
-									<p class="text-center text-sm leading-relaxed text-slate-700">
-										<span
-											>We see <span class="font-semibold text-slate-800"
-												>less snow on the mountain peaks
-											</span> in recent years
-										</span>
-									</p>
-								</div>
-							</div>
-							<div
-								class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-							>
-								<img src={climate_2} alt="Climate impacts" class="h-80 object-contain" />
-								<div class="p-4">
-									<p class="text-center text-sm leading-relaxed text-slate-700">
-										<span>
-											<span class="font-semibold text-slate-800">
-												Flooded street in Kathmandu
-											</span> after a less than an hour heavy downpour</span
-										>
-									</p>
-								</div>
-							</div>
-						</div>
+							<ChevronLeft class="h-4 w-4" />
+						</button>
+						<!-- Expand Story Button -->
+						<button
+							on:click={() => setLayoutState('left-full')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Expand Story"
+						>
+							<ChevronRight class="h-4 w-4" />
+						</button>
 					{:else}
-						<!-- Default Layout - Stacked Images -->
-						<div class="space-y-3">
-							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-								<img
-									src={climate_1}
-									alt="Himalayan glacial retreat"
-									class="h-50 w-full object-contain"
-								/>
-								<div class="p-2">
-									<p class="text-center text-xs text-slate-600">
-										<span
-											>We see <span class="font-semibold">less snow on the mountain peaks </span> in
-											recent years
-										</span>
-									</p>
-								</div>
-							</div>
-							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-								<img src={climate_2} alt="Climate impacts" class="h-55 w-full object-contain" />
-								<div class="p-2">
-									<p class="text-center text-xs text-slate-600">
-										<span>
-											<span class="font-semibold"> Flooded street in Kathmandu </span> after a less than
-											an hour heavy downpour</span
-										>
-									</p>
-								</div>
-							</div>
-						</div>
+						<!-- Back to Default Button -->
+						<button
+							on:click={() => setLayoutState('default')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Back to Default"
+						>
+							<ChevronLeft class="h-4 w-4" />
+						</button>
 					{/if}
 				</div>
+			</div>
+
+			<div
+				class="{layoutState === 'left-full'
+					? 'space-y-6'
+					: 'space-y-4'} transition-all duration-300"
+			>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Historically, the climate of the HKH has experienced significant changes that are closely
+					related to the rise and fall of regional cultures and civilizations. The region is one of
+					the most climate-sensitive mountain systems in the world. Known as the “Third Pole” for
+					its vast ice reserves, the HKH plays a critical role in regulating Asia’s climate and
+					serves as the source of ten major river systems that sustain the livelihoods of over 1.6
+					billion people downstream. However, the impacts of climate change are being felt here more
+					intensely than the global average, with temperatures rising significantly faster than
+					elsewhere.
+				</p>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					In the future, even if global warming is kept to 1.5 °C, warming in the Hindu Kush
+					Himalaya (HKH) region will likely be at least 0.3 °C higher, and in the northwest Himalaya
+					and Karakoram at least 0.7 °C higher. Such large warming could trigger a multitude of
+					biophysical and socio-economic impacts, such as biodiversity loss, increased glacial
+					melting, and less predictable water availability—all of which will impact livelihoods and
+					well-being in the HKH.
+				</p>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Glaciers in the HKH are retreating at unprecedented rates, snow cover is diminishing, and
+					permafrost is degrading, all of which are altering river flows and threatening water
+					security.
+				</p>
+
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Climate change is also amplifying the frequency and severity of extreme weather events,
+					including floods, droughts, and landslides, which pose immediate risks to lives,
+					infrastructure, and economies. The loss of cryospheric mass not only threatens long-term
+					water availability but also increases the risk of glacial lake outburst floods (GLOFs)
+					that can devastate downstream communities.
+				</p>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					The impacts extend beyond the physical environment to agriculture, biodiversity, and
+					cultural heritage. Shifts in seasonal patterns are affecting crop yields, while warming
+					temperatures are pushing species to higher altitudes, disrupting delicate alpine
+					ecosystems. Many communities in the HKH rely on climate-sensitive livelihoods such as
+					farming, herding, and tourism, making them particularly vulnerable.
+				</p>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Addressing climate change in the HKH requires urgent, coordinated, and region-wide action.
+					This includes investing in climate-resilient infrastructure, expanding early warning
+					systems, improving water management, and enhancing scientific monitoring of glaciers and
+					weather patterns. Regional cooperation is essential for sharing data, aligning adaptation
+					strategies, and managing shared water resources sustainably. Equally important is
+					empowering local communities with knowledge, technology, and resources to adapt to
+					changing conditions while preserving the environmental and cultural richness of the HKH.
+				</p>
+			</div>
+
+			<!-- Images Section - Responsive Layout -->
+			<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
+				{#if layoutState === 'left-full'}
+					<!-- Full Width Layout - One Image Per Row -->
+					<div class="flex flex-col items-center gap-6">
+						<div
+							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+						>
+							<img src={climate_1} alt="Himalayan glacial retreat" class="h-80 object-contain" />
+							<div class="p-4">
+								<p class="text-center text-sm leading-relaxed text-slate-700">
+									<span
+										>We see <span class="font-semibold text-slate-800"
+											>less snow on the mountain peaks
+										</span> in recent years
+									</span>
+								</p>
+							</div>
+						</div>
+						<div
+							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+						>
+							<img src={climate_2} alt="Climate impacts" class="h-80 object-contain" />
+							<div class="p-4">
+								<p class="text-center text-sm leading-relaxed text-slate-700">
+									<span>
+										<span class="font-semibold text-slate-800"> Flooded street in Kathmandu </span> after
+										a less than an hour heavy downpour</span
+									>
+								</p>
+							</div>
+						</div>
+					</div>
+				{:else}
+					<!-- Default Layout - Stacked Images -->
+					<div class="space-y-3">
+						<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+							<img
+								src={climate_1}
+								alt="Himalayan glacial retreat"
+								class="h-50 w-full object-contain"
+							/>
+							<div class="p-2">
+								<p class="text-center text-xs text-slate-600">
+									<span
+										>We see <span class="font-semibold">less snow on the mountain peaks </span> in recent
+										years
+									</span>
+								</p>
+							</div>
+						</div>
+						<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+							<img src={climate_2} alt="Climate impacts" class="h-55 w-full object-contain" />
+							<div class="p-2">
+								<p class="text-center text-xs text-slate-600">
+									<span>
+										<span class="font-semibold"> Flooded street in Kathmandu </span> after a less than
+										an hour heavy downpour</span
+									>
+								</p>
+							</div>
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
 
 	<!-- Main Content Area - Unified container with common white background -->
 	<div
-		class="col-span-9"
+		class="sticky col-span-9"
 		class:col-span-12={layoutState === 'hide-left'}
 		class:hidden={layoutState === 'left-full'}
 	>
@@ -703,7 +699,7 @@
 					</div>
 
 					<!-- Chart Section -->
-					<div class="flex-1 rounded-xl border border-slate-200/30 bg-slate-50/30 p-6">
+					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
 						<h3 class="mb-4 text-lg font-semibold text-slate-700">Climate Analytics</h3>
 						<div class="rounded-lg bg-slate-50/50">
 							{#if currentCharts && currentCharts.length > 0}
@@ -733,7 +729,7 @@
 				<!-- Right part: Information Layer and Questions -->
 				<div class="w-80 flex-shrink-0">
 					<div
-						class=" top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4 shadow-xl backdrop-blur-sm"
+						class=" top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
 					>
 						<!-- Information Layer Header -->
 						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
