@@ -12,15 +12,7 @@
 	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
-	import {
-		Cloud,
-		CheckCircle,
-		Layers,
-		Info,
-		Eye,
-		EyeOff,
-		HelpCircle
-	} from '@lucide/svelte';
+	import { Cloud, CheckCircle, Layers, Info, Eye, EyeOff, HelpCircle } from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
@@ -32,7 +24,7 @@
 
 	// Hindu Kush Himalaya region coordinates
 	const HKH_CENTER = [77.5, 32.5]; // Longitude, Latitude
-	const HKH_ZOOM = 5;
+	const HKH_ZOOM = 4;
 
 	let isQuestionsPanelOpen = $state(false);
 	function toggleQuestionsPanel() {
@@ -40,7 +32,8 @@
 	}
 
 	// ArcGIS MapServer URL
-	const arcgisBaseUrl = 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/Demography/MapServer';
+	const arcgisBaseUrl =
+		'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/Demography/MapServer';
 
 	// Layer definitions - split into information layers and question layers
 	const informationLayers = [
@@ -56,12 +49,13 @@
 	];
 
 	// Track the currently active layer
-	let activeLayerId = $state<number | null>(null);
+	let activeLayerId = $state<number | null>(0);
 	let currentArcGISLayer: ImageLayer<ImageArcGISRest> | null = null;
 
 	// Dummy chart data for different layers
 	const layerChartData = {
-		0: { // Population 2025
+		0: {
+			// Population 2025
 			title: 'Population Distribution Analysis',
 			chart_type: 'column',
 			chart_data: {
@@ -74,7 +68,8 @@
 				]
 			}
 		},
-		1: { // Sex Ratio 2025
+		1: {
+			// Sex Ratio 2025
 			title: 'Sex Ratio Analysis',
 			chart_type: 'line',
 			chart_data: {
@@ -87,7 +82,8 @@
 				]
 			}
 		},
-		2: { // Proportion of Aged >=75
+		2: {
+			// Proportion of Aged >=75
 			title: 'Elderly Population Distribution',
 			chart_type: 'column',
 			chart_data: {
@@ -100,7 +96,8 @@
 				]
 			}
 		},
-		3: { // Child Woman Ratio 2025
+		3: {
+			// Child Woman Ratio 2025
 			title: 'Child Woman Ratio Trends',
 			chart_type: 'line',
 			chart_data: {
@@ -113,7 +110,8 @@
 				]
 			}
 		},
-		4: { // Child Dependency Ratio 2025
+		4: {
+			// Child Dependency Ratio 2025
 			title: 'Child Dependency Analysis',
 			chart_type: 'column',
 			chart_data: {
@@ -126,7 +124,8 @@
 				]
 			}
 		},
-		5: { // Age Dependency Ratio 2025
+		5: {
+			// Age Dependency Ratio 2025
 			title: 'Age Dependency Trends',
 			chart_type: 'line',
 			chart_data: {
@@ -176,26 +175,13 @@
 		}, 100);
 	}
 
-	// Function to handle layer selection (works for both info and question layers)
-	function selectLayer(layerId: number, layerTitle: string) {
-		// Toggle layer - if same layer is clicked, remove it
-		if (activeLayerId === layerId) {
-			removeCurrentLayer();
-			activeLayerId = null;
-			console.log('Removed layer:', layerTitle);
-		} else {
-			// Add new layer - try the alternative method if main method fails
-			try {
-				addArcGISLayer(layerId);
-				activeLayerId = layerId;
-				console.log('Selected layer:', layerTitle);
-			} catch (error) {
-				console.log('Primary method failed, trying alternative...');
-				addArcGISLayerAlternative(layerId);
-				activeLayerId = layerId;
-			}
-		}
-	}
+    function selectLayer(layerId: number, layerTitle: string) {
+    // Always add the selected layer — no toggle-off
+    addArcGISLayer(layerId);
+    activeLayerId = layerId;
+    console.log('Selected layer:', layerTitle);
+}
+
 
 	// Test function to check MapServer capabilities
 	function testMapServerEndpoint() {
@@ -204,28 +190,28 @@
 		console.log('You can visit this URL to see the service capabilities');
 	}
 
-	// Call test function on mount to help with debugging
 	onMount(() => {
-		initializeMap();
-		testMapServerEndpoint();
+    initializeMap();
+    testMapServerEndpoint();
 
-		if (typeof ResizeObserver !== 'undefined' && mapContainer) {
-			const resizeObserver = new ResizeObserver(() => {
-				if (map) {
-					setTimeout(() => {
-						if (map) {
-							map.updateSize();
-						}
-					}, 100);
-				}
-			});
-			resizeObserver.observe(mapContainer);
+    // Once map is ready, load the default layer (layerId 0)
+    setTimeout(() => {
+        addArcGISLayer(0);
+        activeLayerId = 0;
+    }, 200);
 
-			return () => {
-				resizeObserver.disconnect();
-			};
-		}
-	});
+    if (typeof ResizeObserver !== 'undefined' && mapContainer) {
+        const resizeObserver = new ResizeObserver(() => {
+            if (map) {
+                setTimeout(() => {
+                    map.updateSize();
+                }, 100);
+            }
+        });
+        resizeObserver.observe(mapContainer);
+        return () => resizeObserver.disconnect();
+    }
+});
 
 	onDestroy(() => {
 		if (map) {
@@ -253,10 +239,10 @@
 			source: new ImageArcGISRest({
 				url: arcgisBaseUrl, // Use the base MapServer URL
 				params: {
-					'LAYERS': `show:${layerId}`, // Specify which sublayer to show
-					'FORMAT': 'PNG32',
-					'TRANSPARENT': true,
-					'DPI': 96
+					LAYERS: `show:${layerId}`, // Specify which sublayer to show
+					FORMAT: 'PNG32',
+					TRANSPARENT: true,
+					DPI: 96
 				}
 			})
 		});
@@ -264,10 +250,10 @@
 		// Set layer properties
 		currentArcGISLayer.set('id', `arcgis_${layerId}`);
 		currentArcGISLayer.set('title', `Layer ${layerId}`);
-		
+
 		// Add to map
 		map.addLayer(currentArcGISLayer);
-		
+
 		console.log('Added ArcGIS MapImageLayer sublayer:', layerId);
 		console.log('Request URL will be:', arcgisBaseUrl);
 	}
@@ -282,18 +268,18 @@
 		// Try different parameter formats for ArcGIS MapImageLayer
 		const layerParams = {
 			// Option 1: Standard LAYERS parameter
-			'LAYERS': `${layerId}`,
+			LAYERS: `${layerId}`,
 			// Option 2: Alternative format
 			// 'LAYERS': `show:${layerId}`,
 			// Option 3: Multiple layers format
 			// 'LAYERS': `show:${layerId}`,
-			
-			'FORMAT': 'PNG32',
-			'TRANSPARENT': true,
-			'DPI': 96,
-			'BBOXSR': 3857,
-			'IMAGESR': 3857,
-			'F': 'image'
+
+			FORMAT: 'PNG32',
+			TRANSPARENT: true,
+			DPI: 96,
+			BBOXSR: 3857,
+			IMAGESR: 3857,
+			F: 'image'
 		};
 
 		currentArcGISLayer = new ImageLayer({
@@ -305,14 +291,12 @@
 
 		currentArcGISLayer.set('id', `arcgis_${layerId}`);
 		map.addLayer(currentArcGISLayer);
-		
+
 		console.log('Added ArcGIS MapImageLayer with params:', layerParams);
 	}
 
 	// Get current chart data based on active layer
-	let currentChartData = $derived(
-		activeLayerId !== null ? layerChartData[activeLayerId] : null
-	);
+	let currentChartData = $derived(activeLayerId !== null ? layerChartData[activeLayerId] : null);
 </script>
 
 <!-- 3-Column Layout -->
@@ -474,17 +458,18 @@
 					{#each informationLayers as layer}
 						<button
 							onclick={() => selectLayer(layer.id, layer.title)}
-							class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {activeLayerId === layer.id
+							class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {activeLayerId ===
+							layer.id
 								? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
 								: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
 						>
 							<div class="flex items-start space-x-3 text-left">
 								<div class="mt-1 flex-shrink-0">
-									{#if activeLayerId === layer.id}
+									<!-- {#if activeLayerId === layer.id}
 										<Eye class="h-5 w-5 text-green-600" />
 									{:else}
 										<EyeOff class="h-5 w-5 text-slate-400" />
-									{/if}
+									{/if} -->
 								</div>
 								<div class="flex-1">
 									<h4
@@ -526,7 +511,8 @@
 						<div class="flex-1 space-y-3 overflow-y-auto">
 							{#each questionLayers as layer}
 								<button
-									class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {activeLayerId === layer.id
+									class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {activeLayerId ===
+									layer.id
 										? 'border-blue-500 bg-blue-50 shadow-md'
 										: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
 									onclick={() => selectLayer(layer.id, layer.title)}
@@ -543,7 +529,7 @@
 										</div>
 										<div class="flex-1">
 											<p
-												class="text-xs font-medium leading-relaxed {activeLayerId === layer.id
+												class="text-xs leading-relaxed font-medium {activeLayerId === layer.id
 													? 'text-blue-700'
 													: 'text-slate-600 group-hover:text-slate-800'}"
 											>
