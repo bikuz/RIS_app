@@ -21,7 +21,12 @@
 		ChevronDown,
 		ChevronLeft,
 		ChevronRight,
-		HelpCircle
+		HelpCircle,
+		Play,
+		Pause,
+		SkipBack,
+		SkipForward,
+		Calendar
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
@@ -35,6 +40,159 @@
 	// Hindu Kush Himalaya region coordinates (optimized for full HKH view)
 	const HKH_CENTER = [77.5, 32.5]; // Longitude, Latitude - adjusted for better HKH coverage
 	const HKH_ZOOM = 5; // Reduced zoom to show more of the HKH region
+
+	// Time slider state management
+	let isTimeSliderVisible = $state(false);
+	let isPlaying = $state(false);
+	let currentTimeIndex = $state(0);
+	let playbackSpeed = $state(1000); // milliseconds between frames
+	let playInterval: number | null = null;
+
+	// Time periods for climate data (can be customized based on your data)
+	const timePeriods = [
+		{ year: 1995, label: '1995', season: 'Annual' },
+		{ year: 1996, label: '1996', season: 'Annual' },
+		{ year: 1997, label: '1997', season: 'Annual' },
+		{ year: 1998, label: '1998', season: 'Annual' },
+		{ year: 1999, label: '1999', season: 'Annual' },
+		{ year: 2000, label: '2000', season: 'Annual' },
+		{ year: 2001, label: '2001', season: 'Annual' },
+		{ year: 2002, label: '2002', season: 'Annual' },
+		{ year: 2003, label: '2003', season: 'Annual' },
+		{ year: 2004, label: '2004', season: 'Annual' },
+		{ year: 2005, label: '2005', season: 'Annual' },
+		{ year: 2006, label: '2006', season: 'Annual' },
+		{ year: 2007, label: '2007', season: 'Annual' },
+		{ year: 2008, label: '2008', season: 'Annual' },
+		{ year: 2009, label: '2009', season: 'Annual' },
+		{ year: 2010, label: '2010', season: 'Annual' },
+		{ year: 2011, label: '2011', season: 'Annual' },
+		{ year: 2012, label: '2012', season: 'Annual' },
+		{ year: 2013, label: '2013', season: 'Annual' },
+		{ year: 2014, label: '2014', season: 'Annual' },
+		{ year: 2015, label: '2015', season: 'Annual' },
+		{ year: 2016, label: '2016', season: 'Annual' },
+		{ year: 2017, label: '2017', season: 'Annual' },
+		{ year: 2018, label: '2018', season: 'Annual' },
+		{ year: 2019, label: '2019', season: 'Annual' },
+		{ year: 2020, label: '2020', season: 'Annual' },
+		{ year: 2021, label: '2021', season: 'Annual' },
+		{ year: 2022, label: '2022', season: 'Annual' },
+		{ year: 2023, label: '2023', season: 'Annual' },
+		{ year: 2024, label: '2024', season: 'Annual' }
+	];
+
+	// Time slider functions
+	function toggleTimeSlider() {
+		isTimeSliderVisible = !isTimeSliderVisible;
+		if (!isTimeSliderVisible && isPlaying) {
+			stopPlayback();
+		}
+	}
+
+	function togglePlayback() {
+		if (isPlaying) {
+			stopPlayback();
+		} else {
+			startPlayback();
+		}
+	}
+
+	function startPlayback() {
+		if (playInterval) clearInterval(playInterval);
+
+		isPlaying = true;
+		playInterval = setInterval(() => {
+			if (currentTimeIndex < timePeriods.length - 1) {
+				currentTimeIndex++;
+				updateMapForTime(currentTimeIndex);
+			} else {
+				// Loop back to start or stop
+				currentTimeIndex = 0;
+				updateMapForTime(currentTimeIndex);
+				// Uncomment next line to stop at end instead of looping
+				// stopPlayback();
+			}
+		}, playbackSpeed);
+	}
+
+	function stopPlayback() {
+		if (playInterval) {
+			clearInterval(playInterval);
+			playInterval = null;
+		}
+		isPlaying = false;
+	}
+
+	function goToTime(index: number) {
+		if (index >= 0 && index < timePeriods.length) {
+			currentTimeIndex = index;
+			updateMapForTime(index);
+		}
+	}
+
+	function stepBackward() {
+		if (currentTimeIndex > 0) {
+			goToTime(currentTimeIndex - 1);
+		}
+	}
+
+	function stepForward() {
+		if (currentTimeIndex < timePeriods.length - 1) {
+			goToTime(currentTimeIndex + 1);
+		}
+	}
+
+	function updateMapForTime(timeIndex: number) {
+		// This function would update the map layers based on the selected time
+		// You can modify WMS parameters or switch between different temporal layers
+		console.log('Updating map for time:', timePeriods[timeIndex]);
+
+		// Example: Update WMS layer with time parameter
+		if (map && selectedInformationLayer) {
+			const layers = map.getLayers().getArray();
+			layers.forEach((layer) => {
+				if (layer.get('id')) {
+					const source = (layer as TileLayer<any>).getSource();
+					if (source && typeof (source as any).updateParams === 'function') {
+						// Update WMS parameters with time
+						(source as any).updateParams({
+							...(source as any).getParams(),
+							TIME: timePeriods[timeIndex].year.toString()
+						});
+					}
+				}
+			});
+		}
+	}
+
+	// Function to handle trend analysis mode changes
+	function updateMapForTrendMode(mode: 'overall' | 'significant') {
+		console.log('Updating map for trend analysis mode:', mode);
+
+		// Update map layers based on the selected trend analysis mode
+		if (map && selectedInformationLayer === 'Annual Temperature Trend') {
+			const layers = map.getLayers().getArray();
+			layers.forEach((layer) => {
+				if (layer.get('id')) {
+					const source = (layer as TileLayer<any>).getSource();
+					if (source && typeof (source as any).updateParams === 'function') {
+						// Update WMS parameters with analysis mode
+						(source as any).updateParams({
+							...(source as any).getParams(),
+							STYLES: mode === 'significant' ? 'significant_trend_style' : 'overall_trend_style'
+						});
+					}
+				}
+			});
+		}
+	}
+
+	// Watch for trend analysis mode changes
+	$effect(() => {
+		updateMapForTrendMode(trendAnalysisMode);
+	});
+
 	function initializeMap() {
 		if (!mapContainer) return;
 
@@ -94,7 +252,11 @@
 		}
 	});
 
+	// Cleanup on destroy
 	onDestroy(() => {
+		if (playInterval) {
+			clearInterval(playInterval);
+		}
 		if (map) {
 			map.dispose();
 		}
@@ -175,20 +337,20 @@
 					layer_name: 'springs:hkh_lc_2021'
 				},
 				{
-					name: 'Temp Rise > 0.5°C',
+					name: 'Annual Temperature Time Series',
 					wms_url: 'https://example.com/geoserver/climate/wms',
 					layer_name: 'climate:temp_anomaly_30y'
 				},
 				{
-					name: 'Temp Rise > 1.5°C',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
-				},
-				{
-					name: 'Temp Rise > 2.5°C',
+					name: 'Temperature Rise',
 					wms_url: 'https://example.com/geoserver/climate/wms',
 					layer_name: 'climate:temp_anomaly_30y'
 				}
+				// {
+				// 	name: 'Temp Rise > 2.5°C',
+				// 	wms_url: 'https://example.com/geoserver/climate/wms',
+				// 	layer_name: 'climate:temp_anomaly_30y'
+				// }
 			]
 		},
 		{
@@ -245,6 +407,47 @@
 		}
 	];
 
+	const questions = [
+		{
+			id: 'question-1',
+			question: 'What is the annual average temperature trend over the past 30 years?'
+		},
+		{
+			id: 'question-2',
+			question: 'Which areas have observed temperature rise more than 0.5 degrees in last decade?'
+		},
+		{
+			id: 'question-3',
+			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?'
+		},
+		{
+			id: 'question-4',
+			question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?'
+		}
+	];
+	const information_layers = [
+		{
+			id: 'map-indicator-1',
+			title: 'Annual Temperature Trend'
+		},
+		{
+			id: 'map-indicator-2',
+			title: 'Temperature Rise'
+		},
+		{
+			id: 'map-indicator-3',
+			title: 'Annual Temperature Time Series'
+		}
+	];
+	const map_indicators = [
+		{
+			map_data: [],
+			control: '',
+			chart_data: [],
+			question: '',
+			info_layer: ''
+		}
+	];
 	// Extract questions for UI (now simpler)
 	const climateQuestions = climateDataset.map((item) => ({
 		id: item.id,
@@ -254,8 +457,11 @@
 	// Track selected question - default to first question
 	let selectedQuestionId = $state('temp-trend-30y');
 
-	// Track active/visible map layers
-	let activeMapLayers = $state(new Set<string>());
+	// Track selected information layer (single selection)
+	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
+
+	// Track radio button selection for trend analysis
+	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
 
 	// Track map data container collapse state
 	let isMapDataCollapsed = $state(false);
@@ -367,36 +573,31 @@
 		console.log('Question selected:', questionId, questionText);
 		console.log('Map data:', currentMapData);
 
-		// Reset active layers when question changes
-		// First remove all WMS layers
-		activeMapLayers.forEach((layerName: string) => {
-			removeWMSLayer(layerName);
-		});
-		activeMapLayers.clear();
+		// Reset selected layer when question changes
+		if (selectedInformationLayer) {
+			removeWMSLayer(selectedInformationLayer);
+			selectedInformationLayer = null;
+		}
 	}
 
-	// Function to toggle map layer visibility
-	function toggleMapLayer(layerName: string) {
-		// Find the layer data
-		const layerData = currentMapData?.find((layer) => layer.layer_name === layerName);
-		if (!layerData) {
-			console.error('Layer data not found for:', layerName);
+	// Function to select information layer
+	function selectInformationLayer(layerId: string) {
+		// If clicking the same layer, deselect it
+		if (selectedInformationLayer === layerId) {
+			selectedInformationLayer = null;
+			isTimeSliderVisible = false; // Hide controls when deselecting
 			return;
 		}
 
-		if (activeMapLayers.has(layerName)) {
-			// Remove layer
-			activeMapLayers.delete(layerName);
-			removeWMSLayer(layerName);
+		// Find the corresponding map data for this information layer
+		const layerData = currentMapData?.find((layer) => layer.name === layerId);
+		if (layerData) {
+			selectedInformationLayer = layerId;
+			isTimeSliderVisible = false; // Reset control visibility when switching layers
+			console.log('Information layer selected:', layerId);
 		} else {
-			// Add layer
-			activeMapLayers.add(layerName);
-			addWMSLayer(layerData);
+			console.error('Map data not found for information layer:', layerId);
 		}
-
-		// Trigger reactivity
-		activeMapLayers = new Set(activeMapLayers);
-		console.log('Layer toggled:', layerName, 'Active:', activeMapLayers.has(layerName));
 	}
 
 	// Function to cycle through layout states
@@ -478,209 +679,205 @@
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
 	<div
-		class="col-span-3"
+		class=" top-6 col-span-3 h-fit flex-1 space-y-6"
 		class:hidden={layoutState === 'hide-left'}
 		class:col-span-12={layoutState === 'left-full'}
 	>
-		<div class="top-6 h-fit flex-1 space-y-6 overflow-y-auto">
-			<!-- Story Section -->
-			<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
-				<div class="mb-6 flex items-center justify-between">
-					<div class="flex items-center space-x-3">
-						<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
-							<Cloud class="h-5 w-5 text-white" />
-						</div>
-						<h3
-							class="{layoutState === 'left-full'
-								? 'text-2xl'
-								: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+		<!-- Story Section -->
+		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
+			<div class="mb-6 flex items-center justify-between">
+				<div class="flex items-center space-x-3">
+					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
+						<Cloud class="h-5 w-5 text-white" />
+					</div>
+					<h3
+						class="{layoutState === 'left-full'
+							? 'text-2xl'
+							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+					>
+						Climate Change in HKH
+					</h3>
+				</div>
+				<div class="flex items-center space-x-2">
+					{#if layoutState !== 'left-full'}
+						<!-- Hide Left Panel Button -->
+						<button
+							on:click={() => setLayoutState('hide-left')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Hide Story Panel"
 						>
-							Climate Change in HKH
-						</h3>
-					</div>
-					<div class="flex items-center space-x-2">
-						{#if layoutState !== 'left-full'}
-							<!-- Hide Left Panel Button -->
-							<button
-								on:click={() => setLayoutState('hide-left')}
-								class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
-								title="Hide Story Panel"
-							>
-								<ChevronLeft class="h-4 w-4" />
-							</button>
-							<!-- Expand Story Button -->
-							<button
-								on:click={() => setLayoutState('left-full')}
-								class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
-								title="Expand Story"
-							>
-								<ChevronRight class="h-4 w-4" />
-							</button>
-						{:else}
-							<!-- Back to Default Button -->
-							<button
-								on:click={() => setLayoutState('default')}
-								class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
-								title="Back to Default"
-							>
-								<ChevronLeft class="h-4 w-4" />
-							</button>
-						{/if}
-					</div>
-				</div>
-
-				<div
-					class="{layoutState === 'left-full'
-						? 'space-y-6'
-						: 'space-y-4'} transition-all duration-300"
-				>
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						Historically, the climate of the HKH has experienced significant changes that are
-						closely related to the rise and fall of regional cultures and civilizations. The region
-						is one of the most climate-sensitive mountain systems in the world. Known as the “Third
-						Pole” for its vast ice reserves, the HKH plays a critical role in regulating Asia’s
-						climate and serves as the source of ten major river systems that sustain the livelihoods
-						of over 1.6 billion people downstream. However, the impacts of climate change are being
-						felt here more intensely than the global average, with temperatures rising significantly
-						faster than elsewhere.
-					</p>
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						In the future, even if global warming is kept to 1.5 °C, warming in the Hindu Kush
-						Himalaya (HKH) region will likely be at least 0.3 °C higher, and in the northwest
-						Himalaya and Karakoram at least 0.7 °C higher. Such large warming could trigger a
-						multitude of biophysical and socio-economic impacts, such as biodiversity loss,
-						increased glacial melting, and less predictable water availability—all of which will
-						impact livelihoods and well-being in the HKH.
-					</p>
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						Glaciers in the HKH are retreating at unprecedented rates, snow cover is diminishing,
-						and permafrost is degrading, all of which are altering river flows and threatening water
-						security.
-					</p>
-
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						Climate change is also amplifying the frequency and severity of extreme weather events,
-						including floods, droughts, and landslides, which pose immediate risks to lives,
-						infrastructure, and economies. The loss of cryospheric mass not only threatens long-term
-						water availability but also increases the risk of glacial lake outburst floods (GLOFs)
-						that can devastate downstream communities.
-					</p>
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						The impacts extend beyond the physical environment to agriculture, biodiversity, and
-						cultural heritage. Shifts in seasonal patterns are affecting crop yields, while warming
-						temperatures are pushing species to higher altitudes, disrupting delicate alpine
-						ecosystems. Many communities in the HKH rely on climate-sensitive livelihoods such as
-						farming, herding, and tourism, making them particularly vulnerable.
-					</p>
-					<p
-						class="text-justify {layoutState === 'left-full'
-							? 'text-base leading-loose'
-							: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-					>
-						Addressing climate change in the HKH requires urgent, coordinated, and region-wide
-						action. This includes investing in climate-resilient infrastructure, expanding early
-						warning systems, improving water management, and enhancing scientific monitoring of
-						glaciers and weather patterns. Regional cooperation is essential for sharing data,
-						aligning adaptation strategies, and managing shared water resources sustainably. Equally
-						important is empowering local communities with knowledge, technology, and resources to
-						adapt to changing conditions while preserving the environmental and cultural richness of
-						the HKH.
-					</p>
-				</div>
-
-				<!-- Images Section - Responsive Layout -->
-				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
-					{#if layoutState === 'left-full'}
-						<!-- Full Width Layout - One Image Per Row -->
-						<div class="flex flex-col items-center gap-6">
-							<div
-								class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-							>
-								<img src={climate_1} alt="Himalayan glacial retreat" class="h-80 object-contain" />
-								<div class="p-4">
-									<p class="text-center text-sm leading-relaxed text-slate-700">
-										<span
-											>We see <span class="font-semibold text-slate-800"
-												>less snow on the mountain peaks
-											</span> in recent years
-										</span>
-									</p>
-								</div>
-							</div>
-							<div
-								class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-							>
-								<img src={climate_2} alt="Climate impacts" class="h-80 object-contain" />
-								<div class="p-4">
-									<p class="text-center text-sm leading-relaxed text-slate-700">
-										<span>
-											<span class="font-semibold text-slate-800">
-												Flooded street in Kathmandu
-											</span> after a less than an hour heavy downpour</span
-										>
-									</p>
-								</div>
-							</div>
-						</div>
+							<ChevronLeft class="h-4 w-4" />
+						</button>
+						<!-- Expand Story Button -->
+						<button
+							on:click={() => setLayoutState('left-full')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Expand Story"
+						>
+							<ChevronRight class="h-4 w-4" />
+						</button>
 					{:else}
-						<!-- Default Layout - Stacked Images -->
-						<div class="space-y-3">
-							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-								<img
-									src={climate_1}
-									alt="Himalayan glacial retreat"
-									class="h-50 w-full object-contain"
-								/>
-								<div class="p-2">
-									<p class="text-center text-xs text-slate-600">
-										<span
-											>We see <span class="font-semibold">less snow on the mountain peaks </span> in
-											recent years
-										</span>
-									</p>
-								</div>
-							</div>
-							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-								<img src={climate_2} alt="Climate impacts" class="h-55 w-full object-contain" />
-								<div class="p-2">
-									<p class="text-center text-xs text-slate-600">
-										<span>
-											<span class="font-semibold"> Flooded street in Kathmandu </span> after a less than
-											an hour heavy downpour</span
-										>
-									</p>
-								</div>
-							</div>
-						</div>
+						<!-- Back to Default Button -->
+						<button
+							on:click={() => setLayoutState('default')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Back to Default"
+						>
+							<ChevronLeft class="h-4 w-4" />
+						</button>
 					{/if}
 				</div>
+			</div>
+
+			<div
+				class="{layoutState === 'left-full'
+					? 'space-y-6'
+					: 'space-y-4'} transition-all duration-300"
+			>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Historically, the climate of the HKH has experienced significant changes that are closely
+					related to the rise and fall of regional cultures and civilizations. The region is one of
+					the most climate-sensitive mountain systems in the world. Known as the “Third Pole” for
+					its vast ice reserves, the HKH plays a critical role in regulating Asia’s climate and
+					serves as the source of ten major river systems that sustain the livelihoods of over 1.6
+					billion people downstream. However, the impacts of climate change are being felt here more
+					intensely than the global average, with temperatures rising significantly faster than
+					elsewhere.
+				</p>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					In the future, even if global warming is kept to 1.5 °C, warming in the Hindu Kush
+					Himalaya (HKH) region will likely be at least 0.3 °C higher, and in the northwest Himalaya
+					and Karakoram at least 0.7 °C higher. Such large warming could trigger a multitude of
+					biophysical and socio-economic impacts, such as biodiversity loss, increased glacial
+					melting, and less predictable water availability—all of which will impact livelihoods and
+					well-being in the HKH.
+				</p>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Glaciers in the HKH are retreating at unprecedented rates, snow cover is diminishing, and
+					permafrost is degrading, all of which are altering river flows and threatening water
+					security.
+				</p>
+
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Climate change is also amplifying the frequency and severity of extreme weather events,
+					including floods, droughts, and landslides, which pose immediate risks to lives,
+					infrastructure, and economies. The loss of cryospheric mass not only threatens long-term
+					water availability but also increases the risk of glacial lake outburst floods (GLOFs)
+					that can devastate downstream communities.
+				</p>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					The impacts extend beyond the physical environment to agriculture, biodiversity, and
+					cultural heritage. Shifts in seasonal patterns are affecting crop yields, while warming
+					temperatures are pushing species to higher altitudes, disrupting delicate alpine
+					ecosystems. Many communities in the HKH rely on climate-sensitive livelihoods such as
+					farming, herding, and tourism, making them particularly vulnerable.
+				</p>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Addressing climate change in the HKH requires urgent, coordinated, and region-wide action.
+					This includes investing in climate-resilient infrastructure, expanding early warning
+					systems, improving water management, and enhancing scientific monitoring of glaciers and
+					weather patterns. Regional cooperation is essential for sharing data, aligning adaptation
+					strategies, and managing shared water resources sustainably. Equally important is
+					empowering local communities with knowledge, technology, and resources to adapt to
+					changing conditions while preserving the environmental and cultural richness of the HKH.
+				</p>
+			</div>
+
+			<!-- Images Section - Responsive Layout -->
+			<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
+				{#if layoutState === 'left-full'}
+					<!-- Full Width Layout - One Image Per Row -->
+					<div class="flex flex-col items-center gap-6">
+						<div
+							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+						>
+							<img src={climate_1} alt="Himalayan glacial retreat" class="h-80 object-contain" />
+							<div class="p-4">
+								<p class="text-center text-sm leading-relaxed text-slate-700">
+									<span
+										>We see <span class="font-semibold text-slate-800"
+											>less snow on the mountain peaks
+										</span> in recent years
+									</span>
+								</p>
+							</div>
+						</div>
+						<div
+							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+						>
+							<img src={climate_2} alt="Climate impacts" class="h-80 object-contain" />
+							<div class="p-4">
+								<p class="text-center text-sm leading-relaxed text-slate-700">
+									<span>
+										<span class="font-semibold text-slate-800"> Flooded street in Kathmandu </span> after
+										a less than an hour heavy downpour</span
+									>
+								</p>
+							</div>
+						</div>
+					</div>
+				{:else}
+					<!-- Default Layout - Stacked Images -->
+					<div class="space-y-3">
+						<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+							<img
+								src={climate_1}
+								alt="Himalayan glacial retreat"
+								class="h-50 w-full object-contain"
+							/>
+							<div class="p-2">
+								<p class="text-center text-xs text-slate-600">
+									<span
+										>We see <span class="font-semibold">less snow on the mountain peaks </span> in recent
+										years
+									</span>
+								</p>
+							</div>
+						</div>
+						<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+							<img src={climate_2} alt="Climate impacts" class="h-55 w-full object-contain" />
+							<div class="p-2">
+								<p class="text-center text-xs text-slate-600">
+									<span>
+										<span class="font-semibold"> Flooded street in Kathmandu </span> after a less than
+										an hour heavy downpour</span
+									>
+								</p>
+							</div>
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
 
 	<!-- Main Content Area - Unified container with common white background -->
 	<div
-		class="col-span-9"
+		class="sticky col-span-9"
 		class:col-span-12={layoutState === 'hide-left'}
 		class:hidden={layoutState === 'left-full'}
 	>
@@ -699,11 +896,154 @@
 								bind:this={mapContainer}
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
+
+							<!-- Dynamic Control Panel at Bottom -->
+							{#if selectedInformationLayer === 'Annual Temperature Time Series'}
+								{#if !isTimeSliderVisible}
+									<!-- Time Control Toggle Button -->
+									<button
+										on:click={toggleTimeSlider}
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										title="Show Time Controls"
+									>
+										<Calendar class="h-4 w-4" />
+										<span>Time</span>
+									</button>
+								{:else}
+									<!-- Expanded Time Slider Panel -->
+									<div
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-white/30 bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm"
+									>
+										<!-- Time Label -->
+										<div class="flex items-center space-x-2">
+											<Calendar class="h-4 w-4 text-indigo-600" />
+											<span class="text-sm font-medium text-slate-700">Time</span>
+										</div>
+
+										<!-- Separator -->
+										<div class="h-4 w-px bg-slate-300"></div>
+
+										<!-- Step Backward -->
+										<button
+											on:click={stepBackward}
+											disabled={currentTimeIndex === 0}
+											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
+											title="Previous Year"
+										>
+											<SkipBack class="h-3.5 w-3.5" />
+										</button>
+
+										<!-- Play/Pause -->
+										<button
+											on:click={togglePlayback}
+											class="rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 p-2 text-white shadow-sm transition-all duration-200 hover:from-indigo-600 hover:to-purple-600 hover:shadow-md"
+											title={isPlaying ? 'Pause' : 'Play'}
+										>
+											{#if isPlaying}
+												<Pause class="h-3.5 w-3.5" />
+											{:else}
+												<Play class="h-3.5 w-3.5" />
+											{/if}
+										</button>
+
+										<!-- Step Forward -->
+										<button
+											on:click={stepForward}
+											disabled={currentTimeIndex === timePeriods.length - 1}
+											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
+											title="Next Year"
+										>
+											<SkipForward class="h-3.5 w-3.5" />
+										</button>
+
+										<!-- Compact Time Slider -->
+										<div class="flex items-center space-x-2">
+											<span class="min-w-[2.5rem] text-xs font-medium text-indigo-600"
+												>{timePeriods[currentTimeIndex].label}</span
+											>
+											<input
+												type="range"
+												min="0"
+												max={timePeriods.length - 1}
+												bind:value={currentTimeIndex}
+												on:input={(e) => goToTime(parseInt((e.target as HTMLInputElement).value))}
+												class="compact-slider w-32"
+											/>
+										</div>
+
+										<!-- Close Button -->
+										<button
+											on:click={toggleTimeSlider}
+											class="rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+											title="Collapse"
+										>
+											<ChevronDown class="h-3.5 w-3.5" />
+										</button>
+									</div>
+								{/if}
+							{:else if selectedInformationLayer === 'Annual Temperature Trend'}
+								{#if !isTimeSliderVisible}
+									<!-- Analysis Control Toggle Button -->
+									<button
+										on:click={() => (isTimeSliderVisible = !isTimeSliderVisible)}
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										title="Show Analysis Options"
+									>
+										<Layers class="h-4 w-4" />
+										<span>Analysis</span>
+									</button>
+								{:else}
+									<!-- Expanded Analysis Mode Radio Buttons Panel -->
+									<div
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+									>
+										<!-- Analysis Label -->
+										<div class="flex items-center space-x-2">
+											<Layers class="h-4 w-4 text-indigo-600" />
+											<span class="text-sm font-medium text-slate-700">Analysis</span>
+										</div>
+
+										<!-- Separator -->
+										<div class="h-4 w-px bg-slate-300"></div>
+
+										<!-- Overall Option -->
+										<label class="flex cursor-pointer items-center space-x-2">
+											<input
+												type="radio"
+												bind:group={trendAnalysisMode}
+												value="overall"
+												class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+											/>
+											<span class="text-sm font-medium text-slate-700">Overall</span>
+										</label>
+
+										<!-- Significant Option -->
+										<label class="flex cursor-pointer items-center space-x-2">
+											<input
+												type="radio"
+												bind:group={trendAnalysisMode}
+												value="significant"
+												class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+											/>
+											<span class="text-sm font-medium text-slate-700">Significant</span>
+										</label>
+
+										<!-- Close Button -->
+										<button
+											on:click={() => (isTimeSliderVisible = false)}
+											class="ml-2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+											title="Collapse"
+										>
+											<ChevronDown class="h-3.5 w-3.5" />
+										</button>
+									</div>
+								{/if}
+							{/if}
 						</div>
 					</div>
 
 					<!-- Chart Section -->
-					<div class="flex-1 rounded-xl border border-slate-200/30 bg-slate-50/30 p-6">
+					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
 						<h3 class="mb-4 text-lg font-semibold text-slate-700">Climate Analytics</h3>
 						<div class="rounded-lg bg-slate-50/50">
 							{#if currentCharts && currentCharts.length > 0}
@@ -733,7 +1073,7 @@
 				<!-- Right part: Information Layer and Questions -->
 				<div class="w-80 flex-shrink-0">
 					<div
-						class=" top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4 shadow-xl backdrop-blur-sm"
+						class=" top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
 					>
 						<!-- Information Layer Header -->
 						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
@@ -745,32 +1085,24 @@
 
 						<!-- Information Layer Content -->
 						<div class="flex-1 overflow-y-auto">
-							{#if currentMapData && currentMapData.length > 0}
+							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
-									{#each currentMapData as mapLayer, index}
+									{#each information_layers as layer, index}
 										<button
-											on:click={() => toggleMapLayer(mapLayer.layer_name)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {activeMapLayers.has(
-												mapLayer.layer_name
-											)
+											on:click={() => selectInformationLayer(layer.title)}
+											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+											layer.title
 												? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
 												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
 										>
 											<div class="flex items-start space-x-3 text-left">
-												<div class="mt-1 flex-shrink-0">
-													{#if activeMapLayers.has(mapLayer.layer_name)}
-														<Eye class="h-5 w-5 text-green-600" />
-													{:else}
-														<EyeOff class="h-5 w-5 text-slate-400" />
-													{/if}
-												</div>
 												<div class="flex-1">
 													<h4
-														class="text-sm font-medium {activeMapLayers.has(mapLayer.layer_name)
+														class="text-sm font-medium {selectedInformationLayer === layer.title
 															? 'text-green-800'
 															: 'text-slate-800'} mb-1"
 													>
-														{mapLayer.name}
+														{layer.title}
 													</h4>
 												</div>
 											</div>
@@ -889,5 +1221,50 @@
 	/* Ensure flex children don't overflow */
 	:global(.flex > *) {
 		min-width: 0;
+	}
+
+	/* Compact Time Slider Styles */
+	.compact-slider {
+		-webkit-appearance: none;
+		appearance: none;
+		height: 4px;
+		border-radius: 2px;
+		background: linear-gradient(to right, #e2e8f0 0%, #cbd5e1 100%);
+		outline: none;
+		transition: all 0.3s ease;
+	}
+
+	.compact-slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #6366f1, #8b5cf6);
+		cursor: pointer;
+		border: 1px solid white;
+		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
+		transition: all 0.2s ease;
+	}
+
+	.compact-slider::-webkit-slider-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+	}
+
+	.compact-slider::-moz-range-thumb {
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #6366f1, #8b5cf6);
+		cursor: pointer;
+		border: 1px solid white;
+		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
+		transition: all 0.2s ease;
+	}
+
+	.compact-slider::-moz-range-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
 	}
 </style>
