@@ -8,6 +8,8 @@
 	import OSM from 'ol/source/OSM';
 	import { fromLonLat } from 'ol/proj';
 	import TileWMS from 'ol/source/TileWMS';
+	import { defaults as defaultInteractions } from 'ol/interaction';
+	import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import {
@@ -236,6 +238,9 @@
 					new FullScreen(),
 					new ScaleLine({ units: 'metric', bar: true })
 				]),
+				interactions: defaultInteractions({
+					mouseWheelZoom: false
+				}),
 				layers: [
 					new TileLayer({
 						source: new OSM()
