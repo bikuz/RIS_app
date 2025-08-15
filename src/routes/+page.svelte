@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Mountain, Globe, BarChart3, Map, Info } from '@lucide/svelte';
 	import Hero from '$lib/components/main/Hero.svelte';
+	import Banner from '$lib/components/main/banner.svelte';
 	import ThematicGrid from '$lib/components/main/ThematicGrid.svelte';
 	import StatsOverview from '$lib/components/main/StatsOverview.svelte';
 	import Intro from '$lib/components/main/intro.svelte';
@@ -20,6 +21,7 @@
 </svelte:head>
  
 	<!-- <Hero /> -->
+	<Banner />
 	
 	<!-- Added detailed RIS introduction section -->
 	 <Intro/>

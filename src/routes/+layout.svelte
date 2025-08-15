@@ -23,7 +23,7 @@
 						>
 							RIS
 						</div> -->
-						<div class="text-3xl font-bold text-[#036CB6]">Regional Information Service</div>
+						<div class="text-3xl font-bold text-[#036CB6]">Regional Information System</div>
 					</div>
 				</div>
 
@@ -37,7 +37,7 @@
 
 	{@render children?.()}
 
-	<footer class="bg-gray-900 py-12 text-white">
+	<footer class=" bg-gradient-to-r from-blue-600 to-green-600 py-12 text-white">
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 			<div class="grid gap-8 md:grid-cols-4">
 				<div>
@@ -47,16 +47,16 @@
 							</div> -->
 						<div>
 							<h3 class="text-3xl font-bold">RIS</h3>
-							<p class="text-sm text-gray-400">Regional Information Services</p>
+							<p class="text-sm  ">Regional Information Services</p>
 						</div>
 					</div>
-					<p class="text-gray-400">
+					<p class=" ">
 						Providing access to comprehensive geospatial information from the Hindu Kush Himalaya region.
 					</p>
 				</div>
 				<div>
 					<h4 class="mb-4 text-lg font-semibold">Quick Links</h4>
-					<ul class="space-y-2 text-gray-400">
+					<ul class="space-y-2 ">
 						<li><a href="/about" class="hover:text-white">About</a></li>
 						<li><a href="/data-policy" class="hover:text-white">Data Policy</a></li>
 						<li><a href="/api" class="hover:text-white">API Documentation</a></li>
@@ -65,7 +65,7 @@
 				</div>
 				<div>
 					<h4 class="mb-4 text-lg font-semibold">Resources</h4>
-					<ul class="space-y-2 text-gray-400">
+					<ul class="space-y-2 ">
 						<li><a href="/tutorials" class="hover:text-white">Tutorials</a></li>
 						<li><a href="/documentation" class="hover:text-white">Documentation</a></li>
 						<li><a href="/support" class="hover:text-white">Support</a></li>
@@ -74,11 +74,11 @@
 				</div>
 				<div>
 					<h4 class="mb-4 text-lg font-semibold">Connect</h4>
-					<p class="mb-2 text-gray-400">info@icimod.org</p>
-					<p class="text-gray-400">ICIMOD, Kathmandu, Nepal</p>
+					<p class="mb-2  ">info@icimod.org</p>
+					<p class=" ">ICIMOD, Kathmandu, Nepal</p>
 				</div>
 			</div>
-			<div class="mt-8 border-t border-gray-800 pt-8 text-center text-gray-400">
+			<div class="mt-8 border-t border-white-800 pt-8 text-center ">
 				<p>&copy; 2024 ICIMOD. All rights reserved.</p>
 			</div>
 		</div>
