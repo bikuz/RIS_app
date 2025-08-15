@@ -303,7 +303,6 @@
 	const climateDataset = [
 		{
 			id: 'temp-trend-30y',
-			question: 'What is the annual average temperature trend over the past 30 years',
 			charts: [
 				{
 					title: 'Annual Mean Temperature Trend',
@@ -367,32 +366,14 @@
 					}
 				}
 			],
-			map_data: [
-				{
-					name: 'Annual Temperature Trend',
-					wms_url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-					layer_name: 'springs:hkh_lc_2021'
-				},
-				{
-					name: 'Annual Temperature Time Series',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
-				},
-				{
-					name: 'Temperature Rise',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
-				}
-				// {
-				// 	name: 'Temp Rise > 2.5°C',
-				// 	wms_url: 'https://example.com/geoserver/climate/wms',
-				// 	layer_name: 'climate:temp_anomaly_30y'
-				// }
-			]
+			map_data: {
+				name: 'Annual Temperature Trend',
+				wms_url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+				layer_name: 'springs:hkh_lc_2021'
+			}
 		},
 		{
 			id: 'temp-rise-decade',
-			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?',
 			charts: [
 				{
 					title: 'Regional Temperature Rise (Last Decade)',
@@ -425,74 +406,117 @@
 					}
 				}
 			],
-			map_data: [
+			map_data: {
+				name: 'Regional Temperature Rise',
+				wms_url: 'https://example.com/geoserver/wms',
+				layer_name: 'climate:temp_rise_regions',
+				style: 'temperature_rise_style',
+				description: 'Areas with temperature rise >1.5°C in last decade'
+			}
+		},
+		{
+			id: 'annual-temp-time-series',
+			charts: [
 				{
-					name: 'Regional Temperature Rise',
-					wms_url: 'https://example.com/geoserver/wms',
-					layer_name: 'climate:temp_rise_regions',
-					style: 'temperature_rise_style',
-					description: 'Areas with temperature rise >1.5°C in last decade'
-				},
-				{
-					name: 'Temperature Anomaly Comparison',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_comparison',
-					style: 'comparison_style',
-					description: 'HKH vs Global temperature anomaly comparison'
+					title: 'Annual Temperature Time Series',
+					chart_type: 'line',
+					chart_data: {
+						categories: [
+							'1995',
+							'1996',
+							'1997',
+							'1998',
+							'1999',
+							'2000',
+							'2001',
+							'2002',
+							'2003',
+							'2004',
+							'2005',
+							'2006',
+							'2007',
+							'2008',
+							'2009',
+							'2010',
+							'2011',
+							'2012',
+							'2013',
+							'2014',
+							'2015',
+							'2016',
+							'2017',
+							'2018',
+							'2019',
+							'2020',
+							'2021',
+							'2022',
+							'2023',
+							'2024'
+						],
+						series: [
+							{
+								name: 'Annual Temperature (°C)',
+								data: [
+									4.7179, 4.7636, 3.9891, 5.3438, 5.5866, 4.8877, 5.418, 5.1678, 5.281, 5.2809,
+									5.0343, 5.7049, 5.4111, 5.12, 5.6186, 5.8814, 5.2644, 4.9087, 5.378, 5.3068,
+									5.5846, 6.3035, 6.0406, 5.7105, 5.3807, 5.6059, 6.0672, 6.0279, 5.9556, 6.4178
+								]
+							}
+						]
+					}
 				}
-			]
+			],
+			map_data: {
+				name: 'Annual Temperature Time Series',
+				wms_url: 'https://example.com/geoserver/wms',
+				layer_name: 'climate:temp_anomaly_30y',
+				style: 'temperature_anomaly_style',
+				description: 'Annual temperature anomaly over the past 30 years'
+			}
 		}
 	];
 
 	const questions = [
 		{
 			id: 'question-1',
-			question: 'What is the annual average temperature trend over the past 30 years?'
+			question: 'What is the annual average temperature trend over the past 30 years?',
+			dataset_id: 'temp-trend-30y'
 		},
 		{
 			id: 'question-2',
-			question: 'Which areas have observed temperature rise more than 0.5 degrees in last decade?'
+			question: 'Which areas have observed temperature rise more than 0.5 degrees in last decade?',
+			dataset_id: 'temp-rise-decade'
 		},
 		{
 			id: 'question-3',
-			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?'
+			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?',
+			dataset_id: 'temp-rise-decade'
 		},
 		{
 			id: 'question-4',
-			question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?'
+			question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?',
+			dataset_id: 'temp-rise-decade'
 		}
 	];
 	const information_layers = [
 		{
 			id: 'map-indicator-1',
-			title: 'Annual Temperature Trend'
+			title: 'Annual Temperature Trend',
+			dataset_id: 'temp-trend-30y'
 		},
 		{
 			id: 'map-indicator-2',
-			title: 'Temperature Rise'
+			title: 'Temperature Rise',
+			dataset_id: 'temp-rise-decade'
 		},
 		{
 			id: 'map-indicator-3',
-			title: 'Annual Temperature Time Series'
+			title: 'Annual Temperature Time Series',
+			dataset_id: 'annual-temp-time-series'
 		}
 	];
-	const map_indicators = [
-		{
-			map_data: [],
-			control: '',
-			chart_data: [],
-			question: '',
-			info_layer: ''
-		}
-	];
-	// Extract questions for UI (now simpler)
-	const climateQuestions = climateDataset.map((item) => ({
-		id: item.id,
-		question: item.question
-	}));
-
 	// Track selected question - default to first question
-	let selectedQuestionId = $state('temp-trend-30y');
+	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection)
 	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
@@ -502,12 +526,6 @@
 
 	// Track temperature rise threshold selection
 	let temperatureRiseThreshold = $state<'0.5' | '1.5' | '2.5'>('1.5');
-
-	// Track map data container collapse state
-	let isMapDataCollapsed = $state(false);
-
-	// Track left sidebar collapsed state
-	let isLeftSidebarCollapsed = $state(false);
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
@@ -629,15 +647,10 @@
 			return;
 		}
 
-		// Find the corresponding map data for this information layer
-		const layerData = currentMapData?.find((layer) => layer.name === layerId);
-		if (layerData) {
-			selectedInformationLayer = layerId;
-			isTimeSliderVisible = true; // Show controls by default when selecting layers
-			console.log('Information layer selected:', layerId);
-		} else {
-			console.error('Map data not found for information layer:', layerId);
-		}
+		// Simply select the layer to show appropriate controls
+		selectedInformationLayer = layerId;
+		isTimeSliderVisible = true; // Show controls by default when selecting layers
+		console.log('Information layer selected:', layerId);
 	}
 
 	// Function to cycle through layout states
@@ -1222,9 +1235,9 @@
 </div>
 
 <!-- Fixed Floating Questions Button and Panel -->
-<div class="fixed right-6 bottom-6 z-50 flex flex-col items-end">
+<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
 	<div
-		class="questions-panel mb-4 flex h-80 w-60 origin-bottom-right transform flex-col rounded-lg bg-white/95 p-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+		class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
 		class:scale-0={!isQuestionsPanelOpen}
 		class:scale-100={isQuestionsPanelOpen}
 		class:opacity-0={!isQuestionsPanelOpen}
@@ -1239,13 +1252,13 @@
 		</div>
 
 		<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
-			{#each climateQuestions as questionItem, index}
+			{#each questions as questionItem, index}
 				<button
 					class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
 					questionItem.id
 						? 'border-blue-500 bg-blue-50 shadow-md'
 						: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-					on:click={() => selectQuestion(questionItem.id, questionItem.question)}
+					on:click={() => (selectedQuestionId = questionItem.id)}
 				>
 					<div class="flex items-start space-x-2">
 						<div class="mt-1 flex-shrink-0">
@@ -1272,7 +1285,7 @@
 
 	<button
 		on:click={toggleQuestionsPanel}
-		class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg transition-all duration-300 hover:scale-110"
+		class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
 		aria-label="Toggle questions panel"
 	>
 		<HelpCircle class="h-6 w-6" />
