@@ -1,44 +1,15 @@
 import { goto } from '$app/navigation';
 import { Cloud, Users, Leaf, Snowflake, Sun, Mountain, Wind } from '@lucide/svelte';
 
-export const thematicAreas = [
-	{
-		name: 'climate',
-		description: 'Temperature trends, precipitation patterns, and climate change indicators',
-		href:'/thematic/climate'
-	},
-	{
-		name: 'demography',
-		description: 'Population dynamics, migration patterns, and socio-economic indicators',
-		href:'/thematic/climate'
-	},
-	{
-		name: 'ecosystem',
-		description: 'Biodiversity, forest cover, and ecosystem health monitoring',
-		href:'/thematic/climate'
-	},
-	{
-		name: 'cryosphere',
-		description: 'Glacial dynamics, snow cover, and ice mass balance studies',
-		href:'/thematic/climate'
-	},
-	{
-		name: 'weather',
-		description: 'Real-time weather data, forecasting, and meteorological analysis',
-		href:'/thematic/climate'
-	},
-	{
-		name: 'physiography',
-		description: 'Topography, landforms, and geomorphological characteristics',
-		href:'/thematic/climate'
-	},
-	{
-		name: 'air-quality',
-		description: 'Air pollution monitoring, atmospheric composition, and quality indices',
-		href:'/thematic/climate'
-	}
-];
-
+export const topicDetail ={
+	climate: 'Temperature trends, precipitation patterns, and climate change indicators',
+	demography: 'Population dynamics, migration patterns, and socio-economic indicators',
+	ecosystem: 'Biodiversity, forest cover, and ecosystem health monitoring',
+	cryosphere: 'Glacial dynamics, snow cover, and ice mass balance studies',
+	weather: 'Real-time weather data, forecasting, and meteorological analysis',
+	physiography: 'Topography, landforms, and geomorphological characteristics',
+	'air-quality':'Air pollution monitoring, atmospheric composition, and quality indices',
+}
 
 export const topicIcons = {
 	climate: Cloud,
@@ -82,6 +53,7 @@ export const topicAbstracts = [
 		images: ['img1.png', 'img2.png', 'img3.png']
 	}
 ];
+
 export function selectTopic(topic: string) {
 	goto(`/thematic/${topic}`);
 }
