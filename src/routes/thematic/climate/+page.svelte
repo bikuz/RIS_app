@@ -21,7 +21,12 @@
 		ChevronDown,
 		ChevronLeft,
 		ChevronRight,
-		HelpCircle
+		HelpCircle,
+		Play,
+		Pause,
+		SkipBack,
+		SkipForward,
+		Calendar
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
@@ -35,6 +40,159 @@
 	// Hindu Kush Himalaya region coordinates (optimized for full HKH view)
 	const HKH_CENTER = [77.5, 32.5]; // Longitude, Latitude - adjusted for better HKH coverage
 	const HKH_ZOOM = 5; // Reduced zoom to show more of the HKH region
+
+	// Time slider state management
+	let isTimeSliderVisible = $state(false);
+	let isPlaying = $state(false);
+	let currentTimeIndex = $state(0);
+	let playbackSpeed = $state(1000); // milliseconds between frames
+	let playInterval: number | null = null;
+
+	// Time periods for climate data (can be customized based on your data)
+	const timePeriods = [
+		{ year: 1995, label: '1995', season: 'Annual' },
+		{ year: 1996, label: '1996', season: 'Annual' },
+		{ year: 1997, label: '1997', season: 'Annual' },
+		{ year: 1998, label: '1998', season: 'Annual' },
+		{ year: 1999, label: '1999', season: 'Annual' },
+		{ year: 2000, label: '2000', season: 'Annual' },
+		{ year: 2001, label: '2001', season: 'Annual' },
+		{ year: 2002, label: '2002', season: 'Annual' },
+		{ year: 2003, label: '2003', season: 'Annual' },
+		{ year: 2004, label: '2004', season: 'Annual' },
+		{ year: 2005, label: '2005', season: 'Annual' },
+		{ year: 2006, label: '2006', season: 'Annual' },
+		{ year: 2007, label: '2007', season: 'Annual' },
+		{ year: 2008, label: '2008', season: 'Annual' },
+		{ year: 2009, label: '2009', season: 'Annual' },
+		{ year: 2010, label: '2010', season: 'Annual' },
+		{ year: 2011, label: '2011', season: 'Annual' },
+		{ year: 2012, label: '2012', season: 'Annual' },
+		{ year: 2013, label: '2013', season: 'Annual' },
+		{ year: 2014, label: '2014', season: 'Annual' },
+		{ year: 2015, label: '2015', season: 'Annual' },
+		{ year: 2016, label: '2016', season: 'Annual' },
+		{ year: 2017, label: '2017', season: 'Annual' },
+		{ year: 2018, label: '2018', season: 'Annual' },
+		{ year: 2019, label: '2019', season: 'Annual' },
+		{ year: 2020, label: '2020', season: 'Annual' },
+		{ year: 2021, label: '2021', season: 'Annual' },
+		{ year: 2022, label: '2022', season: 'Annual' },
+		{ year: 2023, label: '2023', season: 'Annual' },
+		{ year: 2024, label: '2024', season: 'Annual' }
+	];
+
+	// Time slider functions
+	function toggleTimeSlider() {
+		isTimeSliderVisible = !isTimeSliderVisible;
+		if (!isTimeSliderVisible && isPlaying) {
+			stopPlayback();
+		}
+	}
+
+	function togglePlayback() {
+		if (isPlaying) {
+			stopPlayback();
+		} else {
+			startPlayback();
+		}
+	}
+
+	function startPlayback() {
+		if (playInterval) clearInterval(playInterval);
+
+		isPlaying = true;
+		playInterval = setInterval(() => {
+			if (currentTimeIndex < timePeriods.length - 1) {
+				currentTimeIndex++;
+				updateMapForTime(currentTimeIndex);
+			} else {
+				// Loop back to start or stop
+				currentTimeIndex = 0;
+				updateMapForTime(currentTimeIndex);
+				// Uncomment next line to stop at end instead of looping
+				// stopPlayback();
+			}
+		}, playbackSpeed);
+	}
+
+	function stopPlayback() {
+		if (playInterval) {
+			clearInterval(playInterval);
+			playInterval = null;
+		}
+		isPlaying = false;
+	}
+
+	function goToTime(index: number) {
+		if (index >= 0 && index < timePeriods.length) {
+			currentTimeIndex = index;
+			updateMapForTime(index);
+		}
+	}
+
+	function stepBackward() {
+		if (currentTimeIndex > 0) {
+			goToTime(currentTimeIndex - 1);
+		}
+	}
+
+	function stepForward() {
+		if (currentTimeIndex < timePeriods.length - 1) {
+			goToTime(currentTimeIndex + 1);
+		}
+	}
+
+	function updateMapForTime(timeIndex: number) {
+		// This function would update the map layers based on the selected time
+		// You can modify WMS parameters or switch between different temporal layers
+		console.log('Updating map for time:', timePeriods[timeIndex]);
+
+		// Example: Update WMS layer with time parameter
+		if (map && selectedInformationLayer) {
+			const layers = map.getLayers().getArray();
+			layers.forEach((layer) => {
+				if (layer.get('id')) {
+					const source = (layer as TileLayer<any>).getSource();
+					if (source && typeof (source as any).updateParams === 'function') {
+						// Update WMS parameters with time
+						(source as any).updateParams({
+							...(source as any).getParams(),
+							TIME: timePeriods[timeIndex].year.toString()
+						});
+					}
+				}
+			});
+		}
+	}
+
+	// Function to handle trend analysis mode changes
+	function updateMapForTrendMode(mode: 'overall' | 'significant') {
+		console.log('Updating map for trend analysis mode:', mode);
+
+		// Update map layers based on the selected trend analysis mode
+		if (map && selectedInformationLayer === 'Annual Temperature Trend') {
+			const layers = map.getLayers().getArray();
+			layers.forEach((layer) => {
+				if (layer.get('id')) {
+					const source = (layer as TileLayer<any>).getSource();
+					if (source && typeof (source as any).updateParams === 'function') {
+						// Update WMS parameters with analysis mode
+						(source as any).updateParams({
+							...(source as any).getParams(),
+							STYLES: mode === 'significant' ? 'significant_trend_style' : 'overall_trend_style'
+						});
+					}
+				}
+			});
+		}
+	}
+
+	// Watch for trend analysis mode changes
+	$effect(() => {
+		updateMapForTrendMode(trendAnalysisMode);
+	});
+
 	function initializeMap() {
 		if (!mapContainer) return;
 
@@ -94,7 +252,11 @@
 		}
 	});
 
+	// Cleanup on destroy
 	onDestroy(() => {
+		if (playInterval) {
+			clearInterval(playInterval);
+		}
 		if (map) {
 			map.dispose();
 		}
@@ -298,6 +460,9 @@
 	// Track selected information layer (single selection)
 	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
 
+	// Track radio button selection for trend analysis
+	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
+
 	// Track map data container collapse state
 	let isMapDataCollapsed = $state(false);
 
@@ -420,6 +585,7 @@
 		// If clicking the same layer, deselect it
 		if (selectedInformationLayer === layerId) {
 			selectedInformationLayer = null;
+			isTimeSliderVisible = false; // Hide controls when deselecting
 			return;
 		}
 
@@ -427,6 +593,7 @@
 		const layerData = currentMapData?.find((layer) => layer.name === layerId);
 		if (layerData) {
 			selectedInformationLayer = layerId;
+			isTimeSliderVisible = false; // Reset control visibility when switching layers
 			console.log('Information layer selected:', layerId);
 		} else {
 			console.error('Map data not found for information layer:', layerId);
@@ -729,6 +896,149 @@
 								bind:this={mapContainer}
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
+
+							<!-- Dynamic Control Panel at Bottom -->
+							{#if selectedInformationLayer === 'Annual Temperature Time Series'}
+								{#if !isTimeSliderVisible}
+									<!-- Time Control Toggle Button -->
+									<button
+										on:click={toggleTimeSlider}
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										title="Show Time Controls"
+									>
+										<Calendar class="h-4 w-4" />
+										<span>Time</span>
+									</button>
+								{:else}
+									<!-- Expanded Time Slider Panel -->
+									<div
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-white/30 bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm"
+									>
+										<!-- Time Label -->
+										<div class="flex items-center space-x-2">
+											<Calendar class="h-4 w-4 text-indigo-600" />
+											<span class="text-sm font-medium text-slate-700">Time</span>
+										</div>
+
+										<!-- Separator -->
+										<div class="h-4 w-px bg-slate-300"></div>
+
+										<!-- Step Backward -->
+										<button
+											on:click={stepBackward}
+											disabled={currentTimeIndex === 0}
+											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
+											title="Previous Year"
+										>
+											<SkipBack class="h-3.5 w-3.5" />
+										</button>
+
+										<!-- Play/Pause -->
+										<button
+											on:click={togglePlayback}
+											class="rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 p-2 text-white shadow-sm transition-all duration-200 hover:from-indigo-600 hover:to-purple-600 hover:shadow-md"
+											title={isPlaying ? 'Pause' : 'Play'}
+										>
+											{#if isPlaying}
+												<Pause class="h-3.5 w-3.5" />
+											{:else}
+												<Play class="h-3.5 w-3.5" />
+											{/if}
+										</button>
+
+										<!-- Step Forward -->
+										<button
+											on:click={stepForward}
+											disabled={currentTimeIndex === timePeriods.length - 1}
+											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
+											title="Next Year"
+										>
+											<SkipForward class="h-3.5 w-3.5" />
+										</button>
+
+										<!-- Compact Time Slider -->
+										<div class="flex items-center space-x-2">
+											<span class="min-w-[2.5rem] text-xs font-medium text-indigo-600"
+												>{timePeriods[currentTimeIndex].label}</span
+											>
+											<input
+												type="range"
+												min="0"
+												max={timePeriods.length - 1}
+												bind:value={currentTimeIndex}
+												on:input={(e) => goToTime(parseInt((e.target as HTMLInputElement).value))}
+												class="compact-slider w-32"
+											/>
+										</div>
+
+										<!-- Close Button -->
+										<button
+											on:click={toggleTimeSlider}
+											class="rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+											title="Collapse"
+										>
+											<ChevronDown class="h-3.5 w-3.5" />
+										</button>
+									</div>
+								{/if}
+							{:else if selectedInformationLayer === 'Annual Temperature Trend'}
+								{#if !isTimeSliderVisible}
+									<!-- Analysis Control Toggle Button -->
+									<button
+										on:click={() => (isTimeSliderVisible = !isTimeSliderVisible)}
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										title="Show Analysis Options"
+									>
+										<Layers class="h-4 w-4" />
+										<span>Analysis</span>
+									</button>
+								{:else}
+									<!-- Expanded Analysis Mode Radio Buttons Panel -->
+									<div
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+									>
+										<!-- Analysis Label -->
+										<div class="flex items-center space-x-2">
+											<Layers class="h-4 w-4 text-indigo-600" />
+											<span class="text-sm font-medium text-slate-700">Analysis</span>
+										</div>
+
+										<!-- Separator -->
+										<div class="h-4 w-px bg-slate-300"></div>
+
+										<!-- Overall Option -->
+										<label class="flex cursor-pointer items-center space-x-2">
+											<input
+												type="radio"
+												bind:group={trendAnalysisMode}
+												value="overall"
+												class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+											/>
+											<span class="text-sm font-medium text-slate-700">Overall</span>
+										</label>
+
+										<!-- Significant Option -->
+										<label class="flex cursor-pointer items-center space-x-2">
+											<input
+												type="radio"
+												bind:group={trendAnalysisMode}
+												value="significant"
+												class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+											/>
+											<span class="text-sm font-medium text-slate-700">Significant</span>
+										</label>
+
+										<!-- Close Button -->
+										<button
+											on:click={() => (isTimeSliderVisible = false)}
+											class="ml-2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+											title="Collapse"
+										>
+											<ChevronDown class="h-3.5 w-3.5" />
+										</button>
+									</div>
+								{/if}
+							{/if}
 						</div>
 					</div>
 
@@ -911,5 +1221,50 @@
 	/* Ensure flex children don't overflow */
 	:global(.flex > *) {
 		min-width: 0;
+	}
+
+	/* Compact Time Slider Styles */
+	.compact-slider {
+		-webkit-appearance: none;
+		appearance: none;
+		height: 4px;
+		border-radius: 2px;
+		background: linear-gradient(to right, #e2e8f0 0%, #cbd5e1 100%);
+		outline: none;
+		transition: all 0.3s ease;
+	}
+
+	.compact-slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #6366f1, #8b5cf6);
+		cursor: pointer;
+		border: 1px solid white;
+		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
+		transition: all 0.2s ease;
+	}
+
+	.compact-slider::-webkit-slider-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+	}
+
+	.compact-slider::-moz-range-thumb {
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #6366f1, #8b5cf6);
+		cursor: pointer;
+		border: 1px solid white;
+		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
+		transition: all 0.2s ease;
+	}
+
+	.compact-slider::-moz-range-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
 	}
 </style>
