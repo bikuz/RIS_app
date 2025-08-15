@@ -370,7 +370,8 @@
 				name: 'Annual Temperature Trend',
 				wms_url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
 				layer_name: 'springs:hkh_lc_2021'
-			}
+			},
+			control_type: 'radio' // Overall vs Significant trend analysis
 		},
 		{
 			id: 'temp-rise-decade',
@@ -412,7 +413,8 @@
 				layer_name: 'climate:temp_rise_regions',
 				style: 'temperature_rise_style',
 				description: 'Areas with temperature rise >1.5°C in last decade'
-			}
+			},
+			control_type: 'temperature_threshold' // 0.5°C, 1.5°C, 2.5°C options
 		},
 		{
 			id: 'annual-temp-time-series',
@@ -472,7 +474,8 @@
 				layer_name: 'climate:temp_anomaly_30y',
 				style: 'temperature_anomaly_style',
 				description: 'Annual temperature anomaly over the past 30 years'
-			}
+			},
+			control_type: 'time_slider' // Time series controls with play/pause/slider
 		}
 	];
 
@@ -536,12 +539,29 @@
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
 
-	// Get current dataset based on selected question
-	let currentDataset = $derived(
-		selectedQuestionId
-			? climateDataset.find((item) => item.id === selectedQuestionId)
-			: climateDataset[0]
-	);
+	// Get current dataset based on selected question or information layer
+	let currentDataset = $derived.by(() => {
+		// First priority: selected question
+		if (selectedQuestionId) {
+			const selectedQuestion = questions.find((q) => q.id === selectedQuestionId);
+			if (selectedQuestion?.dataset_id) {
+				return climateDataset.find((item) => item.id === selectedQuestion.dataset_id);
+			}
+		}
+
+		// Second priority: selected information layer
+		if (selectedInformationLayer) {
+			const selectedLayer = information_layers.find(
+				(layer) => layer.title === selectedInformationLayer
+			);
+			if (selectedLayer?.dataset_id) {
+				return climateDataset.find((item) => item.id === selectedLayer.dataset_id);
+			}
+		}
+
+		// Default: first dataset
+		return climateDataset[0];
+	});
 
 	// Extract current data from dataset
 	let currentCharts = $derived(currentDataset?.charts || []);
@@ -626,16 +646,23 @@
 	}
 
 	// Function to handle question selection
-	function selectQuestion(questionId: string, questionText: string) {
+	function selectQuestion(questionId: string) {
 		selectedQuestionId = questionId;
-		console.log('Question selected:', questionId, questionText);
-		console.log('Map data:', currentMapData);
+		// Clear information layer selection when selecting a question
+		selectedInformationLayer = null;
 
-		// Reset selected layer when question changes
-		if (selectedInformationLayer) {
-			removeWMSLayer(selectedInformationLayer);
-			selectedInformationLayer = null;
+		// Find the dataset and show appropriate controls
+		const selectedQuestion = questions.find((q) => q.id === questionId);
+		if (selectedQuestion?.dataset_id) {
+			const dataset = climateDataset.find((item) => item.id === selectedQuestion.dataset_id);
+			if (dataset?.control_type === 'time_slider') {
+				isTimeSliderVisible = true;
+			} else {
+				isTimeSliderVisible = false;
+			}
 		}
+
+		console.log('Question selected:', questionId);
 	}
 
 	// Function to select information layer
@@ -649,7 +676,16 @@
 
 		// Simply select the layer to show appropriate controls
 		selectedInformationLayer = layerId;
-		isTimeSliderVisible = true; // Show controls by default when selecting layers
+		// Clear question selection when selecting an information layer
+		selectedQuestionId = '';
+
+		// Show controls based on layer type
+		if (layerId === 'Annual Temperature Time Series') {
+			isTimeSliderVisible = true;
+		} else {
+			isTimeSliderVisible = false;
+		}
+
 		console.log('Information layer selected:', layerId);
 	}
 
@@ -951,7 +987,7 @@
 							></div>
 
 							<!-- Dynamic Control Panel at Bottom -->
-							{#if selectedInformationLayer === 'Annual Temperature Time Series'}
+							{#if currentDataset?.control_type === 'time_slider'}
 								{#if !isTimeSliderVisible}
 									<!-- Time Control Toggle Button -->
 									<button
@@ -1034,7 +1070,7 @@
 										</button>
 									</div>
 								{/if}
-							{:else if selectedInformationLayer === 'Annual Temperature Trend'}
+							{:else if currentDataset?.control_type === 'radio'}
 								<!-- Always show expanded Analysis Mode Radio Buttons Panel -->
 								<div
 									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
@@ -1070,7 +1106,7 @@
 										<span class="text-sm font-medium text-slate-700">Significant</span>
 									</label>
 								</div>
-							{:else if selectedInformationLayer === 'Temperature Rise'}
+							{:else if currentDataset?.control_type === 'temperature_threshold'}
 								<!-- Always show expanded Temperature Rise Threshold Panel -->
 								<div
 									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
@@ -1258,7 +1294,7 @@
 					questionItem.id
 						? 'border-blue-500 bg-blue-50 shadow-md'
 						: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-					on:click={() => (selectedQuestionId = questionItem.id)}
+					on:click={() => selectQuestion(questionItem.id)}
 				>
 					<div class="flex items-start space-x-2">
 						<div class="mt-1 flex-shrink-0">
