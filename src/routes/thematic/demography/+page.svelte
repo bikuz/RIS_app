@@ -1,17 +1,16 @@
 <script lang="ts">
-
-    import { onMount, onDestroy } from 'svelte';
-    import climate_1 from '$lib/assets/images/climate_1.png';
-    import climate_2 from '$lib/assets/images/climate_2.png';
-    import Map from 'ol/Map';
-    import View from 'ol/View';
-    import OSM from 'ol/source/OSM';
-    import { fromLonLat } from 'ol/proj';
-    import TileWMS from 'ol/source/TileWMS';
-    import TileLayer from 'ol/layer/Tile';
+	import { onMount, onDestroy } from 'svelte';
+	import climate_1 from '$lib/assets/images/climate_1.png';
+	import climate_2 from '$lib/assets/images/climate_2.png';
+	import Map from 'ol/Map';
+	import View from 'ol/View';
+	import OSM from 'ol/source/OSM';
+	import { fromLonLat } from 'ol/proj';
+	import TileLayer from 'ol/layer/Tile';
 	import ImageLayer from 'ol/layer/Image';
-	import ImageWMS from 'ol/source/ImageWMS';
-    import 'ol/ol.css';
+	import TileArcGISRest from 'ol/source/TileArcGISRest';
+	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
+	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import {
 		Cloud,
@@ -20,8 +19,6 @@
 		Info,
 		Eye,
 		EyeOff,
-		ChevronUp,
-		ChevronDown,
 		HelpCircle
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
@@ -33,77 +30,143 @@
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
 
+	// Hindu Kush Himalaya region coordinates
+	const HKH_CENTER = [77.5, 32.5]; // Longitude, Latitude
+	const HKH_ZOOM = 5;
+
 	let isQuestionsPanelOpen = $state(false);
 	function toggleQuestionsPanel() {
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
 
-	// Hindu Kush Himalaya region coordinates (optimized for full HKH view)
-	const HKH_CENTER = [77.5, 32.5]; // Longitude, Latitude - adjusted for better HKH coverage
-	const HKH_ZOOM = 5; // Reduced zoom to show more of the HKH region
+	// ArcGIS MapServer URL
+	const arcgisBaseUrl = 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/Demography/MapServer';
 
-    	// ArcGIS MapServer endpoint and layers
-	const arcgisServerUrl = 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/Demography/MapServer/WmsServer';
-	const arcgisLayers = [
-		{ id: '0', name: 'Population 2025' },
-		{ id: '1', name: 'Sex Ratio 2025' },
-		{ id: '2', name: 'Proportion of Aged >=75' },
-		{ id: '3', name: 'Child Woman Ratio 2025' },
-		{ id: '4', name: 'Child Dependency Ratio 2025' },
-		{ id: '5', name: 'Age Dependency Ratio 2025' }
+	// Layer definitions - split into information layers and question layers
+	const informationLayers = [
+		{ id: 0, title: 'Population 2025', type: 'info' },
+		{ id: 1, title: 'Sex Ratio 2025', type: 'info' },
+		{ id: 2, title: 'Proportion of Aged >=75', type: 'info' }
 	];
 
-    	// The currently visible ArcGIS layer ID
-	let activeLayerId = $state('0');
+	const questionLayers = [
+		{ id: 3, title: 'Child Woman Ratio 2025', type: 'question' },
+		{ id: 4, title: 'Child Dependency Ratio 2025', type: 'question' },
+		{ id: 5, title: 'Age Dependency Ratio 2025', type: 'question' }
+	];
 
+	// Track the currently active layer
+	let activeLayerId = $state<number | null>(null);
+	let currentArcGISLayer: ImageLayer<ImageArcGISRest> | null = null;
 
+	// Dummy chart data for different layers
+	const layerChartData = {
+		0: { // Population 2025
+			title: 'Population Distribution Analysis',
+			chart_type: 'column',
+			chart_data: {
+				categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+				series: [
+					{
+						name: 'Population (Millions)',
+						data: [12.5, 29.1, 0.8, 3.2, 38.9, 220.9]
+					}
+				]
+			}
+		},
+		1: { // Sex Ratio 2025
+			title: 'Sex Ratio Analysis',
+			chart_type: 'line',
+			chart_data: {
+				categories: ['2015', '2017', '2019', '2021', '2023', '2025'],
+				series: [
+					{
+						name: 'Males per 100 Females',
+						data: [105.2, 104.8, 104.5, 104.1, 103.8, 103.5]
+					}
+				]
+			}
+		},
+		2: { // Proportion of Aged >=75
+			title: 'Elderly Population Distribution',
+			chart_type: 'column',
+			chart_data: {
+				categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+				series: [
+					{
+						name: 'Aged >=75 (%)',
+						data: [3.2, 2.8, 2.1, 4.5, 1.9, 2.6]
+					}
+				]
+			}
+		},
+		3: { // Child Woman Ratio 2025
+			title: 'Child Woman Ratio Trends',
+			chart_type: 'line',
+			chart_data: {
+				categories: ['2015', '2017', '2019', '2021', '2023', '2025'],
+				series: [
+					{
+						name: 'Children per 1000 Women',
+						data: [380, 365, 350, 335, 320, 305]
+					}
+				]
+			}
+		},
+		4: { // Child Dependency Ratio 2025
+			title: 'Child Dependency Analysis',
+			chart_type: 'column',
+			chart_data: {
+				categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+				series: [
+					{
+						name: 'Child Dependency Ratio',
+						data: [32.5, 28.7, 25.3, 22.1, 45.2, 35.8]
+					}
+				]
+			}
+		},
+		5: { // Age Dependency Ratio 2025
+			title: 'Age Dependency Trends',
+			chart_type: 'line',
+			chart_data: {
+				categories: ['2015', '2017', '2019', '2021', '2023', '2025'],
+				series: [
+					{
+						name: 'Age Dependency Ratio',
+						data: [58.2, 56.8, 55.1, 53.7, 52.3, 51.0]
+					}
+				]
+			}
+		}
+	};
 
 	function initializeMap() {
 		if (!mapContainer) return;
 
-		// Small delay to ensure container has proper dimensions
 		setTimeout(() => {
-            			// Base layer (OSM)
-			const osmLayer = new TileLayer({
-				source: new OSM(),
-				title: 'OSM'
+			// Create base OSM layer
+			const baseLayer = new TileLayer({
+				source: new OSM()
 			});
 
-			// ArcGIS dynamic layer
-			const arcgisLayer = new ImageLayer({
-				source: new ImageWMS({
-					url: arcgisServerUrl,
-					params: {
-						'LAYERS': activeLayerId, // Use the activeLayerId
-						'VERSION': '1.3.0',
-						'FORMAT': 'image/png'
-					},
-					serverType: 'geoserver' // It works better with ArcGIS server
-				}),
-                				title: 'ArcGIS Demography Layers'
-			});
-			
+			// Create map
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
 					new FullScreen(),
 					new ScaleLine({ units: 'metric', bar: true })
 				]),
-				layers: [
-					new TileLayer({
-						source: new OSM()
-					})
-				],
+				layers: [baseLayer],
 				view: new View({
 					center: fromLonLat(HKH_CENTER),
 					zoom: HKH_ZOOM
 				})
 			});
 
-			// Add some basic interaction
+			// Click logging
 			map.on('click', (event) => {
-				const coordinate = event.coordinate;
-				console.log('Map clicked at:', coordinate);
+				console.log('Map clicked at:', event.coordinate);
 			});
 
 			// Ensure map renders properly
@@ -113,14 +176,42 @@
 		}, 100);
 	}
 
+	// Function to handle layer selection (works for both info and question layers)
+	function selectLayer(layerId: number, layerTitle: string) {
+		// Toggle layer - if same layer is clicked, remove it
+		if (activeLayerId === layerId) {
+			removeCurrentLayer();
+			activeLayerId = null;
+			console.log('Removed layer:', layerTitle);
+		} else {
+			// Add new layer - try the alternative method if main method fails
+			try {
+				addArcGISLayer(layerId);
+				activeLayerId = layerId;
+				console.log('Selected layer:', layerTitle);
+			} catch (error) {
+				console.log('Primary method failed, trying alternative...');
+				addArcGISLayerAlternative(layerId);
+				activeLayerId = layerId;
+			}
+		}
+	}
+
+	// Test function to check MapServer capabilities
+	function testMapServerEndpoint() {
+		const testUrl = `${arcgisBaseUrl}?f=json`;
+		console.log('Test MapServer endpoint:', testUrl);
+		console.log('You can visit this URL to see the service capabilities');
+	}
+
+	// Call test function on mount to help with debugging
 	onMount(() => {
 		initializeMap();
+		testMapServerEndpoint();
 
-		// Add resize observer to handle container size changes
 		if (typeof ResizeObserver !== 'undefined' && mapContainer) {
 			const resizeObserver = new ResizeObserver(() => {
 				if (map) {
-					// Small delay to ensure DOM is updated
 					setTimeout(() => {
 						if (map) {
 							map.updateSize();
@@ -130,7 +221,6 @@
 			});
 			resizeObserver.observe(mapContainer);
 
-			// Cleanup on destroy
 			return () => {
 				resizeObserver.disconnect();
 			};
@@ -143,260 +233,86 @@
 		}
 	});
 
-	// Generic climate dataset - array format for better structure
-	const climateDataset = [
-		{
-			id: 'temp-trend-30y',
-			question: 'What is the annual average temperature trend over the past 30 years',
-			charts: [
-				{
-					title: 'Annual Mean Temperature Trend',
-					chart_type: 'line',
-					chart_data: {
-						categories: [
-							'1995',
-							'1996',
-							'1997',
-							'1998',
-							'1999',
-							'2000',
-							'2001',
-							'2002',
-							'2003',
-							'2004',
-							'2005',
-							'2006',
-							'2007',
-							'2008',
-							'2009',
-							'2010',
-							'2011',
-							'2012',
-							'2013',
-							'2014',
-							'2015',
-							'2016',
-							'2017',
-							'2018',
-							'2019',
-							'2020',
-							'2021',
-							'2022',
-							'2023',
-							'2024'
-						],
-						series: [
-							{
-								name: 'Annual Mean Temperature (°C)',
-								data: [
-									4.7179, 4.7636, 3.9891, 5.3438, 5.5866, 4.8877, 5.418, 5.1678, 5.281, 5.2809,
-									5.0343, 5.7049, 5.4111, 5.12, 5.6186, 5.8814, 5.2644, 4.9087, 5.378, 5.3068,
-									5.5846, 6.3035, 6.0406, 5.7105, 5.3807, 5.6059, 6.0672, 6.0279, 5.9556, 6.4178
-								]
-							}
-						]
-					}
-				},
-				{
-					title: 'Temperature Distribution by Decade',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['1995-2004', '2005-2014', '2015-2024'],
-						series: [
-							{
-								name: 'Average Temperature (°C)',
-								data: [5.06, 5.35, 5.89]
-							}
-						]
-					}
-				}
-			],
-			map_data: [
-				{
-					name: 'Annual Temperature Trend',
-					wms_url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-					layer_name: 'springs:hkh_lc_2021'
-				},
-				{
-					name: 'Temp Rise > 0.5°C',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
-				},
-				{
-					name: 'Temp Rise > 1.5°C',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
-				},
-				{
-					name: 'Temp Rise > 2.5°C',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
-				}
-			]
-		},
-		{
-			id: 'temp-rise-decade',
-			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?',
-			charts: [
-				{
-					title: 'Regional Temperature Rise (Last Decade)',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
-						series: [
-							{
-								name: 'Temperature Rise (°C)',
-								data: [2.1, 1.8, 2.3, 2.5, 1.9, 2.0]
-							}
-						]
-					}
-				},
-				{
-					title: 'Temperature Anomaly Comparison',
-					chart_type: 'line',
-					chart_data: {
-						categories: ['2019', '2020', '2021', '2022', '2023', '2024'],
-						series: [
-							{
-								name: 'HKH Temperature Anomaly (°C)',
-								data: [0.8, 1.2, 0.9, 1.4, 1.1, 1.6]
-							},
-							{
-								name: 'Global Temperature Anomaly (°C)',
-								data: [0.6, 0.8, 0.7, 0.9, 0.8, 1.0]
-							}
-						]
-					}
-				}
-			],
-			map_data: [
-				{
-					name: 'Regional Temperature Rise',
-					wms_url: 'https://example.com/geoserver/wms',
-					layer_name: 'climate:temp_rise_regions',
-					style: 'temperature_rise_style',
-					description: 'Areas with temperature rise >1.5°C in last decade'
-				},
-				{
-					name: 'Temperature Anomaly Comparison',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_comparison',
-					style: 'comparison_style',
-					description: 'HKH vs Global temperature anomaly comparison'
-				}
-			]
+	// Function to remove current ArcGIS layer
+	function removeCurrentLayer() {
+		if (map && currentArcGISLayer) {
+			map.removeLayer(currentArcGISLayer);
+			currentArcGISLayer = null;
 		}
-	];
+	}
 
-	// Extract questions for UI (now simpler)
-	const climateQuestions = climateDataset.map((item) => ({
-		id: item.id,
-		question: item.question
-	}));
-
-	// Track selected question - default to first question
-	let selectedQuestionId = $state('temp-trend-30y');
-
-	// Track active/visible map layers
-	let activeMapLayers = $state(new Set<string>());
-
-	// Track map data container collapse state
-	let isMapDataCollapsed = $state(false);
-
-	// Get current dataset based on selected question
-	let currentDataset = $derived(
-		selectedQuestionId
-			? climateDataset.find((item) => item.id === selectedQuestionId)
-			: climateDataset[0]
-	);
-
-	// Extract current data from dataset
-	let currentCharts = $derived(currentDataset?.charts || []);
-	let currentMapData = $derived(currentDataset?.map_data);
-
-	// Get layer by ID from map (your better approach)
-	const getLayerById = (layerID: string): any | null => {
-		if (!map) return null;
-		const layers = map.getLayers().getArray();
-		for (const layer of layers) {
-			if (layer.get('id') === layerID) {
-				return layer;
-			}
-		}
-		return null;
-	};
-
-	// Add WMS layer to map with ID
-	function addWMSLayer(mapLayerData: any) {
+	// Function to add ArcGIS layer
+	function addArcGISLayer(layerId: number) {
 		if (!map) return;
 
-		const wmsLayer = new TileLayer({
-			source: new TileWMS({
-				url: mapLayerData.wms_url,
+		// Remove current layer first
+		removeCurrentLayer();
+
+		// Create new ArcGIS Image layer with sublayer specification
+		currentArcGISLayer = new ImageLayer({
+			source: new ImageArcGISRest({
+				url: arcgisBaseUrl, // Use the base MapServer URL
 				params: {
-					LAYERS: mapLayerData.layer_name,
-					TILED: true
-				},
-				serverType: 'geoserver'
+					'LAYERS': `show:${layerId}`, // Specify which sublayer to show
+					'FORMAT': 'PNG32',
+					'TRANSPARENT': true,
+					'DPI': 96
+				}
 			})
 		});
 
-		// Set the ID for later retrieval (your approach)
-		wmsLayer.set('id', mapLayerData.layer_name);
-
+		// Set layer properties
+		currentArcGISLayer.set('id', `arcgis_${layerId}`);
+		currentArcGISLayer.set('title', `Layer ${layerId}`);
+		
 		// Add to map
-		map.addLayer(wmsLayer);
-		console.log('Added layer:', mapLayerData.layer_name);
+		map.addLayer(currentArcGISLayer);
+		
+		console.log('Added ArcGIS MapImageLayer sublayer:', layerId);
+		console.log('Request URL will be:', arcgisBaseUrl);
 	}
 
-	// Remove layer from map by ID
-	function removeWMSLayer(layerName: string) {
+	// Alternative function to add ArcGIS layer with different parameter formats
+	function addArcGISLayerAlternative(layerId: number) {
 		if (!map) return;
 
-		const layer = getLayerById(layerName);
-		if (layer) {
-			map.removeLayer(layer);
-			console.log('Removed layer:', layerName);
-		}
-	}
+		// Remove current layer first
+		removeCurrentLayer();
 
-	// Function to handle question selection
-	function selectQuestion(questionId: string, questionText: string) {
-		selectedQuestionId = questionId;
-		console.log('Question selected:', questionId, questionText);
-		console.log('Map data:', currentMapData);
+		// Try different parameter formats for ArcGIS MapImageLayer
+		const layerParams = {
+			// Option 1: Standard LAYERS parameter
+			'LAYERS': `${layerId}`,
+			// Option 2: Alternative format
+			// 'LAYERS': `show:${layerId}`,
+			// Option 3: Multiple layers format
+			// 'LAYERS': `show:${layerId}`,
+			
+			'FORMAT': 'PNG32',
+			'TRANSPARENT': true,
+			'DPI': 96,
+			'BBOXSR': 3857,
+			'IMAGESR': 3857,
+			'F': 'image'
+		};
 
-		// Reset active layers when question changes
-		// First remove all WMS layers
-		activeMapLayers.forEach((layerName: string) => {
-			removeWMSLayer(layerName);
+		currentArcGISLayer = new ImageLayer({
+			source: new ImageArcGISRest({
+				url: arcgisBaseUrl,
+				params: layerParams
+			})
 		});
-		activeMapLayers.clear();
+
+		currentArcGISLayer.set('id', `arcgis_${layerId}`);
+		map.addLayer(currentArcGISLayer);
+		
+		console.log('Added ArcGIS MapImageLayer with params:', layerParams);
 	}
 
-	// Function to toggle map layer visibility
-	function toggleMapLayer(layerName: string) {
-		// Find the layer data
-		const layerData = currentMapData?.find((layer) => layer.layer_name === layerName);
-		if (!layerData) {
-			console.error('Layer data not found for:', layerName);
-			return;
-		}
-
-		if (activeMapLayers.has(layerName)) {
-			// Remove layer
-			activeMapLayers.delete(layerName);
-			removeWMSLayer(layerName);
-		} else {
-			// Add layer
-			activeMapLayers.add(layerName);
-			addWMSLayer(layerData);
-		}
-
-		// Trigger reactivity
-		activeMapLayers = new Set(activeMapLayers);
-		console.log('Layer toggled:', layerName, 'Active:', activeMapLayers.has(layerName));
-	}
+	// Get current chart data based on active layer
+	let currentChartData = $derived(
+		activeLayerId !== null ? layerChartData[activeLayerId] : null
+	);
 </script>
 
 <!-- 3-Column Layout -->
@@ -417,8 +333,8 @@
 					<p class="text-justify text-sm leading-relaxed text-slate-600">
 						Historically, the climate of the HKH has experienced significant changes that are
 						closely related to the rise and fall of regional cultures and civilizations. The region
-						is one of the most climate-sensitive mountain systems in the world. Known as the “Third
-						Pole” for its vast ice reserves, the HKH plays a critical role in regulating Asia’s
+						is one of the most climate-sensitive mountain systems in the world. Known as the "Third
+						Pole" for its vast ice reserves, the HKH plays a critical role in regulating Asia's
 						climate and serves as the source of ten major river systems that sustain the livelihoods
 						of over 1.6 billion people downstream. However, the impacts of climate change are being
 						felt here more intensely than the global average, with temperatures rising significantly
@@ -513,31 +429,26 @@
 					style="width: {width}; {height === '100%' ? 'min-height: 600px;' : `height: ${height};`}"
 					class:flex-1={height === '100%'}
 				></div>
-				<!-- Right Expand/Collapse Button -->
 			</div>
 		</div>
 
 		<!-- Chart Section -->
 		<div class="flex-1 rounded-xl border border-slate-200/50 bg-white p-6 shadow-sm">
-			<h3 class="mb-4 text-lg font-semibold text-slate-700">Climate Analytics</h3>
+			<h3 class="mb-4 text-lg font-semibold text-slate-700">Demographics Analytics</h3>
 			<div class="rounded-lg bg-slate-50/50 p-4">
-				{#if currentCharts && currentCharts.length > 0}
-					<div class="space-y-6">
-						{#each currentCharts as chart, index}
-							<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
-								<Chart
-									chartData={chart.chart_data}
-									title={chart.title}
-									subtitle="Hindu Kush Himalaya Region Climate Data"
-									chart_type={chart.chart_type}
-								/>
-							</div>
-						{/each}
+				{#if currentChartData}
+					<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
+						<Chart
+							chartData={currentChartData.chart_data}
+							title={currentChartData.title}
+							subtitle="Hindu Kush Himalaya Region Demographic Data"
+							chart_type={currentChartData.chart_type}
+						/>
 					</div>
 				{:else}
 					<div class="flex h-80 items-center justify-center">
 						<div class="text-center text-slate-500">
-							<p class="text-sm">Select a question to view related charts</p>
+							<p class="text-sm">Select a layer to view related charts</p>
 						</div>
 					</div>
 				{/if}
@@ -545,7 +456,7 @@
 		</div>
 	</div>
 
-	<!-- Right Sidebar - Indicators -->
+	<!-- Right Sidebar - Information Layers -->
 	<div class="col-span-2 flex">
 		<div
 			class="sticky top-6 flex max-h-[calc(100vh-14rem)] min-h-[calc(100vh-14rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 p-6 shadow-xl backdrop-blur-sm"
@@ -557,58 +468,46 @@
 				<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
 			</div>
 
+			<!-- Information Layers List -->
 			<div class="flex-1 overflow-y-auto">
-				{#if currentMapData && currentMapData.length > 0}
-					<div class="space-y-3">
-						{#each currentMapData as mapLayer, index}
-							<button
-								onclick={() => toggleMapLayer(mapLayer.layer_name)}
-								class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {activeMapLayers.has(
-									mapLayer.layer_name
-								)
-									? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
-									: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
-							>
-								<div class="flex items-start space-x-3 text-left">
-									<div class="mt-1 flex-shrink-0">
-										{#if activeMapLayers.has(mapLayer.layer_name)}
-											<Eye class="h-5 w-5 text-green-600" />
-										{:else}
-											<EyeOff class="h-5 w-5 text-slate-400" />
-										{/if}
-									</div>
-									<div class="flex-1">
-										<h4
-											class="text-sm font-medium {activeMapLayers.has(mapLayer.layer_name)
-												? 'text-green-800'
-												: 'text-slate-800'} mb-1"
-										>
-											{mapLayer.name}
-										</h4>
-										{#if mapLayer.description}
-											<p class="text-xs leading-relaxed text-slate-600">
-												{mapLayer.description}
-											</p>
-										{/if}
-									</div>
+				<div class="space-y-3">
+					{#each informationLayers as layer}
+						<button
+							onclick={() => selectLayer(layer.id, layer.title)}
+							class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {activeLayerId === layer.id
+								? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
+								: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+						>
+							<div class="flex items-start space-x-3 text-left">
+								<div class="mt-1 flex-shrink-0">
+									{#if activeLayerId === layer.id}
+										<Eye class="h-5 w-5 text-green-600" />
+									{:else}
+										<EyeOff class="h-5 w-5 text-slate-400" />
+									{/if}
 								</div>
-							</button>
-						{/each}
-					</div>
-				{:else}
-					<div class="flex h-40 items-center justify-center">
-						<div class="text-center text-slate-500">
-							<Layers class="mx-auto mb-2 h-8 w-8 text-slate-400" />
-							<p class="text-sm">No indicators available</p>
-							<p class="text-xs">Select a question to view map layers</p>
-						</div>
-					</div>
-				{/if}
+								<div class="flex-1">
+									<h4
+										class="text-sm font-medium {activeLayerId === layer.id
+											? 'text-green-800'
+											: 'text-slate-800'} mb-1"
+									>
+										{layer.title}
+									</h4>
+									<p class="text-xs leading-relaxed text-slate-600">
+										Demographic layer for {layer.title.toLowerCase()}
+									</p>
+								</div>
+							</div>
+						</button>
+					{/each}
+				</div>
 			</div>
 
-            <!-- Questions section -->
+			<!-- Questions Panel Toggle -->
 			<div class="relative mt-6 flex min-h-0 flex-1 flex-col border-t border-slate-200/50 pt-6">
 				<div class="absolute right-1 bottom-1 z-50 flex flex-col items-end">
+					<!-- Questions Panel -->
 					<div
 						class="questions-panel mb-4 w-60 origin-bottom-right transform rounded-lg bg-white/95 p-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
 						class:scale-0={!isQuestionsPanelOpen}
@@ -621,21 +520,20 @@
 							<div class="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 p-2">
 								<Info class="h-4 w-4 text-white" />
 							</div>
-							<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
+							<h3 class="text-base font-bold text-slate-800">Additional Layers</h3>
 						</div>
 
 						<div class="flex-1 space-y-3 overflow-y-auto">
-							{#each climateQuestions as questionItem, index}
+							{#each questionLayers as layer}
 								<button
-									class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
-									questionItem.id
+									class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {activeLayerId === layer.id
 										? 'border-blue-500 bg-blue-50 shadow-md'
 										: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-									onclick={() => selectQuestion(questionItem.id)}
+									onclick={() => selectLayer(layer.id, layer.title)}
 								>
 									<div class="flex items-start space-x-2">
 										<div class="mt-1 flex-shrink-0">
-											{#if selectedQuestionId === questionItem.id}
+											{#if activeLayerId === layer.id}
 												<CheckCircle class="h-4 w-4 text-blue-600" />
 											{:else}
 												<div
@@ -643,19 +541,22 @@
 												></div>
 											{/if}
 										</div>
-										<p
-											class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-												? 'font-medium text-blue-700'
-												: 'text-slate-600 group-hover:text-slate-800'}"
-										>
-											{questionItem.question}
-										</p>
+										<div class="flex-1">
+											<p
+												class="text-xs font-medium leading-relaxed {activeLayerId === layer.id
+													? 'text-blue-700'
+													: 'text-slate-600 group-hover:text-slate-800'}"
+											>
+												{layer.title}
+											</p>
+										</div>
 									</div>
 								</button>
 							{/each}
 						</div>
 					</div>
 
+					<!-- Toggle Button -->
 					<button
 						onclick={toggleQuestionsPanel}
 						class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg transition-all duration-300 hover:scale-110"
