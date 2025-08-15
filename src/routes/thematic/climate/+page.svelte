@@ -197,6 +197,34 @@
 		updateMapForTrendMode(trendAnalysisMode);
 	});
 
+	// Function to handle temperature rise threshold changes
+	function updateMapForTemperatureRise(threshold: '0.5' | '1.5' | '2.5') {
+		console.log('Updating map for temperature rise threshold:', threshold);
+
+		// Update map layers based on the selected temperature rise threshold
+		if (map && selectedInformationLayer === 'Temperature Rise') {
+			const layers = map.getLayers().getArray();
+			layers.forEach((layer) => {
+				if (layer.get('id')) {
+					const source = (layer as TileLayer<any>).getSource();
+					if (source && typeof (source as any).updateParams === 'function') {
+						// Update WMS parameters with threshold
+						(source as any).updateParams({
+							...(source as any).getParams(),
+							THRESHOLD: threshold,
+							STYLES: `temp_rise_${threshold}_style`
+						});
+					}
+				}
+			});
+		}
+	}
+
+	// Watch for temperature rise threshold changes
+	$effect(() => {
+		updateMapForTemperatureRise(temperatureRiseThreshold);
+	});
+
 	function initializeMap() {
 		if (!mapContainer) return;
 
@@ -467,6 +495,9 @@
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
 
+	// Track temperature rise threshold selection
+	let temperatureRiseThreshold = $state<'0.5' | '1.5' | '2.5'>('1.5');
+
 	// Track map data container collapse state
 	let isMapDataCollapsed = $state(false);
 
@@ -597,7 +628,7 @@
 		const layerData = currentMapData?.find((layer) => layer.name === layerId);
 		if (layerData) {
 			selectedInformationLayer = layerId;
-			isTimeSliderVisible = false; // Reset control visibility when switching layers
+			isTimeSliderVisible = true; // Show controls by default when selecting layers
 			console.log('Information layer selected:', layerId);
 		} else {
 			console.error('Map data not found for information layer:', layerId);
@@ -683,7 +714,7 @@
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
 	<div
-		class=" top-6 col-span-3 h-fit flex-1 space-y-6"
+		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-16rem)] flex-1 space-y-6 overflow-y-auto"
 		class:hidden={layoutState === 'hide-left'}
 		class:col-span-12={layoutState === 'left-full'}
 	>
@@ -986,62 +1017,114 @@
 									</div>
 								{/if}
 							{:else if selectedInformationLayer === 'Annual Temperature Trend'}
-								{#if !isTimeSliderVisible}
-									<!-- Analysis Control Toggle Button -->
-									<button
-										on:click={() => (isTimeSliderVisible = !isTimeSliderVisible)}
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
-										title="Show Analysis Options"
-									>
-										<Layers class="h-4 w-4" />
-										<span>Analysis</span>
-									</button>
-								{:else}
-									<!-- Expanded Analysis Mode Radio Buttons Panel -->
-									<div
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
-									>
-										<!-- Analysis Label -->
-										<div class="flex items-center space-x-2">
-											<Layers class="h-4 w-4 text-indigo-600" />
-											<span class="text-sm font-medium text-slate-700">Analysis</span>
-										</div>
-
-										<!-- Separator -->
-										<div class="h-4 w-px bg-slate-300"></div>
-
-										<!-- Overall Option -->
-										<label class="flex cursor-pointer items-center space-x-2">
-											<input
-												type="radio"
-												bind:group={trendAnalysisMode}
-												value="overall"
-												class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-											/>
-											<span class="text-sm font-medium text-slate-700">Overall</span>
-										</label>
-
-										<!-- Significant Option -->
-										<label class="flex cursor-pointer items-center space-x-2">
-											<input
-												type="radio"
-												bind:group={trendAnalysisMode}
-												value="significant"
-												class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-											/>
-											<span class="text-sm font-medium text-slate-700">Significant</span>
-										</label>
-
-										<!-- Close Button -->
-										<button
-											on:click={() => (isTimeSliderVisible = false)}
-											class="ml-2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-											title="Collapse"
-										>
-											<ChevronDown class="h-3.5 w-3.5" />
-										</button>
+								<!-- Always show expanded Analysis Mode Radio Buttons Panel -->
+								<div
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+								>
+									<!-- Analysis Label -->
+									<div class="flex items-center space-x-2">
+										<Layers class="h-4 w-4 text-indigo-600" />
+										<span class="text-sm font-medium text-slate-700">Trend</span>
 									</div>
-								{/if}
+
+									<!-- Separator -->
+									<div class="h-4 w-px bg-slate-300"></div>
+
+									<!-- Overall Option -->
+									<label class="flex cursor-pointer items-center space-x-2">
+										<input
+											type="radio"
+											bind:group={trendAnalysisMode}
+											value="overall"
+											class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+										/>
+										<span class="text-sm font-medium text-slate-700">Overall</span>
+									</label>
+
+									<!-- Significant Option -->
+									<label class="flex cursor-pointer items-center space-x-2">
+										<input
+											type="radio"
+											bind:group={trendAnalysisMode}
+											value="significant"
+											class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+										/>
+										<span class="text-sm font-medium text-slate-700">Significant</span>
+									</label>
+								</div>
+							{:else if selectedInformationLayer === 'Temperature Rise'}
+								<!-- Always show expanded Temperature Rise Threshold Panel -->
+								<div
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+								>
+									<!-- Temperature Rise Label -->
+									<div class="flex items-center space-x-2">
+										<div class="rounded-full bg-gradient-to-r from-red-500 to-orange-500 p-1">
+											<div class="h-2 w-2 rounded-full bg-white"></div>
+										</div>
+										<span class="text-sm font-medium text-slate-700">Rise ≤</span>
+									</div>
+
+									<!-- Separator -->
+									<div class="h-4 w-px bg-slate-300"></div>
+
+									<!-- Temperature Threshold Options as Slider-like Radio Buttons -->
+									<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
+										<!-- 0.5°C Option -->
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={temperatureRiseThreshold}
+												value="0.5"
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-emerald-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-green-600 peer-checked:hover:to-emerald-600 {temperatureRiseThreshold ===
+												'0.5'
+													? 'text-white'
+													: 'text-slate-600'}"
+											>
+												0.5°C
+											</div>
+										</label>
+
+										<!-- 1.5°C Option -->
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={temperatureRiseThreshold}
+												value="1.5"
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-yellow-500 peer-checked:to-orange-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-yellow-600 peer-checked:hover:to-orange-600 {temperatureRiseThreshold ===
+												'1.5'
+													? 'text-white'
+													: 'text-slate-600'}"
+											>
+												1.5°C
+											</div>
+										</label>
+
+										<!-- 2.5°C Option -->
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={temperatureRiseThreshold}
+												value="2.5"
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-red-500 peer-checked:to-red-600 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-red-600 peer-checked:hover:to-red-700 {temperatureRiseThreshold ===
+												'2.5'
+													? 'text-white'
+													: 'text-slate-600'}"
+											>
+												2.5°C
+											</div>
+										</label>
+									</div>
+								</div>
 							{/if}
 						</div>
 					</div>
