@@ -21,6 +21,10 @@
 		ChevronDown,
 		ChevronLeft,
 		ChevronRight,
+		ChevronsLeft,
+		ChevronsRight,
+		Minimize2,
+		Maximize2,
 		HelpCircle,
 		Play,
 		Pause,
@@ -671,10 +675,10 @@
 	{#if layoutState === 'hide-left'}
 		<button
 			on:click={() => setLayoutState('default')}
-			class="fixed top-1/2 left-0 z-50 -translate-y-1/2 rounded-r-lg border border-l-0 border-slate-300 bg-white p-3 text-slate-700 shadow-xl transition-all duration-200 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 hover:shadow-2xl"
+			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
 			title="Show Story Panel"
 		>
-			<ChevronRight class="h-5 w-5" />
+			<ChevronsRight class="h-4 w-4" />
 		</button>
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
@@ -706,7 +710,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Hide Story Panel"
 						>
-							<ChevronLeft class="h-4 w-4" />
+							<ChevronsLeft class="h-4 w-4" />
 						</button>
 						<!-- Expand Story Button -->
 						<button
@@ -714,7 +718,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Expand Story"
 						>
-							<ChevronRight class="h-4 w-4" />
+							<Maximize2 class="h-4 w-4" />
 						</button>
 					{:else}
 						<!-- Back to Default Button -->
@@ -723,7 +727,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Back to Default"
 						>
-							<ChevronLeft class="h-4 w-4" />
+							<Minimize2 class="h-4 w-4" />
 						</button>
 					{/if}
 				</div>
