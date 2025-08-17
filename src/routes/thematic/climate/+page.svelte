@@ -8,6 +8,8 @@
 	import OSM from 'ol/source/OSM';
 	import { fromLonLat } from 'ol/proj';
 	import TileWMS from 'ol/source/TileWMS';
+	import { defaults as defaultInteractions } from 'ol/interaction';
+	import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import {
@@ -21,6 +23,10 @@
 		ChevronDown,
 		ChevronLeft,
 		ChevronRight,
+		ChevronsLeft,
+		ChevronsRight,
+		Minimize2,
+		Maximize2,
 		HelpCircle,
 		Play,
 		Pause,
@@ -193,6 +199,34 @@
 		updateMapForTrendMode(trendAnalysisMode);
 	});
 
+	// Function to handle temperature rise threshold changes
+	function updateMapForTemperatureRise(threshold: '0.5' | '1.5' | '2.5') {
+		console.log('Updating map for temperature rise threshold:', threshold);
+
+		// Update map layers based on the selected temperature rise threshold
+		if (map && selectedInformationLayer === 'Temperature Rise') {
+			const layers = map.getLayers().getArray();
+			layers.forEach((layer) => {
+				if (layer.get('id')) {
+					const source = (layer as TileLayer<any>).getSource();
+					if (source && typeof (source as any).updateParams === 'function') {
+						// Update WMS parameters with threshold
+						(source as any).updateParams({
+							...(source as any).getParams(),
+							THRESHOLD: threshold,
+							STYLES: `temp_rise_${threshold}_style`
+						});
+					}
+				}
+			});
+		}
+	}
+
+	// Watch for temperature rise threshold changes
+	$effect(() => {
+		updateMapForTemperatureRise(temperatureRiseThreshold);
+	});
+
 	function initializeMap() {
 		if (!mapContainer) return;
 
@@ -204,6 +238,9 @@
 					new FullScreen(),
 					new ScaleLine({ units: 'metric', bar: true })
 				]),
+				interactions: defaultInteractions({
+					mouseWheelZoom: false
+				}),
 				layers: [
 					new TileLayer({
 						source: new OSM()
@@ -266,7 +303,6 @@
 	const climateDataset = [
 		{
 			id: 'temp-trend-30y',
-			question: 'What is the annual average temperature trend over the past 30 years',
 			charts: [
 				{
 					title: 'Annual Mean Temperature Trend',
@@ -330,32 +366,15 @@
 					}
 				}
 			],
-			map_data: [
-				{
-					name: 'Annual Temperature Trend',
-					wms_url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-					layer_name: 'springs:hkh_lc_2021'
-				},
-				{
-					name: 'Annual Temperature Time Series',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
-				},
-				{
-					name: 'Temperature Rise',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
-				}
-				// {
-				// 	name: 'Temp Rise > 2.5°C',
-				// 	wms_url: 'https://example.com/geoserver/climate/wms',
-				// 	layer_name: 'climate:temp_anomaly_30y'
-				// }
-			]
+			map_data: {
+				name: 'Annual Temperature Trend',
+				wms_url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+				layer_name: 'springs:hkh_lc_2021'
+			},
+			control_type: 'radio' // Overall vs Significant trend analysis
 		},
 		{
 			id: 'temp-rise-decade',
-			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?',
 			charts: [
 				{
 					title: 'Regional Temperature Rise (Last Decade)',
@@ -388,74 +407,119 @@
 					}
 				}
 			],
-			map_data: [
+			map_data: {
+				name: 'Regional Temperature Rise',
+				wms_url: 'https://example.com/geoserver/wms',
+				layer_name: 'climate:temp_rise_regions',
+				style: 'temperature_rise_style',
+				description: 'Areas with temperature rise >1.5°C in last decade'
+			},
+			control_type: 'temperature_threshold' // 0.5°C, 1.5°C, 2.5°C options
+		},
+		{
+			id: 'annual-temp-time-series',
+			charts: [
 				{
-					name: 'Regional Temperature Rise',
-					wms_url: 'https://example.com/geoserver/wms',
-					layer_name: 'climate:temp_rise_regions',
-					style: 'temperature_rise_style',
-					description: 'Areas with temperature rise >1.5°C in last decade'
-				},
-				{
-					name: 'Temperature Anomaly Comparison',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_comparison',
-					style: 'comparison_style',
-					description: 'HKH vs Global temperature anomaly comparison'
+					title: 'Annual Temperature Time Series',
+					chart_type: 'line',
+					chart_data: {
+						categories: [
+							'1995',
+							'1996',
+							'1997',
+							'1998',
+							'1999',
+							'2000',
+							'2001',
+							'2002',
+							'2003',
+							'2004',
+							'2005',
+							'2006',
+							'2007',
+							'2008',
+							'2009',
+							'2010',
+							'2011',
+							'2012',
+							'2013',
+							'2014',
+							'2015',
+							'2016',
+							'2017',
+							'2018',
+							'2019',
+							'2020',
+							'2021',
+							'2022',
+							'2023',
+							'2024'
+						],
+						series: [
+							{
+								name: 'Annual Temperature (°C)',
+								data: [
+									4.7179, 4.7636, 3.9891, 5.3438, 5.5866, 4.8877, 5.418, 5.1678, 5.281, 5.2809,
+									5.0343, 5.7049, 5.4111, 5.12, 5.6186, 5.8814, 5.2644, 4.9087, 5.378, 5.3068,
+									5.5846, 6.3035, 6.0406, 5.7105, 5.3807, 5.6059, 6.0672, 6.0279, 5.9556, 6.4178
+								]
+							}
+						]
+					}
 				}
-			]
+			],
+			map_data: {
+				name: 'Annual Temperature Time Series',
+				wms_url: 'https://example.com/geoserver/wms',
+				layer_name: 'climate:temp_anomaly_30y',
+				style: 'temperature_anomaly_style',
+				description: 'Annual temperature anomaly over the past 30 years'
+			},
+			control_type: 'time_slider' // Time series controls with play/pause/slider
 		}
 	];
 
 	const questions = [
 		{
 			id: 'question-1',
-			question: 'What is the annual average temperature trend over the past 30 years?'
+			question: 'What is the annual average temperature trend over the past 30 years?',
+			dataset_id: 'temp-trend-30y'
 		},
 		{
 			id: 'question-2',
-			question: 'Which areas have observed temperature rise more than 0.5 degrees in last decade?'
+			question: 'Which areas have observed temperature rise more than 0.5 degrees in last decade?',
+			dataset_id: 'temp-rise-decade'
 		},
 		{
 			id: 'question-3',
-			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?'
+			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?',
+			dataset_id: 'temp-rise-decade'
 		},
 		{
 			id: 'question-4',
-			question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?'
+			question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?',
+			dataset_id: 'temp-rise-decade'
 		}
 	];
 	const information_layers = [
 		{
 			id: 'map-indicator-1',
-			title: 'Annual Temperature Trend'
+			title: 'Annual Temperature Trend',
+			dataset_id: 'temp-trend-30y'
 		},
 		{
 			id: 'map-indicator-2',
-			title: 'Temperature Rise'
+			title: 'Temperature Rise',
+			dataset_id: 'temp-rise-decade'
 		},
 		{
 			id: 'map-indicator-3',
-			title: 'Annual Temperature Time Series'
+			title: 'Annual Temperature Time Series',
+			dataset_id: 'annual-temp-time-series'
 		}
 	];
-	const map_indicators = [
-		{
-			map_data: [],
-			control: '',
-			chart_data: [],
-			question: '',
-			info_layer: ''
-		}
-	];
-	// Extract questions for UI (now simpler)
-	const climateQuestions = climateDataset.map((item) => ({
-		id: item.id,
-		question: item.question
-	}));
-
 	// Track selected question - default to first question
-	let selectedQuestionId = $state('temp-trend-30y');
+	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection)
 	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
@@ -463,11 +527,8 @@
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
 
-	// Track map data container collapse state
-	let isMapDataCollapsed = $state(false);
-
-	// Track left sidebar collapsed state
-	let isLeftSidebarCollapsed = $state(false);
+	// Track temperature rise threshold selection
+	let temperatureRiseThreshold = $state<'0.5' | '1.5' | '2.5'>('1.5');
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
@@ -478,12 +539,29 @@
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
 
-	// Get current dataset based on selected question
-	let currentDataset = $derived(
-		selectedQuestionId
-			? climateDataset.find((item) => item.id === selectedQuestionId)
-			: climateDataset[0]
-	);
+	// Get current dataset based on selected question or information layer
+	let currentDataset = $derived.by(() => {
+		// First priority: selected question
+		if (selectedQuestionId) {
+			const selectedQuestion = questions.find((q) => q.id === selectedQuestionId);
+			if (selectedQuestion?.dataset_id) {
+				return climateDataset.find((item) => item.id === selectedQuestion.dataset_id);
+			}
+		}
+
+		// Second priority: selected information layer
+		if (selectedInformationLayer) {
+			const selectedLayer = information_layers.find(
+				(layer) => layer.title === selectedInformationLayer
+			);
+			if (selectedLayer?.dataset_id) {
+				return climateDataset.find((item) => item.id === selectedLayer.dataset_id);
+			}
+		}
+
+		// Default: first dataset
+		return climateDataset[0];
+	});
 
 	// Extract current data from dataset
 	let currentCharts = $derived(currentDataset?.charts || []);
@@ -568,16 +646,23 @@
 	}
 
 	// Function to handle question selection
-	function selectQuestion(questionId: string, questionText: string) {
+	function selectQuestion(questionId: string) {
 		selectedQuestionId = questionId;
-		console.log('Question selected:', questionId, questionText);
-		console.log('Map data:', currentMapData);
+		// Clear information layer selection when selecting a question
+		selectedInformationLayer = null;
 
-		// Reset selected layer when question changes
-		if (selectedInformationLayer) {
-			removeWMSLayer(selectedInformationLayer);
-			selectedInformationLayer = null;
+		// Find the dataset and show appropriate controls
+		const selectedQuestion = questions.find((q) => q.id === questionId);
+		if (selectedQuestion?.dataset_id) {
+			const dataset = climateDataset.find((item) => item.id === selectedQuestion.dataset_id);
+			if (dataset?.control_type === 'time_slider') {
+				isTimeSliderVisible = true;
+			} else {
+				isTimeSliderVisible = false;
+			}
 		}
+
+		console.log('Question selected:', questionId);
 	}
 
 	// Function to select information layer
@@ -589,15 +674,19 @@
 			return;
 		}
 
-		// Find the corresponding map data for this information layer
-		const layerData = currentMapData?.find((layer) => layer.name === layerId);
-		if (layerData) {
-			selectedInformationLayer = layerId;
-			isTimeSliderVisible = false; // Reset control visibility when switching layers
-			console.log('Information layer selected:', layerId);
+		// Simply select the layer to show appropriate controls
+		selectedInformationLayer = layerId;
+		// Clear question selection when selecting an information layer
+		selectedQuestionId = '';
+
+		// Show controls based on layer type
+		if (layerId === 'Annual Temperature Time Series') {
+			isTimeSliderVisible = true;
 		} else {
-			console.error('Map data not found for information layer:', layerId);
+			isTimeSliderVisible = false;
 		}
+
+		console.log('Information layer selected:', layerId);
 	}
 
 	// Function to cycle through layout states
@@ -671,15 +760,15 @@
 	{#if layoutState === 'hide-left'}
 		<button
 			on:click={() => setLayoutState('default')}
-			class="fixed top-1/2 left-0 z-50 -translate-y-1/2 rounded-r-lg border border-l-0 border-slate-300 bg-white p-3 text-slate-700 shadow-xl transition-all duration-200 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 hover:shadow-2xl"
+			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
 			title="Show Story Panel"
 		>
-			<ChevronRight class="h-5 w-5" />
+			<ChevronsRight class="h-4 w-4" />
 		</button>
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
 	<div
-		class=" top-6 col-span-3 h-fit flex-1 space-y-6"
+		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-16rem)] flex-1 space-y-6 overflow-y-auto"
 		class:hidden={layoutState === 'hide-left'}
 		class:col-span-12={layoutState === 'left-full'}
 	>
@@ -706,7 +795,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Hide Story Panel"
 						>
-							<ChevronLeft class="h-4 w-4" />
+							<ChevronsLeft class="h-4 w-4" />
 						</button>
 						<!-- Expand Story Button -->
 						<button
@@ -714,7 +803,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Expand Story"
 						>
-							<ChevronRight class="h-4 w-4" />
+							<Maximize2 class="h-4 w-4" />
 						</button>
 					{:else}
 						<!-- Back to Default Button -->
@@ -723,7 +812,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Back to Default"
 						>
-							<ChevronLeft class="h-4 w-4" />
+							<Minimize2 class="h-4 w-4" />
 						</button>
 					{/if}
 				</div>
@@ -898,7 +987,7 @@
 							></div>
 
 							<!-- Dynamic Control Panel at Bottom -->
-							{#if selectedInformationLayer === 'Annual Temperature Time Series'}
+							{#if currentDataset?.control_type === 'time_slider'}
 								{#if !isTimeSliderVisible}
 									<!-- Time Control Toggle Button -->
 									<button
@@ -981,63 +1070,115 @@
 										</button>
 									</div>
 								{/if}
-							{:else if selectedInformationLayer === 'Annual Temperature Trend'}
-								{#if !isTimeSliderVisible}
-									<!-- Analysis Control Toggle Button -->
-									<button
-										on:click={() => (isTimeSliderVisible = !isTimeSliderVisible)}
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
-										title="Show Analysis Options"
-									>
-										<Layers class="h-4 w-4" />
-										<span>Analysis</span>
-									</button>
-								{:else}
-									<!-- Expanded Analysis Mode Radio Buttons Panel -->
-									<div
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
-									>
-										<!-- Analysis Label -->
-										<div class="flex items-center space-x-2">
-											<Layers class="h-4 w-4 text-indigo-600" />
-											<span class="text-sm font-medium text-slate-700">Analysis</span>
-										</div>
-
-										<!-- Separator -->
-										<div class="h-4 w-px bg-slate-300"></div>
-
-										<!-- Overall Option -->
-										<label class="flex cursor-pointer items-center space-x-2">
-											<input
-												type="radio"
-												bind:group={trendAnalysisMode}
-												value="overall"
-												class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-											/>
-											<span class="text-sm font-medium text-slate-700">Overall</span>
-										</label>
-
-										<!-- Significant Option -->
-										<label class="flex cursor-pointer items-center space-x-2">
-											<input
-												type="radio"
-												bind:group={trendAnalysisMode}
-												value="significant"
-												class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-											/>
-											<span class="text-sm font-medium text-slate-700">Significant</span>
-										</label>
-
-										<!-- Close Button -->
-										<button
-											on:click={() => (isTimeSliderVisible = false)}
-											class="ml-2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-											title="Collapse"
-										>
-											<ChevronDown class="h-3.5 w-3.5" />
-										</button>
+							{:else if currentDataset?.control_type === 'radio'}
+								<!-- Always show expanded Analysis Mode Radio Buttons Panel -->
+								<div
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+								>
+									<!-- Analysis Label -->
+									<div class="flex items-center space-x-2">
+										<Layers class="h-4 w-4 text-indigo-600" />
+										<span class="text-sm font-medium text-slate-700">Trend</span>
 									</div>
-								{/if}
+
+									<!-- Separator -->
+									<div class="h-4 w-px bg-slate-300"></div>
+
+									<!-- Overall Option -->
+									<label class="flex cursor-pointer items-center space-x-2">
+										<input
+											type="radio"
+											bind:group={trendAnalysisMode}
+											value="overall"
+											class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+										/>
+										<span class="text-sm font-medium text-slate-700">Overall</span>
+									</label>
+
+									<!-- Significant Option -->
+									<label class="flex cursor-pointer items-center space-x-2">
+										<input
+											type="radio"
+											bind:group={trendAnalysisMode}
+											value="significant"
+											class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+										/>
+										<span class="text-sm font-medium text-slate-700">Significant</span>
+									</label>
+								</div>
+							{:else if currentDataset?.control_type === 'temperature_threshold'}
+								<!-- Always show expanded Temperature Rise Threshold Panel -->
+								<div
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+								>
+									<!-- Temperature Rise Label -->
+									<div class="flex items-center space-x-2">
+										<div class="rounded-full bg-gradient-to-r from-red-500 to-orange-500 p-1">
+											<div class="h-2 w-2 rounded-full bg-white"></div>
+										</div>
+										<span class="text-sm font-medium text-slate-700">Rise ≤</span>
+									</div>
+
+									<!-- Separator -->
+									<div class="h-4 w-px bg-slate-300"></div>
+
+									<!-- Temperature Threshold Options as Slider-like Radio Buttons -->
+									<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
+										<!-- 0.5°C Option -->
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={temperatureRiseThreshold}
+												value="0.5"
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-emerald-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-green-600 peer-checked:hover:to-emerald-600 {temperatureRiseThreshold ===
+												'0.5'
+													? 'text-white'
+													: 'text-slate-600'}"
+											>
+												0.5°C
+											</div>
+										</label>
+
+										<!-- 1.5°C Option -->
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={temperatureRiseThreshold}
+												value="1.5"
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-yellow-500 peer-checked:to-orange-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-yellow-600 peer-checked:hover:to-orange-600 {temperatureRiseThreshold ===
+												'1.5'
+													? 'text-white'
+													: 'text-slate-600'}"
+											>
+												1.5°C
+											</div>
+										</label>
+
+										<!-- 2.5°C Option -->
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={temperatureRiseThreshold}
+												value="2.5"
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-red-500 peer-checked:to-red-600 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-red-600 peer-checked:hover:to-red-700 {temperatureRiseThreshold ===
+												'2.5'
+													? 'text-white'
+													: 'text-slate-600'}"
+											>
+												2.5°C
+											</div>
+										</label>
+									</div>
+								</div>
 							{/if}
 						</div>
 					</div>
@@ -1130,9 +1271,9 @@
 </div>
 
 <!-- Fixed Floating Questions Button and Panel -->
-<div class="fixed right-6 bottom-6 z-50 flex flex-col items-end">
+<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
 	<div
-		class="questions-panel mb-4 flex h-80 w-60 origin-bottom-right transform flex-col rounded-lg bg-white/95 p-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+		class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
 		class:scale-0={!isQuestionsPanelOpen}
 		class:scale-100={isQuestionsPanelOpen}
 		class:opacity-0={!isQuestionsPanelOpen}
@@ -1147,13 +1288,13 @@
 		</div>
 
 		<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
-			{#each climateQuestions as questionItem, index}
+			{#each questions as questionItem, index}
 				<button
 					class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
 					questionItem.id
 						? 'border-blue-500 bg-blue-50 shadow-md'
 						: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-					on:click={() => selectQuestion(questionItem.id, questionItem.question)}
+					on:click={() => selectQuestion(questionItem.id)}
 				>
 					<div class="flex items-start space-x-2">
 						<div class="mt-1 flex-shrink-0">
@@ -1180,7 +1321,7 @@
 
 	<button
 		on:click={toggleQuestionsPanel}
-		class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg transition-all duration-300 hover:scale-110"
+		class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
 		aria-label="Toggle questions panel"
 	>
 		<HelpCircle class="h-6 w-6" />

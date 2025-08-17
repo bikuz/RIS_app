@@ -20,7 +20,7 @@
     // },
     {
       icon: Globe,
-      value: "200-8,838 m",
+      value: "200-8,848 m",
       label: "Elevation range",
       color: "from-emerald-500 to-green-600",
     //   bgColor: "bg-gradient-to-br from-emerald-50 to-green-50",
@@ -60,8 +60,8 @@
 	// bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
     // },
 	{
-      icon: Globe,
-      value: "200-8,838 m",
+      icon: Mountain,
+      value: "200-8,848 m",
       label: "Elevation range",
       color: "from-amber-500 to-orange-600",
     //   bgColor: "bg-gradient-to-br from-emerald-50 to-green-50",
@@ -95,15 +95,14 @@
   const leftColumnStats = $derived(stats.slice(4))
 </script>
 
-<section class="relative pt-16 pb-24 bg-gradient-to-br from-blue-200 to-green-200 ">
-	<div class="container mx-auto px-8">
-		<div class="text-center mb-12">
+<section class="relative pt-10 pb-8   ">
+	<div class="container mx-auto  py-8 ">
+		<div class=" mb-12">
 			<h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
 				HKH at a glance
 			</h2>
-			<p class="text-lg text-gray-600 max-w-6xl mx-auto leading-relaxed">
-				Often called the "Third Pole," the HKH region is home to the world's highest peaks and 
-			largest concentration of glaciers outside the polar regions.
+			<p class="text-lg text-gray-600  leading-relaxed">
+				Since time immemorial, the people of the HKH have maintained their rich cultural traditions and identity and have conserved agro-biodiversity within the parameters of their own traditional knowledge. But climate change presents threats at a scale and pace previously unknown and we have to work together to ensure that our global asset - the HKH - is protected. Protecting the HKH requires more regional cooperation, more consistent and synchronised data sources, more sharing of innovative solutions, and more global attention.
 			</p>
 		</div>
 
@@ -129,19 +128,19 @@
 				{/each}
 			</div> -->
 		
-			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8">
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8 ">
 				<div class="col-span-1">
-					<div class="space-y-4">
+					<div class="space-y-4 ">
 						{#each leftColumnStats as stat, index}
 						  <div
-							class="{stat.bgColor} rounded-2xl p-5 border border-white/50 backdrop-blur-sm group"
+							class="rounded-2xl p-5 border border-white/50 backdrop-blur-sm group"
 						  >
 							<!-- Changed to vertical layout: icon at top, text at bottom -->
 							<div class="text-center">
 							  <div
-								class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br {stat.color} rounded-xl shadow-lg mb-3"
+								class="inline-flex items-center justify-center w-12 h-12 text-color-black rounded-xl   mb-3"
 							  >
-								<stat.icon class="h-6 w-6 text-white" />
+								<stat.icon class="h-6 w-6 text-blue-600" />
 							  </div>
 							  <div class="text-xl font-bold text-slate-800 mb-1">{stat.value}</div>
 							  <div class="text-sm font-medium text-slate-600 capitalize">{stat.label}</div>
