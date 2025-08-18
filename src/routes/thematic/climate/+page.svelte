@@ -6,6 +6,7 @@
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
 	import OSM from 'ol/source/OSM';
+	import XYZ from 'ol/source/XYZ';
 	import { fromLonLat } from 'ol/proj';
 	import TileWMS from 'ol/source/TileWMS';
 	import ImageLayer from 'ol/layer/Image';
@@ -45,8 +46,8 @@
 	let map: Map | null = null;
 
 	// Hindu Kush Himalaya region coordinates (optimized for full HKH view)
-	const HKH_CENTER = [77.5, 32.5]; // Longitude, Latitude - adjusted for better HKH coverage
-	const HKH_ZOOM = 5; // Reduced zoom to show more of the HKH region
+	const HKH_CENTER = [82.94924, 27.6382055]; // Longitude, Latitude - adjusted for better HKH coverage
+	const HKH_ZOOM = 4.8; // Reduced zoom to show more of the HKH region
 
 	// Time slider state management
 	let isTimeSliderVisible = $state(false);
@@ -169,7 +170,11 @@
 				}),
 				layers: [
 					new TileLayer({
-						source: new OSM()
+						// source: new OSM()
+						source: new XYZ({
+							url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+							attributions: '© OpenStreetMap contributors © CARTO'
+						})
 					})
 				],
 				view: new View({
@@ -306,8 +311,8 @@
 					{
 						id: 'temp-trend-overall',
 						name: 'Overall Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-						layerIndex: 21,
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+						layerIndex: 0,
 						mapserver: 'arcgis'
 					}
 				],
@@ -364,42 +369,46 @@
 			map_layers: {
 				'0.5': [
 					{
-						id: 'temp-trend-overall',
-						name: 'Earthquake Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Earthquake/MapServer',
-						layerIndex: 0,
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+						layerIndex: 1,
+						mapserver: 'arcgis'
+					}
+				],
+				'1': [
+					{
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+						layerIndex: 2,
 						mapserver: 'arcgis'
 					}
 				],
 				'1.5': [
 					{
-						id: 'temp-planned-overall',
-						name: 'Earthquake Planned Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HydropowerPlant/MapServer',
-						layerIndex: 0,
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+						layerIndex: 3,
 						mapserver: 'arcgis'
-					},
+					}
+				],
+				'2': [
 					{
-						id: 'temp-operational-overall',
-						name: 'Earthquake Operational Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Earthquake/MapServer',
-						layerIndex: 1,
-						mapserver: 'arcgis'
-					},
-					{
-						id: 'temp-construction-overall',
-						name: 'Earthquake Construction Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Earthquake/MapServer',
-						layerIndex: 2,
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+						layerIndex: 4,
 						mapserver: 'arcgis'
 					}
 				],
 				'2.5': [
 					{
-						id: 'temp-fires-overall',
-						name: 'Earthquake Fires Temperature Trend',
-						url: 'https://geoapps.icimod.org/arcgis/rest/services/Nepal/NepalActiveFire/MapServer/',
-						layerIndex: 2,
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+						layerIndex: 5,
 						mapserver: 'arcgis'
 					}
 				]
@@ -692,7 +701,7 @@
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
 
 	// Track temperature rise threshold selection
-	let temperatureRiseThreshold = $state<'0.5' | '1.5' | '2.5'>('1.5');
+	let temperatureRiseThreshold = $state<'0.5' | '1' | '1.5' | '2' | '2.5'>('1.5');
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
@@ -954,7 +963,7 @@
 			if (dataset?.control_type === 'radio' && dataset.default_option) {
 				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
 			} else if (dataset?.control_type === 'temperature_threshold' && dataset.default_option) {
-				temperatureRiseThreshold = dataset.default_option as '0.5' | '1.5' | '2.5';
+				temperatureRiseThreshold = dataset.default_option as '0.5' | '1' | '1.5' | '2' | '2.5';
 			}
 		}
 
@@ -1417,7 +1426,7 @@
 										<div class="rounded-full bg-gradient-to-r from-red-500 to-orange-500 p-1">
 											<div class="h-2 w-2 rounded-full bg-white"></div>
 										</div>
-										<span class="text-sm font-medium text-slate-700">Rise ≤</span>
+										<span class="text-sm font-medium text-slate-700">Temperature Rise > </span>
 									</div>
 
 									<!-- Separator -->
@@ -1434,12 +1443,30 @@
 												class="peer sr-only"
 											/>
 											<div
-												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-emerald-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-green-600 peer-checked:hover:to-emerald-600 {temperatureRiseThreshold ===
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {temperatureRiseThreshold ===
 												'0.5'
 													? 'text-white'
 													: 'text-slate-600'}"
 											>
 												0.5°C
+											</div>
+										</label>
+
+										<!-- 1°C Option -->
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={temperatureRiseThreshold}
+												value="1"
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {temperatureRiseThreshold ===
+												'1'
+													? 'text-white'
+													: 'text-slate-600'}"
+											>
+												1°C
 											</div>
 										</label>
 
@@ -1452,12 +1479,30 @@
 												class="peer sr-only"
 											/>
 											<div
-												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-yellow-500 peer-checked:to-orange-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-yellow-600 peer-checked:hover:to-orange-600 {temperatureRiseThreshold ===
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {temperatureRiseThreshold ===
 												'1.5'
 													? 'text-white'
 													: 'text-slate-600'}"
 											>
 												1.5°C
+											</div>
+										</label>
+
+										<!-- 2°C Option -->
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={temperatureRiseThreshold}
+												value="2"
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {temperatureRiseThreshold ===
+												'2'
+													? 'text-white'
+													: 'text-slate-600'}"
+											>
+												2°C
 											</div>
 										</label>
 
@@ -1470,7 +1515,7 @@
 												class="peer sr-only"
 											/>
 											<div
-												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-red-500 peer-checked:to-red-600 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-red-600 peer-checked:hover:to-red-700 {temperatureRiseThreshold ===
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {temperatureRiseThreshold ===
 												'2.5'
 													? 'text-white'
 													: 'text-slate-600'}"
@@ -1486,7 +1531,7 @@
 
 					<!-- Chart Section -->
 					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
-						<h3 class="mb-4 text-lg font-semibold text-slate-700">Climate Analytics</h3>
+						<!-- <h3 class="mb-4 text-lg font-semibold text-slate-700">Climate Analytics</h3> -->
 						<div class="rounded-lg bg-slate-50/50">
 							{#if currentDataset && currentCharts && currentCharts.length > 0}
 								<div class="space-y-6">
@@ -1521,7 +1566,7 @@
 					>
 						<!-- Information Layer Header -->
 						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-							<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
+							<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
 								<Layers class="h-5 w-5 text-white" />
 							</div>
 							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
