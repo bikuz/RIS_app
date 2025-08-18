@@ -545,7 +545,7 @@
 	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection)
-	let selectedInformationLayer = $state<string | null>(null);
+	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
 
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
