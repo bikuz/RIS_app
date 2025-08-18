@@ -8,6 +8,9 @@
 	import OSM from 'ol/source/OSM';
 	import { fromLonLat } from 'ol/proj';
 	import TileWMS from 'ol/source/TileWMS';
+	import ImageLayer from 'ol/layer/Image';
+	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
+	import ImageWMS from 'ol/source/ImageWMS';
 	import { defaults as defaultInteractions } from 'ol/interaction';
 	import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
 	import 'ol/ol.css';
@@ -51,42 +54,7 @@
 	let isTimeSliderVisible = $state(false);
 	let isPlaying = $state(false);
 	let currentTimeIndex = $state(0);
-	let playbackSpeed = $state(1000); // milliseconds between frames
 	let playInterval: ReturnType<typeof setInterval> | null = null;
-
-	// Time periods for climate data (can be customized based on your data)
-	const timePeriods = [
-		{ year: 1995, label: '1995', season: 'Annual' },
-		{ year: 1996, label: '1996', season: 'Annual' },
-		{ year: 1997, label: '1997', season: 'Annual' },
-		{ year: 1998, label: '1998', season: 'Annual' },
-		{ year: 1999, label: '1999', season: 'Annual' },
-		{ year: 2000, label: '2000', season: 'Annual' },
-		{ year: 2001, label: '2001', season: 'Annual' },
-		{ year: 2002, label: '2002', season: 'Annual' },
-		{ year: 2003, label: '2003', season: 'Annual' },
-		{ year: 2004, label: '2004', season: 'Annual' },
-		{ year: 2005, label: '2005', season: 'Annual' },
-		{ year: 2006, label: '2006', season: 'Annual' },
-		{ year: 2007, label: '2007', season: 'Annual' },
-		{ year: 2008, label: '2008', season: 'Annual' },
-		{ year: 2009, label: '2009', season: 'Annual' },
-		{ year: 2010, label: '2010', season: 'Annual' },
-		{ year: 2011, label: '2011', season: 'Annual' },
-		{ year: 2012, label: '2012', season: 'Annual' },
-		{ year: 2013, label: '2013', season: 'Annual' },
-		{ year: 2014, label: '2014', season: 'Annual' },
-		{ year: 2015, label: '2015', season: 'Annual' },
-		{ year: 2016, label: '2016', season: 'Annual' },
-		{ year: 2017, label: '2017', season: 'Annual' },
-		{ year: 2018, label: '2018', season: 'Annual' },
-		{ year: 2019, label: '2019', season: 'Annual' },
-		{ year: 2020, label: '2020', season: 'Annual' },
-		{ year: 2021, label: '2021', season: 'Annual' },
-		{ year: 2022, label: '2022', season: 'Annual' },
-		{ year: 2023, label: '2023', season: 'Annual' },
-		{ year: 2024, label: '2024', season: 'Annual' }
-	];
 
 	// Time slider functions
 	function toggleTimeSlider() {
@@ -220,6 +188,10 @@
 			// Ensure map renders properly
 			if (map) {
 				map.updateSize();
+				// Load default layers after map is initialized
+				setTimeout(() => {
+					updateMapLayers();
+				}, 200);
 			}
 		}, 100);
 	}
@@ -261,29 +233,28 @@
 	// Helper function to generate time series layers
 	function generateTimeSeriesLayers(startYear: number, endYear: number) {
 		const layers: any = {};
+
+		// Create different ArcGIS layers for different year ranges to simulate temporal data
+		const layerConfigs = [
+			{ years: [1995, 1999], layerIndex: 0, service: 'HKH/Landcover' },
+			{ years: [2000, 2004], layerIndex: 5, service: 'HKH/Landcover' },
+			{ years: [2005, 2009], layerIndex: 10, service: 'HKH/Landcover' },
+			{ years: [2010, 2014], layerIndex: 15, service: 'HKH/Landcover' },
+			{ years: [2015, 2019], layerIndex: 20, service: 'HKH/Landcover' },
+			{ years: [2020, 2024], layerIndex: 21, service: 'HKH/Landcover' }
+		];
+
 		for (let year = startYear; year <= endYear; year++) {
+			// Find which layer config this year belongs to
+			const config =
+				layerConfigs.find((c) => year >= c.years[0] && year <= c.years[1]) || layerConfigs[0];
+
 			layers[year.toString()] = {
 				id: `temp-time-series-${year}`,
 				name: `Annual Temperature ${year}`,
-				wms_url: 'https://example.com/geoserver/wms',
-				layer_name: 'climate:temp_anomaly_30y',
-				styles: 'temperature_anomaly_style',
-				wms_params: {
-					STYLES: 'temperature_anomaly_style',
-					TIME: year.toString()
-				},
-				opacity: 0.8,
-				visible: year === endYear, // Default to show the latest year
-				z_index: 1,
-				temporal: true,
-				legend_url: `https://example.com/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=climate:temp_anomaly_30y&STYLE=temperature_anomaly_style`,
-				metadata: {
-					description: `Annual temperature anomaly for ${year}`,
-					year: year,
-					data_source: 'Climate Time Series Data',
-					temporal_coverage: year.toString(),
-					temporal_resolution: 'Annual'
-				}
+				url: `https://geoapps.icimod.org/icimodarcgis/rest/services/${config.service}/MapServer`,
+				layerIndex: config.layerIndex,
+				mapserver: 'arcgis'
 			};
 		}
 		return layers;
@@ -362,40 +333,24 @@
 				}
 			],
 			map_layers: {
-				overall: {
-					id: 'temp-trend-overall',
-					name: 'Overall Temperature Trend',
-					wms_url: 'http://127.0.0.1:8080/geoserver/icimod/wms',
-					layer_name: 'icimod:Annual_temp-trend',
-					styles: 'overall_trend_style',
-					opacity: 0.8,
-					visible: true,
-					z_index: 1,
-					legend_url:
-						'http://127.0.0.1:8080/geoserver/icimod/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=icimod:Annual_temp-trend&STYLE=overall_trend_style',
-					metadata: {
-						description: 'Overall temperature trend across the HKH region',
-						data_source: 'ICIMOD Climate Data',
-						temporal_coverage: '1995-2024'
+				overall: [
+					{
+						id: 'temp-trend-overall',
+						name: 'Overall Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
+						layerIndex: 21,
+						mapserver: 'arcgis'
 					}
-				},
-				significant: {
-					id: 'temp-trend-significant',
-					name: 'Significant Temperature Trend',
-					wms_url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-					layer_name: 'springs:hkh_lc_2021',
-					styles: 'significant_trend_style',
-					opacity: 0.8,
-					visible: false,
-					z_index: 1,
-					legend_url:
-						'https://tethys.icimod.org:8443/geoserver/springs/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=springs:hkh_lc_2021&STYLE=significant_trend_style',
-					metadata: {
-						description: 'Statistically significant temperature trends only',
-						data_source: 'ICIMOD Climate Data',
-						temporal_coverage: '1995-2024'
+				],
+				significant: [
+					{
+						id: 'temp-trend-overall',
+						name: 'Significant Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
 					}
-				}
+				]
 			}
 		},
 		{
@@ -438,72 +393,47 @@
 				}
 			],
 			map_layers: {
-				'0.5': {
-					id: 'temp-rise-0.5',
-					name: 'Temperature Rise ≥0.5°C',
-					wms_url: 'https://example.com/geoserver/wms',
-					layer_name: 'climate:temp_rise_regions',
-					styles: 'temp_rise_0.5_style',
-					wms_params: {
-						THRESHOLD: '0.5',
-						STYLES: 'temp_rise_0.5_style'
-					},
-					opacity: 0.8,
-					visible: false,
-					z_index: 1,
-					legend_url:
-						'https://example.com/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=climate:temp_rise_regions&STYLE=temp_rise_0.5_style',
-					metadata: {
-						description: 'Areas with temperature rise ≥0.5°C in last decade',
-						threshold: '0.5°C',
-						data_source: 'Climate Research Data',
-						temporal_coverage: '2014-2024'
+				'0.5': [
+					{
+						id: 'temp-trend-overall',
+						name: 'Earthquake Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Earthquake/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
 					}
-				},
-				'1.5': {
-					id: 'temp-rise-1.5',
-					name: 'Temperature Rise ≥1.5°C',
-					wms_url: 'https://example.com/geoserver/wms',
-					layer_name: 'climate:temp_rise_regions',
-					styles: 'temp_rise_1.5_style',
-					wms_params: {
-						THRESHOLD: '1.5',
-						STYLES: 'temp_rise_1.5_style'
+				],
+				'1.5': [
+					{
+						id: 'temp-planned-overall',
+						name: 'Earthquake Planned Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HydropowerPlant/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
 					},
-					opacity: 0.8,
-					visible: true,
-					z_index: 1,
-					legend_url:
-						'https://example.com/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=climate:temp_rise_regions&STYLE=temp_rise_1.5_style',
-					metadata: {
-						description: 'Areas with temperature rise ≥1.5°C in last decade',
-						threshold: '1.5°C',
-						data_source: 'Climate Research Data',
-						temporal_coverage: '2014-2024'
-					}
-				},
-				'2.5': {
-					id: 'temp-rise-2.5',
-					name: 'Temperature Rise ≥2.5°C',
-					wms_url: 'https://example.com/geoserver/wms',
-					layer_name: 'climate:temp_rise_regions',
-					styles: 'temp_rise_2.5_style',
-					wms_params: {
-						THRESHOLD: '2.5',
-						STYLES: 'temp_rise_2.5_style'
+					{
+						id: 'temp-operational-overall',
+						name: 'Earthquake Operational Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Earthquake/MapServer',
+						layerIndex: 1,
+						mapserver: 'arcgis'
 					},
-					opacity: 0.8,
-					visible: false,
-					z_index: 1,
-					legend_url:
-						'https://example.com/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=climate:temp_rise_regions&STYLE=temp_rise_2.5_style',
-					metadata: {
-						description: 'Areas with temperature rise ≥2.5°C in last decade',
-						threshold: '2.5°C',
-						data_source: 'Climate Research Data',
-						temporal_coverage: '2014-2024'
+					{
+						id: 'temp-construction-overall',
+						name: 'Earthquake Construction Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Earthquake/MapServer',
+						layerIndex: 2,
+						mapserver: 'arcgis'
 					}
-				}
+				],
+				'2.5': [
+					{
+						id: 'temp-fires-overall',
+						name: 'Earthquake Fires Temperature Trend',
+						url: 'https://geoapps.icimod.org/arcgis/rest/services/Nepal/NepalActiveFire/MapServer/',
+						layerIndex: 2,
+						mapserver: 'arcgis'
+					}
+				]
 			}
 		},
 		{
@@ -661,6 +591,34 @@
 	let currentCharts = $derived(currentDataset?.charts || []);
 	let currentMapLayers = $derived(currentDataset?.map_layers);
 
+	// Dynamic playback speed based on current dataset
+	let playbackSpeed = $derived(currentDataset?.time_dimension?.animation_speed || 1000);
+
+	// Dynamic time periods based on current dataset
+	let timePeriods = $derived.by(() => {
+		if (!currentDataset?.time_dimension) {
+			// Default time periods for temperature data
+			return Array.from({ length: 30 }, (_, i) => ({
+				year: 1995 + i,
+				label: (1995 + i).toString(),
+				season: 'Annual'
+			}));
+		}
+
+		const { start_year, end_year, step } = currentDataset.time_dimension;
+		const periods = [];
+
+		for (let year = start_year; year <= end_year; year += step) {
+			periods.push({
+				year: year,
+				label: year.toString(),
+				season: 'Annual'
+			});
+		}
+
+		return periods;
+	});
+
 	// Watch for layout state changes and update map size
 	$effect(() => {
 		// This effect runs whenever layoutState changes
@@ -705,54 +663,77 @@
 		return null;
 	};
 
-	// Add WMS layer to map based on layer configuration
+	// Add layer to map based on layer configuration
 	function addWMSLayer(layerConfig: any) {
-		if (!map) return;
+		if (!map || !layerConfig) return;
 
-		// Remove existing layer with same ID if it exists
-		const existingLayer = getLayerById(layerConfig.id);
-		if (existingLayer) {
-			map.removeLayer(existingLayer);
+		let layer;
+
+		if (layerConfig.mapserver === 'arcgis') {
+			// Create ArcGIS layer
+			layer = new ImageLayer({
+				visible: true,
+				zIndex: 10,
+				source: new ImageArcGISRest({
+					url: layerConfig.url,
+					crossOrigin: 'anonymous',
+					params: {
+						LAYERS: `show:${layerConfig.layerIndex}`,
+						FORMAT: 'PNG32',
+						TRANSPARENT: true
+					}
+				})
+			});
+		} else {
+			// Create WMS layer
+			layer = new ImageLayer({
+				visible: true,
+				zIndex: 10,
+				source: new ImageWMS({
+					url: layerConfig.url,
+					crossOrigin: 'anonymous',
+					params: {
+						LAYERS: layerConfig.layerIndex,
+						FORMAT: 'image/png',
+						VERSION: '1.1.1',
+						TRANSPARENT: true
+					},
+					serverType: 'geoserver'
+				})
+			});
 		}
 
-		// Create WMS layer
-		const wmsLayer = new TileLayer({
-			source: new TileWMS({
-				url: layerConfig.wms_url,
-				params: {
-					LAYERS: layerConfig.layer_name,
-					STYLES: layerConfig.styles || '',
-					FORMAT: 'image/png',
-					TRANSPARENT: true,
-					...layerConfig.wms_params
-				}
-			}),
-			opacity: layerConfig.opacity || 0.8,
-			visible: layerConfig.visible !== false,
-			zIndex: layerConfig.z_index || 1
-		});
-
 		// Set layer ID for identification
-		wmsLayer.set('id', layerConfig.id);
-		wmsLayer.set('name', layerConfig.name);
-		wmsLayer.set('metadata', layerConfig.metadata);
+		layer.set('id', layerConfig.id);
+		layer.set('layerName', layerConfig.name);
 
-		// Add layer to map
-		map.addLayer(wmsLayer);
+		// Add to map
+		if (map) {
+			map.addLayer(layer);
+			console.log('Added layer:', layerConfig.name, 'ID:', layerConfig.id);
+		}
+	}
 
-		console.log('Added WMS layer:', layerConfig.name, 'with ID:', layerConfig.id);
-		return wmsLayer;
+	// Add multiple layers (for datasets with multiple layers)
+	function addMultipleLayers(layerConfigs: any[]) {
+		if (!layerConfigs || !Array.isArray(layerConfigs)) return;
+
+		layerConfigs.forEach((layerConfig) => {
+			addWMSLayer(layerConfig);
+		});
 	}
 
 	// Remove layer from map
 	function removeLayer(layerId: string) {
 		if (!map) return;
 
-		const layer = getLayerById(layerId);
-		if (layer) {
-			map.removeLayer(layer);
-			console.log('Removed layer:', layerId);
-		}
+		const layers = map.getLayers().getArray().slice();
+		layers.forEach((layer) => {
+			if (layer.get('id') === layerId && map) {
+				map.removeLayer(layer);
+				console.log('Removed layer:', layerId);
+			}
+		});
 	}
 
 	// Clear all climate data layers (keep base map)
@@ -779,15 +760,23 @@
 		// Get current control state and add appropriate layers
 		if (currentDataset?.control_type === 'radio') {
 			// For radio controls, show layer based on selected mode
-			const selectedLayer = currentMapLayers[trendAnalysisMode];
-			if (selectedLayer) {
-				addWMSLayer(selectedLayer);
+			const selectedLayers = currentMapLayers[trendAnalysisMode];
+			if (selectedLayers) {
+				if (Array.isArray(selectedLayers)) {
+					addMultipleLayers(selectedLayers);
+				} else {
+					addWMSLayer(selectedLayers);
+				}
 			}
 		} else if (currentDataset?.control_type === 'temperature_threshold') {
 			// For temperature threshold, show layer based on selected threshold
-			const selectedLayer = currentMapLayers[temperatureRiseThreshold];
-			if (selectedLayer) {
-				addWMSLayer(selectedLayer);
+			const selectedLayers = currentMapLayers[temperatureRiseThreshold];
+			if (selectedLayers) {
+				if (Array.isArray(selectedLayers)) {
+					addMultipleLayers(selectedLayers);
+				} else {
+					addWMSLayer(selectedLayers);
+				}
 			}
 		} else if (currentDataset?.control_type === 'time_slider') {
 			// For time slider, show layer for current time period
@@ -814,6 +803,13 @@
 			} else {
 				isTimeSliderVisible = false;
 			}
+
+			// Set default control values based on dataset
+			if (dataset?.control_type === 'radio' && dataset.default_option) {
+				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
+			} else if (dataset?.control_type === 'temperature_threshold' && dataset.default_option) {
+				temperatureRiseThreshold = dataset.default_option as '0.5' | '1.5' | '2.5';
+			}
 		}
 
 		console.log('Question selected:', questionId);
@@ -833,11 +829,24 @@
 		// Clear question selection when selecting an information layer
 		selectedQuestionId = '';
 
-		// Show controls based on layer type
-		if (layerId === 'Annual Temperature Time Series') {
-			isTimeSliderVisible = true;
-		} else {
-			isTimeSliderVisible = false;
+		// Find the dataset and set default control values
+		const selectedLayer = information_layers.find((layer) => layer.title === layerId);
+		if (selectedLayer?.dataset_id) {
+			const dataset = climateDataset.find((item) => item.id === selectedLayer.dataset_id);
+
+			// Show controls based on dataset type
+			if (dataset?.control_type === 'time_slider') {
+				isTimeSliderVisible = true;
+			} else {
+				isTimeSliderVisible = false;
+			}
+
+			// Set default control values based on dataset
+			if (dataset?.control_type === 'radio' && dataset.default_option) {
+				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
+			} else if (dataset?.control_type === 'temperature_threshold' && dataset.default_option) {
+				temperatureRiseThreshold = dataset.default_option as '0.5' | '1.5' | '2.5';
+			}
 		}
 
 		console.log('Information layer selected:', layerId);
