@@ -192,9 +192,11 @@
 			// Ensure map renders properly
 			if (map) {
 				map.updateSize();
-				// Load default layers after map is initialized
+				// Load default layers after map is initialized only if a dataset is selected
 				setTimeout(() => {
-					updateMapLayers();
+					if (currentDataset) {
+						updateMapLayers();
+					}
 				}, 200);
 			}
 		}, 100);
@@ -910,9 +912,12 @@
 
 	// Fetch legend data for current layers
 	async function fetchLegendData() {
-		if (!currentDataset || !currentMapLayers) return;
-
+		// Clear legend data first
 		legendData = {};
+
+		if (!currentDataset || !currentMapLayers) {
+			return;
+		}
 
 		// Get current layers based on control type
 		let layersToFetch: any[] = [];
@@ -1606,7 +1611,7 @@
 							{/if}
 
 							<!-- Legend Panel - Bottom Right -->
-							{#if Object.keys(legendData).length > 0}
+							{#if currentDataset && Object.keys(legendData).length > 0}
 								<div class="absolute right-4 bottom-4">
 									<!-- Legend Toggle Button -->
 									<button
