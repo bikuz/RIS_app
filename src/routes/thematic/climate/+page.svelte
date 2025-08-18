@@ -34,7 +34,8 @@
 		Pause,
 		SkipBack,
 		SkipForward,
-		Calendar
+		Calendar,
+		List
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
@@ -705,6 +706,15 @@
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
 
+	// Legend state management
+	let legendData = $state<
+		Record<
+			string,
+			{ name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }
+		>
+	>({});
+	let legendCollapsed = $state(false);
+
 	// Track questions panel state
 	let isQuestionsPanelOpen = $state(false);
 	function toggleQuestionsPanel() {
@@ -898,6 +908,72 @@
 		});
 	}
 
+	// Fetch legend data for current layers
+	async function fetchLegendData() {
+		if (!currentDataset || !currentMapLayers) return;
+
+		legendData = {};
+
+		// Get current layers based on control type
+		let layersToFetch: any[] = [];
+
+		if (currentDataset.control_type === 'radio') {
+			const selectedLayers = currentMapLayers[trendAnalysisMode];
+			layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+		} else if (currentDataset.control_type === 'temperature_threshold') {
+			const selectedLayers = currentMapLayers[temperatureRiseThreshold];
+			layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+		} else if (currentDataset.control_type === 'time_slider') {
+			const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
+			const currentTimeLayer = (currentMapLayers as any)[currentYear];
+			if (currentTimeLayer) {
+				layersToFetch = [currentTimeLayer];
+			}
+		}
+
+		// Fetch legend for each layer
+		for (const layer of layersToFetch) {
+			if (!layer) continue;
+
+			const uniqueKey = `${layer.url}_${layer.layerIndex}`;
+
+			if (layer.mapserver === 'arcgis') {
+				try {
+					const legendUrl = `${layer.url}/legend?f=json`;
+					const response = await fetch(legendUrl);
+					const data = await response.json();
+
+					const targetLayerId = parseInt(layer.layerIndex);
+					const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
+
+					if (layerLegend) {
+						legendData[uniqueKey] = {
+							name: layer.name,
+							items: layerLegend.legend.map((item: any) => ({
+								label: item.label,
+								imageData: `data:image/png;base64,${item.imageData}`
+							}))
+						};
+					}
+				} catch (error) {
+					console.error('Error fetching ArcGIS legend:', error);
+				}
+			} else {
+				// Handle WMS/GeoServer layers
+				const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
+				legendData[uniqueKey] = {
+					name: layer.name,
+					items: [
+						{
+							label: layer.name,
+							imageUrl: legendUrl
+						}
+					]
+				};
+			}
+		}
+	}
+
 	// Update layers based on current dataset and control state
 	function updateMapLayers() {
 		if (!map) return;
@@ -940,6 +1016,9 @@
 				addWMSLayer(currentTimeLayer);
 			}
 		}
+
+		// Fetch legend data after updating layers
+		fetchLegendData();
 	}
 
 	// Function to handle question selection
@@ -1523,6 +1602,76 @@
 											</div>
 										</label>
 									</div>
+								</div>
+							{/if}
+
+							<!-- Legend Panel - Bottom Right -->
+							{#if Object.keys(legendData).length > 0}
+								<div class="absolute right-4 bottom-4">
+									<!-- Legend Toggle Button -->
+									<button
+										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										on:click={() => (legendCollapsed = !legendCollapsed)}
+									>
+										<div class="flex items-center space-x-2">
+											<List class="h-4 w-4 text-blue-600" />
+											{#if !legendCollapsed}
+												<span class="font-medium text-slate-700">Legend</span>
+											{/if}
+										</div>
+										<svg
+											class="h-4 w-4 transform text-slate-600 transition-transform duration-300 {legendCollapsed
+												? 'rotate-180'
+												: ''}"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M19 9l-7 7-7-7"
+											/>
+										</svg>
+									</button>
+
+									<!-- Legend Content -->
+									{#if !legendCollapsed}
+										<div
+											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
+										>
+											<div class="max-h-[300px] space-y-4 overflow-y-auto">
+												{#each Object.keys(legendData) as uniqueKey}
+													<div class="space-y-2">
+														<h4 class="text-sm font-semibold text-slate-800">
+															{legendData[uniqueKey].name}
+														</h4>
+														<div class="space-y-1">
+															{#each legendData[uniqueKey].items as item}
+																<div class="flex items-center space-x-2">
+																	{#if item.imageData}
+																		<img
+																			src={item.imageData}
+																			alt={item.label}
+																			class="h-4 w-5 flex-shrink-0"
+																		/>
+																	{:else if item.imageUrl}
+																		<img
+																			src={item.imageUrl}
+																			alt={item.label}
+																			class="h-4 w-5 flex-shrink-0"
+																		/>
+																	{/if}
+																	<span class="text-xs text-slate-700">{item.label}</span>
+																</div>
+															{/each}
+														</div>
+													</div>
+												{/each}
+											</div>
+										</div>
+									{/if}
 								</div>
 							{/if}
 						</div>
