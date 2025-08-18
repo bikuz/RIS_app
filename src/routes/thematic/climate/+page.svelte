@@ -417,21 +417,21 @@
 			}
 		},
 		{
-			id: 'annual-temp-time-series',
-			title: 'Annual Temperature Time Series',
+			id: 'annual-temp-anamoly-series',
+			title: 'Time Series Temperature Anomaly',
 			description: 'Time series analysis of annual temperature with temporal controls',
 			control_type: 'time_slider',
 			time_dimension: {
-				start_year: 2000,
+				start_year: 1995,
 				end_year: 2024,
 				step: 1,
 				default_year: 2024,
 				format: 'YYYY',
-				animation_speed: 1000
+				animation_speed: 1500
 			},
 			charts: [
 				{
-					title: 'Annual Temperature Time Series',
+					title: 'Annual Temperature Anomaly',
 					chart_type: 'line',
 					chart_data: {
 						categories: [
@@ -475,179 +475,214 @@
 				}
 			],
 			map_layers: {
+				'1995': {
+					id: 'temp-time-series-1995',
+					name: 'Annual Temperature 1995',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 0,
+					mapserver: 'arcgis'
+				},
+				'1996': {
+					id: 'temp-time-series-1996',
+					name: 'Annual Temperature 1996',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 1,
+					mapserver: 'arcgis'
+				},
+				'1997': {
+					id: 'temp-time-series-1997',
+					name: 'Annual Temperature 1997',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 2,
+					mapserver: 'arcgis'
+				},
+				'1998': {
+					id: 'temp-time-series-1998',
+					name: 'Annual Temperature 1998',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 3,
+					mapserver: 'arcgis'
+				},
+				'1999': {
+					id: 'temp-time-series-1999',
+					name: 'Annual Temperature 1999',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 4,
+					mapserver: 'arcgis'
+				},
 				'2000': {
 					id: 'temp-time-series-2000',
 					name: 'Annual Temperature 2000',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/GLOF/MapServer',
-					layerIndex: 0,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 5,
 					mapserver: 'arcgis'
 				},
 				'2001': {
 					id: 'temp-time-series-2001',
 					name: 'Annual Temperature 2001',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 5,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 6,
 					mapserver: 'arcgis'
 				},
 				'2002': {
 					id: 'temp-time-series-2002',
 					name: 'Annual Temperature 2002',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 5,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 7,
 					mapserver: 'arcgis'
 				},
 				'2003': {
 					id: 'temp-time-series-2003',
 					name: 'Annual Temperature 2003',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 5,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 8,
 					mapserver: 'arcgis'
 				},
 				'2004': {
 					id: 'temp-time-series-2004',
 					name: 'Annual Temperature 2004',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 5,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 9,
 					mapserver: 'arcgis'
 				},
 				'2005': {
 					id: 'temp-time-series-2005',
 					name: 'Annual Temperature 2005',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 10,
 					mapserver: 'arcgis'
 				},
 				'2006': {
 					id: 'temp-time-series-2006',
 					name: 'Annual Temperature 2006',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 10,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 11,
 					mapserver: 'arcgis'
 				},
 				'2007': {
 					id: 'temp-time-series-2007',
 					name: 'Annual Temperature 2007',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 10,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 12,
 					mapserver: 'arcgis'
 				},
 				'2008': {
 					id: 'temp-time-series-2008',
 					name: 'Annual Temperature 2008',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 10,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 13,
 					mapserver: 'arcgis'
 				},
 				'2009': {
 					id: 'temp-time-series-2009',
 					name: 'Annual Temperature 2009',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 10,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 14,
 					mapserver: 'arcgis'
 				},
 				'2010': {
 					id: 'temp-time-series-2010',
 					name: 'Annual Temperature 2010',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 15,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 15, // 15 is the layer index for 2010
 					mapserver: 'arcgis'
 				},
 				'2011': {
 					id: 'temp-time-series-2011',
 					name: 'Annual Temperature 2011',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 15,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 16, // 16 is the layer index for 2011
 					mapserver: 'arcgis'
 				},
 				'2012': {
 					id: 'temp-time-series-2012',
 					name: 'Annual Temperature 2012',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 15,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 17, // 17 is the layer index for 2012
 					mapserver: 'arcgis'
 				},
 				'2013': {
 					id: 'temp-time-series-2013',
 					name: 'Annual Temperature 2013',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 15,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 18,
 					mapserver: 'arcgis'
 				},
 				'2014': {
 					id: 'temp-time-series-2014',
 					name: 'Annual Temperature 2014',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 15,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 19, // 19 is the layer index for 2014
 					mapserver: 'arcgis'
 				},
 				'2015': {
 					id: 'temp-time-series-2015',
 					name: 'Annual Temperature 2015',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 20,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 20, // 20 is the layer index for 2015
 					mapserver: 'arcgis'
 				},
 				'2016': {
 					id: 'temp-time-series-2016',
 					name: 'Annual Temperature 2016',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 20,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 21, // 21 is the layer index for 2016
 					mapserver: 'arcgis'
 				},
 				'2017': {
 					id: 'temp-time-series-2017',
 					name: 'Annual Temperature 2017',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 20,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 22, // 22 is the layer index for 2017
 					mapserver: 'arcgis'
 				},
 				'2018': {
 					id: 'temp-time-series-2018',
 					name: 'Annual Temperature 2018',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 20,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 23, // 23 is the layer index for 2018
 					mapserver: 'arcgis'
 				},
 				'2019': {
 					id: 'temp-time-series-2019',
 					name: 'Annual Temperature 2019',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 20,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 24, // 24 is the layer index for 2019
 					mapserver: 'arcgis'
 				},
 				'2020': {
 					id: 'temp-time-series-2020',
 					name: 'Annual Temperature 2020',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 21,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 25, // 25 is the layer index for 2020
 					mapserver: 'arcgis'
 				},
 				'2021': {
 					id: 'temp-time-series-2021',
 					name: 'Annual Temperature 2021',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 21,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 26, // 26 is the layer index for 2021
 					mapserver: 'arcgis'
 				},
 				'2022': {
 					id: 'temp-time-series-2022',
 					name: 'Annual Temperature 2022',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 21,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 27, // 27 is the layer index for 2022
 					mapserver: 'arcgis'
 				},
 				'2023': {
 					id: 'temp-time-series-2023',
 					name: 'Annual Temperature 2023',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 21,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 28, // 28 is the layer index for 2023
 					mapserver: 'arcgis'
 				},
 				'2024': {
 					id: 'temp-time-series-2024',
 					name: 'Annual Temperature 2024',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-					layerIndex: 21,
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
+					layerIndex: 29, // 29 is the layer index for 2024
 					mapserver: 'arcgis'
 				}
 			}
@@ -674,6 +709,11 @@
 			id: 'question-4',
 			question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?',
 			dataset_id: 'temp-rise-decade'
+		},
+		{
+			id: 'question-5',
+			question: 'What is the annual average temperature trend over the past 30 years?',
+			dataset_id: 'annual-temp-anamoly-series'
 		}
 	];
 	const information_layers = [
@@ -689,8 +729,8 @@
 		},
 		{
 			id: 'map-indicator-3',
-			title: 'Annual Temperature Time Series',
-			dataset_id: 'annual-temp-time-series'
+			title: 'Annual Temperature Anomaly',
+			dataset_id: 'annual-temp-anamoly-series'
 		}
 	];
 	// Track selected question - default to first question
