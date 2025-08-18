@@ -28,8 +28,6 @@
 		ChevronRight,
 		ChevronsLeft,
 		ChevronsRight,
-		Minimize2,
-		Maximize2,
 		HelpCircle,
 		Play,
 		Pause,
@@ -962,7 +960,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Expand Story"
 						>
-							<Maximize2 class="h-4 w-4" />
+							<ChevronsRight class="h-4 w-4" />
 						</button>
 					{:else}
 						<!-- Back to Default Button -->
@@ -971,7 +969,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Back to Default"
 						>
-							<Minimize2 class="h-4 w-4" />
+							<ChevronsLeft class="h-4 w-4" />
 						</button>
 					{/if}
 				</div>
