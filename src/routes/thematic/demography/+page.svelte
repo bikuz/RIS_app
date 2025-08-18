@@ -4,22 +4,38 @@
 	import climate_2 from '$lib/assets/images/climate_2.png';
 	import Map from 'ol/Map';
 	import View from 'ol/View';
-	import OSM from 'ol/source/OSM';
-	import { fromLonLat } from 'ol/proj';
 	import TileLayer from 'ol/layer/Tile';
 	import ImageLayer from 'ol/layer/Image';
-	import TileArcGISRest from 'ol/source/TileArcGISRest';
+	import OSM from 'ol/source/OSM';
+	import XYZ from 'ol/source/XYZ';
 	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
+	import { fromLonLat } from 'ol/proj';
+	import { defaults as defaultInteractions } from 'ol/interaction';
+	import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import {
 		Cloud,
+		Users,
 		CheckCircle,
 		Layers,
 		Info,
 		Eye,
 		EyeOff,
-		HelpCircle
+		ChevronUp,
+		ChevronDown,
+		ChevronLeft,
+		ChevronRight,
+		ChevronsLeft,
+		ChevronsRight,
+		Minimize2,
+		Maximize2,
+		HelpCircle,
+		Play,
+		Pause,
+		SkipBack,
+		SkipForward,
+		Calendar
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
@@ -30,143 +46,203 @@
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
 
-	// Hindu Kush Himalaya region coordinates
-	const HKH_CENTER = [77.5, 32.5]; // Longitude, Latitude
-	const HKH_ZOOM = 5;
+	// Hindu Kush Himalaya region coordinates (optimized for full HKH view)
+	const HKH_CENTER = [83, 30]; // Longitude, Latitude - adjusted for better HKH coverage
+	const HKH_ZOOM = 4; // Reduced zoom to show more of the HKH region
 
-	let isQuestionsPanelOpen = $state(false);
-	function toggleQuestionsPanel() {
-		isQuestionsPanelOpen = !isQuestionsPanelOpen;
+	// ArcGIS MapServer configuration
+	const ARCGIS_MAPSERVER_URL =
+		'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/Demography/MapServer';
+
+	// Time slider state management
+	let isTimeSliderVisible = $state(false);
+	let isPlaying = $state(false);
+	let currentTimeIndex = $state(0);
+	let playbackSpeed = $state(1000); // milliseconds between frames
+	let playInterval: number | null = null;
+
+	// Time periods for climate data (can be customized based on your data)
+	// const timePeriods = [
+	// 	{ year: 1995, label: '1995', season: 'Annual' },
+	// 	{ year: 1996, label: '1996', season: 'Annual' },
+	// 	{ year: 1997, label: '1997', season: 'Annual' },
+	// 	{ year: 1998, label: '1998', season: 'Annual' },
+	// 	{ year: 1999, label: '1999', season: 'Annual' },
+	// 	{ year: 2000, label: '2000', season: 'Annual' },
+	// 	{ year: 2001, label: '2001', season: 'Annual' },
+	// 	{ year: 2002, label: '2002', season: 'Annual' },
+	// 	{ year: 2003, label: '2003', season: 'Annual' },
+	// 	{ year: 2004, label: '2004', season: 'Annual' },
+	// 	{ year: 2005, label: '2005', season: 'Annual' },
+	// 	{ year: 2006, label: '2006', season: 'Annual' },
+	// 	{ year: 2007, label: '2007', season: 'Annual' },
+	// 	{ year: 2008, label: '2008', season: 'Annual' },
+	// 	{ year: 2009, label: '2009', season: 'Annual' },
+	// 	{ year: 2010, label: '2010', season: 'Annual' },
+	// 	{ year: 2011, label: '2011', season: 'Annual' },
+	// 	{ year: 2012, label: '2012', season: 'Annual' },
+	// 	{ year: 2013, label: '2013', season: 'Annual' },
+	// 	{ year: 2014, label: '2014', season: 'Annual' },
+	// 	{ year: 2015, label: '2015', season: 'Annual' },
+	// 	{ year: 2016, label: '2016', season: 'Annual' },
+	// 	{ year: 2017, label: '2017', season: 'Annual' },
+	// 	{ year: 2018, label: '2018', season: 'Annual' },
+	// 	{ year: 2019, label: '2019', season: 'Annual' },
+	// 	{ year: 2020, label: '2020', season: 'Annual' },
+	// 	{ year: 2021, label: '2021', season: 'Annual' },
+	// 	{ year: 2022, label: '2022', season: 'Annual' },
+	// 	{ year: 2023, label: '2023', season: 'Annual' },
+	// 	{ year: 2024, label: '2024', season: 'Annual' }
+	// ];
+
+	// Time slider functions
+	function toggleTimeSlider() {
+		isTimeSliderVisible = !isTimeSliderVisible;
+		if (!isTimeSliderVisible && isPlaying) {
+			stopPlayback();
+		}
 	}
 
-	// ArcGIS MapServer URL
-	const arcgisBaseUrl = 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/Demography/MapServer';
-
-	// Layer definitions - split into information layers and question layers
-	const informationLayers = [
-		{ id: 0, title: 'Population 2025', type: 'info' },
-		{ id: 1, title: 'Sex Ratio 2025', type: 'info' },
-		{ id: 2, title: 'Proportion of Aged >=75', type: 'info' }
-	];
-
-	const questionLayers = [
-		{ id: 3, title: 'Child Woman Ratio 2025', type: 'question' },
-		{ id: 4, title: 'Child Dependency Ratio 2025', type: 'question' },
-		{ id: 5, title: 'Age Dependency Ratio 2025', type: 'question' }
-	];
-
-	// Track the currently active layer
-	let activeLayerId = $state<number | null>(null);
-	let currentArcGISLayer: ImageLayer<ImageArcGISRest> | null = null;
-
-	// Dummy chart data for different layers
-	const layerChartData = {
-		0: { // Population 2025
-			title: 'Population Distribution Analysis',
-			chart_type: 'column',
-			chart_data: {
-				categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
-				series: [
-					{
-						name: 'Population (Millions)',
-						data: [12.5, 29.1, 0.8, 3.2, 38.9, 220.9]
-					}
-				]
-			}
-		},
-		1: { // Sex Ratio 2025
-			title: 'Sex Ratio Analysis',
-			chart_type: 'line',
-			chart_data: {
-				categories: ['2015', '2017', '2019', '2021', '2023', '2025'],
-				series: [
-					{
-						name: 'Males per 100 Females',
-						data: [105.2, 104.8, 104.5, 104.1, 103.8, 103.5]
-					}
-				]
-			}
-		},
-		2: { // Proportion of Aged >=75
-			title: 'Elderly Population Distribution',
-			chart_type: 'column',
-			chart_data: {
-				categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
-				series: [
-					{
-						name: 'Aged >=75 (%)',
-						data: [3.2, 2.8, 2.1, 4.5, 1.9, 2.6]
-					}
-				]
-			}
-		},
-		3: { // Child Woman Ratio 2025
-			title: 'Child Woman Ratio Trends',
-			chart_type: 'line',
-			chart_data: {
-				categories: ['2015', '2017', '2019', '2021', '2023', '2025'],
-				series: [
-					{
-						name: 'Children per 1000 Women',
-						data: [380, 365, 350, 335, 320, 305]
-					}
-				]
-			}
-		},
-		4: { // Child Dependency Ratio 2025
-			title: 'Child Dependency Analysis',
-			chart_type: 'column',
-			chart_data: {
-				categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
-				series: [
-					{
-						name: 'Child Dependency Ratio',
-						data: [32.5, 28.7, 25.3, 22.1, 45.2, 35.8]
-					}
-				]
-			}
-		},
-		5: { // Age Dependency Ratio 2025
-			title: 'Age Dependency Trends',
-			chart_type: 'line',
-			chart_data: {
-				categories: ['2015', '2017', '2019', '2021', '2023', '2025'],
-				series: [
-					{
-						name: 'Age Dependency Ratio',
-						data: [58.2, 56.8, 55.1, 53.7, 52.3, 51.0]
-					}
-				]
-			}
+	function togglePlayback() {
+		if (isPlaying) {
+			stopPlayback();
+		} else {
+			startPlayback();
 		}
-	};
+	}
+
+	function startPlayback() {
+		if (playInterval) clearInterval(playInterval);
+
+		isPlaying = true;
+		playInterval = setInterval(() => {
+			if (currentTimeIndex < timePeriods.length - 1) {
+				currentTimeIndex++;
+				updateMapForTime(currentTimeIndex);
+			} else {
+				// Loop back to start or stop
+				currentTimeIndex = 0;
+				updateMapForTime(currentTimeIndex);
+				// Uncomment next line to stop at end instead of looping
+				// stopPlayback();
+			}
+		}, playbackSpeed);
+	}
+
+	function stopPlayback() {
+		if (playInterval) {
+			clearInterval(playInterval);
+			playInterval = null;
+		}
+		isPlaying = false;
+	}
+
+	function goToTime(index: number) {
+		if (index >= 0 && index < timePeriods.length) {
+			currentTimeIndex = index;
+			updateMapForTime(index);
+		}
+	}
+
+	function stepBackward() {
+		if (currentTimeIndex > 0) {
+			goToTime(currentTimeIndex - 1);
+		}
+	}
+
+	function stepForward() {
+		if (currentTimeIndex < timePeriods.length - 1) {
+			goToTime(currentTimeIndex + 1);
+		}
+	}
+
+	function updateMapForTime(timeIndex: number) {
+		// This function would update the map layers based on the selected time
+		// You can modify ArcGIS parameters or switch between different temporal layers
+		console.log('Updating map for time:', timePeriods[timeIndex]);
+
+		// Example: Update ArcGIS layer with time parameter if needed
+		if (map && selectedInformationLayer) {
+			const layers = map.getLayers().getArray();
+			layers.forEach((layer) => {
+				if (layer.get('layerId') !== undefined) {
+					const source = (layer as ImageLayer<any>).getSource();
+					if (source && source instanceof ImageArcGISRest) {
+						// Update ArcGIS parameters with time if your service supports it
+						const currentParams = source.getParams();
+						source.updateParams({
+							...currentParams
+							// Add time parameter if your ArcGIS service supports temporal data
+							// time: timePeriods[timeIndex].year.toString()
+						});
+					}
+				}
+			});
+		}
+	}
+
+	// Function to handle trend analysis mode changes
+	function updateMapForTrendMode(mode: 'overall' | 'significant') {
+		console.log('Updating map for trend analysis mode:', mode);
+		// Implementation for trend mode changes if needed
+	}
+
+	// Watch for trend analysis mode changes
+	$effect(() => {
+		updateMapForTrendMode(trendAnalysisMode);
+	});
+
+	// Function to handle temperature rise threshold changes
+	function updateMapForTemperatureRise(threshold: '0.5' | '1.5' | '2.5') {
+		console.log('Updating map for temperature rise threshold:', threshold);
+		// Implementation for temperature threshold changes if needed
+	}
+
+	// Watch for temperature rise threshold changes
+	$effect(() => {
+		updateMapForTemperatureRise(temperatureRiseThreshold);
+	});
 
 	function initializeMap() {
 		if (!mapContainer) return;
 
+		// Small delay to ensure container has proper dimensions
 		setTimeout(() => {
-			// Create base OSM layer
-			const baseLayer = new TileLayer({
-				source: new OSM()
-			});
-
-			// Create map
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
 					new FullScreen(),
 					new ScaleLine({ units: 'metric', bar: true })
 				]),
-				layers: [baseLayer],
+				interactions: defaultInteractions({
+					mouseWheelZoom: false
+				}),
+				layers: [
+					new TileLayer({
+						// source: new XYZ({
+						// 	url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+						// 	attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
+						// })
+
+						source: new XYZ({
+							url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+							attributions: '© OpenStreetMap contributors © CARTO'
+						})
+					})
+				],
 				view: new View({
 					center: fromLonLat(HKH_CENTER),
 					zoom: HKH_ZOOM
 				})
 			});
 
-			// Click logging
+			// Add default layer (Population 2025 - Layer 0) when map initializes
+			addArcGISLayer(0, 'Population 2025');
+
+			// Add some basic interaction
 			map.on('click', (event) => {
-				console.log('Map clicked at:', event.coordinate);
+				const coordinate = event.coordinate;
+				console.log('Map clicked at:', coordinate);
 			});
 
 			// Ensure map renders properly
@@ -176,42 +252,14 @@
 		}, 100);
 	}
 
-	// Function to handle layer selection (works for both info and question layers)
-	function selectLayer(layerId: number, layerTitle: string) {
-		// Toggle layer - if same layer is clicked, remove it
-		if (activeLayerId === layerId) {
-			removeCurrentLayer();
-			activeLayerId = null;
-			console.log('Removed layer:', layerTitle);
-		} else {
-			// Add new layer - try the alternative method if main method fails
-			try {
-				addArcGISLayer(layerId);
-				activeLayerId = layerId;
-				console.log('Selected layer:', layerTitle);
-			} catch (error) {
-				console.log('Primary method failed, trying alternative...');
-				addArcGISLayerAlternative(layerId);
-				activeLayerId = layerId;
-			}
-		}
-	}
-
-	// Test function to check MapServer capabilities
-	function testMapServerEndpoint() {
-		const testUrl = `${arcgisBaseUrl}?f=json`;
-		console.log('Test MapServer endpoint:', testUrl);
-		console.log('You can visit this URL to see the service capabilities');
-	}
-
-	// Call test function on mount to help with debugging
 	onMount(() => {
 		initializeMap();
-		testMapServerEndpoint();
 
+		// Add resize observer to handle container size changes
 		if (typeof ResizeObserver !== 'undefined' && mapContainer) {
 			const resizeObserver = new ResizeObserver(() => {
 				if (map) {
+					// Small delay to ensure DOM is updated
 					setTimeout(() => {
 						if (map) {
 							map.updateSize();
@@ -221,354 +269,1250 @@
 			});
 			resizeObserver.observe(mapContainer);
 
+			// Cleanup on destroy
 			return () => {
 				resizeObserver.disconnect();
 			};
 		}
 	});
 
+	// Cleanup on destroy
 	onDestroy(() => {
+		if (playInterval) {
+			clearInterval(playInterval);
+		}
 		if (map) {
 			map.dispose();
 		}
 	});
 
-	// Function to remove current ArcGIS layer
-	function removeCurrentLayer() {
-		if (map && currentArcGISLayer) {
-			map.removeLayer(currentArcGISLayer);
-			currentArcGISLayer = null;
+	// Updated demographic dataset with ArcGIS layers
+	const demographicDataset = [
+		{
+			id: 'population-2025',
+			charts: [
+				{
+					title: 'Population Distribution 2025',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						series: [
+							{
+								name: 'Population (millions)',
+								data: [12.5, 29.8, 0.8, 3.5, 39.8, 231.4]
+							}
+						]
+					}
+				},
+				{
+					title: 'Population Growth Rate',
+					chart_type: 'line',
+					chart_data: {
+						categories: ['2020', '2021', '2022', '2023', '2024', '2025'],
+						series: [
+							{
+								name: 'Growth Rate (%)',
+								data: [1.2, 1.1, 1.0, 0.9, 0.8, 0.7]
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'Population 2025',
+				layer_id: 0,
+				description: 'Population distribution across HKH region for 2025'
+			},
+			control_type: 'none'
+		},
+		{
+			id: 'sex-ratio-2025',
+			charts: [
+				{
+					title: 'Sex Ratio Distribution 2025',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						series: [
+							{
+								name: 'Males per 100 Females',
+								data: [105, 94, 113, 98, 106, 107]
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'Sex Ratio 2025',
+				layer_id: 1,
+				description: 'Sex ratio (males per 100 females) across HKH region for 2025'
+			},
+			control_type: 'none'
+		},
+		{
+			id: 'aged-75-proportion',
+			charts: [
+				{
+					title: 'Proportion of Aged >=75 Years',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						series: [
+							{
+								name: 'Percentage (%)',
+								data: [3.2, 2.8, 4.1, 3.5, 2.1, 2.9]
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'Proportion of Aged >=75',
+				layer_id: 2,
+				description: 'Proportion of population aged 75 years and above'
+			},
+			control_type: 'none'
+		},
+		{
+			id: 'child-woman-ratio-2025',
+			charts: [
+				{
+					title: 'Child Woman Ratio 2025',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						series: [
+							{
+								name: 'Children per 1000 Women',
+								data: [385, 298, 421, 312, 512, 467]
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'Child Woman Ratio 2025',
+				layer_id: 3,
+				description: 'Number of children (0-4) per 1000 women (15-49 years)'
+			},
+			control_type: 'none'
+		},
+		{
+			id: 'child-dependency-ratio-2025',
+			charts: [
+				{
+					title: 'Child Dependency Ratio 2025',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						series: [
+							{
+								name: 'Dependency Ratio',
+								data: [42.5, 35.2, 38.9, 33.1, 58.7, 51.3]
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'Child Dependency Ratio 2025',
+				layer_id: 4,
+				description: 'Ratio of children (0-14) to working age population (15-64)'
+			},
+			control_type: 'none'
+		},
+		{
+			id: 'age-dependency-ratio-2025',
+			charts: [
+				{
+					title: 'Age Dependency Ratio 2025',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						series: [
+							{
+								name: 'Dependency Ratio',
+								data: [48.2, 41.5, 44.3, 38.9, 62.1, 56.7]
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'Age Dependency Ratio 2025',
+				layer_id: 5,
+				description: 'Ratio of dependents (0-14 and 65+) to working age population (15-64)'
+			},
+			control_type: 'none'
+		}
+	];
+
+	// Updated questions - latter three layers
+	const questions = [
+		{
+			id: 'question-1',
+			question: 'What is the child-woman ratio distribution across the HKH region in 2025?',
+			dataset_id: 'child-woman-ratio-2025'
+		},
+		{
+			id: 'question-2',
+			question: 'Which areas have the highest child dependency ratio in 2025?',
+			dataset_id: 'child-dependency-ratio-2025'
+		},
+		{
+			id: 'question-3',
+			question: 'How does the age dependency ratio vary across different HKH countries?',
+			dataset_id: 'age-dependency-ratio-2025'
+		}
+	];
+
+	// Updated information layers - first three layers
+	const information_layers = [
+		{
+			id: 'info-layer-1',
+			title: 'Population 2025',
+			dataset_id: 'population-2025'
+		},
+		{
+			id: 'info-layer-2',
+			title: 'Sex Ratio 2025',
+			dataset_id: 'sex-ratio-2025'
+		},
+		{
+			id: 'info-layer-3',
+			title: 'Proportion of Aged >=75',
+			dataset_id: 'aged-75-proportion'
+		}
+	];
+
+	// Track selected question - default to first question
+	let selectedQuestionId = $state('');
+
+	// Track selected information layer (single selection) - default to Population 2025
+	let selectedInformationLayer = $state<string | null>('Population 2025');
+
+	// Track radio button selection for trend analysis
+	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
+
+	// Track temperature rise threshold selection
+	let temperatureRiseThreshold = $state<'0.5' | '1.5' | '2.5'>('1.5');
+
+	// Layout states: 'default' | 'hide-left' | 'left-full'
+	let layoutState = $state('default');
+
+	// Track questions panel state
+	let isQuestionsPanelOpen = $state(false);
+	function toggleQuestionsPanel() {
+		isQuestionsPanelOpen = !isQuestionsPanelOpen;
+	}
+
+	// Add new state variables for layers panel
+	let layersPanelOpen = $state(false);
+	let activeBaseLayers = $state({});
+
+	// Define base layers from HKH/Outline service
+	const baseLayers = [
+		{
+			id: 0,
+			name: 'Outline',
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
+		},
+		{
+			id: 1,
+			name: 'Soil',
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer'
+		},
+		{
+			id: 2,
+			name: 'River',
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer'
+		}
+	];
+
+	// Function to toggle base layers
+	function toggleBaseLayer(layerId: number, checked: boolean) {
+		if (!map) return;
+
+		if (checked) {
+			const layerInfo = baseLayers.find((l) => l.id === layerId);
+			if (!layerInfo) return;
+
+			const layer = new ImageLayer({
+				source: new ImageArcGISRest({
+					url: layerInfo.url,
+					params: {
+						LAYERS: `show:${layerId}`,
+						FORMAT: 'PNG32',
+						TRANSPARENT: true
+					}
+				}),
+				zIndex: 2
+			});
+
+			layer.set('baseLayerId', layerId);
+			map.addLayer(layer);
+			activeBaseLayers = { ...activeBaseLayers, [layerId]: layer };
+		} else {
+			const layer = activeBaseLayers[layerId];
+			if (layer) {
+				map.removeLayer(layer);
+				const updated = { ...activeBaseLayers };
+				delete updated[layerId];
+				activeBaseLayers = updated;
+			}
 		}
 	}
 
-	// Function to add ArcGIS layer
-	function addArcGISLayer(layerId: number) {
+	// Get current dataset based on selected question or information layer
+	let currentDataset = $derived.by(() => {
+		// First priority: selected question
+		if (selectedQuestionId) {
+			const selectedQuestion = questions.find((q) => q.id === selectedQuestionId);
+			if (selectedQuestion?.dataset_id) {
+				return demographicDataset.find((item) => item.id === selectedQuestion.dataset_id);
+			}
+		}
+
+		// Second priority: selected information layer
+		if (selectedInformationLayer) {
+			const selectedLayer = information_layers.find(
+				(layer) => layer.title === selectedInformationLayer
+			);
+			if (selectedLayer?.dataset_id) {
+				return demographicDataset.find((item) => item.id === selectedLayer.dataset_id);
+			}
+		}
+
+		// Default: first dataset
+		return demographicDataset[0];
+	});
+
+	// Extract current data from dataset
+	let currentCharts = $derived(currentDataset?.charts || []);
+	let currentMapData = $derived(currentDataset?.map_data);
+
+	// Watch for layout state changes and update map size
+	$effect(() => {
+		// This effect runs whenever layoutState changes
+		layoutState;
+
+		// Multiple resize attempts with different timings
+		if (map && mapContainer) {
+			// Immediate attempt
+			requestAnimationFrame(() => {
+				if (map) {
+					map.updateSize();
+				}
+			});
+
+			// Delayed attempt
+			setTimeout(() => {
+				if (map) {
+					map.updateSize();
+					map.render();
+				}
+			}, 150);
+
+			// Final attempt after all transitions
+			setTimeout(() => {
+				if (map) {
+					map.updateSize();
+					map.render();
+				}
+			}, 400);
+		}
+	});
+
+	// Get layer by layer ID from map
+	const getLayerByLayerId = (layerId: number): any | null => {
+		if (!map) return null;
+		const layers = map.getLayers().getArray();
+		for (const layer of layers) {
+			if (layer.get('layerId') === layerId) {
+				return layer;
+			}
+		}
+		return null;
+	};
+
+	// Add ArcGIS layer to map
+	function addArcGISLayer(layerId: number, layerName: string) {
 		if (!map) return;
 
-		// Remove current layer first
-		removeCurrentLayer();
+		// Remove existing demographic layers first
+		removeAllDemographicLayers();
 
-		// Create new ArcGIS Image layer with sublayer specification
-		currentArcGISLayer = new ImageLayer({
+		const arcgisLayer = new ImageLayer({
 			source: new ImageArcGISRest({
-				url: arcgisBaseUrl, // Use the base MapServer URL
+				url: ARCGIS_MAPSERVER_URL,
 				params: {
-					'LAYERS': `show:${layerId}`, // Specify which sublayer to show
-					'FORMAT': 'PNG32',
-					'TRANSPARENT': true,
-					'DPI': 96
+					LAYERS: `show:${layerId}`,
+					FORMAT: 'PNG32',
+					TRANSPARENT: true
 				}
-			})
+			}),
+			zIndex: 1
 		});
 
-		// Set layer properties
-		currentArcGISLayer.set('id', `arcgis_${layerId}`);
-		currentArcGISLayer.set('title', `Layer ${layerId}`);
-		
+		// Set the layer ID for later retrieval
+		arcgisLayer.set('layerId', layerId);
+		arcgisLayer.set('layerName', layerName);
+
 		// Add to map
-		map.addLayer(currentArcGISLayer);
-		
-		console.log('Added ArcGIS MapImageLayer sublayer:', layerId);
-		console.log('Request URL will be:', arcgisBaseUrl);
+		map.addLayer(arcgisLayer);
+		console.log('Added ArcGIS layer:', layerName, 'Layer ID:', layerId);
 	}
 
-	// Alternative function to add ArcGIS layer with different parameter formats
-	function addArcGISLayerAlternative(layerId: number) {
+	// Remove all demographic layers from map
+	function removeAllDemographicLayers() {
 		if (!map) return;
 
-		// Remove current layer first
-		removeCurrentLayer();
+		const layers = map.getLayers().getArray();
+		const layersToRemove: any[] = [];
 
-		// Try different parameter formats for ArcGIS MapImageLayer
-		const layerParams = {
-			// Option 1: Standard LAYERS parameter
-			'LAYERS': `${layerId}`,
-			// Option 2: Alternative format
-			// 'LAYERS': `show:${layerId}`,
-			// Option 3: Multiple layers format
-			// 'LAYERS': `show:${layerId}`,
-			
-			'FORMAT': 'PNG32',
-			'TRANSPARENT': true,
-			'DPI': 96,
-			'BBOXSR': 3857,
-			'IMAGESR': 3857,
-			'F': 'image'
+		// Find all demographic layers (those with layerId property)
+		layers.forEach((layer) => {
+			if (layer.get('layerId') !== undefined) {
+				layersToRemove.push(layer);
+			}
+		});
+
+		// Remove all found demographic layers
+		layersToRemove.forEach((layer) => {
+			map!.removeLayer(layer);
+			console.log('Removed layer:', layer.get('layerName'));
+		});
+	}
+
+	// Function to handle question selection
+	function selectQuestion(questionId: string) {
+		selectedQuestionId = questionId;
+		// Clear information layer selection when selecting a question
+		selectedInformationLayer = null;
+
+		// Find the dataset and add the corresponding layer
+		const selectedQuestion = questions.find((q) => q.id === questionId);
+		if (selectedQuestion?.dataset_id) {
+			const dataset = demographicDataset.find((item) => item.id === selectedQuestion.dataset_id);
+			if (dataset?.map_data) {
+				addArcGISLayer(dataset.map_data.layer_id, dataset.map_data.name);
+			}
+
+			if (dataset?.control_type === 'time_slider') {
+				isTimeSliderVisible = true;
+			} else {
+				isTimeSliderVisible = false;
+			}
+		}
+
+		console.log('Question selected:', questionId);
+	}
+
+	// Function to select information layer
+	function selectInformationLayer(layerId: string) {
+		// Always select the layer and add it to the map (no toggle off functionality)
+		selectedInformationLayer = layerId;
+		// Clear question selection when selecting an information layer
+		selectedQuestionId = '';
+
+		// Find the dataset and add the corresponding layer
+		const selectedLayer = information_layers.find((layer) => layer.title === layerId);
+		if (selectedLayer?.dataset_id) {
+			const dataset = demographicDataset.find((item) => item.id === selectedLayer.dataset_id);
+			if (dataset?.map_data) {
+				addArcGISLayer(dataset.map_data.layer_id, dataset.map_data.name);
+			}
+
+			if (dataset?.control_type === 'time_slider') {
+				isTimeSliderVisible = true;
+			} else {
+				isTimeSliderVisible = false;
+			}
+		}
+
+		console.log('Information layer selected:', layerId);
+	}
+
+	// Function to cycle through layout states
+	function toggleLayoutState() {
+		if (layoutState === 'default') {
+			layoutState = 'hide-left';
+		} else if (layoutState === 'hide-left') {
+			layoutState = 'left-full';
+		} else {
+			layoutState = 'default';
+		}
+	}
+
+	// Function to set specific layout state
+	function setLayoutState(state: 'default' | 'hide-left' | 'left-full') {
+		layoutState = state;
+
+		// Force map resize with multiple attempts to ensure it works
+		const forceMapResize = () => {
+			if (map && mapContainer) {
+				// Clear any existing size constraints
+				const mapElement = mapContainer;
+				mapElement.style.width = '100%';
+				mapElement.style.maxWidth = '100%';
+
+				// First immediate update
+				map.updateSize();
+
+				// Second update after a short delay
+				setTimeout(() => {
+					if (map) {
+						map.updateSize();
+						// Force a render
+						map.render();
+					}
+				}, 100);
+
+				// Third update after CSS transitions complete
+				setTimeout(() => {
+					if (map) {
+						// Force complete resize
+						const view = map.getView();
+						const currentCenter = view.getCenter();
+						const currentZoom = view.getZoom();
+
+						map.updateSize();
+						map.render();
+
+						// Restore view if it changed
+						if (currentCenter && currentZoom) {
+							view.setCenter(currentCenter);
+							view.setZoom(currentZoom);
+						}
+
+						console.log('Map resized for layout:', state);
+					}
+				}, 350);
+			}
 		};
 
-		currentArcGISLayer = new ImageLayer({
-			source: new ImageArcGISRest({
-				url: arcgisBaseUrl,
-				params: layerParams
-			})
+		// Use requestAnimationFrame to ensure DOM updates are complete
+		requestAnimationFrame(() => {
+			forceMapResize();
 		});
-
-		currentArcGISLayer.set('id', `arcgis_${layerId}`);
-		map.addLayer(currentArcGISLayer);
-		
-		console.log('Added ArcGIS MapImageLayer with params:', layerParams);
 	}
-
-	// Get current chart data based on active layer
-	let currentChartData = $derived(
-		activeLayerId !== null ? layerChartData[activeLayerId] : null
-	);
 </script>
 
-<!-- 3-Column Layout -->
-<div class="grid grid-cols-12 items-stretch gap-6">
+<!-- 3-Column Layout with Dynamic States -->
+<div class="relative grid grid-cols-12 items-stretch gap-6">
+	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
+	{#if layoutState === 'hide-left'}
+		<button
+			onclick={() => setLayoutState('default')}
+			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+			title="Show Story Panel"
+		>
+			<ChevronsRight class="h-4 w-4" />
+		</button>
+	{/if}
 	<!-- Left Sidebar - Story + Questions -->
-	<div class="col-span-3 flex">
-		<div class="sticky top-6 h-fit max-h-[calc(100vh-16rem)] flex-1 space-y-6 overflow-y-auto">
-			<!-- Story Section -->
-			<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
-				<div class="mb-6 flex items-center space-x-3">
+
+    <div
+    class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto scrollbar-hide"
+    class:hidden={layoutState === 'hide-left'}
+    class:col-span-12={layoutState === 'left-full'}
+>
+
+		<!-- Story Section -->
+		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
+			<div class="mb-6 flex items-center justify-between">
+				<div class="flex items-center space-x-3">
 					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
-						<Cloud class="h-5 w-5 text-white" />
+						<Users class="h-5 w-5 text-white" />
 					</div>
-					<h3 class="text-lg font-bold text-slate-800">Climate Change in HKH</h3>
+					<h3
+						class="{layoutState === 'left-full'
+							? 'text-2xl'
+							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+					>
+						Demographic Status in HKH
+					</h3>
 				</div>
-
-				<div class="space-y-4">
-					<p class="text-justify text-sm leading-relaxed text-slate-600">
-						Historically, the climate of the HKH has experienced significant changes that are
-						closely related to the rise and fall of regional cultures and civilizations. The region
-						is one of the most climate-sensitive mountain systems in the world. Known as the "Third
-						Pole" for its vast ice reserves, the HKH plays a critical role in regulating Asia's
-						climate and serves as the source of ten major river systems that sustain the livelihoods
-						of over 1.6 billion people downstream. However, the impacts of climate change are being
-						felt here more intensely than the global average, with temperatures rising significantly
-						faster than elsewhere.
-					</p>
-					<p class="text-justify text-sm leading-relaxed text-slate-600">
-						In the future, even if global warming is kept to 1.5 °C, warming in the Hindu Kush
-						Himalaya (HKH) region will likely be at least 0.3 °C higher, and in the northwest
-						Himalaya and Karakoram at least 0.7 °C higher. Such large warming could trigger a
-						multitude of biophysical and socio-economic impacts, such as biodiversity loss,
-						increased glacial melting, and less predictable water availability—all of which will
-						impact livelihoods and well-being in the HKH.
-					</p>
-					<p class="text-justify text-sm leading-relaxed text-slate-600">
-						Glaciers in the HKH are retreating at unprecedented rates, snow cover is diminishing,
-						and permafrost is degrading, all of which are altering river flows and threatening water
-						security.
-					</p>
-
-					<p class="text-justify text-sm leading-relaxed text-slate-600">
-						Climate change is also amplifying the frequency and severity of extreme weather events,
-						including floods, droughts, and landslides, which pose immediate risks to lives,
-						infrastructure, and economies. The loss of cryospheric mass not only threatens long-term
-						water availability but also increases the risk of glacial lake outburst floods (GLOFs)
-						that can devastate downstream communities.
-					</p>
-					<p class="text-justify text-sm leading-relaxed text-slate-600">
-						The impacts extend beyond the physical environment to agriculture, biodiversity, and
-						cultural heritage. Shifts in seasonal patterns are affecting crop yields, while warming
-						temperatures are pushing species to higher altitudes, disrupting delicate alpine
-						ecosystems. Many communities in the HKH rely on climate-sensitive livelihoods such as
-						farming, herding, and tourism, making them particularly vulnerable.
-					</p>
-					<p class="text-justify text-sm leading-relaxed text-slate-600">
-						Addressing climate change in the HKH requires urgent, coordinated, and region-wide
-						action. This includes investing in climate-resilient infrastructure, expanding early
-						warning systems, improving water management, and enhancing scientific monitoring of
-						glaciers and weather patterns. Regional cooperation is essential for sharing data,
-						aligning adaptation strategies, and managing shared water resources sustainably. Equally
-						important is empowering local communities with knowledge, technology, and resources to
-						adapt to changing conditions while preserving the environmental and cultural richness of
-						the HKH.
-					</p>
-				</div>
-
-				<!-- Images Section - Stacked -->
-				<div class="mt-6 space-y-3">
-					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-						<img
-							src={climate_1}
-							alt="Himalayan glacial retreat"
-							class="h-50 w-full object-contain"
-						/>
-						<div class="p-2">
-							<p class="text-center text-xs text-slate-600">
-								<span
-									>We see <span class="font-semibold">less snow on the mountain peaks </span> in recent
-									years
-								</span>
-							</p>
-						</div>
-					</div>
-					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-						<img src={climate_2} alt="Climate impacts" class="h-55 w-full object-contain" />
-						<div class="p-2">
-							<p class="text-center text-xs text-slate-600">
-								<span>
-									<span class="font-semibold"> Flooded street in Kathmandu </span> after a less than
-									an hour heavy downpour</span
-								>
-							</p>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Main Content Area - Map and Chart sections -->
-	<div class="col-span-7 flex flex-col gap-6">
-		<!-- Map Section -->
-		<div
-			class="relative flex-1 overflow-hidden rounded-xl border border-slate-200/50 bg-white shadow-sm"
-		>
-			<div
-				class="map-container flex flex-col bg-white/70 backdrop-blur-sm"
-				class:h-full={height === '100%'}
-			>
-				<div
-					bind:this={mapContainer}
-					class="map-element overflow-hidden rounded-2xl border border-slate-200/50"
-					style="width: {width}; {height === '100%' ? 'min-height: 600px;' : `height: ${height};`}"
-					class:flex-1={height === '100%'}
-				></div>
-			</div>
-		</div>
-
-		<!-- Chart Section -->
-		<div class="flex-1 rounded-xl border border-slate-200/50 bg-white p-6 shadow-sm">
-			<h3 class="mb-4 text-lg font-semibold text-slate-700">Demographics Analytics</h3>
-			<div class="rounded-lg bg-slate-50/50 p-4">
-				{#if currentChartData}
-					<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
-						<Chart
-							chartData={currentChartData.chart_data}
-							title={currentChartData.title}
-							subtitle="Hindu Kush Himalaya Region Demographic Data"
-							chart_type={currentChartData.chart_type}
-						/>
-					</div>
-				{:else}
-					<div class="flex h-80 items-center justify-center">
-						<div class="text-center text-slate-500">
-							<p class="text-sm">Select a layer to view related charts</p>
-						</div>
-					</div>
-				{/if}
-			</div>
-		</div>
-	</div>
-
-	<!-- Right Sidebar - Information Layers -->
-	<div class="col-span-2 flex">
-		<div
-			class="sticky top-6 flex max-h-[calc(100vh-14rem)] min-h-[calc(100vh-14rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 p-6 shadow-xl backdrop-blur-sm"
-		>
-			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-				<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
-					<Layers class="h-5 w-5 text-white" />
-				</div>
-				<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
-			</div>
-
-			<!-- Information Layers List -->
-			<div class="flex-1 overflow-y-auto">
-				<div class="space-y-3">
-					{#each informationLayers as layer}
+				<div class="flex items-center space-x-2">
+					{#if layoutState !== 'left-full'}
+						<!-- Hide Left Panel Button -->
 						<button
-							onclick={() => selectLayer(layer.id, layer.title)}
-							class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {activeLayerId === layer.id
-								? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
-								: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+							onclick={() => setLayoutState('hide-left')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Hide Story Panel"
 						>
-							<div class="flex items-start space-x-3 text-left">
-								<div class="mt-1 flex-shrink-0">
-									{#if activeLayerId === layer.id}
-										<Eye class="h-5 w-5 text-green-600" />
-									{:else}
-										<EyeOff class="h-5 w-5 text-slate-400" />
-									{/if}
-								</div>
-								<div class="flex-1">
-									<h4
-										class="text-sm font-medium {activeLayerId === layer.id
-											? 'text-green-800'
-											: 'text-slate-800'} mb-1"
-									>
-										{layer.title}
-									</h4>
-									<p class="text-xs leading-relaxed text-slate-600">
-										Demographic layer for {layer.title.toLowerCase()}
+							<ChevronsLeft class="h-4 w-4" />
+						</button>
+						<!-- Expand Story Button -->
+						<button
+							onclick={() => setLayoutState('left-full')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Expand Story"
+						>
+							<Maximize2 class="h-4 w-4" />
+						</button>
+					{:else}
+						<!-- Back to Default Button -->
+						<button
+							onclick={() => setLayoutState('default')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Back to Default"
+						>
+							<Minimize2 class="h-4 w-4" />
+						</button>
+					{/if}
+				</div>
+			</div>
+
+			<div
+				class="{layoutState === 'left-full'
+					? 'space-y-6'
+					: 'space-y-4'} transition-all duration-300"
+			>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					The Hindu Kush Himalaya (HKH) region is home to over 240 million people, with demographic
+					patterns that reflect diverse cultural, economic, and environmental conditions across
+					eight countries. The region exhibits significant variations in population density, age
+					structure, and gender ratios that are influenced by factors including altitude,
+					accessibility, economic opportunities, and cultural practices.
+				</p>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Population distribution in the HKH shows marked disparities, with most people concentrated
+					in accessible valleys and lower elevation areas. The demographic profile reveals varying
+					dependency ratios across different sub-regions, reflecting differences in fertility rates,
+					mortality patterns, and migration trends that have significant implications for social
+					services and economic development.
+				</p>
+                <p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					The Hindu Kush Himalaya (HKH) region is home to over 240 million people, with demographic
+					patterns that reflect diverse cultural, economic, and environmental conditions across
+					eight countries. The region exhibits significant variations in population density, age
+					structure, and gender ratios that are influenced by factors including altitude,
+					accessibility, economic opportunities, and cultural practices.
+				</p>
+                <p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					The Hindu Kush Himalaya (HKH) region is home to over 240 million people, with demographic
+					patterns that reflect diverse cultural, economic, and environmental conditions across
+					eight countries. The region exhibits significant variations in population density, age
+					structure, and gender ratios that are influenced by factors including altitude,
+					accessibility, economic opportunities, and cultural practices.
+				</p>
+
+				<!-- Images Section - Responsive Layout -->
+				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
+					{#if layoutState === 'left-full'}
+						<!-- Full Width Layout - One Image Per Row -->
+						<div class="flex flex-col items-center gap-6">
+							<div
+								class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+							>
+								<img src={climate_1} alt="HKH demographic diversity" class="h-80 object-contain" />
+								<div class="p-4">
+									<p class="text-center text-sm leading-relaxed text-slate-700">
+										<span
+											>Diverse <span class="font-semibold text-slate-800"
+												>mountain communities
+											</span>
+											across the HKH region
+										</span>
 									</p>
 								</div>
 							</div>
-						</button>
-					{/each}
-				</div>
-			</div>
-
-			<!-- Questions Panel Toggle -->
-			<div class="relative mt-6 flex min-h-0 flex-1 flex-col border-t border-slate-200/50 pt-6">
-				<div class="absolute right-1 bottom-1 z-50 flex flex-col items-end">
-					<!-- Questions Panel -->
-					<div
-						class="questions-panel mb-4 w-60 origin-bottom-right transform rounded-lg bg-white/95 p-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
-						class:scale-0={!isQuestionsPanelOpen}
-						class:scale-100={isQuestionsPanelOpen}
-						class:opacity-0={!isQuestionsPanelOpen}
-						class:opacity-100={isQuestionsPanelOpen}
-						class:pointer-events-none={!isQuestionsPanelOpen}
-					>
-						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-							<div class="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 p-2">
-								<Info class="h-4 w-4 text-white" />
+							<div
+								class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+							>
+								<img src={climate_2} alt="Population centers" class="h-80 object-contain" />
+								<div class="p-4">
+									<p class="text-center text-sm leading-relaxed text-slate-700">
+										<span>
+											<span class="font-semibold text-slate-800">
+												Urban growth in mountain valleys
+											</span>
+											showing demographic concentration</span
+										>
+									</p>
+								</div>
 							</div>
-							<h3 class="text-base font-bold text-slate-800">Additional Layers</h3>
 						</div>
+					{:else}
+						<!-- Default Layout - Stacked Images -->
+						<div class="space-y-3">
+							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+								<img
+									src={climate_1}
+									alt="HKH demographic diversity"
+									class="h-50 w-full object-contain"
+								/>
+								<div class="p-2">
+									<p class="text-center text-xs text-slate-600">
+										<span
+											>Diverse <span class="font-semibold">mountain communities </span> across the HKH
+											region
+										</span>
+									</p>
+								</div>
+							</div>
+							<!-- <div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+							<img src={climate_2} alt="Population centers" class="h-55 w-full object-contain" />
+							<div class="p-2">
+								<p class="text-center text-xs text-slate-600">
+									<span>
+										<span class="font-semibold"> Urban growth in mountain valleys </span>
+										showing demographic concentration</span
+									>
+								</p>
+							</div>
+						</div> -->
+						</div>
+					{/if}
+				</div>
 
-						<div class="flex-1 space-y-3 overflow-y-auto">
-							{#each questionLayers as layer}
-								<button
-									class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {activeLayerId === layer.id
-										? 'border-blue-500 bg-blue-50 shadow-md'
-										: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-									onclick={() => selectLayer(layer.id, layer.title)}
-								>
-									<div class="flex items-start space-x-2">
-										<div class="mt-1 flex-shrink-0">
-											{#if activeLayerId === layer.id}
-												<CheckCircle class="h-4 w-4 text-blue-600" />
-											{:else}
-												<div
-													class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
-												></div>
-											{/if}
-										</div>
-										<div class="flex-1">
-											<p
-												class="text-xs font-medium leading-relaxed {activeLayerId === layer.id
-													? 'text-blue-700'
-													: 'text-slate-600 group-hover:text-slate-800'}"
-											>
-												{layer.title}
-											</p>
-										</div>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Gender ratios across the HKH region show notable variations, influenced by cultural
+					preferences, migration patterns, and socioeconomic factors. Some areas exhibit skewed sex
+					ratios due to selective migration for employment opportunities, while others reflect
+					cultural practices and preferences that affect birth ratios and survival rates.
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- Main Content Area - Unified container with common white background -->
+	<div
+		class="sticky col-span-9"
+		class:col-span-12={layoutState === 'hide-left'}
+		class:hidden={layoutState === 'left-full'}
+	>
+		<div class="rounded-2xl border border-white/20 bg-white p-6 shadow-xl backdrop-blur-sm">
+			<div class="flex gap-6">
+				<!-- Left part: Map and Charts -->
+				<div
+					class="flex min-w-0 flex-col gap-6 {layoutState === 'hide-left' ? 'flex-1' : 'flex-1'}"
+				>
+					<!-- Map Section -->
+					<div
+						class="relative h-[60vh] max-h-[800px] min-h-[500px] overflow-hidden rounded-xl border border-slate-200/30"
+					>
+						<div class="map-container flex h-full flex-col">
+							<div
+								bind:this={mapContainer}
+								class="map-element h-full w-full overflow-hidden rounded-xl"
+							></div>
+
+							<!-- Layer Toggler Button -->
+							<button
+								class="absolute top-[3.75rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
+								onclick={() => (layersPanelOpen = !layersPanelOpen)}
+							>
+								{#if layersPanelOpen}
+									<ChevronsRight class="h-4 w-4" />
+								{:else}
+									<Layers class="h-4 w-4" />
+								{/if}
+							</button>
+
+							<!-- Layer Toggler Panel -->
+							<div
+								class="absolute top-[5.5rem] right-2 z-20 w-48 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+									? 'max-h-96 opacity-100'
+									: 'max-h-0 opacity-0'}"
+							>
+								<div class="p-3">
+									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
+									<div class="space-y-2">
+										{#each baseLayers as layerInfo}
+											<label class="flex items-center space-x-2 text-sm">
+												<input
+													type="checkbox"
+													checked={!!activeBaseLayers[layerInfo.id]}
+													onchange={(e) => {
+														toggleBaseLayer(layerInfo.id, e.target.checked);
+														e.target.blur(); // Removes focus from the checkbox
+													}}
+													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+												/>
+												<span>{layerInfo.name}</span>
+											</label>
+										{/each}
 									</div>
-								</button>
-							{/each}
+								</div>
+							</div>
+
+							<!-- Dynamic Control Panel at Bottom -->
+							{#if currentDataset?.control_type === 'time_slider'}
+								{#if !isTimeSliderVisible}
+									<!-- Time Control Toggle Button -->
+									<button
+										onclick={toggleTimeSlider}
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										title="Show Time Controls"
+									>
+										<Calendar class="h-4 w-4" />
+										<span>Time</span>
+									</button>
+								{:else}
+									<!-- Expanded Time Slider Panel -->
+									<div
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-white/30 bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm"
+									>
+										<!-- Time Label -->
+										<div class="flex items-center space-x-2">
+											<Calendar class="h-4 w-4 text-indigo-600" />
+											<span class="text-sm font-medium text-slate-700">Time</span>
+										</div>
+
+										<!-- Separator -->
+										<div class="h-4 w-px bg-slate-300"></div>
+
+										<!-- Step Backward -->
+										<button
+											onclick={stepBackward}
+											disabled={currentTimeIndex === 0}
+											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
+											title="Previous Year"
+										>
+											<SkipBack class="h-3.5 w-3.5" />
+										</button>
+
+										<!-- Play/Pause -->
+										<button
+											onclick={togglePlayback}
+											class="rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 p-2 text-white shadow-sm transition-all duration-200 hover:from-indigo-600 hover:to-purple-600 hover:shadow-md"
+											title={isPlaying ? 'Pause' : 'Play'}
+										>
+											{#if isPlaying}
+												<Pause class="h-3.5 w-3.5" />
+											{:else}
+												<Play class="h-3.5 w-3.5" />
+											{/if}
+										</button>
+
+										<!-- Step Forward -->
+										<button
+											onclick={stepForward}
+											disabled={currentTimeIndex === timePeriods.length - 1}
+											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
+											title="Next Year"
+										>
+											<SkipForward class="h-3.5 w-3.5" />
+										</button>
+
+										<!-- Compact Time Slider -->
+										<div class="flex items-center space-x-2">
+											<span class="min-w-[2.5rem] text-xs font-medium text-indigo-600"
+												>{timePeriods[currentTimeIndex].label}</span
+											>
+											<input
+												type="range"
+												min="0"
+												max={timePeriods.length - 1}
+												bind:value={currentTimeIndex}
+												oninput={(e) => goToTime(parseInt((e.target as HTMLInputElement).value))}
+												class="compact-slider w-32"
+											/>
+										</div>
+
+										<!-- Close Button -->
+										<button
+											onclick={toggleTimeSlider}
+											class="rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+											title="Collapse"
+										>
+											<ChevronDown class="h-3.5 w-3.5" />
+										</button>
+									</div>
+								{/if}
+							{:else if currentDataset?.control_type === 'radio'}
+								<!-- Always show expanded Analysis Mode Radio Buttons Panel -->
+								<div
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+								>
+									<!-- Analysis Label -->
+									<div class="flex items-center space-x-2">
+										<Layers class="h-4 w-4 text-indigo-600" />
+										<span class="text-sm font-medium text-slate-700">Trend</span>
+									</div>
+
+									<!-- Separator -->
+									<div class="h-4 w-px bg-slate-300"></div>
+
+									<!-- Overall Option -->
+									<label class="flex cursor-pointer items-center space-x-2">
+										<input
+											type="radio"
+											bind:group={trendAnalysisMode}
+											value="overall"
+											class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+										/>
+										<span class="text-sm font-medium text-slate-700">Overall</span>
+									</label>
+
+									<!-- Significant Option -->
+									<label class="flex cursor-pointer items-center space-x-2">
+										<input
+											type="radio"
+											bind:group={trendAnalysisMode}
+											value="significant"
+											class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+										/>
+										<span class="text-sm font-medium text-slate-700">Significant</span>
+									</label>
+								</div>
+							{:else if currentDataset?.control_type === 'temperature_threshold'}
+								<!-- Always show expanded Temperature Rise Threshold Panel -->
+								<div
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+								>
+									<!-- Temperature Rise Label -->
+									<div class="flex items-center space-x-2">
+										<div class="rounded-full bg-gradient-to-r from-red-500 to-orange-500 p-1">
+											<div class="h-2 w-2 rounded-full bg-white"></div>
+										</div>
+										<span class="text-sm font-medium text-slate-700">Rise ≤</span>
+									</div>
+
+									<!-- Separator -->
+									<div class="h-4 w-px bg-slate-300"></div>
+
+									<!-- Temperature Threshold Options as Slider-like Radio Buttons -->
+									<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
+										<!-- 0.5°C Option -->
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={temperatureRiseThreshold}
+												value="0.5"
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-emerald-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-green-600 peer-checked:hover:to-emerald-600 {temperatureRiseThreshold ===
+												'0.5'
+													? 'text-white'
+													: 'text-slate-600'}"
+											>
+												0.5°C
+											</div>
+										</label>
+
+										<!-- 1.5°C Option -->
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={temperatureRiseThreshold}
+												value="1.5"
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-yellow-500 peer-checked:to-orange-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-yellow-600 peer-checked:hover:to-orange-600 {temperatureRiseThreshold ===
+												'1.5'
+													? 'text-white'
+													: 'text-slate-600'}"
+											>
+												1.5°C
+											</div>
+										</label>
+
+										<!-- 2.5°C Option -->
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={temperatureRiseThreshold}
+												value="2.5"
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-red-500 peer-checked:to-red-600 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-red-600 peer-checked:hover:to-red-700 {temperatureRiseThreshold ===
+												'2.5'
+													? 'text-white'
+													: 'text-slate-600'}"
+											>
+												2.5°C
+											</div>
+										</label>
+									</div>
+								</div>
+							{/if}
 						</div>
 					</div>
 
-					<!-- Toggle Button -->
-					<button
-						onclick={toggleQuestionsPanel}
-						class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg transition-all duration-300 hover:scale-110"
-						aria-label="Toggle questions panel"
+					<!-- Chart Section -->
+					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
+						<h3 class="mb-4 text-lg font-semibold text-slate-700">Demographic Analytics</h3>
+						<div class="rounded-lg bg-slate-50/50">
+							{#if currentCharts && currentCharts.length > 0}
+								<div class="space-y-6">
+									{#each currentCharts as chart, index}
+										<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
+											<Chart
+												chartData={chart.chart_data}
+												title={chart.title}
+												subtitle="Hindu Kush Himalaya Region Demographic Data"
+												chart_type={chart.chart_type}
+											/>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<div class="flex h-80 items-center justify-center">
+									<div class="text-center text-slate-500">
+										<p class="text-sm">Select a question to view related charts</p>
+									</div>
+								</div>
+							{/if}
+						</div>
+					</div>
+				</div>
+
+				<!-- Right part: Information Layer and Questions -->
+				<div class="w-80 flex-shrink-0">
+					<div
+						class="top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
 					>
-						<HelpCircle class="h-6 w-6" />
-					</button>
+						<!-- Information Layer Header -->
+						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+							<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
+								<Layers class="h-5 w-5 text-white" />
+							</div>
+							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
+						</div>
+
+						<!-- Information Layer Content -->
+						<div class="flex-1 overflow-y-auto">
+							{#if information_layers && information_layers.length > 0}
+								<div class="space-y-3">
+									{#each information_layers as layer, index}
+										<button
+											onclick={() => selectInformationLayer(layer.title)}
+											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+											layer.title
+												? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
+												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+										>
+											<div class="flex items-start space-x-3 text-left">
+												<div class="flex-1">
+													<h4
+														class="text-sm font-medium {selectedInformationLayer === layer.title
+															? 'text-green-800'
+															: 'text-slate-800'} mb-1"
+													>
+														{layer.title}
+													</h4>
+												</div>
+											</div>
+										</button>
+									{/each}
+								</div>
+							{:else}
+								<div class="flex h-40 items-center justify-center">
+									<div class="text-center text-slate-500">
+										<Layers class="mx-auto mb-2 h-8 w-8 text-slate-400" />
+										<p class="text-sm">No indicators available</p>
+										<p class="text-xs">Select a question to view map layers</p>
+									</div>
+								</div>
+							{/if}
+						</div>
+
+						<!-- Questions section - now empty, button moved to fixed position -->
+						<div class="relative mt-6 flex min-h-0 flex-1 flex-col pt-6"></div>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
 
+<!-- Conditionally render floating questions button -->
+<div>
+	{#if layoutState !== 'left-full'}
+		<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
+			<div
+				class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+				class:scale-0={!isQuestionsPanelOpen}
+				class:scale-100={isQuestionsPanelOpen}
+				class:opacity-0={!isQuestionsPanelOpen}
+				class:opacity-100={isQuestionsPanelOpen}
+				class:pointer-events-none={!isQuestionsPanelOpen}
+			>
+				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+					<div class="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 p-2">
+						<Info class="h-4 w-4 text-white" />
+					</div>
+					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
+				</div>
+
+				<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
+					{#each questions as questionItem, index}
+						<button
+							class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
+							questionItem.id
+								? 'border-blue-500 bg-blue-50 shadow-md'
+								: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+							onclick={() => selectQuestion(questionItem.id)}
+						>
+							<div class="flex items-start space-x-2">
+								<div class="mt-1 flex-shrink-0">
+									{#if selectedQuestionId === questionItem.id}
+										<CheckCircle class="h-4 w-4 text-blue-600" />
+									{:else}
+										<div
+											class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
+										></div>
+									{/if}
+								</div>
+								<p
+									class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+										? 'font-medium text-blue-700'
+										: 'text-slate-600 group-hover:text-slate-800'}"
+								>
+									{questionItem.question}
+								</p>
+							</div>
+						</button>
+					{/each}
+				</div>
+			</div>
+
+			<button
+				onclick={toggleQuestionsPanel}
+				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
+				aria-label="Toggle questions panel"
+			>
+				<HelpCircle class="h-6 w-6" />
+			</button>
+		</div>
+	{/if}
+</div>
+
 <style>
+	/* Ensure map containers resize properly */
+	.map-container {
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.map-element {
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
+		transition: all 0.3s ease;
+		overflow: hidden;
+	}
+
+	/* Force OpenLayers map to be responsive */
+	:global(.ol-viewport) {
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
+		overflow: hidden !important;
+	}
+
+	:global(.ol-overlaycontainer-stopevent) {
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
+	}
+
+	/* Ensure flex children don't overflow */
+	:global(.flex > *) {
+		min-width: 0;
+	}
+
+	/* Compact Time Slider Styles */
+	.compact-slider {
+		-webkit-appearance: none;
+		appearance: none;
+		height: 4px;
+		border-radius: 2px;
+		background: linear-gradient(to right, #e2e8f0 0%, #cbd5e1 100%);
+		outline: none;
+		transition: all 0.3s ease;
+	}
+
+	.compact-slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #6366f1, #8b5cf6);
+		cursor: pointer;
+		border: 1px solid white;
+		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
+		transition: all 0.2s ease;
+	}
+
+	.compact-slider::-webkit-slider-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+	}
+
+	.compact-slider::-moz-range-thumb {
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #6366f1, #8b5cf6);
+		cursor: pointer;
+		border: 1px solid white;
+		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
+		transition: all 0.2s ease;
+	}
+
+	.compact-slider::-moz-range-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+	}
+
+	.scrollbar-hide {
+		scrollbar-width: none; /* Firefox */
+		-ms-overflow-style: none; /* Internet Explorer 10+ */
+	}
+
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none; /* Safari and Chrome */
+	}
+
+	.custom-shadow {
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); /* bigger shadow for Questions Button */
+		transition:
+			box-shadow 0.3s ease,
+			transform 0.3s ease;
+	}
+
+	.custom-shadow:hover {
+		/* box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);  */
+		transform: scale(1.1);
+	}
 </style>
+
+
+
+<!-- Changes Made -->
+ <!--
+- Scrollbar in Story Panel - Hidden
+- BaseMap Layer Changed to OSM Carto
+- Base Layers Added in Layer Toggle Panel
+- Questions Toggle Button - Hidden in Expanded Story view 
+  -->

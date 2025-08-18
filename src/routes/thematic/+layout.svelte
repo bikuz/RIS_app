@@ -1,6 +1,6 @@
 <script lang="ts">
 	// import '../app.css';
-	import { Cloud, Users, Leaf, Snowflake, Sun, Mountain, Wind, ChevronRight } from '@lucide/svelte';
+	import { Home, Cloud, Users, Leaf, Snowflake, Sun, Mountain, Wind, ChevronRight } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
@@ -38,6 +38,16 @@
 <div class="min-h-screen bg-gray-50 p-6">
 	<!-- Top Navigation -->
 	<nav class="mb-6 flex flex-wrap gap-6">
+		<button onclick={()=>goto('/')} >
+			<div class="flex items-center space-x-3">
+				<div
+					class="rounded-lg p-2 bg-white/20">
+					<Home/>
+				</div>
+				<span class="font-semibold">Home</span>
+			</div>
+		</button>
+
 		{#each Object.entries(topicIcons) as [topic, IconComponent]}
 			<button
 				onclick={() => selectTopic(topic)}

@@ -24,13 +24,31 @@
 	let selectedLayer = $state('elevation');
 	// let mapStyle = 'terrain';
 	
-	const layers = [
-        { id: 'forest', name: 'HKH boundary', color: 'bg-green-500' },
-		{ id: 'elevation', name: 'Elevation', color: 'bg-amber-500' },
-		{ id: 'climate', name: 'Slope', color: 'bg-blue-500' },
-		// { id: 'population', name: 'Population Density', color: 'bg-purple-500' },
+    let layerVisibility = $state<Record<string, boolean>>({
+        hkhoutline: false,
+        river: true,  // Default to visible
+        slope: false
+    });
+    let riverLayer: any;
+
+    // Toggle layer visibility
+    function toggleLayer(layerName: string) {
+        layerVisibility[layerName] = !layerVisibility[layerName];
+        
+        // Update river layer visibility if it exists
+        if (layerName === 'river' && riverLayer) {
+            riverLayer.visible = layerVisibility.river;
+        }
+        // Add similar logic for other layers when implemented
+    }
+
+	// const layers = [
+    //     { id: 'forest', name: 'HKH boundary', color: 'bg-green-500' },
+	// 	{ id: 'elevation', name: 'River', color: 'bg-amber-500' },
+	// 	{ id: 'climate', name: 'Slope', color: 'bg-blue-500' },
+	// 	// { id: 'population', name: 'Population Density', color: 'bg-purple-500' },
 		
-	];
+	// ];
      
 	onMount(async () => {
         if (!browser) return;
@@ -43,6 +61,7 @@
                 SceneView,
                 Basemap,
                 ElevationLayer,
+                MapImageLayer,
                 GraphicsLayer,
                 Graphic,
                 Point,
@@ -52,6 +71,7 @@
                 import('@arcgis/core/views/SceneView'),
                 import('@arcgis/core/Basemap'),
                 import('@arcgis/core/layers/ElevationLayer'),
+                import('@arcgis/core/layers/MapImageLayer'),
                 import('@arcgis/core/layers/GraphicsLayer'),
                 import('@arcgis/core/Graphic'),
                 import('@arcgis/core/geometry/Point'),
@@ -63,11 +83,31 @@
                 url: "//elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
             });
 
+            // Create the river network layer
+            riverLayer = new MapImageLayer.default({
+                url: "https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer",
+                title: "HKH Physiography ",
+                sublayers:[
+                    {
+                        id:3,
+                        title:'River',
+                        visible:true
+                    },
+                    // {
+                    //     id:4,
+                    //     title:'Mountain Region',
+                    //     visible:true
+                    // }
+                ] 
+                 
+            });
+
             const map = new Map.default({
                 basemap: "satellite", // You can use "streets", "hybrid", "terrain", etc.
                 ground: {
                     layers: [elevationLayer]
                 },
+                layers: [riverLayer] 
             });
 
             view = new SceneView.default({
@@ -87,20 +127,20 @@
                     // heading: 15
                 },
                 environment: {
-                    lighting: {
-                        // date: new Date("June 21, 2019 12:00:00 UTC"),
-                        directShadowsEnabled: true,
-                        ambientOcclusionEnabled: true
-                    },
-                    atmosphereEnabled: true,
-                    starsEnabled: true,
+                    // lighting: {
+                    //     // date: new Date("June 21, 2019 12:00:00 UTC"),
+                    //     directShadowsEnabled: true,
+                    //     ambientOcclusionEnabled: true
+                    // },
+                    // atmosphereEnabled: true,
+                    // starsEnabled: true,
                 }
             });
 
             const everestPoint = new Point.default({
                 longitude: 86.9250,
                 latitude: 27.9881,
-                z: 8850
+                z: 9000
             });
 
             const labelGraphic = new Graphic.default({
@@ -142,12 +182,12 @@
 
                 view.goTo({
                     position: {
-                        longitude: 86.693581,
-                        latitude: 27.982193,
-                        z: 9954
+                        longitude: 85.744974,
+                        latitude: 28.052163,
+                        z: 43778
                     },
-                    tilt: 80.6,
-                    heading: 94.3  // Looking from the north
+                    tilt: 72.8,
+                    heading: 93.9  // Looking from the north
                 });
             });
             console.log('ArcGIS 3D Map loaded successfully');
@@ -204,7 +244,7 @@
         
         <!-- Map Display -->
         <div class="flex-1 relative">
-            <div class="map-container h-96 lg:h-[500px] flex items-center justify-center relative overflow-hidden"
+            <div class="map-container h-96 lg:h-[600px] flex items-center justify-center relative overflow-hidden"
             bind:this={mapContainer}
             >
             {#if isLoading}
@@ -217,24 +257,24 @@
             {/if}
 
             <!-- Camera parameters display -->
-  <div class="absolute bottom-4 left-4 bg-white bg-opacity-80 p-3 rounded-lg shadow-md text-sm">
-    <div class="grid grid-cols-2 gap-2">
-      <div class="font-semibold">Latitude:</div>
-      <div>{latitude.toFixed(6)}°</div>
-      
-      <div class="font-semibold">Longitude:</div>
-      <div>{longitude.toFixed(6)}°</div>
-      
-      <div class="font-semibold">Altitude:</div>
-      <div>{altitude?.toFixed(0) || 0} m</div>
-      
-      <div class="font-semibold">Tilt:</div>
-      <div>{tilt?.toFixed(1) || 0}°</div>
-      
-      <div class="font-semibold">Heading:</div>
-      <div>{heading?.toFixed(1) || 0}°</div>
-    </div>
-  </div>
+            <div class="absolute bottom-4 left-4 bg-white bg-opacity-80 p-3 rounded-lg shadow-md text-sm">
+                <div class="grid grid-cols-2 gap-2">
+                <div class="font-semibold">Latitude:</div>
+                <div>{latitude.toFixed(6)}°</div>
+                
+                <div class="font-semibold">Longitude:</div>
+                <div>{longitude.toFixed(6)}°</div>
+                
+                <div class="font-semibold">Altitude:</div>
+                <div>{altitude?.toFixed(0) || 0} m</div>
+                
+                <div class="font-semibold">Tilt:</div>
+                <div>{tilt?.toFixed(1) || 0}°</div>
+                
+                <div class="font-semibold">Heading:</div>
+                <div>{heading?.toFixed(1) || 0}°</div>
+                </div>
+            </div>
                 <!-- bg-gradient-to-br from-green-100 via-blue-100 to-purple-100 -->
                 <!-- Simulated map background -->
                 <!-- <div class="absolute inset-0 opacity-20">
@@ -252,10 +292,29 @@
                 
                 <!-- Map overlay info -->
                 <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-                    <div class="text-sm text-gray-600">
-                        <div class="font-bold">Layers</div>
-                        <div><input type="checkbox"/><span class="ml-2">HKH boundary</span></div>
-                        <div><input type="checkbox"/><span class="ml-2">Elevation</span></div>
+                    <div class="text-sm text-gray-700 space-y-2">
+                        <!-- HKH Boundary Layer -->
+                        <label class="flex items-center space-x-2 cursor-pointer group">
+                            <input 
+                            type="checkbox" 
+                            checked={layerVisibility.hkhoutline}
+                            on:change={() => toggleLayer('hkhoutline')}
+                            class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 group-hover:border-blue-400"
+                            />
+                            <span class="group-hover:text-blue-600">HKH Outline</span>
+                        </label>
+
+                        <!-- River Layer -->
+                        <label class="flex items-center space-x-2 cursor-pointer group">
+                            <input 
+                            type="checkbox" 
+                            checked={layerVisibility.river}
+                            on:change={() => toggleLayer('river')}
+                            class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 group-hover:border-blue-400"
+                            />
+                            <span class="group-hover:text-blue-600">River Network</span>
+                        </label>
+
                         <div><input type="checkbox"/><span class="ml-2">Slope</span></div>
                     </div>
                 </div>
