@@ -172,8 +172,7 @@
 					new TileLayer({
 						// source: new OSM()
 						source: new XYZ({
-							url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-							attributions: '© OpenStreetMap contributors © CARTO'
+							url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
 						})
 					})
 				],
@@ -1315,7 +1314,7 @@
 									>
 										<!-- Time Label -->
 										<div class="flex items-center space-x-2">
-											<Calendar class="h-4 w-4 text-indigo-600" />
+											<Calendar class="h-4 w-4 text-blue-600" />
 											<span class="text-sm font-medium text-slate-700">Time</span>
 										</div>
 
@@ -1326,7 +1325,7 @@
 										<button
 											on:click={stepBackward}
 											disabled={currentTimeIndex === 0}
-											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
+											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
 											title="Previous Year"
 										>
 											<SkipBack class="h-3.5 w-3.5" />
@@ -1335,7 +1334,7 @@
 										<!-- Play/Pause -->
 										<button
 											on:click={togglePlayback}
-											class="rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 p-2 text-white shadow-sm transition-all duration-200 hover:from-indigo-600 hover:to-purple-600 hover:shadow-md"
+											class="rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 p-2 text-white shadow-sm transition-all duration-200 hover:from-blue-600 hover:to-cyan-600 hover:shadow-md"
 											title={isPlaying ? 'Pause' : 'Play'}
 										>
 											{#if isPlaying}
@@ -1349,7 +1348,7 @@
 										<button
 											on:click={stepForward}
 											disabled={currentTimeIndex === timePeriods.length - 1}
-											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
+											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
 											title="Next Year"
 										>
 											<SkipForward class="h-3.5 w-3.5" />
@@ -1357,7 +1356,7 @@
 
 										<!-- Compact Time Slider -->
 										<div class="flex items-center space-x-2">
-											<span class="min-w-[2.5rem] text-xs font-medium text-indigo-600"
+											<span class="min-w-[2.5rem] text-xs font-medium text-blue-600"
 												>{timePeriods[currentTimeIndex].label}</span
 											>
 											<input
@@ -1387,7 +1386,7 @@
 								>
 									<!-- Analysis Label -->
 									<div class="flex items-center space-x-2">
-										<Layers class="h-4 w-4 text-indigo-600" />
+										<Layers class="h-4 w-4 text-blue-600" />
 										<span class="text-sm font-medium text-slate-700">Trend</span>
 									</div>
 
@@ -1400,7 +1399,7 @@
 											type="radio"
 											bind:group={trendAnalysisMode}
 											value="overall"
-											class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+											class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
 										/>
 										<span class="text-sm font-medium text-slate-700">Overall</span>
 									</label>
@@ -1411,7 +1410,7 @@
 											type="radio"
 											bind:group={trendAnalysisMode}
 											value="significant"
-											class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+											class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
 										/>
 										<span class="text-sm font-medium text-slate-700">Significant</span>
 									</label>
@@ -1423,7 +1422,7 @@
 								>
 									<!-- Temperature Rise Label -->
 									<div class="flex items-center space-x-2">
-										<div class="rounded-full bg-gradient-to-r from-red-500 to-orange-500 p-1">
+										<div class="rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 p-1">
 											<div class="h-2 w-2 rounded-full bg-white"></div>
 										</div>
 										<span class="text-sm font-medium text-slate-700">Temperature Rise > </span>
@@ -1581,14 +1580,14 @@
 											on:click={() => selectInformationLayer(layer.title)}
 											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
 											layer.title
-												? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
+												? 'border-blue-300 bg-gradient-to-r from-blue-50/90 to-cyan-50/90 shadow-md'
 												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
 										>
 											<div class="flex items-start space-x-3 text-left">
 												<div class="flex-1">
 													<h4
 														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'text-green-800'
+															? 'text-blue-800'
 															: 'text-slate-800'} mb-1"
 													>
 														{layer.title}
@@ -1629,7 +1628,7 @@
 		class:pointer-events-none={!isQuestionsPanelOpen}
 	>
 		<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-			<div class="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 p-2">
+			<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
 				<Info class="h-4 w-4 text-white" />
 			</div>
 			<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
@@ -1669,7 +1668,7 @@
 
 	<button
 		on:click={toggleQuestionsPanel}
-		class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
+		class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
 		aria-label="Toggle questions panel"
 	>
 		<HelpCircle class="h-6 w-6" />
