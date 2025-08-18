@@ -38,9 +38,9 @@
 	{@render children?.()}
 
 	<footer class=" bg-gradient-to-r from-blue-600 to-green-600 py-12 text-white">
-		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-			<div class="grid gap-8 md:grid-cols-4">
-				<div>
+		<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="grid gap-10 md:grid-cols-5">
+				<div class="col-span-2">
 					<div class="mb-4 flex items-center space-x-2">
 						<!-- <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
 								<Database class="w-5 h-5 text-white" />

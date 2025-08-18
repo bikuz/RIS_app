@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {  Mountain, Globe, Users, Snowflake, Trees, Shield, MapPin, Waves } from '@lucide/svelte';
+	import {  Mountain, Globe, Users, Snowflake, Trees, Shield, MapPin, Waves, Pentagon } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 
 	// import Map from './Map.svelte';
@@ -11,29 +11,16 @@
 	});
 	
 	const stats = [
+    
     // {
-    //   icon: Mountain,
-    //   value: "4.3M km²",
-    //   label: "Total area",
-    //   color: "from-amber-500 to-orange-600",
-    //   bgColor: "bg-gradient-to-br from-amber-50 to-orange-50",
+    //   icon: Globe,
+    //   value: "200-8,848 m",
+    //   label: "Elevation range",
+    //   color: "from-emerald-500 to-green-600",
+    // //   bgColor: "bg-gradient-to-br from-emerald-50 to-green-50",
+	// bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
     // },
-    {
-      icon: Globe,
-      value: "200-8,848 m",
-      label: "Elevation range",
-      color: "from-emerald-500 to-green-600",
-    //   bgColor: "bg-gradient-to-br from-emerald-50 to-green-50",
-	bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
-    },
-    {
-      icon: Users,
-      value: "240M",
-      label: "Population",
-      color: "from-violet-500 to-purple-600",
-    //   bgColor: "bg-gradient-to-br from-violet-50 to-purple-50",
-	bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
-    },
+    
 	
     {
       icon: Snowflake,
@@ -43,14 +30,14 @@
     //   bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
 	bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
     },
-    {
-      icon: Waves,
-      value: "4,587 km²",
-      label: "Glacier area",
-      color: "from-sky-500 to-blue-600",
-    //   bgColor: "bg-gradient-to-br from-sky-50 to-blue-50",
-	bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
-    },
+    // {
+    //   icon: Waves,
+    //   value: "4,587 km²",
+    //   label: "Glacier area",
+    //   color: "from-sky-500 to-blue-600",
+    // //   bgColor: "bg-gradient-to-br from-sky-50 to-blue-50",
+	// bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
+    // },
     // {
     //   icon: Snowflake,
     //   value: "9,845",
@@ -59,40 +46,56 @@
     // //   bgColor: "bg-gradient-to-br from-slate-50 to-gray-50",
 	// bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
     // },
-	{
-      icon: Mountain,
-      value: "200-8,848 m",
-      label: "Elevation range",
-      color: "from-amber-500 to-orange-600",
-    //   bgColor: "bg-gradient-to-br from-emerald-50 to-green-50",
-	bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
-    },
-    // {
+// {
     //   icon: Mountain,
     //   value: "4,628",
     //   label: "Ice reserves",
     //   color: "from-indigo-500 to-blue-600",
     //   bgColor: "bg-gradient-to-br from-indigo-50 to-blue-50",
     // },
+	{
+      icon: Pentagon,
+      value: "4.3M km²",
+      label: "Total area",
+      color: "from-amber-500 to-orange-600",
+      bgColor: "bg-gradient-to-br from-amber-50 to-orange-50",
+    },
+	{
+      icon: Users,
+      value: "270+ M",
+      label: "Population",
+      color: "from-violet-500 to-purple-600",
+    //   bgColor: "bg-gradient-to-br from-violet-50 to-purple-50",
+	bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
+    },
+	{
+      icon: Mountain,
+      value: "28-8,848 m",
+      label: "Elevation range",
+      color: "from-amber-500 to-orange-600",
+    //   bgColor: "bg-gradient-to-br from-emerald-50 to-green-50",
+	bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
+    },
+    
     {
       icon: Trees,
-      value: "861,350 km²",
+      value: "841850 km²",
       label: "Forest area",
       color: "from-green-500 to-emerald-600",
     //   bgColor: "bg-gradient-to-br from-green-50 to-emerald-50",
 	bgColor: "bg-gradient-to-br from-cyan-50 to-blue-50",
-    },
-    {
-      icon: Shield,
-      value: "926,125 km²",
-      label: "Protected area",
-      color: "from-teal-500 to-cyan-600",
-      bgColor: "bg-gradient-to-br from-teal-50 to-cyan-50",
-    },
+    }
+    // {
+    //   icon: Shield,
+    //   value: "926,125 km²",
+    //   label: "Protected area",
+    //   color: "from-teal-500 to-cyan-600",
+    //   bgColor: "bg-gradient-to-br from-teal-50 to-cyan-50",
+    // },
   ]
 
-  const topRowStats = $derived(stats.slice(0, 4))
-  const leftColumnStats = $derived(stats.slice(4))
+//   const topRowStats = $derived(stats.slice(0, 4))
+  const leftColumnStats = $derived(stats.slice(1))
 </script>
 
 <section class="relative pt-10 pb-8   ">
@@ -130,10 +133,10 @@
 		
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8 ">
 				<div class="col-span-1">
-					<div class="space-y-4 ">
+					<div class="space-y-0 ">
 						{#each leftColumnStats as stat, index}
 						  <div
-							class="rounded-2xl p-5 border border-white/50 backdrop-blur-sm group"
+							class="rounded-2xl p-4  group"
 						  >
 							<!-- Changed to vertical layout: icon at top, text at bottom -->
 							<div class="text-center">

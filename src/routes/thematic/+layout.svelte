@@ -38,10 +38,13 @@
 <div class="min-h-screen bg-gray-50 p-6">
 	<!-- Top Navigation -->
 	<nav class="mb-6 flex flex-wrap gap-6">
-		<button onclick={()=>goto('/')} >
+		<button onclick={()=>goto('/')} 
+			class="group min-w-fit flex-1 transform rounded-xl p-4 text-left transition-all duration-300 hover:scale-[1.02] 
+			border border-slate-200/50 bg-white/50 text-slate-700 hover:bg-white/80 hover:shadow-md "
+			>
 			<div class="flex items-center space-x-3">
 				<div
-					class="rounded-lg p-2 bg-white/20">
+					class="rounded-lg p-2 bg-slate-100 group-hover:bg-slate-200 ">
 					<Home/>
 				</div>
 				<span class="font-semibold">Home</span>
