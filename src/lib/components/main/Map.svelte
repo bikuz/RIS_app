@@ -2,6 +2,7 @@
 
 	import { onMount, onDestroy } from 'svelte';
   	import { browser } from '$app/environment';
+    import { Layers, List, RotateCcw, HomeIcon } from '@lucide/svelte';
     
     import '@arcgis/core/assets/esri/themes/light/main.css';
     
@@ -25,21 +26,51 @@
 	// let mapStyle = 'terrain';
 	
     let layerVisibility = $state<Record<string, boolean>>({
-        hkhoutline: false,
+        hkhOutline: true,
         river: true,  // Default to visible
-        slope: false
+        mountainRegion: false
     });
-    let riverLayer: any;
+    let layerListCollapsed = $state(false);
+    let legendCollapsed = $state(false);
+    let hkhOutline:any;
+    let physioLayer: any;
+    let originalCameraPosition: any = null;
+    
 
     // Toggle layer visibility
     function toggleLayer(layerName: string) {
         layerVisibility[layerName] = !layerVisibility[layerName];
         
         // Update river layer visibility if it exists
-        if (layerName === 'river' && riverLayer) {
-            riverLayer.visible = layerVisibility.river;
+        if (layerName === 'river' && physioLayer) {
+            const sublayer = physioLayer.findSublayerById(3);
+            if (sublayer)
+                sublayer.visible = layerVisibility.river;
         }
-        // Add similar logic for other layers when implemented
+         
+        if(layerName === 'hkhOutline' && hkhOutline){
+            const sublayer = hkhOutline.findSublayerById(0);
+            if (sublayer)
+                sublayer.visible = layerVisibility.hkhOutline;
+        }
+
+        if(layerName === 'mountainRegion' && physioLayer){
+            const sublayer = physioLayer.findSublayerById(4);
+            if (sublayer)
+                sublayer.visible = layerVisibility.mountainRegion;
+        }
+       
+        
+    }
+
+    // Reset map to original camera position
+    function resetMapView() {
+        if (view && originalCameraPosition) {
+            view.goTo(originalCameraPosition, {
+                duration: 2000,
+                easing: "ease-out"
+            });
+        }
     }
 
 	// const layers = [
@@ -65,7 +96,8 @@
                 GraphicsLayer,
                 Graphic,
                 Point,
-                TextSymbol 
+                TextSymbol,
+                Legend
             ] = await Promise.all([
                 import('@arcgis/core/Map'),
                 import('@arcgis/core/views/SceneView'),
@@ -75,7 +107,8 @@
                 import('@arcgis/core/layers/GraphicsLayer'),
                 import('@arcgis/core/Graphic'),
                 import('@arcgis/core/geometry/Point'),
-                import('@arcgis/core/symbols/TextSymbol')
+                import('@arcgis/core/symbols/TextSymbol'),
+                import('@arcgis/core/widgets/Legend')
             ]);
 
             // Create elevation layer for 3D terrain
@@ -83,31 +116,50 @@
                 url: "//elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
             });
 
-            // Create the river network layer
-            riverLayer = new MapImageLayer.default({
-                url: "https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer",
-                title: "HKH Physiography ",
+            // create HKH outline layer
+            hkhOutline=new MapImageLayer.default({
+                url: "https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer",
+                title: "HKH Outline ",
                 sublayers:[
+                    {
+                        id:0,
+                        title:'',
+                        visible:true
+                    },
+                    
+                ] 
+                 
+            });
+            // Create the river network layer
+            physioLayer = new MapImageLayer.default({
+                url: "https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer",
+                title: "Physiography ",
+                sublayers:[
+                    {
+                        id:4,
+                        title:'Mountain Region',
+                        visible:layerVisibility.mountainRegion
+                    },
                     {
                         id:3,
                         title:'River',
-                        visible:true
+                        visible:layerVisibility.river
                     },
-                    // {
-                    //     id:4,
-                    //     title:'Mountain Region',
-                    //     visible:true
-                    // }
+                   
                 ] 
                  
             });
 
+             
+
             const map = new Map.default({
                 basemap: "satellite", // You can use "streets", "hybrid", "terrain", etc.
                 ground: {
-                    layers: [elevationLayer]
+                    layers: [elevationLayer],
+                    opacity: 1,
+                    surfaceColor: [255, 255, 255, 0]
                 },
-                layers: [riverLayer] 
+                layers: [physioLayer,hkhOutline,]  
             });
 
             view = new SceneView.default({
@@ -137,6 +189,84 @@
                 }
             });
 
+            // Add collapsible legend widget
+            const legend = new Legend.default({
+                view: view,
+                style: {
+                    type: "classic",
+                    layout: "auto"
+                }
+            });
+            
+            // // Create a custom container for the collapsible legend
+            // const legendContainer = document.createElement("div");
+            // legendContainer.className = "esri-widget esri-legend";
+            // legendContainer.style.cssText = `
+            //     background: white;
+            //     border-radius: 8px;
+            //     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            //     max-height: 300px;
+            //     overflow: hidden;
+            //     transition: max-height 0.3s ease;
+            // `;
+            
+            // // Create header with collapse button
+            // const header = document.createElement("div");
+            // header.style.cssText = `
+            //     padding: 8px 12px;
+            //     background: #f8f9fa;
+            //     border-bottom: 1px solid #e9ecef;
+            //     display: flex;
+            //     justify-content: space-between;
+            //     align-items: center;
+            //     cursor: pointer;
+            //     font-weight: 600;
+            //     font-size: 14px;
+            // `;
+            // header.innerHTML = `
+                
+            //     <span class="ml-2">Legend</span>
+            //     <span class="collapse-icon" style="transition: transform 0.3s ease;">▼</span>
+            // `;
+            
+            // // Create content container
+            // const content = document.createElement("div");
+            // content.style.cssText = `
+            //     padding: 8px;
+            //     max-height: 250px;
+            //     overflow-y: auto;
+            // `;
+            
+            // // Add legend content to the container
+            // legend.container = content;
+            
+            // // Assemble the collapsible legend
+            // legendContainer.appendChild(header);
+            // legendContainer.appendChild(content);
+            
+            // // Add collapse functionality
+            // let isCollapsed = false;
+            // header.addEventListener("click", () => {
+            //     isCollapsed = !isCollapsed;
+            //     const icon = header.querySelector(".collapse-icon") as HTMLElement;
+            //     if (isCollapsed) {
+            //         content.style.maxHeight = "0px";
+            //         content.style.padding = "0px 8px";
+            //         if (icon) icon.style.transform = "rotate(-90deg)";
+            //     } else {
+            //         content.style.maxHeight = "250px";
+            //         content.style.padding = "8px";
+            //         if (icon) icon.style.transform = "rotate(0deg)";
+            //     }
+            // });
+            
+            // // Add to view UI
+            // view.ui.add(legendContainer, "bottom-right");
+
+            // Add legend content
+            const legendContent = document.getElementById('legend-content');
+            legend.container = legendContent;
+
             const everestPoint = new Point.default({
                 longitude: 86.9250,
                 latitude: 27.9881,
@@ -158,29 +288,7 @@
 
             // Wait for view to load
             await view.when(() => {
-                // view.goTo({
-                //     position: {
-                //     // Mount Everest coordinates
-                //     longitude: 86.9250, 
-                //     latitude: 27.9881,
-                //     // Elevation in meters (higher than Everest's summit)
-                //     z: 14000 
-                //     },
-                //     tilt: 65,  // Angle looking downward (0 = straight down, 90 = horizontal)
-                //     heading: 45  // Rotation around the point (0 = north, 90 = east)
-                // });
-
-                // view.goTo({
-                //     position: {
-                //         longitude: 85.9250,
-                //         latitude: 27.9881,
-                //         z: 15000
-                //     },
-                //     tilt: 45,
-                //     heading: 0
-                //     });
-
-                view.goTo({
+                const initialPosition = {
                     position: {
                         longitude: 85.744974,
                         latitude: 28.052163,
@@ -188,7 +296,12 @@
                     },
                     tilt: 72.8,
                     heading: 93.9  // Looking from the north
-                });
+                };
+                
+                // Store the original camera position for reset functionality
+                originalCameraPosition = initialPosition;
+                
+                view.goTo(initialPosition);
             });
             console.log('ArcGIS 3D Map loaded successfully');
             // await loadArcGISCSS();
@@ -197,21 +310,21 @@
 
             // Update camera parameters on move
             view.watch('camera', (camera:any) => {
-            // Convert camera position to geographic coordinates
-            const point = camera.position;
-            const spatialReference = view.spatialReference;
-            const geographicPoint = point.clone();
-            
-            if (spatialReference.isWebMercator) {
-                geographicPoint.spatialReference = spatialReference;
-            }
-            
-            // Update reactive variables
-            longitude = geographicPoint.longitude;
-            latitude = geographicPoint.latitude;
-            altitude = geographicPoint.z;
-            tilt = camera.tilt;
-            heading = camera.heading;
+                // Convert camera position to geographic coordinates
+                const point = camera.position;
+                const spatialReference = view.spatialReference;
+                const geographicPoint = point.clone();
+                
+                if (spatialReference.isWebMercator) {
+                    geographicPoint.spatialReference = spatialReference;
+                }
+                
+                // Update reactive variables
+                longitude = geographicPoint.longitude;
+                latitude = geographicPoint.latitude;
+                altitude = geographicPoint.z;
+                tilt = camera.tilt;
+                heading = camera.heading;
             });
             
         } catch (error) {
@@ -257,7 +370,7 @@
             {/if}
 
             <!-- Camera parameters display -->
-            <div class="absolute bottom-4 left-4 bg-white bg-opacity-80 p-3 rounded-lg shadow-md text-sm">
+            <div class="absolute bottom-4 right-4 bg-white bg-opacity-80 p-3 rounded-lg shadow-md text-sm hidden">
                 <div class="grid grid-cols-2 gap-2">
                 <div class="font-semibold">Latitude:</div>
                 <div>{latitude.toFixed(6)}°</div>
@@ -291,33 +404,99 @@
                 </div> -->
                 
                 <!-- Map overlay info -->
-                <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-                    <div class="text-sm text-gray-700 space-y-2">
-                        <!-- HKH Boundary Layer -->
-                        <label class="flex items-center space-x-2 cursor-pointer group">
-                            <input 
-                            type="checkbox" 
-                            checked={layerVisibility.hkhoutline}
-                            on:change={() => toggleLayer('hkhoutline')}
-                            class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 group-hover:border-blue-400"
-                            />
-                            <span class="group-hover:text-blue-600">HKH Outline</span>
-                        </label>
+                <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden transition-all duration-300" 
+                     style="max-height: {layerListCollapsed ? '40px' : '200px'}">
+                    <!-- Header -->
+                    <div class="px-3 py-2 bg-gray-50 border-b border-gray-200 cursor-pointer flex items-center justify-between"
+                         on:click={() => layerListCollapsed = !layerListCollapsed}>
+                        <div class="flex items-center ">
+                            <Layers class="w-4 h-4 text-gray-600" />
+                            <span class="text-sm font-semibold text-gray-700 ml-2"  style="display: {layerListCollapsed ? 'none' : 'block'}">Layers</span>
+                        </div>
+                        <!-- <span class="text-gray-500 transition-transform duration-300" 
+                              style="transform: rotate({layerListCollapsed ? '-90deg' : '0deg'})">▼</span> -->
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="p-3 transition-all duration-300" 
+                         style="display: {layerListCollapsed ? 'none' : 'block'}; max-height: {layerListCollapsed ? '0px' : '150px'}; max-width: {layerListCollapsed ? '0px' : 'auto'}">
+                        <div class="text-sm text-gray-700 space-y-2">
+                            <!-- HKH Boundary Layer -->
+                            <label class="flex items-center space-x-2 cursor-pointer group">
+                                <input 
+                                type="checkbox" 
+                                checked={layerVisibility.hkhOutline}
+                                on:change={() => toggleLayer('hkhOutline')}
+                                class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 group-hover:border-blue-400"
+                                />
+                                <span class="group-hover:text-blue-600">HKH Outline</span>
+                            </label>
 
-                        <!-- River Layer -->
-                        <label class="flex items-center space-x-2 cursor-pointer group">
-                            <input 
-                            type="checkbox" 
-                            checked={layerVisibility.river}
-                            on:change={() => toggleLayer('river')}
-                            class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 group-hover:border-blue-400"
-                            />
-                            <span class="group-hover:text-blue-600">River Network</span>
-                        </label>
+                            <!-- River Layer -->
+                            <label class="flex items-center space-x-2 cursor-pointer group">
+                                <input 
+                                type="checkbox" 
+                                checked={layerVisibility.river}
+                                on:change={() => toggleLayer('river')}
+                                class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 group-hover:border-blue-400"
+                                />
+                                <span class="group-hover:text-blue-600">River Network</span>
+                            </label>
 
-                        <div><input type="checkbox"/><span class="ml-2">Slope</span></div>
+                            <!-- Mountain Region Layer -->
+                            <label class="flex items-center space-x-2 cursor-pointer group">
+                                <input 
+                                type="checkbox" 
+                                checked={layerVisibility.mountainRegion}
+                                on:change={() => toggleLayer('mountainRegion')}
+                                class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 group-hover:border-blue-400"
+                                />
+                                <span class="group-hover:text-blue-600">Mountain Region</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
+
+                                 <!-- Reset button -->
+                 <div class="absolute top-4 left-16 bg-white/90 backdrop-blur-sm shadow-lg overflow-hidden transition-all duration-300">
+                     <!-- <button 
+                         on:click={resetMapView}
+                         class="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
+                         title="Reset to original view"
+                     >
+                         <RotateCcw class="w-5 h-5" />
+                     </button> -->
+
+                     <div class="px-2 py-2 bg-gray-50 border-b border-gray-200 cursor-pointer flex items-center justify-between"
+                        on:click={resetMapView}>
+                        <div class="flex items-center ">
+                            <HomeIcon class="w-4 h-4 text-gray-600" />
+                        </div>
+                        
+                    </div>
+                 </div>
+
+                 <!-- Legend overlay -->
+                 <div class="absolute bottom-6 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden transition-all duration-300" 
+                      style="max-height: {legendCollapsed ? '40px' : '300px'}">
+                    <div class="px-3 py-2 bg-gray-50 border-b border-gray-200 cursor-pointer flex items-center justify-between"
+                         on:click={() => legendCollapsed = !legendCollapsed}>
+                         <div class="flex items-center ">
+                            <List class="w-4 h-4 text-gray-600" />
+                            <span class="text-sm font-semibold text-gray-700 ml-2"  style="display: {legendCollapsed ? 'none' : 'block'}">Legend</span>
+                         </div>
+                        
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-3 transition-all duration-300 bg-white overflow-y-auto" 
+                         style="display: {legendCollapsed ? 'none' : 'block'}; max-height: {legendCollapsed ? '0px' : '300px'}; max-width: {legendCollapsed ? '0px' : 'auto'}">
+                        <div id="legend-content" class="text-sm text-gray-700">
+                           
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 

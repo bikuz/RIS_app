@@ -16,7 +16,7 @@
 		</div>
 		
 		<!-- Removed cards, using flat design with hover effects -->
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-8 ">
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 xl:grid-cols-7 gap-8 ">
 			<!-- {#each thematicAreas as area}
 				<a 
 					href={area.href}
@@ -39,10 +39,12 @@
             {#each Object.entries(topicIcons) as [topic, IconComponent]}
                 <button 
                 onclick={() => selectTopic(topic)}
-                class="group block p-8 bg-gradient-to-br from-gray-100 to-blue-50  hover:bg-gray-100 hover:shadow-lg transition-all duration-300 rounded-lg "
+                class="group block p-8 bg-gradient-to-br from-gray-100 to-blue-50 transition-all duration-300 rounded-lg 
+						hover:bg-gray-100 hover:shadow-lg hover:cursor-pointer"
             >
                 <div class="flex flex-col items-center text-center space-y-4">
-                    <div class="p-4 rounded-full bg-gradient-to-r {getTopicColor(topic)} text-white transition-colors">
+                    <div class="p-4 rounded-full bg-gradient-to-r {getTopicColor(topic)} text-white transition-colors
+								group-hover:shadow-xl transition-shadow duration-300">
                         <svelte:component
                         this={IconComponent}
                         class="h-5 w-5"
@@ -51,9 +53,9 @@
                     <h3 class="text-xl font-bold text-gray-900 group-hover:text-gray-700 transition-colors">
                         {getTopicName(topic)}
                     </h3>
-                    <!-- <p class="text-gray-600 leading-relaxed">
+                    <p class="text-gray-600 leading-relaxed">
                         {topicDetail[topic as keyof typeof topicDetail]}
-                    </p> -->
+                    </p>
                 </div>
 				 
 				</button>
