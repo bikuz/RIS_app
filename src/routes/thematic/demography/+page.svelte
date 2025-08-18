@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import climate_1 from '$lib/assets/images/climate_1.png';
 	import climate_2 from '$lib/assets/images/climate_2.png';
+    import pop_1 from '$lib/assets/images/pop_1.png';
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
@@ -53,6 +54,8 @@
 	// ArcGIS MapServer configuration
 	const ARCGIS_MAPSERVER_URL =
 		'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/Demography/MapServer';
+
+    const BASELAYERS_URL = 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer';
 
 	// Time slider state management
 	let isTimeSliderVisible = $state(false);
@@ -295,14 +298,15 @@
 					title: 'Population Distribution 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
 						series: [
 							{
 								name: 'Population (millions)',
-								data: [12.5, 29.8, 0.8, 3.5, 39.8, 231.4]
+								data: [12.5, 29.8, 0.8, 3.5, 39.8, 12.4, 9.1, 2.3]
 							}
-						]
-					}
+						],
+                        yaxis_text: 'Total Population'
+					},
 				},
 				{
 					title: 'Population Growth Rate',
@@ -332,11 +336,11 @@
 					title: 'Sex Ratio Distribution 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
 						series: [
 							{
 								name: 'Males per 100 Females',
-								data: [105, 94, 113, 98, 106, 107]
+								data: [105, 94, 113, 98, 106, 107, 102, 100]
 							}
 						]
 					}
@@ -353,21 +357,21 @@
 			id: 'aged-75-proportion',
 			charts: [
 				{
-					title: 'Proportion of Aged >=75 Years',
+					title: 'Proportion of Age >=75 Years',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
 						series: [
 							{
 								name: 'Percentage (%)',
-								data: [3.2, 2.8, 4.1, 3.5, 2.1, 2.9]
+								data: [3.2, 2.8, 4.1, 3.5, 2.1, 2.9, 2.7, 3]
 							}
 						]
 					}
 				}
 			],
 			map_data: {
-				name: 'Proportion of Aged >=75',
+				name: 'Proportion of Age >=75',
 				layer_id: 2,
 				description: 'Proportion of population aged 75 years and above'
 			},
@@ -380,11 +384,11 @@
 					title: 'Child Woman Ratio 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
 						series: [
 							{
 								name: 'Children per 1000 Women',
-								data: [385, 298, 421, 312, 512, 467]
+								data: [385, 298, 421, 312, 512, 467, 314, 422]
 							}
 						]
 					}
@@ -404,11 +408,11 @@
 					title: 'Child Dependency Ratio 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
 						series: [
 							{
 								name: 'Dependency Ratio',
-								data: [42.5, 35.2, 38.9, 33.1, 58.7, 51.3]
+								data: [42.5, 35.2, 38.9, 33.1, 58.7, 51.3, 23.2, 42.1]
 							}
 						]
 					}
@@ -428,11 +432,11 @@
 					title: 'Age Dependency Ratio 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
 						series: [
 							{
 								name: 'Dependency Ratio',
-								data: [48.2, 41.5, 44.3, 38.9, 62.1, 56.7]
+								data: [48.2, 41.5, 44.3, 38.9, 62.1, 56.7, 32.2, 49.2]
 							}
 						]
 					}
@@ -480,7 +484,7 @@
 		},
 		{
 			id: 'info-layer-3',
-			title: 'Proportion of Aged >=75',
+			title: 'Proportion of Age >=75',
 			dataset_id: 'aged-75-proportion'
 		}
 	];
@@ -517,15 +521,15 @@
 			name: 'Outline',
 			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
 		},
+		// {
+		// 	id: 1,
+		// 	name: 'Soil',
+		// 	url: BASELAYERS_URL
+		// },
 		{
-			id: 1,
-			name: 'Soil',
-			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer'
-		},
-		{
-			id: 2,
+			id: 3,
 			name: 'River',
-			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer'
+			url: BASELAYERS_URL
 		}
 	];
 
@@ -804,7 +808,7 @@
 	{#if layoutState === 'hide-left'}
 		<button
 			onclick={() => setLayoutState('default')}
-			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
 			title="Show Story Panel"
 		>
 			<ChevronsRight class="h-4 w-4" />
@@ -849,7 +853,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Expand Story"
 						>
-							<Maximize2 class="h-4 w-4" />
+							<ChevronsRight class="h-4 w-4" />
 						</button>
 					{:else}
 						<!-- Back to Default Button -->
@@ -858,7 +862,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Back to Default"
 						>
-							<Minimize2 class="h-4 w-4" />
+							<ChevronsLeft class="h-4 w-4" />
 						</button>
 					{/if}
 				</div>
@@ -874,7 +878,7 @@
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					The Hindu Kush Himalaya (HKH) region is home to over 240 million people, with demographic
+					The Hindu Kush Himalaya (HKH) region is home to over 270 million people, with demographic
 					patterns that reflect diverse cultural, economic, and environmental conditions across
 					eight countries. The region exhibits significant variations in population density, age
 					structure, and gender ratios that are influenced by factors including altitude,
@@ -891,28 +895,7 @@
 					mortality patterns, and migration trends that have significant implications for social
 					services and economic development.
 				</p>
-                <p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The Hindu Kush Himalaya (HKH) region is home to over 240 million people, with demographic
-					patterns that reflect diverse cultural, economic, and environmental conditions across
-					eight countries. The region exhibits significant variations in population density, age
-					structure, and gender ratios that are influenced by factors including altitude,
-					accessibility, economic opportunities, and cultural practices.
-				</p>
-                <p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The Hindu Kush Himalaya (HKH) region is home to over 240 million people, with demographic
-					patterns that reflect diverse cultural, economic, and environmental conditions across
-					eight countries. The region exhibits significant variations in population density, age
-					structure, and gender ratios that are influenced by factors including altitude,
-					accessibility, economic opportunities, and cultural practices.
-				</p>
+                
 
 				<!-- Images Section - Responsive Layout -->
 				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
@@ -922,7 +905,7 @@
 							<div
 								class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
 							>
-								<img src={climate_1} alt="HKH demographic diversity" class="h-80 object-contain" />
+								<img src={pop_1} alt="HKH demographic diversity" class="h-80 object-contain" />
 								<div class="p-4">
 									<p class="text-center text-sm leading-relaxed text-slate-700">
 										<span
@@ -955,7 +938,7 @@
 						<div class="space-y-3">
 							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
 								<img
-									src={climate_1}
+									src={pop_1}
 									alt="HKH demographic diversity"
 									class="h-50 w-full object-contain"
 								/>
@@ -988,10 +971,7 @@
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					Gender ratios across the HKH region show notable variations, influenced by cultural
-					preferences, migration patterns, and socioeconomic factors. Some areas exhibit skewed sex
-					ratios due to selective migration for employment opportunities, while others reflect
-					cultural practices and preferences that affect birth ratios and survival rates.
+                The region’s rural people live in remote and environmentally harsh areas with poor social and physical infrastructures and unfavourable market conditions. Traditional subsistence smallholder farming and migratory pastoral livelihoods in these mountain regions face increasing challenges from the impacts of climate change, human-animal conflicts, increased natural disasters, and the degradation of forests and rangelands. In addition, poor infrastructure, limited access to water and energy, poor market linkages, and limited know-how on the development of marketable products and post-harvest management threaten the sustainability of mountain agriculture and traditional rural livelihoods.
 				</p>
 			</div>
 		</div>
@@ -1301,19 +1281,19 @@
 							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
-										<button
+										<button 
 											onclick={() => selectInformationLayer(layer.title)}
 											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
 											layer.title
-												? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
-												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+												? 'border-blue-500 bg-blue-50 shadow-md'
+												: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
 										>
 											<div class="flex items-start space-x-3 text-left">
 												<div class="flex-1">
 													<h4
 														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'text-green-800'
-															: 'text-slate-800'} mb-1"
+															? 'font-medium text-blue-700'
+															: 'text-slate-600 group-hover:text-slate-800'}"
 													>
 														{layer.title}
 													</h4>
@@ -1355,10 +1335,10 @@
 				class:pointer-events-none={!isQuestionsPanelOpen}
 			>
 				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 p-2">
+					<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
 						<Info class="h-4 w-4 text-white" />
 					</div>
-					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
+					<h3 class="text-lg font-bold text-slate-800">Explore Questions</h3>
 				</div>
 
 				<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
@@ -1395,7 +1375,7 @@
 
 			<button
 				onclick={toggleQuestionsPanel}
-				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
+				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white"
 				aria-label="Toggle questions panel"
 			>
 				<HelpCircle class="h-6 w-6" />
