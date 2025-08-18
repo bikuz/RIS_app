@@ -130,26 +130,27 @@
 	// Watch for dataset or control state changes and update map layers accordingly
 	$effect(() => {
 		// This will trigger when currentDataset, trendAnalysisMode, temperatureRiseThreshold, or currentTimeIndex changes
+		console.log('Dataset changed:', currentDataset?.id || 'null');
 		updateMapLayers();
 	});
 
 	// Watch for trend analysis mode changes
 	$effect(() => {
-		if (currentDataset?.control_type === 'radio') {
+		if (currentDataset && currentDataset.control_type === 'radio') {
 			updateMapLayers();
 		}
 	});
 
 	// Watch for temperature rise threshold changes
 	$effect(() => {
-		if (currentDataset?.control_type === 'temperature_threshold') {
+		if (currentDataset && currentDataset.control_type === 'temperature_threshold') {
 			updateMapLayers();
 		}
 	});
 
 	// Watch for time slider changes
 	$effect(() => {
-		if (currentDataset?.control_type === 'time_slider') {
+		if (currentDataset && currentDataset.control_type === 'time_slider') {
 			updateMapLayers();
 		}
 	});
@@ -546,7 +547,7 @@
 	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection)
-	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
+	let selectedInformationLayer = $state<string | null>(null);
 
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
@@ -583,8 +584,8 @@
 			}
 		}
 
-		// Default: first dataset
-		return climateDataset[0];
+		// Default: nothing selected, return null
+		return null;
 	});
 
 	// Extract current data from dataset
@@ -752,13 +753,19 @@
 
 	// Update layers based on current dataset and control state
 	function updateMapLayers() {
-		if (!map || !currentMapLayers) return;
+		if (!map) return;
 
-		// Clear existing climate layers
+		// Always clear existing climate layers first
 		clearClimateLayers();
 
+		// If no dataset is selected, stop here (layers are cleared)
+		if (!currentDataset || !currentMapLayers) {
+			console.log('No dataset selected - layers cleared');
+			return;
+		}
+
 		// Get current control state and add appropriate layers
-		if (currentDataset?.control_type === 'radio') {
+		if (currentDataset.control_type === 'radio') {
 			// For radio controls, show layer based on selected mode
 			const selectedLayers = currentMapLayers[trendAnalysisMode];
 			if (selectedLayers) {
@@ -768,7 +775,7 @@
 					addWMSLayer(selectedLayers);
 				}
 			}
-		} else if (currentDataset?.control_type === 'temperature_threshold') {
+		} else if (currentDataset.control_type === 'temperature_threshold') {
 			// For temperature threshold, show layer based on selected threshold
 			const selectedLayers = currentMapLayers[temperatureRiseThreshold];
 			if (selectedLayers) {
@@ -778,7 +785,7 @@
 					addWMSLayer(selectedLayers);
 				}
 			}
-		} else if (currentDataset?.control_type === 'time_slider') {
+		} else if (currentDataset.control_type === 'time_slider') {
 			// For time slider, show layer for current time period
 			const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
 			const currentTimeLayer = currentMapLayers && (currentMapLayers as any)[currentYear];
@@ -1142,7 +1149,7 @@
 							></div>
 
 							<!-- Dynamic Control Panel at Bottom -->
-							{#if currentDataset?.control_type === 'time_slider'}
+							{#if currentDataset && currentDataset.control_type === 'time_slider'}
 								{#if !isTimeSliderVisible}
 									<!-- Time Control Toggle Button -->
 									<button
@@ -1225,7 +1232,7 @@
 										</button>
 									</div>
 								{/if}
-							{:else if currentDataset?.control_type === 'radio'}
+							{:else if currentDataset && currentDataset.control_type === 'radio'}
 								<!-- Always show expanded Analysis Mode Radio Buttons Panel -->
 								<div
 									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
@@ -1261,7 +1268,7 @@
 										<span class="text-sm font-medium text-slate-700">Significant</span>
 									</label>
 								</div>
-							{:else if currentDataset?.control_type === 'temperature_threshold'}
+							{:else if currentDataset && currentDataset.control_type === 'temperature_threshold'}
 								<!-- Always show expanded Temperature Rise Threshold Panel -->
 								<div
 									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
@@ -1342,7 +1349,7 @@
 					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
 						<h3 class="mb-4 text-lg font-semibold text-slate-700">Climate Analytics</h3>
 						<div class="rounded-lg bg-slate-50/50">
-							{#if currentCharts && currentCharts.length > 0}
+							{#if currentDataset && currentCharts && currentCharts.length > 0}
 								<div class="space-y-6">
 									{#each currentCharts as chart, index}
 										<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
@@ -1358,7 +1365,9 @@
 							{:else}
 								<div class="flex h-80 items-center justify-center">
 									<div class="text-center text-slate-500">
-										<p class="text-sm">Select a question to view related charts</p>
+										<p class="text-sm">
+											Select a question or information layer to view related charts
+										</p>
 									</div>
 								</div>
 							{/if}
