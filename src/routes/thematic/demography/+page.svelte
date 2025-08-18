@@ -2,7 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import climate_1 from '$lib/assets/images/climate_1.png';
 	import climate_2 from '$lib/assets/images/climate_2.png';
-    import pop_1 from '$lib/assets/images/pop_1.png';
+	import pop_1 from '$lib/assets/images/pop_1.png';
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
@@ -16,6 +16,7 @@
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import {
+		House,
 		Cloud,
 		Users,
 		CheckCircle,
@@ -55,7 +56,8 @@
 	const ARCGIS_MAPSERVER_URL =
 		'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/Demography/MapServer';
 
-    const BASELAYERS_URL = 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer';
+	const BASELAYERS_URL =
+		'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer';
 
 	// Time slider state management
 	let isTimeSliderVisible = $state(false);
@@ -298,15 +300,24 @@
 					title: 'Population Distribution 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Population (millions)',
 								data: [12.5, 29.8, 0.8, 3.5, 39.8, 12.4, 9.1, 2.3]
 							}
 						],
-                        yaxis_text: 'Total Population'
-					},
+						yaxis_text: 'Total Population'
+					}
 				},
 				{
 					title: 'Population Growth Rate',
@@ -336,7 +347,16 @@
 					title: 'Sex Ratio Distribution 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Males per 100 Females',
@@ -360,7 +380,16 @@
 					title: 'Proportion of Age >=75 Years',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Percentage (%)',
@@ -384,7 +413,16 @@
 					title: 'Child Woman Ratio 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Children per 1000 Women',
@@ -408,7 +446,16 @@
 					title: 'Child Dependency Ratio 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Dependency Ratio',
@@ -432,7 +479,16 @@
 					title: 'Age Dependency Ratio 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Afghanistan', 'Bangladesh', 'Bhutan', 'China', 'India', 'Nepal', 'Pakistan', 'Myanmar'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Dependency Ratio',
@@ -521,11 +577,11 @@
 			name: 'Outline',
 			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
 		},
-		// {
-		// 	id: 1,
-		// 	name: 'Soil',
-		// 	url: BASELAYERS_URL
-		// },
+		{
+			id: 1,
+			name: 'Soil',
+			url: BASELAYERS_URL
+		},
 		{
 			id: 3,
 			name: 'River',
@@ -816,12 +872,11 @@
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
 
-    <div
-    class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto scrollbar-hide"
-    class:hidden={layoutState === 'hide-left'}
-    class:col-span-12={layoutState === 'left-full'}
->
-
+	<div
+		class="scrollbar-hide sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto"
+		class:hidden={layoutState === 'hide-left'}
+		class:col-span-12={layoutState === 'left-full'}
+	>
 		<!-- Story Section -->
 		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
 			<div class="mb-6 flex items-center justify-between">
@@ -895,7 +950,6 @@
 					mortality patterns, and migration trends that have significant implications for social
 					services and economic development.
 				</p>
-                
 
 				<!-- Images Section - Responsive Layout -->
 				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
@@ -971,7 +1025,14 @@
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-                The region’s rural people live in remote and environmentally harsh areas with poor social and physical infrastructures and unfavourable market conditions. Traditional subsistence smallholder farming and migratory pastoral livelihoods in these mountain regions face increasing challenges from the impacts of climate change, human-animal conflicts, increased natural disasters, and the degradation of forests and rangelands. In addition, poor infrastructure, limited access to water and energy, poor market linkages, and limited know-how on the development of marketable products and post-harvest management threaten the sustainability of mountain agriculture and traditional rural livelihoods.
+					The region’s rural people live in remote and environmentally harsh areas with poor social
+					and physical infrastructures and unfavourable market conditions. Traditional subsistence
+					smallholder farming and migratory pastoral livelihoods in these mountain regions face
+					increasing challenges from the impacts of climate change, human-animal conflicts,
+					increased natural disasters, and the degradation of forests and rangelands. In addition,
+					poor infrastructure, limited access to water and energy, poor market linkages, and limited
+					know-how on the development of marketable products and post-harvest management threaten
+					the sustainability of mountain agriculture and traditional rural livelihoods.
 				</p>
 			</div>
 		</div>
@@ -998,6 +1059,20 @@
 								bind:this={mapContainer}
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
+
+							<!-- Home Reset Button -->
+							<button
+								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								onclick={() => {
+									if (map) {
+										map.getView().setCenter(fromLonLat(HKH_CENTER));
+										map.getView().setZoom(HKH_ZOOM);
+									}
+								}}
+								title="Reset to Home View"
+							>
+								<House class="h-4 w-4 text-slate-600" />
+							</button>
 
 							<!-- Layer Toggler Button -->
 							<button
@@ -1281,7 +1356,7 @@
 							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
-										<button 
+										<button
 											onclick={() => selectInformationLayer(layer.title)}
 											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
 											layer.title
@@ -1383,6 +1458,14 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Changes Made -->
+<!--
+- Scrollbar in Story Panel - Hidden
+- BaseMap Layer Changed to OSM Carto
+- Base Layers Added in Layer Toggle Panel
+- Questions Toggle Button - Hidden in Expanded Story view 
+  -->
 
 <style>
 	/* Ensure map containers resize properly */
@@ -1486,13 +1569,3 @@
 		transform: scale(1.1);
 	}
 </style>
-
-
-
-<!-- Changes Made -->
- <!--
-- Scrollbar in Story Panel - Hidden
-- BaseMap Layer Changed to OSM Carto
-- Base Layers Added in Layer Toggle Panel
-- Questions Toggle Button - Hidden in Expanded Story view 
-  -->
