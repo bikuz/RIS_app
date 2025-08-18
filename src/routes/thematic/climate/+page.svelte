@@ -52,7 +52,7 @@
 	let isPlaying = $state(false);
 	let currentTimeIndex = $state(0);
 	let playbackSpeed = $state(1000); // milliseconds between frames
-	let playInterval: number | null = null;
+	let playInterval: ReturnType<typeof setInterval> | null = null;
 
 	// Time periods for climate data (can be customized based on your data)
 	const timePeriods = [
@@ -151,80 +151,39 @@
 
 	function updateMapForTime(timeIndex: number) {
 		// This function would update the map layers based on the selected time
-		// You can modify WMS parameters or switch between different temporal layers
 		console.log('Updating map for time:', timePeriods[timeIndex]);
 
-		// Example: Update WMS layer with time parameter
-		if (map && selectedInformationLayer) {
-			const layers = map.getLayers().getArray();
-			layers.forEach((layer) => {
-				if (layer.get('id')) {
-					const source = (layer as TileLayer<any>).getSource();
-					if (source && typeof (source as any).updateParams === 'function') {
-						// Update WMS parameters with time
-						(source as any).updateParams({
-							...(source as any).getParams(),
-							TIME: timePeriods[timeIndex].year.toString()
-						});
-					}
-				}
-			});
+		// Update map layers through the unified layer management system
+		if (currentDataset?.control_type === 'time_slider') {
+			updateMapLayers();
 		}
 	}
 
-	// Function to handle trend analysis mode changes
-	function updateMapForTrendMode(mode: 'overall' | 'significant') {
-		console.log('Updating map for trend analysis mode:', mode);
-
-		// Update map layers based on the selected trend analysis mode
-		if (map && selectedInformationLayer === 'Annual Temperature Trend') {
-			const layers = map.getLayers().getArray();
-			layers.forEach((layer) => {
-				if (layer.get('id')) {
-					const source = (layer as TileLayer<any>).getSource();
-					if (source && typeof (source as any).updateParams === 'function') {
-						// Update WMS parameters with analysis mode
-						(source as any).updateParams({
-							...(source as any).getParams(),
-							STYLES: mode === 'significant' ? 'significant_trend_style' : 'overall_trend_style'
-						});
-					}
-				}
-			});
-		}
-	}
+	// Watch for dataset or control state changes and update map layers accordingly
+	$effect(() => {
+		// This will trigger when currentDataset, trendAnalysisMode, temperatureRiseThreshold, or currentTimeIndex changes
+		updateMapLayers();
+	});
 
 	// Watch for trend analysis mode changes
 	$effect(() => {
-		updateMapForTrendMode(trendAnalysisMode);
-	});
-
-	// Function to handle temperature rise threshold changes
-	function updateMapForTemperatureRise(threshold: '0.5' | '1.5' | '2.5') {
-		console.log('Updating map for temperature rise threshold:', threshold);
-
-		// Update map layers based on the selected temperature rise threshold
-		if (map && selectedInformationLayer === 'Temperature Rise') {
-			const layers = map.getLayers().getArray();
-			layers.forEach((layer) => {
-				if (layer.get('id')) {
-					const source = (layer as TileLayer<any>).getSource();
-					if (source && typeof (source as any).updateParams === 'function') {
-						// Update WMS parameters with threshold
-						(source as any).updateParams({
-							...(source as any).getParams(),
-							THRESHOLD: threshold,
-							STYLES: `temp_rise_${threshold}_style`
-						});
-					}
-				}
-			});
+		if (currentDataset?.control_type === 'radio') {
+			updateMapLayers();
 		}
-	}
+	});
 
 	// Watch for temperature rise threshold changes
 	$effect(() => {
-		updateMapForTemperatureRise(temperatureRiseThreshold);
+		if (currentDataset?.control_type === 'temperature_threshold') {
+			updateMapLayers();
+		}
+	});
+
+	// Watch for time slider changes
+	$effect(() => {
+		if (currentDataset?.control_type === 'time_slider') {
+			updateMapLayers();
+		}
 	});
 
 	function initializeMap() {
@@ -299,10 +258,46 @@
 		}
 	});
 
-	// Generic climate dataset - array format for better structure
+	// Helper function to generate time series layers
+	function generateTimeSeriesLayers(startYear: number, endYear: number) {
+		const layers: any = {};
+		for (let year = startYear; year <= endYear; year++) {
+			layers[year.toString()] = {
+				id: `temp-time-series-${year}`,
+				name: `Annual Temperature ${year}`,
+				wms_url: 'https://example.com/geoserver/wms',
+				layer_name: 'climate:temp_anomaly_30y',
+				styles: 'temperature_anomaly_style',
+				wms_params: {
+					STYLES: 'temperature_anomaly_style',
+					TIME: year.toString()
+				},
+				opacity: 0.8,
+				visible: year === endYear, // Default to show the latest year
+				z_index: 1,
+				temporal: true,
+				legend_url: `https://example.com/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=climate:temp_anomaly_30y&STYLE=temperature_anomaly_style`,
+				metadata: {
+					description: `Annual temperature anomaly for ${year}`,
+					year: year,
+					data_source: 'Climate Time Series Data',
+					temporal_coverage: year.toString(),
+					temporal_resolution: 'Annual'
+				}
+			};
+		}
+		return layers;
+	}
+
+	// Improved climate dataset structure for better map layer management
 	const climateDataset = [
 		{
 			id: 'temp-trend-30y',
+			title: 'Annual Temperature Trend Analysis',
+			description: 'Temperature trend analysis with overall vs significant trend options',
+			control_type: 'radio',
+			control_options: ['overall', 'significant'],
+			default_option: 'overall',
 			charts: [
 				{
 					title: 'Annual Mean Temperature Trend',
@@ -366,15 +361,50 @@
 					}
 				}
 			],
-			map_data: {
-				name: 'Annual Temperature Trend',
-				wms_url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-				layer_name: 'springs:hkh_lc_2021'
-			},
-			control_type: 'radio' // Overall vs Significant trend analysis
+			map_layers: {
+				overall: {
+					id: 'temp-trend-overall',
+					name: 'Overall Temperature Trend',
+					wms_url: 'http://127.0.0.1:8080/geoserver/icimod/wms',
+					layer_name: 'icimod:Annual_temp-trend',
+					styles: 'overall_trend_style',
+					opacity: 0.8,
+					visible: true,
+					z_index: 1,
+					legend_url:
+						'http://127.0.0.1:8080/geoserver/icimod/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=icimod:Annual_temp-trend&STYLE=overall_trend_style',
+					metadata: {
+						description: 'Overall temperature trend across the HKH region',
+						data_source: 'ICIMOD Climate Data',
+						temporal_coverage: '1995-2024'
+					}
+				},
+				significant: {
+					id: 'temp-trend-significant',
+					name: 'Significant Temperature Trend',
+					wms_url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+					layer_name: 'springs:hkh_lc_2021',
+					styles: 'significant_trend_style',
+					opacity: 0.8,
+					visible: false,
+					z_index: 1,
+					legend_url:
+						'https://tethys.icimod.org:8443/geoserver/springs/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=springs:hkh_lc_2021&STYLE=significant_trend_style',
+					metadata: {
+						description: 'Statistically significant temperature trends only',
+						data_source: 'ICIMOD Climate Data',
+						temporal_coverage: '1995-2024'
+					}
+				}
+			}
 		},
 		{
 			id: 'temp-rise-decade',
+			title: 'Regional Temperature Rise Analysis',
+			description: 'Temperature rise analysis with different threshold options',
+			control_type: 'temperature_threshold',
+			control_options: ['0.5', '1.5', '2.5'],
+			default_option: '1.5',
 			charts: [
 				{
 					title: 'Regional Temperature Rise (Last Decade)',
@@ -407,17 +437,88 @@
 					}
 				}
 			],
-			map_data: {
-				name: 'Regional Temperature Rise',
-				wms_url: 'https://example.com/geoserver/wms',
-				layer_name: 'climate:temp_rise_regions',
-				style: 'temperature_rise_style',
-				description: 'Areas with temperature rise >1.5°C in last decade'
-			},
-			control_type: 'temperature_threshold' // 0.5°C, 1.5°C, 2.5°C options
+			map_layers: {
+				'0.5': {
+					id: 'temp-rise-0.5',
+					name: 'Temperature Rise ≥0.5°C',
+					wms_url: 'https://example.com/geoserver/wms',
+					layer_name: 'climate:temp_rise_regions',
+					styles: 'temp_rise_0.5_style',
+					wms_params: {
+						THRESHOLD: '0.5',
+						STYLES: 'temp_rise_0.5_style'
+					},
+					opacity: 0.8,
+					visible: false,
+					z_index: 1,
+					legend_url:
+						'https://example.com/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=climate:temp_rise_regions&STYLE=temp_rise_0.5_style',
+					metadata: {
+						description: 'Areas with temperature rise ≥0.5°C in last decade',
+						threshold: '0.5°C',
+						data_source: 'Climate Research Data',
+						temporal_coverage: '2014-2024'
+					}
+				},
+				'1.5': {
+					id: 'temp-rise-1.5',
+					name: 'Temperature Rise ≥1.5°C',
+					wms_url: 'https://example.com/geoserver/wms',
+					layer_name: 'climate:temp_rise_regions',
+					styles: 'temp_rise_1.5_style',
+					wms_params: {
+						THRESHOLD: '1.5',
+						STYLES: 'temp_rise_1.5_style'
+					},
+					opacity: 0.8,
+					visible: true,
+					z_index: 1,
+					legend_url:
+						'https://example.com/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=climate:temp_rise_regions&STYLE=temp_rise_1.5_style',
+					metadata: {
+						description: 'Areas with temperature rise ≥1.5°C in last decade',
+						threshold: '1.5°C',
+						data_source: 'Climate Research Data',
+						temporal_coverage: '2014-2024'
+					}
+				},
+				'2.5': {
+					id: 'temp-rise-2.5',
+					name: 'Temperature Rise ≥2.5°C',
+					wms_url: 'https://example.com/geoserver/wms',
+					layer_name: 'climate:temp_rise_regions',
+					styles: 'temp_rise_2.5_style',
+					wms_params: {
+						THRESHOLD: '2.5',
+						STYLES: 'temp_rise_2.5_style'
+					},
+					opacity: 0.8,
+					visible: false,
+					z_index: 1,
+					legend_url:
+						'https://example.com/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=climate:temp_rise_regions&STYLE=temp_rise_2.5_style',
+					metadata: {
+						description: 'Areas with temperature rise ≥2.5°C in last decade',
+						threshold: '2.5°C',
+						data_source: 'Climate Research Data',
+						temporal_coverage: '2014-2024'
+					}
+				}
+			}
 		},
 		{
 			id: 'annual-temp-time-series',
+			title: 'Annual Temperature Time Series',
+			description: 'Time series analysis of annual temperature with temporal controls',
+			control_type: 'time_slider',
+			time_dimension: {
+				start_year: 1995,
+				end_year: 2024,
+				step: 1,
+				default_year: 2024,
+				format: 'YYYY',
+				animation_speed: 1000
+			},
 			charts: [
 				{
 					title: 'Annual Temperature Time Series',
@@ -468,14 +569,7 @@
 					}
 				}
 			],
-			map_data: {
-				name: 'Annual Temperature Time Series',
-				wms_url: 'https://example.com/geoserver/wms',
-				layer_name: 'climate:temp_anomaly_30y',
-				style: 'temperature_anomaly_style',
-				description: 'Annual temperature anomaly over the past 30 years'
-			},
-			control_type: 'time_slider' // Time series controls with play/pause/slider
+			map_layers: generateTimeSeriesLayers(1995, 2024)
 		}
 	];
 
@@ -565,7 +659,7 @@
 
 	// Extract current data from dataset
 	let currentCharts = $derived(currentDataset?.charts || []);
-	let currentMapData = $derived(currentDataset?.map_data);
+	let currentMapLayers = $derived(currentDataset?.map_layers);
 
 	// Watch for layout state changes and update map size
 	$effect(() => {
@@ -611,37 +705,97 @@
 		return null;
 	};
 
-	// Add WMS layer to map with ID
-	function addWMSLayer(mapLayerData: any) {
+	// Add WMS layer to map based on layer configuration
+	function addWMSLayer(layerConfig: any) {
 		if (!map) return;
 
+		// Remove existing layer with same ID if it exists
+		const existingLayer = getLayerById(layerConfig.id);
+		if (existingLayer) {
+			map.removeLayer(existingLayer);
+		}
+
+		// Create WMS layer
 		const wmsLayer = new TileLayer({
 			source: new TileWMS({
-				url: mapLayerData.wms_url,
+				url: layerConfig.wms_url,
 				params: {
-					LAYERS: mapLayerData.layer_name,
-					TILED: true
-				},
-				serverType: 'geoserver'
-			})
+					LAYERS: layerConfig.layer_name,
+					STYLES: layerConfig.styles || '',
+					FORMAT: 'image/png',
+					TRANSPARENT: true,
+					...layerConfig.wms_params
+				}
+			}),
+			opacity: layerConfig.opacity || 0.8,
+			visible: layerConfig.visible !== false,
+			zIndex: layerConfig.z_index || 1
 		});
 
-		// Set the ID for later retrieval (your approach)
-		wmsLayer.set('id', mapLayerData.layer_name);
+		// Set layer ID for identification
+		wmsLayer.set('id', layerConfig.id);
+		wmsLayer.set('name', layerConfig.name);
+		wmsLayer.set('metadata', layerConfig.metadata);
 
-		// Add to map
+		// Add layer to map
 		map.addLayer(wmsLayer);
-		console.log('Added layer:', mapLayerData.layer_name);
+
+		console.log('Added WMS layer:', layerConfig.name, 'with ID:', layerConfig.id);
+		return wmsLayer;
 	}
 
-	// Remove layer from map by ID
-	function removeWMSLayer(layerName: string) {
+	// Remove layer from map
+	function removeLayer(layerId: string) {
 		if (!map) return;
 
-		const layer = getLayerById(layerName);
+		const layer = getLayerById(layerId);
 		if (layer) {
 			map.removeLayer(layer);
-			console.log('Removed layer:', layerName);
+			console.log('Removed layer:', layerId);
+		}
+	}
+
+	// Clear all climate data layers (keep base map)
+	function clearClimateLayers() {
+		if (!map) return;
+
+		const layers = map.getLayers().getArray().slice(); // Create copy to avoid modification during iteration
+		layers.forEach((layer) => {
+			const layerId = layer.get('id');
+			// Remove layers that have an ID (our custom layers), keep OSM base layer
+			if (layerId && map) {
+				map.removeLayer(layer);
+			}
+		});
+	}
+
+	// Update layers based on current dataset and control state
+	function updateMapLayers() {
+		if (!map || !currentMapLayers) return;
+
+		// Clear existing climate layers
+		clearClimateLayers();
+
+		// Get current control state and add appropriate layers
+		if (currentDataset?.control_type === 'radio') {
+			// For radio controls, show layer based on selected mode
+			const selectedLayer = currentMapLayers[trendAnalysisMode];
+			if (selectedLayer) {
+				addWMSLayer(selectedLayer);
+			}
+		} else if (currentDataset?.control_type === 'temperature_threshold') {
+			// For temperature threshold, show layer based on selected threshold
+			const selectedLayer = currentMapLayers[temperatureRiseThreshold];
+			if (selectedLayer) {
+				addWMSLayer(selectedLayer);
+			}
+		} else if (currentDataset?.control_type === 'time_slider') {
+			// For time slider, show layer for current time period
+			const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
+			const currentTimeLayer = currentMapLayers && (currentMapLayers as any)[currentYear];
+			if (currentTimeLayer) {
+				addWMSLayer(currentTimeLayer);
+			}
 		}
 	}
 
@@ -687,17 +841,6 @@
 		}
 
 		console.log('Information layer selected:', layerId);
-	}
-
-	// Function to cycle through layout states
-	function toggleLayoutState() {
-		if (layoutState === 'default') {
-			layoutState = 'hide-left';
-		} else if (layoutState === 'hide-left') {
-			layoutState = 'left-full';
-		} else {
-			layoutState = 'default';
-		}
 	}
 
 	// Function to set specific layout state
@@ -837,6 +980,43 @@
 					intensely than the global average, with temperatures rising significantly faster than
 					elsewhere.
 				</p>
+
+				<!-- First Image - After first paragraph -->
+				{#if layoutState === 'left-full'}
+					<div class="flex justify-center">
+						<div
+							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+						>
+							<img src={climate_1} alt="Himalayan glacial retreat" class="h-80 object-contain" />
+							<div class="p-4">
+								<p class="text-center text-sm leading-relaxed text-slate-700">
+									<span
+										>We see <span class="font-semibold text-slate-800"
+											>less snow on the mountain peaks
+										</span> in recent years
+									</span>
+								</p>
+							</div>
+						</div>
+					</div>
+				{:else}
+					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+						<img
+							src={climate_1}
+							alt="Himalayan glacial retreat"
+							class="h-50 w-full object-contain"
+						/>
+						<div class="p-2">
+							<p class="text-center text-xs text-slate-600">
+								<span
+									>We see <span class="font-semibold">less snow on the mountain peaks </span> in recent
+									years
+								</span>
+							</p>
+						</div>
+					</div>
+				{/if}
+
 				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
@@ -881,40 +1061,10 @@
 					ecosystems. Many communities in the HKH rely on climate-sensitive livelihoods such as
 					farming, herding, and tourism, making them particularly vulnerable.
 				</p>
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Addressing climate change in the HKH requires urgent, coordinated, and region-wide action.
-					This includes investing in climate-resilient infrastructure, expanding early warning
-					systems, improving water management, and enhancing scientific monitoring of glaciers and
-					weather patterns. Regional cooperation is essential for sharing data, aligning adaptation
-					strategies, and managing shared water resources sustainably. Equally important is
-					empowering local communities with knowledge, technology, and resources to adapt to
-					changing conditions while preserving the environmental and cultural richness of the HKH.
-				</p>
-			</div>
 
-			<!-- Images Section - Responsive Layout -->
-			<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
+				<!-- Second Image - Before last paragraph -->
 				{#if layoutState === 'left-full'}
-					<!-- Full Width Layout - One Image Per Row -->
-					<div class="flex flex-col items-center gap-6">
-						<div
-							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-						>
-							<img src={climate_1} alt="Himalayan glacial retreat" class="h-80 object-contain" />
-							<div class="p-4">
-								<p class="text-center text-sm leading-relaxed text-slate-700">
-									<span
-										>We see <span class="font-semibold text-slate-800"
-											>less snow on the mountain peaks
-										</span> in recent years
-									</span>
-								</p>
-							</div>
-						</div>
+					<div class="flex justify-center">
 						<div
 							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
 						>
@@ -930,36 +1080,32 @@
 						</div>
 					</div>
 				{:else}
-					<!-- Default Layout - Stacked Images -->
-					<div class="space-y-3">
-						<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-							<img
-								src={climate_1}
-								alt="Himalayan glacial retreat"
-								class="h-50 w-full object-contain"
-							/>
-							<div class="p-2">
-								<p class="text-center text-xs text-slate-600">
-									<span
-										>We see <span class="font-semibold">less snow on the mountain peaks </span> in recent
-										years
-									</span>
-								</p>
-							</div>
-						</div>
-						<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-							<img src={climate_2} alt="Climate impacts" class="h-55 w-full object-contain" />
-							<div class="p-2">
-								<p class="text-center text-xs text-slate-600">
-									<span>
-										<span class="font-semibold"> Flooded street in Kathmandu </span> after a less than
-										an hour heavy downpour</span
-									>
-								</p>
-							</div>
+					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+						<img src={climate_2} alt="Climate impacts" class="h-55 w-full object-contain" />
+						<div class="p-2">
+							<p class="text-center text-xs text-slate-600">
+								<span>
+									<span class="font-semibold"> Flooded street in Kathmandu </span> after a less than
+									an hour heavy downpour</span
+								>
+							</p>
 						</div>
 					</div>
 				{/if}
+
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Addressing climate change in the HKH requires urgent, coordinated, and region-wide action.
+					This includes investing in climate-resilient infrastructure, expanding early warning
+					systems, improving water management, and enhancing scientific monitoring of glaciers and
+					weather patterns. Regional cooperation is essential for sharing data, aligning adaptation
+					strategies, and managing shared water resources sustainably. Equally important is
+					empowering local communities with knowledge, technology, and resources to adapt to
+					changing conditions while preserving the environmental and cultural richness of the HKH.
+				</p>
 			</div>
 		</div>
 	</div>
