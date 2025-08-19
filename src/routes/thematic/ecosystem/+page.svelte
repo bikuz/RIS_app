@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import ecosystem1 from '$lib/assets/images/ecosystem1.jpg';
+	import ecosystem2 from '$lib/assets/images/ecosystem2.jpg';
 
 	import Map from 'ol/Map';
 	import View from 'ol/View';
@@ -761,6 +763,69 @@
 					crucial for understanding ecosystem dynamics and developing effective conservation
 					strategies that can adapt to changing environmental conditions.
 				</p> -->
+
+				<!-- First Image - Ecosystem 1 -->
+				{#if layoutState === 'left-full'}
+					<div class="flex justify-center">
+						<div
+							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+						>
+							<img src={ecosystem1} alt="Ecosystem dynamics" class="h-80 object-contain" />
+							<div class="p-4">
+								<p class="text-center text-sm leading-relaxed text-slate-700">
+									<!-- <span
+										>Ecosystem changes in the <span class="font-semibold text-slate-800"
+											>Himalayan region
+										</span> due to climate change
+									</span> -->
+								</p>
+							</div>
+						</div>
+					</div>
+				{:else}
+					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+						<img src={ecosystem1} alt="Ecosystem dynamics" class="h-50 w-full object-contain" />
+						<div class="p-2">
+							<p class="text-center text-xs text-slate-600">
+								<!-- <span
+									>Ecosystem changes in the <span class="font-semibold">Himalayan region </span> due
+									to climate change
+								</span> -->
+							</p>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Second Image - Ecosystem 2 -->
+				{#if layoutState === 'left-full'}
+					<div class="flex justify-center">
+						<div
+							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+						>
+							<img src={ecosystem2} alt="Biodiversity impacts" class="h-80 object-contain" />
+							<div class="p-4">
+								<!-- <p class="text-center text-sm leading-relaxed text-slate-700">
+									<span>
+										<span class="font-semibold text-slate-800">Biodiversity impacts</span> of climate
+										change in the HKH region
+									</span>
+								</p> -->
+							</div>
+						</div>
+					</div>
+				{:else}
+					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+						<img src={ecosystem2} alt="Biodiversity impacts" class="h-55 w-full object-contain" />
+						<div class="p-2">
+							<!-- <p class="text-center text-xs text-slate-600">
+								<span>
+									<span class="font-semibold">Biodiversity impacts</span> of climate change in the HKH
+									region
+								</span>
+							</p> -->
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
