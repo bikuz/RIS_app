@@ -121,68 +121,56 @@
 		// This function would update the map layers based on the selected time
 		console.log('Updating map for time:', timePeriods[timeIndex]);
 
-		// Update map layers through the unified layer management system
-		if (currentDataset?.control_type === 'time_slider') {
-			updateMapLayers();
-		}
+		// Note: Map layers will be updated automatically by the main effect
+		// No need to call updateMapLayers() here as it would cause duplicate updates
 	}
 
-	// Watch for dataset or control state changes and update map layers accordingly
+	// Single consolidated effect for all map layer updates
 	$effect(() => {
 		// This will trigger when any of these state variables change
-		currentDataset;
-		trendAnalysisMode;
-		temperatureRiseThreshold;
-		currentTimeIndex;
-		selectedSeason;
+		const dataset = currentDataset;
+		const trendMode = trendAnalysisMode;
+		const tempThreshold = temperatureRiseThreshold;
+		const timeIndex = currentTimeIndex;
+		const season = selectedSeason;
 
 		console.log(
 			'Main effect triggered - Dataset:',
-			currentDataset?.id || 'null',
-			'Trend:',
-			trendAnalysisMode
+			dataset?.id || 'null',
+			'Control type:',
+			dataset?.control_type
 		);
-		updateMapLayers();
-	});
 
-	// Watch for trend analysis mode changes
-	$effect(() => {
-		// Explicitly watch trendAnalysisMode changes
-		trendAnalysisMode;
-		if (currentDataset && currentDataset.control_type === 'radio') {
-			console.log('Trend analysis mode changed to:', trendAnalysisMode);
+		// Only update map layers if we have a dataset
+		if (dataset) {
 			updateMapLayers();
 		}
 	});
 
-	// Watch for temperature rise threshold changes
-	$effect(() => {
-		// Explicitly watch temperatureRiseThreshold changes
-		temperatureRiseThreshold;
-		if (currentDataset && currentDataset.control_type === 'temperature_threshold') {
-			console.log('Temperature threshold changed to:', temperatureRiseThreshold);
-			updateMapLayers();
-		}
-	});
+	// Track if we've already set the default for the current dataset
+	let hasSetDefaultForDataset = $state<string | null>(null);
 
-	// Watch for time slider changes
+	// Separate effect ONLY for setting default time index when dataset changes
 	$effect(() => {
-		// Explicitly watch currentTimeIndex changes
-		currentTimeIndex;
+		// Watch for dataset changes to set default time index
 		if (currentDataset && currentDataset.control_type === 'time_slider') {
-			console.log('Time index changed to:', currentTimeIndex);
-			updateMapLayers();
-		}
-	});
+			const datasetId = currentDataset.id;
+			const newDefaultIndex = defaultTimeIndex;
 
-	// Watch for nested radio changes (seasonal controls)
-	$effect(() => {
-		// Explicitly watch both trendAnalysisMode and selectedSeason changes
-		trendAnalysisMode;
-		selectedSeason;
-		if (currentDataset && currentDataset.control_type === 'nested_radio') {
-			console.log('Nested radio changed - Trend:', trendAnalysisMode, 'Season:', selectedSeason);
-			updateMapLayers();
+			// Only set default if this is a new dataset or we haven't set it for this dataset yet
+			if (hasSetDefaultForDataset !== datasetId && newDefaultIndex >= 0) {
+				console.log(
+					'Setting time index to default:',
+					newDefaultIndex,
+					'for year:',
+					timePeriods[newDefaultIndex]?.year
+				);
+				currentTimeIndex = newDefaultIndex;
+				hasSetDefaultForDataset = datasetId;
+			}
+		} else {
+			// Reset when switching away from time slider datasets
+			hasSetDefaultForDataset = null;
 		}
 	});
 
@@ -262,6 +250,9 @@
 	onDestroy(() => {
 		if (playInterval) {
 			clearInterval(playInterval);
+		}
+		if (legendFetchTimeout) {
+			clearTimeout(legendFetchTimeout);
 		}
 		if (map) {
 			map.dispose();
@@ -1048,6 +1039,17 @@
 		return periods;
 	});
 
+	// Calculate default time index based on dataset's default_year
+	let defaultTimeIndex = $derived.by(() => {
+		if (!currentDataset?.time_dimension?.default_year || !timePeriods.length) {
+			return 0;
+		}
+
+		const defaultYear = currentDataset.time_dimension.default_year;
+		const index = timePeriods.findIndex((period) => period.year === defaultYear);
+		return index !== -1 ? index : 0;
+	});
+
 	// Watch for layout state changes and update map size
 	$effect(() => {
 		// This effect runs whenever layoutState changes
@@ -1181,79 +1183,109 @@
 		});
 	}
 
+	// Debounce timer for legend fetching
+	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
+
 	// Fetch legend data for current layers
 	async function fetchLegendData() {
-		// Clear legend data first
-		legendData = {};
-
-		if (!currentDataset || !currentMapLayers) {
-			return;
+		// Clear any existing timeout
+		if (legendFetchTimeout) {
+			clearTimeout(legendFetchTimeout);
 		}
 
-		// Get current layers based on control type
-		let layersToFetch: any[] = [];
+		// Debounce the legend fetch to prevent rapid requests
+		legendFetchTimeout = setTimeout(async () => {
+			// Clear legend data first
+			legendData = {};
 
-		if (currentDataset.control_type === 'radio') {
-			const selectedLayers = currentMapLayers[trendAnalysisMode];
-			layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-		} else if (currentDataset.control_type === 'temperature_threshold') {
-			const selectedLayers = currentMapLayers[temperatureRiseThreshold];
-			layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-		} else if (currentDataset.control_type === 'time_slider') {
-			const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
-			const currentTimeLayer = (currentMapLayers as any)[currentYear];
-			if (currentTimeLayer) {
-				layersToFetch = [currentTimeLayer];
+			if (!currentDataset || !currentMapLayers) {
+				return;
 			}
-		} else if (currentDataset.control_type === 'nested_radio') {
-			const trendLayers = (currentMapLayers as any)[trendAnalysisMode];
-			if (trendLayers && trendLayers[selectedSeason]) {
-				const selectedLayers = trendLayers[selectedSeason];
+
+			console.log('Fetching legend data for dataset:', currentDataset.id);
+
+			// Get current layers based on control type
+			let layersToFetch: any[] = [];
+
+			if (currentDataset.control_type === 'radio') {
+				const selectedLayers = currentMapLayers[trendAnalysisMode];
 				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-			}
-		}
-
-		// Fetch legend for each layer
-		for (const layer of layersToFetch) {
-			if (!layer) continue;
-
-			const uniqueKey = `${layer.url}_${layer.layerIndex}`;
-
-			if (layer.mapserver === 'arcgis') {
-				try {
-					const legendUrl = `${layer.url}/legend?f=json`;
-					const response = await fetch(legendUrl);
-					const data = await response.json();
-
-					const targetLayerId = parseInt(layer.layerIndex);
-					const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
-
-					if (layerLegend) {
-						legendData[uniqueKey] = {
-							name: layer.name,
-							items: layerLegend.legend.map((item: any) => ({
-								label: item.label,
-								imageData: `data:image/png;base64,${item.imageData}`
-							}))
-						};
-					}
-				} catch (error) {
-					console.error('Error fetching ArcGIS legend:', error);
+			} else if (currentDataset.control_type === 'temperature_threshold') {
+				const selectedLayers = currentMapLayers[temperatureRiseThreshold];
+				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+			} else if (currentDataset.control_type === 'time_slider') {
+				const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
+				const currentTimeLayer = (currentMapLayers as any)[currentYear];
+				if (currentTimeLayer) {
+					layersToFetch = [currentTimeLayer];
 				}
-			} else {
-				// Handle WMS/GeoServer layers
-				const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
-				legendData[uniqueKey] = {
-					name: layer.name,
-					items: [
-						{
-							label: layer.name,
-							imageUrl: legendUrl
-						}
-					]
-				};
+			} else if (currentDataset.control_type === 'nested_radio') {
+				const trendLayers = (currentMapLayers as any)[trendAnalysisMode];
+				if (trendLayers && trendLayers[selectedSeason]) {
+					const selectedLayers = trendLayers[selectedSeason];
+					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+				}
 			}
-		}
+
+			// Fetch legend for each layer
+			for (const layer of layersToFetch) {
+				if (!layer) continue;
+
+				// Use a consistent key for time slider datasets to avoid multiple legends
+				let uniqueKey: string;
+				if (currentDataset.control_type === 'time_slider') {
+					uniqueKey = `${currentDataset.id}_timeslider`; // Single consistent key for time slider
+				} else {
+					uniqueKey = `${layer.url}_${layer.layerIndex}`;
+				}
+
+				if (layer.mapserver === 'arcgis') {
+					try {
+						const legendUrl = `${layer.url}/legend?f=json`;
+						const response = await fetch(legendUrl);
+						const data = await response.json();
+
+						const targetLayerId = parseInt(layer.layerIndex);
+						const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
+
+						if (layerLegend) {
+							// For time slider, use a generic name without the year
+							const legendName =
+								currentDataset.control_type === 'time_slider' ? 'Temperature Anomaly' : layer.name;
+
+							legendData[uniqueKey] = {
+								name: legendName,
+								items: layerLegend.legend.map((item: any) => ({
+									label: item.label,
+									imageData: `data:image/png;base64,${item.imageData}`
+								}))
+							};
+						}
+					} catch (error) {
+						console.error('Error fetching ArcGIS legend:', error);
+					}
+				} else {
+					// Handle WMS/GeoServer layers
+					const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
+
+					// For time slider, use a generic name without the year
+					const legendName =
+						currentDataset.control_type === 'time_slider' ? 'Temperature Anomaly' : layer.name;
+
+					legendData[uniqueKey] = {
+						name: legendName,
+						items: [
+							{
+								label: legendName,
+								imageUrl: legendUrl
+							}
+						]
+					};
+				}
+			}
+
+			console.log('Legend data updated:', Object.keys(legendData));
+		}, 300); // 300ms debounce delay
 	}
 
 	// Update layers based on current dataset and control state
@@ -1353,6 +1385,12 @@
 					| 'summer'
 					| 'autumn'
 					| 'winter';
+			} else if (dataset?.control_type === 'time_slider' && dataset.time_dimension?.default_year) {
+				// Set time index to match default year - this will be handled by the effect watcher
+				console.log(
+					'Time slider dataset selected, default year:',
+					dataset.time_dimension.default_year
+				);
 			}
 		}
 
@@ -1399,6 +1437,12 @@
 					| 'summer'
 					| 'autumn'
 					| 'winter';
+			} else if (dataset?.control_type === 'time_slider' && dataset.time_dimension?.default_year) {
+				// Set time index to match default year - this will be handled by the effect watcher
+				console.log(
+					'Time slider dataset selected, default year:',
+					dataset.time_dimension.default_year
+				);
 			}
 		}
 
