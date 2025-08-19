@@ -29,6 +29,9 @@
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
+	import ImageLayer from 'ol/layer/Image';
+	import ImageWMS from 'ol/source/ImageWMS';
+	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
 
 	let { currentTopic = 'ecosystem', width = '100%', height = '400px' } = $props();
 
@@ -52,44 +55,65 @@
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
 
+	// Legend state management
+	let legendData = $state<
+		Record<
+			string,
+			{ name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }
+		>
+	>({});
+	let legendCollapsed = $state(false);
+
 	// Sample ecosystem datasets structure
 	const ecosystemDataset = [
 		{
-			id: 'forest-cover',
-			title: 'Forest Cover Analysis',
-			description: 'Forest cover distribution and changes in the HKH region',
-			control_type: 'simple',
+			id: 'land-cover-2022',
+			title: 'Land Cover 2022',
+			description: 'Land cover distribution in the HKH region',
+			control_type: 'none',
+			map_layers: {
+				// For 'none' control type, you can use a simple structure
+				// or just provide the layers directly
+				default: [
+					{
+						id: 'land-cover-2022-layer',
+						name: 'Land Cover 2022',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer/',
+						layerIndex: 21,
+						mapserver: 'arcgis'
+					}
+				]
+			},
 			charts: [
 				{
-					title: 'Forest Cover by Region',
+					title: 'Land Cover HKH Region in 2022',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Nepal', 'Bhutan', 'India', 'Pakistan', 'Afghanistan', 'Myanmar'],
+						categories: [
+							'Forest',
+							'Grassland',
+							'Cropland',
+							'Bare Soil',
+							'Bare Rock',
+							'Built-Up',
+							'Snow and Glacier',
+							'Water Body',
+							'Riverbed'
+						],
 						series: [
 							{
-								name: 'Forest Cover (%)',
-								data: [44.7, 71.0, 24.4, 5.1, 2.1, 42.9]
-							}
-						]
-					}
-				}
-			]
-		},
-		{
-			id: 'biodiversity-hotspots',
-			title: 'Biodiversity Hotspots',
-			description: 'Key biodiversity areas and endemic species distribution',
-			control_type: 'simple',
-			charts: [
-				{
-					title: 'Endemic Species Count',
-					chart_type: 'line',
-					chart_data: {
-						categories: ['2000', '2005', '2010', '2015', '2020', '2024'],
-						series: [
-							{
-								name: 'Documented Species',
-								data: [15420, 16200, 17100, 18300, 19500, 20800]
+								name: 'Land Cover (hectares)',
+								data: [
+									{ y: 484185046.72, color: '#006f00' },
+									{ y: 159413631.12, color: '#91ef7a' },
+									{ y: 20996243.19, color: '#f6ee04' },
+									{ y: 77065078.77, color: '#dcd4e1' },
+									{ y: 54904168.62, color: '#d9b2de' },
+									{ y: 1199387.79, color: '#ff0000' },
+									{ y: 12850846.29, color: '#b1f2ff' },
+									{ y: 6858504.36, color: '#081cfb' },
+									{ y: 1844620.92, color: '#a6dcda' }
+								]
 							}
 						]
 					}
@@ -117,11 +141,11 @@
 	];
 
 	const information_layers: any = [
-		// {
-		// 	id: 'map-indicator-1',
-		// 	title: 'Forest Cover Distribution',
-		// 	dataset_id: 'forest-cover'
-		// },
+		{
+			id: 'map-indicator-1',
+			title: 'Land Cover Distribution 2022',
+			dataset_id: 'land-cover-2022'
+		}
 		// {
 		// 	id: 'map-indicator-2',
 		// 	title: 'Biodiversity Hotspots',
@@ -138,7 +162,7 @@
 	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection)
-	let selectedInformationLayer = $state<string | null>('Forest Cover Distribution');
+	let selectedInformationLayer = $state<string | null>('Land Cover Distribution 2022');
 
 	// Get current dataset based on selected question or information layer
 	let currentDataset = $derived.by(() => {
@@ -166,6 +190,82 @@
 
 	// Extract current data from dataset
 	let currentCharts = $derived(currentDataset?.charts || []);
+
+	// Debounce timer for legend fetching
+	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	// Fetch legend data for current layers
+	async function fetchLegendData() {
+		// Clear any existing timeout
+		if (legendFetchTimeout) {
+			clearTimeout(legendFetchTimeout);
+		}
+
+		// Debounce the legend fetch to prevent rapid requests
+		legendFetchTimeout = setTimeout(async () => {
+			// Clear legend data first
+			legendData = {};
+
+			if (!currentDataset || !currentDataset.map_layers) {
+				return;
+			}
+
+			console.log('Fetching legend data for dataset:', currentDataset.id);
+
+			// Get current layers based on control type
+			let layersToFetch: any[] = [];
+
+			if (currentDataset.control_type === 'none') {
+				const layers = currentDataset.map_layers.default;
+				layersToFetch = Array.isArray(layers) ? layers : [layers];
+			}
+
+			// Fetch legend for each layer
+			for (const layer of layersToFetch) {
+				if (!layer) continue;
+
+				const uniqueKey = `${layer.url}_${layer.layerIndex}`;
+
+				if (layer.mapserver === 'arcgis') {
+					try {
+						const legendUrl = `${layer.url}/legend?f=json`;
+						const response = await fetch(legendUrl);
+						const data = await response.json();
+
+						const targetLayerId = parseInt(layer.layerIndex);
+						const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
+
+						if (layerLegend) {
+							legendData[uniqueKey] = {
+								name: layer.name,
+								items: layerLegend.legend.map((item: any) => ({
+									label: item.label,
+									imageData: `data:image/png;base64,${item.imageData}`
+								}))
+							};
+						}
+					} catch (error) {
+						console.error('Error fetching ArcGIS legend:', error);
+					}
+				} else {
+					// Handle WMS/GeoServer layers
+					const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
+
+					legendData[uniqueKey] = {
+						name: layer.name,
+						items: [
+							{
+								label: layer.name,
+								imageUrl: legendUrl
+							}
+						]
+					};
+				}
+			}
+
+			console.log('Legend data updated:', Object.keys(legendData));
+		}, 300); // 300ms debounce delay
+	}
 
 	function initializeMap() {
 		if (!mapContainer) return;
@@ -231,6 +331,13 @@
 			// Ensure map renders properly
 			if (map) {
 				map.updateSize();
+				// Load default layers after map is initialized only if a dataset is selected
+				setTimeout(() => {
+					if (currentDataset) {
+						console.log('Initial map layer update after map initialization');
+						updateMapLayers();
+					}
+				}, 200);
 			}
 		}, 100);
 	}
@@ -261,6 +368,10 @@
 
 	// Cleanup on destroy
 	onDestroy(() => {
+		if (legendFetchTimeout) {
+			clearTimeout(legendFetchTimeout);
+		}
+
 		// Remove fullscreen event listeners
 		if (fullscreenHandler) {
 			document.removeEventListener('fullscreenchange', fullscreenHandler);
@@ -384,6 +495,149 @@
 			forceMapResize();
 		});
 	}
+
+	// Add layer to map based on layer configuration
+	function addWMSLayer(layerConfig: any) {
+		if (!map || !layerConfig) return;
+
+		let layer;
+
+		if (layerConfig.mapserver === 'arcgis') {
+			// Create ArcGIS layer
+			layer = new ImageLayer({
+				visible: true,
+				zIndex: 10,
+				opacity: 0.7,
+				source: new ImageArcGISRest({
+					url: layerConfig.url,
+					crossOrigin: 'anonymous',
+					params: {
+						LAYERS: `show:${layerConfig.layerIndex}`,
+						FORMAT: 'PNG32',
+						TRANSPARENT: true
+					}
+				})
+			});
+		} else {
+			// Create WMS layer
+			layer = new ImageLayer({
+				visible: true,
+				zIndex: 10,
+				opacity: 0.8,
+				source: new ImageWMS({
+					url: layerConfig.url,
+					crossOrigin: 'anonymous',
+					params: {
+						LAYERS: layerConfig.layerIndex,
+						FORMAT: 'image/png',
+						VERSION: '1.1.1',
+						TRANSPARENT: true
+					},
+					serverType: 'geoserver'
+				})
+			});
+		}
+
+		// Set layer ID for identification
+		layer.set('id', layerConfig.id);
+		layer.set('layerName', layerConfig.name);
+
+		// Add to map
+		if (map) {
+			map.addLayer(layer);
+			console.log('Added layer:', layerConfig.name, 'ID:', layerConfig.id);
+		}
+	}
+
+	// Add multiple layers (for datasets with multiple layers)
+	function addMultipleLayers(layerConfigs: any[]) {
+		if (!layerConfigs || !Array.isArray(layerConfigs)) return;
+
+		layerConfigs.forEach((layerConfig) => {
+			addWMSLayer(layerConfig);
+		});
+	}
+
+	// Remove layer from map
+	function removeLayer(layerId: string) {
+		if (!map) return;
+
+		const layers = map.getLayers().getArray().slice();
+		layers.forEach((layer) => {
+			if (layer.get('id') === layerId && map) {
+				map.removeLayer(layer);
+				console.log('Removed layer:', layerId);
+			}
+		});
+	}
+
+	// Clear all ecosystem data layers (keep base map)
+	function clearEcosystemLayers() {
+		if (!map) return;
+
+		const layers = map.getLayers().getArray().slice();
+		layers.forEach((layer) => {
+			const layerId = layer.get('id');
+			// Remove layers that have an ID (our custom layers), keep base layer
+			if (layerId && map) {
+				map.removeLayer(layerId);
+			}
+		});
+	}
+
+	// Update layers based on current dataset
+	function updateMapLayers() {
+		if (!map) return;
+
+		// Always clear existing ecosystem layers first
+		clearEcosystemLayers();
+
+		// If no dataset is selected, stop here (layers are cleared)
+		if (!currentDataset || !currentDataset.map_layers) {
+			console.log('No dataset selected - layers cleared');
+			return;
+		}
+
+		console.log(
+			'Updating map layers for dataset:',
+			currentDataset.id,
+			'control_type:',
+			currentDataset.control_type
+		);
+
+		// For 'none' control type, show layers immediately
+		if (currentDataset.control_type === 'none') {
+			const layers = currentDataset.map_layers.default;
+			if (layers) {
+				if (Array.isArray(layers)) {
+					addMultipleLayers(layers);
+				} else {
+					addWMSLayer(layers);
+				}
+			}
+		}
+
+		// Fetch legend data after updating layers
+		fetchLegendData();
+	}
+
+	// Single consolidated effect for all map layer updates
+	$effect(() => {
+		// This will trigger when currentDataset changes
+		const dataset = currentDataset;
+
+		console.log(
+			'Main effect triggered - Dataset:',
+			dataset?.id || 'null',
+			'Control type:',
+			dataset?.control_type
+		);
+
+		// Only update map layers if we have a dataset
+		if (dataset) {
+			updateMapLayers();
+		}
+	});
 </script>
 
 <!-- 3-Column Layout with Dynamic States -->
@@ -532,6 +786,61 @@
 								bind:this={mapContainer}
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
+
+							<!-- Legend Panel - Bottom Right INSIDE the map container -->
+							{#if currentDataset && Object.keys(legendData).length > 0}
+								<div class="absolute right-4 bottom-4 {isFullscreen ? 'z-[9999]' : 'z-10'}">
+									<!-- Legend Toggle Button -->
+									<button
+										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										on:click={() => (legendCollapsed = !legendCollapsed)}
+									>
+										<div class="flex items-center space-x-2">
+											<List class="h-4 w-4 text-green-600" />
+											{#if !legendCollapsed}
+												<span class="font-medium text-slate-700">Legend</span>
+											{/if}
+										</div>
+									</button>
+
+									<!-- Legend Content -->
+									{#if !legendCollapsed}
+										<div
+											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
+										>
+											<div class="max-h-[320px] space-y-4 overflow-y-auto">
+												{#each Object.keys(legendData) as uniqueKey}
+													<div class="space-y-2">
+														<h4 class="text-sm font-semibold text-slate-800">
+															{legendData[uniqueKey].name}
+														</h4>
+														<div class="space-y-1">
+															{#each legendData[uniqueKey].items as item}
+																<div class="flex items-center space-x-2">
+																	{#if item.imageData}
+																		<img
+																			src={item.imageData}
+																			alt={item.label}
+																			class="h-4 w-5 flex-shrink-0"
+																		/>
+																	{:else if item.imageUrl}
+																		<img
+																			src={item.imageUrl}
+																			alt={item.label}
+																			class="h-4 w-5 flex-shrink-0"
+																		/>
+																	{/if}
+																	<span class="text-xs text-slate-700">{item.label}</span>
+																</div>
+															{/each}
+														</div>
+													</div>
+												{/each}
+											</div>
+										</div>
+									{/if}
+								</div>
+							{/if}
 						</div>
 					</div>
 
