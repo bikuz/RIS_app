@@ -1564,7 +1564,7 @@
 		class:col-span-12={layoutState === 'left-full'}
 	>
 		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
+		<div class="rounded-2xl border border-white/20 bg-white/100 p-6">
 			<div class="mb-6 flex items-center justify-between">
 				<div class="flex items-center space-x-3">
 					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
@@ -1617,7 +1617,7 @@
 				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+						: 'text-sm leading-relaxed'} text-slate-700 transition-all duration-300"
 				>
 					Historically, the climate of the HKH has experienced significant changes that are closely
 					related to the rise and fall of regional cultures and civilizations. The region is one of
