@@ -129,35 +129,59 @@
 
 	// Watch for dataset or control state changes and update map layers accordingly
 	$effect(() => {
-		// This will trigger when currentDataset, trendAnalysisMode, temperatureRiseThreshold, or currentTimeIndex changes
-		console.log('Dataset changed:', currentDataset?.id || 'null');
+		// This will trigger when any of these state variables change
+		currentDataset;
+		trendAnalysisMode;
+		temperatureRiseThreshold;
+		currentTimeIndex;
+		selectedSeason;
+
+		console.log(
+			'Main effect triggered - Dataset:',
+			currentDataset?.id || 'null',
+			'Trend:',
+			trendAnalysisMode
+		);
 		updateMapLayers();
 	});
 
 	// Watch for trend analysis mode changes
 	$effect(() => {
+		// Explicitly watch trendAnalysisMode changes
+		trendAnalysisMode;
 		if (currentDataset && currentDataset.control_type === 'radio') {
+			console.log('Trend analysis mode changed to:', trendAnalysisMode);
 			updateMapLayers();
 		}
 	});
 
 	// Watch for temperature rise threshold changes
 	$effect(() => {
+		// Explicitly watch temperatureRiseThreshold changes
+		temperatureRiseThreshold;
 		if (currentDataset && currentDataset.control_type === 'temperature_threshold') {
+			console.log('Temperature threshold changed to:', temperatureRiseThreshold);
 			updateMapLayers();
 		}
 	});
 
 	// Watch for time slider changes
 	$effect(() => {
+		// Explicitly watch currentTimeIndex changes
+		currentTimeIndex;
 		if (currentDataset && currentDataset.control_type === 'time_slider') {
+			console.log('Time index changed to:', currentTimeIndex);
 			updateMapLayers();
 		}
 	});
 
 	// Watch for nested radio changes (seasonal controls)
 	$effect(() => {
+		// Explicitly watch both trendAnalysisMode and selectedSeason changes
+		trendAnalysisMode;
+		selectedSeason;
 		if (currentDataset && currentDataset.control_type === 'nested_radio') {
+			console.log('Nested radio changed - Trend:', trendAnalysisMode, 'Season:', selectedSeason);
 			updateMapLayers();
 		}
 	});
@@ -202,6 +226,7 @@
 				// Load default layers after map is initialized only if a dataset is selected
 				setTimeout(() => {
 					if (currentDataset) {
+						console.log('Initial map layer update after map initialization');
 						updateMapLayers();
 					}
 				}, 200);
@@ -247,7 +272,7 @@
 	const climateDataset = [
 		{
 			id: 'temp-trend-10y',
-			title: 'Annual Temperature Trend Analysis',
+			title: 'Annual Temperature Trend Analysis of 10 Years',
 			description: 'Temperature trend analysis with overall vs significant trend options',
 			control_type: 'radio',
 			control_options: ['overall', 'significant'],
@@ -1244,10 +1269,19 @@
 			return;
 		}
 
+		console.log(
+			'Updating map layers for dataset:',
+			currentDataset.id,
+			'control_type:',
+			currentDataset.control_type
+		);
+
 		// Get current control state and add appropriate layers
 		if (currentDataset.control_type === 'radio') {
 			// For radio controls, show layer based on selected mode
+			console.log('Radio control - trendAnalysisMode:', trendAnalysisMode);
 			const selectedLayers = currentMapLayers[trendAnalysisMode];
+			console.log('Selected layers for', trendAnalysisMode, ':', selectedLayers);
 			if (selectedLayers) {
 				if (Array.isArray(selectedLayers)) {
 					addMultipleLayers(selectedLayers);
