@@ -155,6 +155,13 @@
 		}
 	});
 
+	// Watch for nested radio changes (seasonal controls)
+	$effect(() => {
+		if (currentDataset && currentDataset.control_type === 'nested_radio') {
+			updateMapLayers();
+		}
+	});
+
 	function initializeMap() {
 		if (!mapContainer) return;
 
@@ -533,213 +540,351 @@
 			map_layers: {
 				'1995': {
 					id: 'temp-time-series-1995',
-					name: 'Annual Temperature 1995',
+					name: 'Temperature Anamoly 1995',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 0,
 					mapserver: 'arcgis'
 				},
 				'1996': {
 					id: 'temp-time-series-1996',
-					name: 'Annual Temperature 1996',
+					name: 'Temperature Anamoly 1996',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 1,
 					mapserver: 'arcgis'
 				},
 				'1997': {
 					id: 'temp-time-series-1997',
-					name: 'Annual Temperature 1997',
+					name: 'Temperature Anamoly 1997',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 2,
 					mapserver: 'arcgis'
 				},
 				'1998': {
 					id: 'temp-time-series-1998',
-					name: 'Annual Temperature 1998',
+					name: 'Temperature Anamoly 1998',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 3,
 					mapserver: 'arcgis'
 				},
 				'1999': {
 					id: 'temp-time-series-1999',
-					name: 'Annual Temperature 1999',
+					name: 'Temperature Anamoly 1999',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 4,
 					mapserver: 'arcgis'
 				},
 				'2000': {
 					id: 'temp-time-series-2000',
-					name: 'Annual Temperature 2000',
+					name: 'Temperature Anamoly 2000',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 5,
 					mapserver: 'arcgis'
 				},
 				'2001': {
 					id: 'temp-time-series-2001',
-					name: 'Annual Temperature 2001',
+					name: 'Temperature Anamoly 2001',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 6,
 					mapserver: 'arcgis'
 				},
 				'2002': {
 					id: 'temp-time-series-2002',
-					name: 'Annual Temperature 2002',
+					name: 'Temperature Anamoly 2002',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 7,
 					mapserver: 'arcgis'
 				},
 				'2003': {
 					id: 'temp-time-series-2003',
-					name: 'Annual Temperature 2003',
+					name: 'Temperature Anamoly 2003',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 8,
 					mapserver: 'arcgis'
 				},
 				'2004': {
 					id: 'temp-time-series-2004',
-					name: 'Annual Temperature 2004',
+					name: 'Temperature Anamoly 2004',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 9,
 					mapserver: 'arcgis'
 				},
 				'2005': {
 					id: 'temp-time-series-2005',
-					name: 'Annual Temperature 2005',
+					name: 'Temperature Anamoly 2005',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 10,
 					mapserver: 'arcgis'
 				},
 				'2006': {
 					id: 'temp-time-series-2006',
-					name: 'Annual Temperature 2006',
+					name: 'Temperature Anamoly 2006',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 11,
 					mapserver: 'arcgis'
 				},
 				'2007': {
 					id: 'temp-time-series-2007',
-					name: 'Annual Temperature 2007',
+					name: 'Temperature Anamoly 2007',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 12,
 					mapserver: 'arcgis'
 				},
 				'2008': {
 					id: 'temp-time-series-2008',
-					name: 'Annual Temperature 2008',
+					name: 'Temperature Anamoly 2008',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 13,
 					mapserver: 'arcgis'
 				},
 				'2009': {
 					id: 'temp-time-series-2009',
-					name: 'Annual Temperature 2009',
+					name: 'Temperature Anamoly 2009',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 14,
 					mapserver: 'arcgis'
 				},
 				'2010': {
 					id: 'temp-time-series-2010',
-					name: 'Annual Temperature 2010',
+					name: 'Temperature Anamoly 2010',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 15, // 15 is the layer index for 2010
 					mapserver: 'arcgis'
 				},
 				'2011': {
 					id: 'temp-time-series-2011',
-					name: 'Annual Temperature 2011',
+					name: 'Temperature Anamoly 2011',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 16, // 16 is the layer index for 2011
 					mapserver: 'arcgis'
 				},
 				'2012': {
 					id: 'temp-time-series-2012',
-					name: 'Annual Temperature 2012',
+					name: 'Temperature Anamoly 2012',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 17, // 17 is the layer index for 2012
 					mapserver: 'arcgis'
 				},
 				'2013': {
 					id: 'temp-time-series-2013',
-					name: 'Annual Temperature 2013',
+					name: 'Temperature Anamoly 2013',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 18,
 					mapserver: 'arcgis'
 				},
 				'2014': {
 					id: 'temp-time-series-2014',
-					name: 'Annual Temperature 2014',
+					name: 'Temperature Anamoly 2014',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 19, // 19 is the layer index for 2014
 					mapserver: 'arcgis'
 				},
 				'2015': {
 					id: 'temp-time-series-2015',
-					name: 'Annual Temperature 2015',
+					name: 'Temperature Anamoly 2015',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 20, // 20 is the layer index for 2015
 					mapserver: 'arcgis'
 				},
 				'2016': {
 					id: 'temp-time-series-2016',
-					name: 'Annual Temperature 2016',
+					name: 'Temperature Anamoly 2016',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 21, // 21 is the layer index for 2016
 					mapserver: 'arcgis'
 				},
 				'2017': {
 					id: 'temp-time-series-2017',
-					name: 'Annual Temperature 2017',
+					name: 'Temperature Anamoly 2017',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 22, // 22 is the layer index for 2017
 					mapserver: 'arcgis'
 				},
 				'2018': {
 					id: 'temp-time-series-2018',
-					name: 'Annual Temperature 2018',
+					name: 'Temperature Anamoly 2018',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 23, // 23 is the layer index for 2018
 					mapserver: 'arcgis'
 				},
 				'2019': {
 					id: 'temp-time-series-2019',
-					name: 'Annual Temperature 2019',
+					name: 'Temperature Anamoly 2019',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 24, // 24 is the layer index for 2019
 					mapserver: 'arcgis'
 				},
 				'2020': {
 					id: 'temp-time-series-2020',
-					name: 'Annual Temperature 2020',
+					name: 'Temperature Anamoly 2020',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 25, // 25 is the layer index for 2020
 					mapserver: 'arcgis'
 				},
 				'2021': {
 					id: 'temp-time-series-2021',
-					name: 'Annual Temperature 2021',
+					name: 'Temperature Anamoly 2021',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 26, // 26 is the layer index for 2021
 					mapserver: 'arcgis'
 				},
 				'2022': {
 					id: 'temp-time-series-2022',
-					name: 'Annual Temperature 2022',
+					name: 'Temperature Anamoly 2022',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 27, // 27 is the layer index for 2022
 					mapserver: 'arcgis'
 				},
 				'2023': {
 					id: 'temp-time-series-2023',
-					name: 'Annual Temperature 2023',
+					name: 'Temperature Anamoly 2023',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 28, // 28 is the layer index for 2023
 					mapserver: 'arcgis'
 				},
 				'2024': {
 					id: 'temp-time-series-2024',
-					name: 'Annual Temperature 2024',
+					name: 'Temperature Anamoly 2024',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 29, // 29 is the layer index for 2024
 					mapserver: 'arcgis'
+				}
+			}
+		},
+		{
+			id: 'seasonal-temp-trend',
+			title: 'Seasonal Temperature Trend Analysis',
+			description:
+				'Seasonal temperature trend analysis with overall vs significant trend options across different seasons',
+			control_type: 'nested_radio', // New control type for nested selections
+			control_options: {
+				trend_analysis: ['overall', 'significant'],
+				seasons: ['spring', 'summer', 'autumn', 'winter']
+			},
+			default_option: {
+				trend_analysis: 'overall',
+				season: 'spring'
+			},
+			charts: [
+				{
+					title: 'Seasonal Temperature Trends',
+					chart_type: 'line',
+					chart_data: {
+						categories: ['Spring', 'Summer', 'Autumn', 'Winter'],
+						series: [
+							{
+								name: 'Overall Trend (°C/decade)',
+								data: [0.8, 1.2, 0.9, 1.1]
+							},
+							{
+								name: 'Significant Trend (°C/decade)',
+								data: [0.6, 0.9, 0.7, 0.8]
+							}
+						]
+					}
+				},
+				{
+					title: 'Regional Seasonal Warming',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet'],
+						series: [
+							{
+								name: 'Spring (°C)',
+								data: [1.8, 2.1, 2.3, 2.5]
+							},
+							{
+								name: 'Summer (°C)',
+								data: [1.2, 1.5, 1.8, 2.0]
+							},
+							{
+								name: 'Autumn (°C)',
+								data: [1.6, 1.9, 2.1, 2.3]
+							},
+							{
+								name: 'Winter (°C)',
+								data: [2.2, 2.4, 2.6, 2.8]
+							}
+						]
+					}
+				}
+			],
+			map_layers: {
+				// Nested structure: trend_analysis -> season -> layer_config
+				overall: {
+					spring: [
+						{
+							id: 'seasonal-overall-spring',
+							name: 'Spring Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 1,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'seasonal-overall-summer',
+							name: 'Summer Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 2,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'seasonal-overall-autumn',
+							name: 'Autumn Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 3,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'seasonal-overall-winter',
+							name: 'Winter Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 4,
+							mapserver: 'arcgis'
+						}
+					]
+				},
+				significant: {
+					spring: [
+						{
+							id: 'seasonal-significant-spring',
+							name: 'Spring Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 8,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'seasonal-significant-summer',
+							name: 'Summer Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 7,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'seasonal-significant-autumn',
+							name: 'Autumn Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 9,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'seasonal-significant-winter',
+							name: 'Winter Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 6,
+							mapserver: 'arcgis'
+						}
+					]
 				}
 			}
 		}
@@ -781,7 +926,7 @@
 		{
 			id: 'map-indicator-2',
 			title: 'Seasonal Temperature Trend',
-			dataset_id: 'temp-trend-10y'
+			dataset_id: 'seasonal-temp-trend'
 		},
 		{
 			id: 'map-indicator-3',
@@ -800,6 +945,9 @@
 
 	// Track temperature rise threshold selection
 	let temperatureRiseThreshold = $state<'0.5' | '1' | '1.5' | '2' | '2.5'>('1.5');
+
+	// Track seasonal selection for nested radio controls
+	let selectedSeason = $state<'spring' | 'summer' | 'autumn' | 'winter'>('spring');
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
@@ -1030,6 +1178,12 @@
 			if (currentTimeLayer) {
 				layersToFetch = [currentTimeLayer];
 			}
+		} else if (currentDataset.control_type === 'nested_radio') {
+			const trendLayers = (currentMapLayers as any)[trendAnalysisMode];
+			if (trendLayers && trendLayers[selectedSeason]) {
+				const selectedLayers = trendLayers[selectedSeason];
+				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+			}
 		}
 
 		// Fetch legend for each layer
@@ -1116,6 +1270,17 @@
 			if (currentTimeLayer) {
 				addWMSLayer(currentTimeLayer);
 			}
+		} else if (currentDataset.control_type === 'nested_radio') {
+			// For nested radio controls, show layer based on both trend analysis and season
+			const trendLayers = (currentMapLayers as any)[trendAnalysisMode];
+			if (trendLayers && trendLayers[selectedSeason]) {
+				const selectedLayers = trendLayers[selectedSeason];
+				if (Array.isArray(selectedLayers)) {
+					addMultipleLayers(selectedLayers);
+				} else {
+					addWMSLayer(selectedLayers);
+				}
+			}
 		}
 
 		// Fetch legend data after updating layers
@@ -1143,6 +1308,15 @@
 				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
 			} else if (dataset?.control_type === 'temperature_threshold' && dataset.default_option) {
 				temperatureRiseThreshold = dataset.default_option as '0.5' | '1' | '1.5' | '2' | '2.5';
+			} else if (dataset?.control_type === 'nested_radio' && dataset.default_option) {
+				trendAnalysisMode = (dataset.default_option as any).trend_analysis as
+					| 'overall'
+					| 'significant';
+				selectedSeason = (dataset.default_option as any).season as
+					| 'spring'
+					| 'summer'
+					| 'autumn'
+					| 'winter';
 			}
 		}
 
@@ -1180,6 +1354,15 @@
 				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
 			} else if (dataset?.control_type === 'temperature_threshold' && dataset.default_option) {
 				temperatureRiseThreshold = dataset.default_option as '0.5' | '1.5' | '2.5';
+			} else if (dataset?.control_type === 'nested_radio' && dataset.default_option) {
+				trendAnalysisMode = (dataset.default_option as any).trend_analysis as
+					| 'overall'
+					| 'significant';
+				selectedSeason = (dataset.default_option as any).season as
+					| 'spring'
+					| 'summer'
+					| 'autumn'
+					| 'winter';
 			}
 		}
 
@@ -1594,6 +1777,127 @@
 										/>
 										<span class="text-sm font-medium text-slate-700">Significant</span>
 									</label>
+								</div>
+							{:else if currentDataset && currentDataset.control_type === 'nested_radio'}
+								<!-- Always show expanded Nested Radio Controls Panel (Trend Analysis + Seasons) -->
+								<div
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-6 rounded-full border border-white/30 bg-white/95 px-6 py-3 shadow-xl backdrop-blur-sm"
+								>
+									<!-- Trend Analysis Section -->
+									<div class="flex items-center space-x-3">
+										<!-- <div class="flex items-center space-x-2">
+											<Layers class="h-4 w-4 text-blue-600" />
+											<span class="text-sm font-medium text-slate-700">Trend</span>
+										</div> -->
+
+										<!-- Overall Option -->
+										<label class="flex cursor-pointer items-center space-x-1.5">
+											<input
+												type="radio"
+												bind:group={trendAnalysisMode}
+												value="overall"
+												class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
+											/>
+											<span class="text-xs font-medium text-slate-700">Overall</span>
+										</label>
+
+										<!-- Significant Option -->
+										<label class="flex cursor-pointer items-center space-x-1.5">
+											<input
+												type="radio"
+												bind:group={trendAnalysisMode}
+												value="significant"
+												class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
+											/>
+											<span class="text-xs font-medium text-slate-700">Significant</span>
+										</label>
+									</div>
+
+									<!-- Separator -->
+									<div class="h-5 w-px bg-slate-300"></div>
+
+									<!-- Seasonal Selection Section -->
+									<div class="flex items-center space-x-3">
+										<!-- <div class="flex items-center space-x-2">
+											<Calendar class="h-4 w-4 text-green-600" />
+											<span class="text-sm font-medium text-slate-700">Season</span>
+										</div> -->
+
+										<!-- Season Options as Toggle Buttons -->
+										<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
+											<!-- Spring Option -->
+											<label class="relative cursor-pointer">
+												<input
+													type="radio"
+													bind:group={selectedSeason}
+													value="spring"
+													class="peer sr-only"
+												/>
+												<div
+													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													'spring'
+														? 'text-white'
+														: 'text-slate-600'}"
+												>
+													Spring
+												</div>
+											</label>
+
+											<!-- Summer Option -->
+											<label class="relative cursor-pointer">
+												<input
+													type="radio"
+													bind:group={selectedSeason}
+													value="summer"
+													class="peer sr-only"
+												/>
+												<div
+													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													'summer'
+														? 'text-white'
+														: 'text-slate-600'}"
+												>
+													Summer
+												</div>
+											</label>
+
+											<!-- Autumn Option -->
+											<label class="relative cursor-pointer">
+												<input
+													type="radio"
+													bind:group={selectedSeason}
+													value="autumn"
+													class="peer sr-only"
+												/>
+												<div
+													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													'autumn'
+														? 'text-white'
+														: 'text-slate-600'}"
+												>
+													Autumn
+												</div>
+											</label>
+
+											<!-- Winter Option -->
+											<label class="relative cursor-pointer">
+												<input
+													type="radio"
+													bind:group={selectedSeason}
+													value="winter"
+													class="peer sr-only"
+												/>
+												<div
+													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													'winter'
+														? 'text-white'
+														: 'text-slate-600'}"
+												>
+													Winter
+												</div>
+											</label>
+										</div>
+									</div>
 								</div>
 							{:else if currentDataset && currentDataset.control_type === 'temperature_threshold'}
 								<!-- Always show expanded Temperature Rise Threshold Panel -->
