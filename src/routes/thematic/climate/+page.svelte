@@ -239,7 +239,7 @@
 	// Improved climate dataset structure for better map layer management
 	const climateDataset = [
 		{
-			id: 'temp-trend-30y',
+			id: 'temp-trend-10y',
 			title: 'Annual Temperature Trend Analysis',
 			description: 'Temperature trend analysis with overall vs significant trend options',
 			control_type: 'radio',
@@ -313,17 +313,73 @@
 					{
 						id: 'temp-trend-overall',
 						name: 'Overall Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 						layerIndex: 0,
 						mapserver: 'arcgis'
 					}
 				],
 				significant: [
 					{
-						id: 'temp-trend-overall',
+						id: 'temp-trend-significant',
 						name: 'Significant Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-						layerIndex: 0,
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+						layerIndex: 5,
+						mapserver: 'arcgis'
+					}
+				]
+			}
+		},
+		{
+			id: 'temp-trend-30y',
+			title: 'Annual Temperature Trend Analysis',
+			description: 'Temperature trend analysis with overall vs significant trend options',
+			control_type: 'temperature_threshold',
+			control_options: ['0.5', '1.5', '2.0', '2.5'],
+			default_option: '1.5',
+			charts: [],
+			map_layers: {
+				'0.5': [
+					{
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
+						layerIndex: 1,
+						mapserver: 'arcgis'
+					}
+				],
+				'1': [
+					{
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
+						layerIndex: 2,
+						mapserver: 'arcgis'
+					}
+				],
+				'1.5': [
+					{
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
+						layerIndex: 3,
+						mapserver: 'arcgis'
+					}
+				],
+				'2': [
+					{
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
+						layerIndex: 4,
+						mapserver: 'arcgis'
+					}
+				],
+				'2.5': [
+					{
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
+						layerIndex: 5,
 						mapserver: 'arcgis'
 					}
 				]
@@ -334,7 +390,7 @@
 			title: 'Regional Temperature Rise Analysis',
 			description: 'Temperature rise analysis with different threshold options',
 			control_type: 'temperature_threshold',
-			control_options: ['0.5', '1.5', '2.5'],
+			control_options: ['0.5', '1.5', '2.0', '2.5'],
 			default_option: '1.5',
 			charts: [
 				{
@@ -692,27 +748,27 @@
 	const questions = [
 		{
 			id: 'question-1',
-			question: 'What is the annual average temperature trend over the past 30 years?',
+			question: 'Which areas have observed temperature rise  in last 30 years??',
 			dataset_id: 'temp-trend-30y'
 		},
-		{
-			id: 'question-2',
-			question: 'Which areas have observed temperature rise more than 0.5 degrees in last decade?',
-			dataset_id: 'temp-rise-decade'
-		},
-		{
-			id: 'question-3',
-			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?',
-			dataset_id: 'temp-rise-decade'
-		},
-		{
-			id: 'question-4',
-			question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?',
-			dataset_id: 'temp-rise-decade'
-		},
+		// {
+		// 	id: 'question-2',
+		// 	question: 'Which areas have observed temperature rise  in last 30 years?',
+		// 	dataset_id: 'temp-rise-decade'
+		// },
+		// {
+		// 	id: 'question-3',
+		// 	question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?',
+		// 	dataset_id: 'temp-rise-decade'
+		// },
+		// {
+		// 	id: 'question-4',
+		// 	question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?',
+		// 	dataset_id: 'temp-rise-decade'
+		// },
 		{
 			id: 'question-5',
-			question: 'What is the annual average temperature trend over the past 30 years?',
+			question: 'What is the annual average anamoly trend over the past 30 years?',
 			dataset_id: 'annual-temp-anamoly-series'
 		}
 	];
@@ -720,12 +776,12 @@
 		{
 			id: 'map-indicator-1',
 			title: 'Annual Temperature Trend',
-			dataset_id: 'temp-trend-30y'
+			dataset_id: 'temp-trend-10y'
 		},
 		{
 			id: 'map-indicator-2',
-			title: 'Temperature Rise',
-			dataset_id: 'temp-rise-decade'
+			title: 'Seasonal Temperature Trend',
+			dataset_id: 'temp-trend-10y'
 		},
 		{
 			id: 'map-indicator-3',
@@ -1260,8 +1316,8 @@
 				>
 					Historically, the climate of the HKH has experienced significant changes that are closely
 					related to the rise and fall of regional cultures and civilizations. The region is one of
-					the most climate-sensitive mountain systems in the world. Known as the “Third Pole” for
-					its vast ice reserves, the HKH plays a critical role in regulating Asia’s climate and
+					the most climate-sensitive mountain systems in the world. Known as the "Third Pole" for
+					its vast ice reserves, the HKH plays a critical role in regulating Asia's climate and
 					serves as the source of ten major river systems that sustain the livelihoods of over 1.6
 					billion people downstream. However, the impacts of climate change are being felt here more
 					intensely than the global average, with temperatures rising significantly faster than
@@ -1437,13 +1493,13 @@
 										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-white/30 bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm"
 									>
 										<!-- Time Label -->
-										<div class="flex items-center space-x-2">
+										<!-- <div class="flex items-center space-x-2">
 											<Calendar class="h-4 w-4 text-blue-600" />
 											<span class="text-sm font-medium text-slate-700">Time</span>
-										</div>
+										</div> -->
 
 										<!-- Separator -->
-										<div class="h-4 w-px bg-slate-300"></div>
+										<!-- <div class="h-4 w-px bg-slate-300"></div> -->
 
 										<!-- Step Backward -->
 										<button
@@ -1509,13 +1565,13 @@
 									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
 								>
 									<!-- Analysis Label -->
-									<div class="flex items-center space-x-2">
+									<!-- <div class="flex items-center space-x-2">
 										<Layers class="h-4 w-4 text-blue-600" />
 										<span class="text-sm font-medium text-slate-700">Trend</span>
-									</div>
+									</div> -->
 
 									<!-- Separator -->
-									<div class="h-4 w-px bg-slate-300"></div>
+									<!-- <div class="h-4 w-px bg-slate-300"></div> -->
 
 									<!-- Overall Option -->
 									<label class="flex cursor-pointer items-center space-x-2">
@@ -1664,7 +1720,7 @@
 												<span class="font-medium text-slate-700">Legend</span>
 											{/if}
 										</div>
-										<svg
+										<!-- <svg
 											class="h-4 w-4 transform text-slate-600 transition-transform duration-300 {legendCollapsed
 												? 'rotate-180'
 												: ''}"
@@ -1678,7 +1734,7 @@
 												stroke-width="2"
 												d="M19 9l-7 7-7-7"
 											/>
-										</svg>
+										</svg> -->
 									</button>
 
 									<!-- Legend Content -->
@@ -1686,7 +1742,7 @@
 										<div
 											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
 										>
-											<div class="max-h-[300px] space-y-4 overflow-y-auto">
+											<div class="max-h-[320px] space-y-4 overflow-y-auto">
 												{#each Object.keys(legendData) as uniqueKey}
 													<div class="space-y-2">
 														<h4 class="text-sm font-semibold text-slate-800">
