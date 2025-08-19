@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import climate_1 from '$lib/assets/images/climate_1.png';
 	import climate_2 from '$lib/assets/images/climate_2.png';
+	import pop_1 from '$lib/assets/images/pop_1.png';
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
@@ -15,6 +16,7 @@
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import {
+		House,
 		Cloud,
 		Users,
 		CheckCircle,
@@ -35,13 +37,14 @@
 		Pause,
 		SkipBack,
 		SkipForward,
-		Calendar
+		Calendar,
+		List
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
 
-	let { currentTopic = 'climate', width = '100%', height = '400px' } = $props();
+	// let { currentTopic = 'demography', width = '100%', height = '400px' } = $props();
 
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
@@ -54,12 +57,15 @@
 	const ARCGIS_MAPSERVER_URL =
 		'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/Demography/MapServer';
 
+	const BASELAYERS_URL =
+		'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer';
+
 	// Time slider state management
-	let isTimeSliderVisible = $state(false);
-	let isPlaying = $state(false);
-	let currentTimeIndex = $state(0);
-	let playbackSpeed = $state(1000); // milliseconds between frames
-	let playInterval: number | null = null;
+	// let isTimeSliderVisible = $state(false);
+	// let isPlaying = $state(false);
+	// let currentTimeIndex = $state(0);
+	// let playbackSpeed = $state(1000); // milliseconds between frames
+	// let playInterval: number | null = null;
 
 	// Time periods for climate data (can be customized based on your data)
 	// const timePeriods = [
@@ -95,113 +101,113 @@
 	// 	{ year: 2024, label: '2024', season: 'Annual' }
 	// ];
 
-	// Time slider functions
-	function toggleTimeSlider() {
-		isTimeSliderVisible = !isTimeSliderVisible;
-		if (!isTimeSliderVisible && isPlaying) {
-			stopPlayback();
-		}
-	}
+	// // Time slider functions
+	// function toggleTimeSlider() {
+	// 	isTimeSliderVisible = !isTimeSliderVisible;
+	// 	if (!isTimeSliderVisible && isPlaying) {
+	// 		stopPlayback();
+	// 	}
+	// }
 
-	function togglePlayback() {
-		if (isPlaying) {
-			stopPlayback();
-		} else {
-			startPlayback();
-		}
-	}
+	// function togglePlayback() {
+	// 	if (isPlaying) {
+	// 		stopPlayback();
+	// 	} else {
+	// 		startPlayback();
+	// 	}
+	// }
 
-	function startPlayback() {
-		if (playInterval) clearInterval(playInterval);
+	// function startPlayback() {
+	// 	if (playInterval) clearInterval(playInterval);
 
-		isPlaying = true;
-		playInterval = setInterval(() => {
-			if (currentTimeIndex < timePeriods.length - 1) {
-				currentTimeIndex++;
-				updateMapForTime(currentTimeIndex);
-			} else {
-				// Loop back to start or stop
-				currentTimeIndex = 0;
-				updateMapForTime(currentTimeIndex);
-				// Uncomment next line to stop at end instead of looping
-				// stopPlayback();
-			}
-		}, playbackSpeed);
-	}
+	// 	isPlaying = true;
+	// 	playInterval = setInterval(() => {
+	// 		if (currentTimeIndex < timePeriods.length - 1) {
+	// 			currentTimeIndex++;
+	// 			updateMapForTime(currentTimeIndex);
+	// 		} else {
+	// 			// Loop back to start or stop
+	// 			currentTimeIndex = 0;
+	// 			updateMapForTime(currentTimeIndex);
+	// 			// Uncomment next line to stop at end instead of looping
+	// 			// stopPlayback();
+	// 		}
+	// 	}, playbackSpeed);
+	// }
 
-	function stopPlayback() {
-		if (playInterval) {
-			clearInterval(playInterval);
-			playInterval = null;
-		}
-		isPlaying = false;
-	}
+	// function stopPlayback() {
+	// 	if (playInterval) {
+	// 		clearInterval(playInterval);
+	// 		playInterval = null;
+	// 	}
+	// 	isPlaying = false;
+	// }
 
-	function goToTime(index: number) {
-		if (index >= 0 && index < timePeriods.length) {
-			currentTimeIndex = index;
-			updateMapForTime(index);
-		}
-	}
+	// function goToTime(index: number) {
+	// 	if (index >= 0 && index < timePeriods.length) {
+	// 		currentTimeIndex = index;
+	// 		updateMapForTime(index);
+	// 	}
+	// }
 
-	function stepBackward() {
-		if (currentTimeIndex > 0) {
-			goToTime(currentTimeIndex - 1);
-		}
-	}
+	// function stepBackward() {
+	// 	if (currentTimeIndex > 0) {
+	// 		goToTime(currentTimeIndex - 1);
+	// 	}
+	// }
 
-	function stepForward() {
-		if (currentTimeIndex < timePeriods.length - 1) {
-			goToTime(currentTimeIndex + 1);
-		}
-	}
+	// function stepForward() {
+	// 	if (currentTimeIndex < timePeriods.length - 1) {
+	// 		goToTime(currentTimeIndex + 1);
+	// 	}
+	// }
 
-	function updateMapForTime(timeIndex: number) {
-		// This function would update the map layers based on the selected time
-		// You can modify ArcGIS parameters or switch between different temporal layers
-		console.log('Updating map for time:', timePeriods[timeIndex]);
+	// function updateMapForTime(timeIndex: number) {
+	// 	// This function would update the map layers based on the selected time
+	// 	// You can modify ArcGIS parameters or switch between different temporal layers
+	// 	console.log('Updating map for time:', timePeriods[timeIndex]);
 
-		// Example: Update ArcGIS layer with time parameter if needed
-		if (map && selectedInformationLayer) {
-			const layers = map.getLayers().getArray();
-			layers.forEach((layer) => {
-				if (layer.get('layerId') !== undefined) {
-					const source = (layer as ImageLayer<any>).getSource();
-					if (source && source instanceof ImageArcGISRest) {
-						// Update ArcGIS parameters with time if your service supports it
-						const currentParams = source.getParams();
-						source.updateParams({
-							...currentParams
-							// Add time parameter if your ArcGIS service supports temporal data
-							// time: timePeriods[timeIndex].year.toString()
-						});
-					}
-				}
-			});
-		}
-	}
+	// 	// Example: Update ArcGIS layer with time parameter if needed
+	// 	if (map && selectedInformationLayer) {
+	// 		const layers = map.getLayers().getArray();
+	// 		layers.forEach((layer) => {
+	// 			if (layer.get('layerId') !== undefined) {
+	// 				const source = (layer as ImageLayer<any>).getSource();
+	// 				if (source && source instanceof ImageArcGISRest) {
+	// 					// Update ArcGIS parameters with time if your service supports it
+	// 					const currentParams = source.getParams();
+	// 					source.updateParams({
+	// 						...currentParams
+	// 						// Add time parameter if your ArcGIS service supports temporal data
+	// 						// time: timePeriods[timeIndex].year.toString()
+	// 					});
+	// 				}
+	// 			}
+	// 		});
+	// 	}
+	// }
 
-	// Function to handle trend analysis mode changes
-	function updateMapForTrendMode(mode: 'overall' | 'significant') {
-		console.log('Updating map for trend analysis mode:', mode);
-		// Implementation for trend mode changes if needed
-	}
+	// // Function to handle trend analysis mode changes
+	// function updateMapForTrendMode(mode: 'overall' | 'significant') {
+	// 	console.log('Updating map for trend analysis mode:', mode);
+	// 	// Implementation for trend mode changes if needed
+	// }
 
-	// Watch for trend analysis mode changes
-	$effect(() => {
-		updateMapForTrendMode(trendAnalysisMode);
-	});
+	// // Watch for trend analysis mode changes
+	// $effect(() => {
+	// 	updateMapForTrendMode(trendAnalysisMode);
+	// });
 
-	// Function to handle temperature rise threshold changes
-	function updateMapForTemperatureRise(threshold: '0.5' | '1.5' | '2.5') {
-		console.log('Updating map for temperature rise threshold:', threshold);
-		// Implementation for temperature threshold changes if needed
-	}
+	// // Function to handle temperature rise threshold changes
+	// function updateMapForTemperatureRise(threshold: '0.5' | '1.5' | '2.5') {
+	// 	console.log('Updating map for temperature rise threshold:', threshold);
+	// 	// Implementation for temperature threshold changes if needed
+	// }
 
-	// Watch for temperature rise threshold changes
-	$effect(() => {
-		updateMapForTemperatureRise(temperatureRiseThreshold);
-	});
+	// // Watch for temperature rise threshold changes
+	// $effect(() => {
+	// 	updateMapForTemperatureRise(temperatureRiseThreshold);
+	// });
 
 	function initializeMap() {
 		if (!mapContainer) return;
@@ -224,9 +230,14 @@
 						// 	attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
 						// })
 
+						// source: new XYZ({
+						// 	url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+						// 	attributions: '© OpenStreetMap contributors © CARTO'
+						// })
+
 						source: new XYZ({
-							url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-							attributions: '© OpenStreetMap contributors © CARTO'
+							url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+							// attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
 						})
 					})
 				],
@@ -278,9 +289,9 @@
 
 	// Cleanup on destroy
 	onDestroy(() => {
-		if (playInterval) {
-			clearInterval(playInterval);
-		}
+		// if (playInterval) {
+		// 	clearInterval(playInterval);
+		// }
 		if (map) {
 			map.dispose();
 		}
@@ -295,13 +306,23 @@
 					title: 'Population Distribution 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Population (millions)',
-								data: [12.5, 29.8, 0.8, 3.5, 39.8, 231.4]
+								data: [12.5, 29.8, 0.8, 3.5, 39.8, 12.4, 9.1, 2.3]
 							}
-						]
+						],
+						yaxis_text: 'Total Population'
 					}
 				},
 				{
@@ -332,11 +353,20 @@
 					title: 'Sex Ratio Distribution 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Males per 100 Females',
-								data: [105, 94, 113, 98, 106, 107]
+								data: [105, 94, 113, 98, 106, 107, 102, 100]
 							}
 						]
 					}
@@ -353,21 +383,30 @@
 			id: 'aged-75-proportion',
 			charts: [
 				{
-					title: 'Proportion of Aged >=75 Years',
+					title: 'Proportion of Age >=75 Years',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Percentage (%)',
-								data: [3.2, 2.8, 4.1, 3.5, 2.1, 2.9]
+								data: [3.2, 2.8, 4.1, 3.5, 2.1, 2.9, 2.7, 3]
 							}
 						]
 					}
 				}
 			],
 			map_data: {
-				name: 'Proportion of Aged >=75',
+				name: 'Proportion of Age >=75',
 				layer_id: 2,
 				description: 'Proportion of population aged 75 years and above'
 			},
@@ -380,11 +419,20 @@
 					title: 'Child Woman Ratio 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Children per 1000 Women',
-								data: [385, 298, 421, 312, 512, 467]
+								data: [385, 298, 421, 312, 512, 467, 314, 422]
 							}
 						]
 					}
@@ -404,11 +452,20 @@
 					title: 'Child Dependency Ratio 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Dependency Ratio',
-								data: [42.5, 35.2, 38.9, 33.1, 58.7, 51.3]
+								data: [42.5, 35.2, 38.9, 33.1, 58.7, 51.3, 23.2, 42.1]
 							}
 						]
 					}
@@ -428,11 +485,20 @@
 					title: 'Age Dependency Ratio 2025',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Nepal',
+							'Pakistan',
+							'Myanmar'
+						],
 						series: [
 							{
 								name: 'Dependency Ratio',
-								data: [48.2, 41.5, 44.3, 38.9, 62.1, 56.7]
+								data: [48.2, 41.5, 44.3, 38.9, 62.1, 56.7, 32.2, 49.2]
 							}
 						]
 					}
@@ -480,7 +546,7 @@
 		},
 		{
 			id: 'info-layer-3',
-			title: 'Proportion of Aged >=75',
+			title: 'Proportion of Age >=75',
 			dataset_id: 'aged-75-proportion'
 		}
 	];
@@ -499,6 +565,12 @@
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
+
+	// Add Legend state management
+	let legendData = $state<
+		Record<string, { name: string; items: Array<{ label: string; imageData?: string }> }>
+	>({});
+	let legendCollapsed = $state(false);
 
 	// Track questions panel state
 	let isQuestionsPanelOpen = $state(false);
@@ -520,18 +592,19 @@
 		{
 			id: 1,
 			name: 'Soil',
-			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer'
+			url: BASELAYERS_URL
 		},
 		{
-			id: 2,
+			id: 3,
 			name: 'River',
-			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer'
+			url: BASELAYERS_URL
 		}
 	];
 
 	// Function to toggle base layers
-	function toggleBaseLayer(layerId: number, checked: boolean) {
+	async function toggleBaseLayer(layerId: number, checked: boolean) {
 		if (!map) return;
+		activeBaseLayers = { ...activeBaseLayers, [layerId]: checked };
 
 		if (checked) {
 			const layerInfo = baseLayers.find((l) => l.id === layerId);
@@ -546,21 +619,23 @@
 						TRANSPARENT: true
 					}
 				}),
-				zIndex: 2
+				zIndex: 1
 			});
 
 			layer.set('baseLayerId', layerId);
 			map.addLayer(layer);
-			activeBaseLayers = { ...activeBaseLayers, [layerId]: layer };
 		} else {
-			const layer = activeBaseLayers[layerId];
-			if (layer) {
-				map.removeLayer(layer);
-				const updated = { ...activeBaseLayers };
-				delete updated[layerId];
-				activeBaseLayers = updated;
+			const layers = map.getLayers().getArray();
+			for (const layer of layers) {
+				if (layer.get('baseLayerId') === layerId) {
+					map.removeLayer(layer);
+					break;
+				}
 			}
 		}
+
+		// Update legend after changing layers
+		updateLegend();
 	}
 
 	// Get current dataset based on selected question or information layer
@@ -635,11 +710,79 @@
 		return null;
 	};
 
-	// Add ArcGIS layer to map
-	function addArcGISLayer(layerId: number, layerName: string) {
-		if (!map) return;
+	// Function to fetch ArcGIS legend
+	async function fetchArcGISLegend(serviceUrl: string, layerId: number) {
+		try {
+			const legendUrl = `${serviceUrl}/legend?f=json`;
+			const response = await fetch(legendUrl);
+			const data = await response.json();
 
-		// Remove existing demographic layers first
+			const layerLegend = data.layers.find((l: any) => l.layerId === layerId);
+			if (layerLegend) {
+				return {
+					name: layerLegend.layerName,
+					items: layerLegend.legend.map((item: any) => ({
+						label: item.label,
+						imageData: `data:image/png;base64,${item.imageData}`
+					}))
+				};
+			}
+		} catch (error) {
+			console.error('Error fetching ArcGIS legend:', error);
+		}
+		return null;
+	}
+
+	// Update legend when layers change
+	async function updateLegend() {
+		const newLegendData = {};
+
+		// Get all layers from the map
+		if (map) {
+			const layers = map.getLayers().getArray();
+
+			for (const layer of layers) {
+				const source = layer.getSource();
+
+				if (source instanceof ImageArcGISRest) {
+					// Handle layerId 0 explicitly, without using || that treats 0 as falsy
+					let layerId = layer.get('layerId');
+					if (layerId === undefined || layerId === null) {
+						layerId = layer.get('baseLayerId');
+					}
+
+					const serviceUrl = source.getUrl();
+
+					console.log('Found ArcGIS layer - ID:', layerId, 'URL:', serviceUrl); 
+
+					if (layerId !== undefined && layerId !== null && serviceUrl) {
+						const legendKey = `${serviceUrl}_${layerId}`;
+
+						if (!legendData[legendKey]) {
+							console.log('Fetching legend for layer:', layerId); 
+							const legend = await fetchArcGISLegend(serviceUrl, layerId);
+							if (legend) {
+								newLegendData[legendKey] = legend;
+								console.log('Legend fetched successfully for layer:', layerId); 
+							} else {
+								console.log('No legend data returned for layer:', layerId); 
+							}
+						} else {
+							newLegendData[legendKey] = legendData[legendKey];
+							console.log('Using cached legend for layer:', layerId); 
+						}
+					}
+				}
+			}
+		}
+
+		legendData = newLegendData;
+		console.log('Final legend data:', legendData); // Debug log
+	}
+
+	// Modified addArcGISLayer to update legend
+	async function addArcGISLayer(layerId: number, layerName: string) {
+		if (!map) return;
 		removeAllDemographicLayers();
 
 		const arcgisLayer = new ImageLayer({
@@ -651,16 +794,20 @@
 					TRANSPARENT: true
 				}
 			}),
-			zIndex: 1
+			zIndex: 2
 		});
 
-		// Set the layer ID for later retrieval
 		arcgisLayer.set('layerId', layerId);
 		arcgisLayer.set('layerName', layerName);
-
-		// Add to map
 		map.addLayer(arcgisLayer);
-		console.log('Added ArcGIS layer:', layerName, 'Layer ID:', layerId);
+
+		console.log('Added layer - ID:', layerId, 'Name:', layerName); // Debug log
+
+		// Add a small delay to ensure the layer is fully loaded before updating legend
+		setTimeout(async () => {
+			await updateLegend();
+			console.log('Legend update completed'); // Debug log
+		}, 100);
 	}
 
 	// Remove all demographic layers from map
@@ -698,11 +845,11 @@
 				addArcGISLayer(dataset.map_data.layer_id, dataset.map_data.name);
 			}
 
-			if (dataset?.control_type === 'time_slider') {
-				isTimeSliderVisible = true;
-			} else {
-				isTimeSliderVisible = false;
-			}
+			// if (dataset?.control_type === 'time_slider') {
+			// 	isTimeSliderVisible = true;
+			// } else {
+			// 	isTimeSliderVisible = false;
+			// }
 		}
 
 		console.log('Question selected:', questionId);
@@ -723,11 +870,11 @@
 				addArcGISLayer(dataset.map_data.layer_id, dataset.map_data.name);
 			}
 
-			if (dataset?.control_type === 'time_slider') {
-				isTimeSliderVisible = true;
-			} else {
-				isTimeSliderVisible = false;
-			}
+			// if (dataset?.control_type === 'time_slider') {
+			// 	isTimeSliderVisible = true;
+			// } else {
+			// 	isTimeSliderVisible = false;
+			// }
 		}
 
 		console.log('Information layer selected:', layerId);
@@ -804,7 +951,7 @@
 	{#if layoutState === 'hide-left'}
 		<button
 			onclick={() => setLayoutState('default')}
-			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
 			title="Show Story Panel"
 		>
 			<ChevronsRight class="h-4 w-4" />
@@ -812,12 +959,11 @@
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
 
-    <div
-    class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto scrollbar-hide"
-    class:hidden={layoutState === 'hide-left'}
-    class:col-span-12={layoutState === 'left-full'}
->
-
+	<div
+		class="scrollbar-hide sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto"
+		class:hidden={layoutState === 'hide-left'}
+		class:col-span-12={layoutState === 'left-full'}
+	>
 		<!-- Story Section -->
 		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
 			<div class="mb-6 flex items-center justify-between">
@@ -849,7 +995,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Expand Story"
 						>
-							<Maximize2 class="h-4 w-4" />
+							<ChevronsRight class="h-4 w-4" />
 						</button>
 					{:else}
 						<!-- Back to Default Button -->
@@ -858,7 +1004,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Back to Default"
 						>
-							<Minimize2 class="h-4 w-4" />
+							<ChevronsLeft class="h-4 w-4" />
 						</button>
 					{/if}
 				</div>
@@ -874,7 +1020,7 @@
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					The Hindu Kush Himalaya (HKH) region is home to over 240 million people, with demographic
+					The Hindu Kush Himalaya (HKH) region is home to over 270 million people, with demographic
 					patterns that reflect diverse cultural, economic, and environmental conditions across
 					eight countries. The region exhibits significant variations in population density, age
 					structure, and gender ratios that are influenced by factors including altitude,
@@ -891,28 +1037,6 @@
 					mortality patterns, and migration trends that have significant implications for social
 					services and economic development.
 				</p>
-                <p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The Hindu Kush Himalaya (HKH) region is home to over 240 million people, with demographic
-					patterns that reflect diverse cultural, economic, and environmental conditions across
-					eight countries. The region exhibits significant variations in population density, age
-					structure, and gender ratios that are influenced by factors including altitude,
-					accessibility, economic opportunities, and cultural practices.
-				</p>
-                <p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The Hindu Kush Himalaya (HKH) region is home to over 240 million people, with demographic
-					patterns that reflect diverse cultural, economic, and environmental conditions across
-					eight countries. The region exhibits significant variations in population density, age
-					structure, and gender ratios that are influenced by factors including altitude,
-					accessibility, economic opportunities, and cultural practices.
-				</p>
 
 				<!-- Images Section - Responsive Layout -->
 				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
@@ -922,7 +1046,7 @@
 							<div
 								class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
 							>
-								<img src={climate_1} alt="HKH demographic diversity" class="h-80 object-contain" />
+								<img src={pop_1} alt="HKH demographic diversity" class="h-80 object-contain" />
 								<div class="p-4">
 									<p class="text-center text-sm leading-relaxed text-slate-700">
 										<span
@@ -955,7 +1079,7 @@
 						<div class="space-y-3">
 							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
 								<img
-									src={climate_1}
+									src={pop_1}
 									alt="HKH demographic diversity"
 									class="h-50 w-full object-contain"
 								/>
@@ -988,10 +1112,14 @@
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					Gender ratios across the HKH region show notable variations, influenced by cultural
-					preferences, migration patterns, and socioeconomic factors. Some areas exhibit skewed sex
-					ratios due to selective migration for employment opportunities, while others reflect
-					cultural practices and preferences that affect birth ratios and survival rates.
+					The region’s rural people live in remote and environmentally harsh areas with poor social
+					and physical infrastructures and unfavourable market conditions. Traditional subsistence
+					smallholder farming and migratory pastoral livelihoods in these mountain regions face
+					increasing challenges from the impacts of climate change, human-animal conflicts,
+					increased natural disasters, and the degradation of forests and rangelands. In addition,
+					poor infrastructure, limited access to water and energy, poor market linkages, and limited
+					know-how on the development of marketable products and post-harvest management threaten
+					the sustainability of mountain agriculture and traditional rural livelihoods.
 				</p>
 			</div>
 		</div>
@@ -1019,6 +1147,84 @@
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
 
+							<!-- Legend Panel - Bottom Right -->
+							{#if Object.keys(legendData).length > 0}
+								<div class="absolute right-4 bottom-4 z-20">
+									<!-- Legend Toggle Button -->
+									<button
+										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										onclick={() => (legendCollapsed = !legendCollapsed)}
+									>
+										<div class="flex items-center space-x-2">
+											<List class="h-4 w-4 text-blue-600" />
+											{#if !legendCollapsed}
+												<span class="font-medium text-slate-700">Legend</span>
+											{/if}
+										</div>
+										<svg
+											class="h-4 w-4 transform text-slate-600 transition-transform duration-300 {legendCollapsed
+												? 'rotate-180'
+												: ''}"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M19 9l-7 7-7-7"
+											/>
+										</svg>
+									</button>
+
+									<!-- Legend Content -->
+									{#if !legendCollapsed}
+										<div
+											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
+										>
+											<div class="max-h-[300px] space-y-4 overflow-y-auto">
+												{#each Object.entries(legendData) as [key, legendEntry]}
+													<div class="space-y-2">
+														<h4 class="text-sm font-semibold text-slate-800">
+															{legendEntry.name}
+														</h4>
+														<div class="space-y-1">
+															{#each legendEntry.items as item}
+																<div class="flex items-center space-x-2">
+																	{#if item.imageData}
+																		<img
+																			src={item.imageData}
+																			alt={item.label}
+																			class="h-4 w-5 flex-shrink-0"
+																		/>
+																	{/if}
+																	<span class="text-xs text-slate-700">{item.label}</span>
+																</div>
+															{/each}
+														</div>
+													</div>
+												{/each}
+											</div>
+										</div>
+									{/if}
+								</div>
+							{/if}
+
+							<!-- Home Reset Button -->
+							<button
+								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								onclick={() => {
+									if (map) {
+										map.getView().setCenter(fromLonLat(HKH_CENTER));
+										map.getView().setZoom(HKH_ZOOM);
+									}
+								}}
+								title="Reset to Home View"
+							>
+								<House class="h-4 w-4 text-slate-600" />
+							</button>
+
 							<!-- Layer Toggler Button -->
 							<button
 								class="absolute top-[3.75rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
@@ -1033,7 +1239,7 @@
 
 							<!-- Layer Toggler Panel -->
 							<div
-								class="absolute top-[5.5rem] right-2 z-20 w-48 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+								class="absolute top-[5.5rem] right-2 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
 									? 'max-h-96 opacity-100'
 									: 'max-h-0 opacity-0'}"
 							>
@@ -1058,198 +1264,73 @@
 								</div>
 							</div>
 
-							<!-- Dynamic Control Panel at Bottom -->
-							{#if currentDataset?.control_type === 'time_slider'}
-								{#if !isTimeSliderVisible}
-									<!-- Time Control Toggle Button -->
+							<!-- Legend Panel - Bottom Right -->
+							{#if currentDataset && Object.keys(legendData).length > 0}
+								<div class="absolute right-4 bottom-4">
+									<!-- Legend Toggle Button -->
 									<button
-										onclick={toggleTimeSlider}
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
-										title="Show Time Controls"
+										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										onclick={() => (legendCollapsed = !legendCollapsed)}
 									>
-										<Calendar class="h-4 w-4" />
-										<span>Time</span>
-									</button>
-								{:else}
-									<!-- Expanded Time Slider Panel -->
-									<div
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-white/30 bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm"
-									>
-										<!-- Time Label -->
 										<div class="flex items-center space-x-2">
-											<Calendar class="h-4 w-4 text-indigo-600" />
-											<span class="text-sm font-medium text-slate-700">Time</span>
-										</div>
-
-										<!-- Separator -->
-										<div class="h-4 w-px bg-slate-300"></div>
-
-										<!-- Step Backward -->
-										<button
-											onclick={stepBackward}
-											disabled={currentTimeIndex === 0}
-											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
-											title="Previous Year"
-										>
-											<SkipBack class="h-3.5 w-3.5" />
-										</button>
-
-										<!-- Play/Pause -->
-										<button
-											onclick={togglePlayback}
-											class="rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 p-2 text-white shadow-sm transition-all duration-200 hover:from-indigo-600 hover:to-purple-600 hover:shadow-md"
-											title={isPlaying ? 'Pause' : 'Play'}
-										>
-											{#if isPlaying}
-												<Pause class="h-3.5 w-3.5" />
-											{:else}
-												<Play class="h-3.5 w-3.5" />
+											<List class="h-4 w-4 text-blue-600" />
+											{#if !legendCollapsed}
+												<span class="font-medium text-slate-700">Legend</span>
 											{/if}
-										</button>
-
-										<!-- Step Forward -->
-										<button
-											onclick={stepForward}
-											disabled={currentTimeIndex === timePeriods.length - 1}
-											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
-											title="Next Year"
-										>
-											<SkipForward class="h-3.5 w-3.5" />
-										</button>
-
-										<!-- Compact Time Slider -->
-										<div class="flex items-center space-x-2">
-											<span class="min-w-[2.5rem] text-xs font-medium text-indigo-600"
-												>{timePeriods[currentTimeIndex].label}</span
-											>
-											<input
-												type="range"
-												min="0"
-												max={timePeriods.length - 1}
-												bind:value={currentTimeIndex}
-												oninput={(e) => goToTime(parseInt((e.target as HTMLInputElement).value))}
-												class="compact-slider w-32"
-											/>
 										</div>
-
-										<!-- Close Button -->
-										<button
-											onclick={toggleTimeSlider}
-											class="rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-											title="Collapse"
+										<svg
+											class="h-4 w-4 transform text-slate-600 transition-transform duration-300 {legendCollapsed
+												? 'rotate-180'
+												: ''}"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
 										>
-											<ChevronDown class="h-3.5 w-3.5" />
-										</button>
-									</div>
-								{/if}
-							{:else if currentDataset?.control_type === 'radio'}
-								<!-- Always show expanded Analysis Mode Radio Buttons Panel -->
-								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
-								>
-									<!-- Analysis Label -->
-									<div class="flex items-center space-x-2">
-										<Layers class="h-4 w-4 text-indigo-600" />
-										<span class="text-sm font-medium text-slate-700">Trend</span>
-									</div>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M19 9l-7 7-7-7"
+											/>
+										</svg>
+									</button>
 
-									<!-- Separator -->
-									<div class="h-4 w-px bg-slate-300"></div>
-
-									<!-- Overall Option -->
-									<label class="flex cursor-pointer items-center space-x-2">
-										<input
-											type="radio"
-											bind:group={trendAnalysisMode}
-											value="overall"
-											class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-										/>
-										<span class="text-sm font-medium text-slate-700">Overall</span>
-									</label>
-
-									<!-- Significant Option -->
-									<label class="flex cursor-pointer items-center space-x-2">
-										<input
-											type="radio"
-											bind:group={trendAnalysisMode}
-											value="significant"
-											class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-										/>
-										<span class="text-sm font-medium text-slate-700">Significant</span>
-									</label>
-								</div>
-							{:else if currentDataset?.control_type === 'temperature_threshold'}
-								<!-- Always show expanded Temperature Rise Threshold Panel -->
-								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
-								>
-									<!-- Temperature Rise Label -->
-									<div class="flex items-center space-x-2">
-										<div class="rounded-full bg-gradient-to-r from-red-500 to-orange-500 p-1">
-											<div class="h-2 w-2 rounded-full bg-white"></div>
+									<!-- Legend Content -->
+									{#if !legendCollapsed}
+										<div
+											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
+										>
+											<div class="max-h-[300px] space-y-4 overflow-y-auto">
+												{#each Object.keys(legendData) as uniqueKey}
+													<div class="space-y-2">
+														<h4 class="text-sm font-semibold text-slate-800">
+															{legendData[uniqueKey].name}
+														</h4>
+														<div class="space-y-1">
+															{#each legendData[uniqueKey].items as item}
+																<div class="flex items-center space-x-2">
+																	{#if item.imageData}
+																		<img
+																			src={item.imageData}
+																			alt={item.label}
+																			class="h-4 w-5 flex-shrink-0"
+																		/>
+																	{:else if item.imageUrl}
+																		<img
+																			src={item.imageUrl}
+																			alt={item.label}
+																			class="h-4 w-5 flex-shrink-0"
+																		/>
+																	{/if}
+																	<span class="text-xs text-slate-700">{item.label}</span>
+																</div>
+															{/each}
+														</div>
+													</div>
+												{/each}
+											</div>
 										</div>
-										<span class="text-sm font-medium text-slate-700">Rise ≤</span>
-									</div>
-
-									<!-- Separator -->
-									<div class="h-4 w-px bg-slate-300"></div>
-
-									<!-- Temperature Threshold Options as Slider-like Radio Buttons -->
-									<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
-										<!-- 0.5°C Option -->
-										<label class="relative cursor-pointer">
-											<input
-												type="radio"
-												bind:group={temperatureRiseThreshold}
-												value="0.5"
-												class="peer sr-only"
-											/>
-											<div
-												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-emerald-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-green-600 peer-checked:hover:to-emerald-600 {temperatureRiseThreshold ===
-												'0.5'
-													? 'text-white'
-													: 'text-slate-600'}"
-											>
-												0.5°C
-											</div>
-										</label>
-
-										<!-- 1.5°C Option -->
-										<label class="relative cursor-pointer">
-											<input
-												type="radio"
-												bind:group={temperatureRiseThreshold}
-												value="1.5"
-												class="peer sr-only"
-											/>
-											<div
-												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-yellow-500 peer-checked:to-orange-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-yellow-600 peer-checked:hover:to-orange-600 {temperatureRiseThreshold ===
-												'1.5'
-													? 'text-white'
-													: 'text-slate-600'}"
-											>
-												1.5°C
-											</div>
-										</label>
-
-										<!-- 2.5°C Option -->
-										<label class="relative cursor-pointer">
-											<input
-												type="radio"
-												bind:group={temperatureRiseThreshold}
-												value="2.5"
-												class="peer sr-only"
-											/>
-											<div
-												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-red-500 peer-checked:to-red-600 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-red-600 peer-checked:hover:to-red-700 {temperatureRiseThreshold ===
-												'2.5'
-													? 'text-white'
-													: 'text-slate-600'}"
-											>
-												2.5°C
-											</div>
-										</label>
-									</div>
+									{/if}
 								</div>
 							{/if}
 						</div>
@@ -1305,15 +1386,15 @@
 											onclick={() => selectInformationLayer(layer.title)}
 											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
 											layer.title
-												? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
-												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+												? 'border-blue-500 bg-blue-50 shadow-md'
+												: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
 										>
 											<div class="flex items-start space-x-3 text-left">
 												<div class="flex-1">
 													<h4
 														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'text-green-800'
-															: 'text-slate-800'} mb-1"
+															? 'font-medium text-blue-700'
+															: 'text-slate-600 group-hover:text-slate-800'}"
 													>
 														{layer.title}
 													</h4>
@@ -1355,10 +1436,10 @@
 				class:pointer-events-none={!isQuestionsPanelOpen}
 			>
 				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 p-2">
+					<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
 						<Info class="h-4 w-4 text-white" />
 					</div>
-					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
+					<h3 class="text-lg font-bold text-slate-800">Explore Questions</h3>
 				</div>
 
 				<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
@@ -1395,7 +1476,7 @@
 
 			<button
 				onclick={toggleQuestionsPanel}
-				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
+				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white"
 				aria-label="Toggle questions panel"
 			>
 				<HelpCircle class="h-6 w-6" />
@@ -1403,6 +1484,14 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Changes Made -->
+<!--
+- Scrollbar in Story Panel - Hidden
+- BaseMap Layer Changed to OSM Carto
+- Base Layers Added in Layer Toggle Panel
+- Questions Toggle Button - Hidden in Expanded Story view 
+  -->
 
 <style>
 	/* Ensure map containers resize properly */
@@ -1506,13 +1595,3 @@
 		transform: scale(1.1);
 	}
 </style>
-
-
-
-<!-- Changes Made -->
- <!--
-- Scrollbar in Story Panel - Hidden
-- BaseMap Layer Changed to OSM Carto
-- Base Layers Added in Layer Toggle Panel
-- Questions Toggle Button - Hidden in Expanded Story view 
-  -->
