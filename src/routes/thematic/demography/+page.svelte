@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import climate_1 from '$lib/assets/images/climate_1.png';
-	import climate_2 from '$lib/assets/images/climate_2.png';
-	import pop_1 from '$lib/assets/images/pop_1.png';
+	import demogr_1 from '$lib/assets/images/Demography_1.png';
+	import demogr_2 from '$lib/assets/images/Demography_2.png';
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
@@ -50,12 +49,16 @@
 	let map: Map | null = null;
 
 	// Hindu Kush Himalaya region coordinates (optimized for full HKH view)
-	const HKH_CENTER = [83, 30]; // Longitude, Latitude - adjusted for better HKH coverage
-	const HKH_ZOOM = 4; // Reduced zoom to show more of the HKH region
+	const HKH_CENTER = [82.94924, 27.6382055]; // Longitude, Latitude - adjusted for better HKH coverage
+	const HKH_ZOOM = 4.8; // Reduced zoom to show more of the HKH region
+
+	// Track fullscreen state
+	let isFullscreen = $state(false);
+	let fullscreenHandler: (() => void) | null = null;
 
 	// ArcGIS MapServer configuration
 	const ARCGIS_MAPSERVER_URL =
-		'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/Demography/MapServer';
+		'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer';
 
 	const BASELAYERS_URL =
 		'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer';
@@ -214,10 +217,15 @@
 
 		// Small delay to ensure container has proper dimensions
 		setTimeout(() => {
+			// Create custom fullscreen control that includes our custom elements
+			const fullScreenControl = new FullScreen({
+				source: mapContainer.parentElement || mapContainer // Use the parent container that includes our custom controls, fallback to mapContainer
+			});
+
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
-					new FullScreen(),
+					fullScreenControl,
 					new ScaleLine({ units: 'metric', bar: true })
 				]),
 				interactions: defaultInteractions({
@@ -249,6 +257,29 @@
 
 			// Add default layer (Population 2025 - Layer 0) when map initializes
 			addArcGISLayer(0, 'Population 2025');
+
+			// Listen for fullscreen changes
+			const handleFullscreenChange = () => {
+				const isCurrentlyFullscreen = document.fullscreenElement !== null;
+				isFullscreen = isCurrentlyFullscreen;
+
+				// Force map resize when entering/exiting fullscreen
+				setTimeout(() => {
+					if (map) {
+						map.updateSize();
+						map.render();
+					}
+				}, 100);
+			};
+
+			// Store handler reference for cleanup
+			fullscreenHandler = handleFullscreenChange;
+
+			// Add fullscreen event listeners
+			document.addEventListener('fullscreenchange', handleFullscreenChange);
+			document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
 			// Add some basic interaction
 			map.on('click', (event) => {
@@ -292,6 +323,15 @@
 		// if (playInterval) {
 		// 	clearInterval(playInterval);
 		// }
+		// Remove fullscreen event listeners
+		if (fullscreenHandler) {
+			document.removeEventListener('fullscreenchange', fullscreenHandler);
+			document.removeEventListener('webkitfullscreenchange', fullscreenHandler);
+			document.removeEventListener('mozfullscreenchange', fullscreenHandler);
+			document.removeEventListener('MSFullscreenChange', fullscreenHandler);
+			fullscreenHandler = null;
+		}
+
 		if (map) {
 			map.dispose();
 		}
@@ -566,9 +606,12 @@
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
 
-	// Add Legend state management
+	// Legend state management
 	let legendData = $state<
-		Record<string, { name: string; items: Array<{ label: string; imageData?: string }> }>
+		Record<
+			string,
+			{ name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }
+		>
 	>({});
 	let legendCollapsed = $state(false);
 
@@ -589,11 +632,11 @@
 			name: 'Outline',
 			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
 		},
-		{
-			id: 1,
-			name: 'Soil',
-			url: BASELAYERS_URL
-		},
+		// {
+		// 	id: 1,
+		// 	name: 'Soil',
+		// 	url: BASELAYERS_URL
+		// },
 		{
 			id: 3,
 			name: 'River',
@@ -610,17 +653,37 @@
 			const layerInfo = baseLayers.find((l) => l.id === layerId);
 			if (!layerInfo) return;
 
-			const layer = new ImageLayer({
-				source: new ImageArcGISRest({
-					url: layerInfo.url,
-					params: {
-						LAYERS: `show:${layerId}`,
-						FORMAT: 'PNG32',
-						TRANSPARENT: true
-					}
-				}),
-				zIndex: 1
-			});
+			let layer;
+
+			if (layerId === 0) {
+				// Apply special styling or configuration for layerId 0
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 2,
+					// Example styling: reduce opacity or add custom properties
+					opacity: 0.5
+				});
+			} else {
+				// Default configuration for other layers
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 2
+				});
+			}
 
 			layer.set('baseLayerId', layerId);
 			map.addLayer(layer);
@@ -753,23 +816,23 @@
 
 					const serviceUrl = source.getUrl();
 
-					console.log('Found ArcGIS layer - ID:', layerId, 'URL:', serviceUrl); 
+					console.log('Found ArcGIS layer - ID:', layerId, 'URL:', serviceUrl);
 
 					if (layerId !== undefined && layerId !== null && serviceUrl) {
 						const legendKey = `${serviceUrl}_${layerId}`;
 
 						if (!legendData[legendKey]) {
-							console.log('Fetching legend for layer:', layerId); 
+							console.log('Fetching legend for layer:', layerId);
 							const legend = await fetchArcGISLegend(serviceUrl, layerId);
 							if (legend) {
 								newLegendData[legendKey] = legend;
-								console.log('Legend fetched successfully for layer:', layerId); 
+								console.log('Legend fetched successfully for layer:', layerId);
 							} else {
-								console.log('No legend data returned for layer:', layerId); 
+								console.log('No legend data returned for layer:', layerId);
 							}
 						} else {
 							newLegendData[legendKey] = legendData[legendKey];
-							console.log('Using cached legend for layer:', layerId); 
+							console.log('Using cached legend for layer:', layerId);
 						}
 					}
 				}
@@ -794,7 +857,7 @@
 					TRANSPARENT: true
 				}
 			}),
-			zIndex: 2
+			zIndex: 1
 		});
 
 		arcgisLayer.set('layerId', layerId);
@@ -960,7 +1023,7 @@
 	<!-- Left Sidebar - Story + Questions -->
 
 	<div
-		class="scrollbar-hide sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto"
+		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto"
 		class:hidden={layoutState === 'hide-left'}
 		class:col-span-12={layoutState === 'left-full'}
 	>
@@ -968,7 +1031,7 @@
 		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
 			<div class="mb-6 flex items-center justify-between">
 				<div class="flex items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
+					<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
 						<Users class="h-5 w-5 text-white" />
 					</div>
 					<h3
@@ -1041,37 +1104,30 @@
 				<!-- Images Section - Responsive Layout -->
 				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
 					{#if layoutState === 'left-full'}
-						<!-- Full Width Layout - One Image Per Row -->
-						<div class="flex flex-col items-center gap-6">
+						<!-- Full Width Layout -->
+						<div class="flex flex-wrap justify-center gap-6">
 							<div
-								class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+								class="w-full overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto"
 							>
-								<img src={pop_1} alt="HKH demographic diversity" class="h-80 object-contain" />
-								<div class="p-4">
-									<p class="text-center text-sm leading-relaxed text-slate-700">
-										<span
-											>Diverse <span class="font-semibold text-slate-800"
-												>mountain communities
-											</span>
-											across the HKH region
-										</span>
-									</p>
-								</div>
+								<img
+									src={demogr_2}
+									alt="HKH demographic diversity"
+									class="mx-auto h-80 object-contain"
+								/>
 							</div>
+
 							<div
-								class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+								class="w-full overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto"
 							>
-								<img src={climate_2} alt="Population centers" class="h-80 object-contain" />
-								<div class="p-4">
-									<p class="text-center text-sm leading-relaxed text-slate-700">
-										<span>
-											<span class="font-semibold text-slate-800">
-												Urban growth in mountain valleys
-											</span>
-											showing demographic concentration</span
-										>
-									</p>
-								</div>
+								<img src={demogr_1} alt="Population centers" class="mx-auto h-80 object-contain" />
+							</div>
+
+							<div class="mt-4 w-full text-center">
+								<p class="text-sm leading-relaxed text-slate-700">
+									<span class="font-semibold text-slate-800"
+										>Mountain communities</span
+									>
+								</p>
 							</div>
 						</div>
 					{:else}
@@ -1079,16 +1135,15 @@
 						<div class="space-y-3">
 							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
 								<img
-									src={pop_1}
+									src={demogr_2}
 									alt="HKH demographic diversity"
 									class="h-50 w-full object-contain"
 								/>
 								<div class="p-2">
 									<p class="text-center text-xs text-slate-600">
-										<span
-											>Diverse <span class="font-semibold">mountain communities </span> across the HKH
-											region
-										</span>
+										<!-- <span
+											><span class="font-semibold">Mountain communities</span>
+										</span> -->
 									</p>
 								</div>
 							</div>
@@ -1147,70 +1202,6 @@
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
 
-							<!-- Legend Panel - Bottom Right -->
-							{#if Object.keys(legendData).length > 0}
-								<div class="absolute right-4 bottom-4 z-20">
-									<!-- Legend Toggle Button -->
-									<button
-										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
-										onclick={() => (legendCollapsed = !legendCollapsed)}
-									>
-										<div class="flex items-center space-x-2">
-											<List class="h-4 w-4 text-blue-600" />
-											{#if !legendCollapsed}
-												<span class="font-medium text-slate-700">Legend</span>
-											{/if}
-										</div>
-										<svg
-											class="h-4 w-4 transform text-slate-600 transition-transform duration-300 {legendCollapsed
-												? 'rotate-180'
-												: ''}"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M19 9l-7 7-7-7"
-											/>
-										</svg>
-									</button>
-
-									<!-- Legend Content -->
-									{#if !legendCollapsed}
-										<div
-											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
-										>
-											<div class="max-h-[300px] space-y-4 overflow-y-auto">
-												{#each Object.entries(legendData) as [key, legendEntry]}
-													<div class="space-y-2">
-														<h4 class="text-sm font-semibold text-slate-800">
-															{legendEntry.name}
-														</h4>
-														<div class="space-y-1">
-															{#each legendEntry.items as item}
-																<div class="flex items-center space-x-2">
-																	{#if item.imageData}
-																		<img
-																			src={item.imageData}
-																			alt={item.label}
-																			class="h-4 w-5 flex-shrink-0"
-																		/>
-																	{/if}
-																	<span class="text-xs text-slate-700">{item.label}</span>
-																</div>
-															{/each}
-														</div>
-													</div>
-												{/each}
-											</div>
-										</div>
-									{/if}
-								</div>
-							{/if}
-
 							<!-- Home Reset Button -->
 							<button
 								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
@@ -1266,7 +1257,7 @@
 
 							<!-- Legend Panel - Bottom Right -->
 							{#if currentDataset && Object.keys(legendData).length > 0}
-								<div class="absolute right-4 bottom-4">
+								<div class="absolute right-2 bottom-2">
 									<!-- Legend Toggle Button -->
 									<button
 										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
@@ -1278,7 +1269,7 @@
 												<span class="font-medium text-slate-700">Legend</span>
 											{/if}
 										</div>
-										<svg
+										<!-- <svg
 											class="h-4 w-4 transform text-slate-600 transition-transform duration-300 {legendCollapsed
 												? 'rotate-180'
 												: ''}"
@@ -1292,7 +1283,7 @@
 												stroke-width="2"
 												d="M19 9l-7 7-7-7"
 											/>
-										</svg>
+										</svg> -->
 									</button>
 
 									<!-- Legend Content -->
@@ -1300,7 +1291,7 @@
 										<div
 											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
 										>
-											<div class="max-h-[300px] space-y-4 overflow-y-auto">
+											<div class="max-h-[300px] w-35 space-y-4">
 												{#each Object.keys(legendData) as uniqueKey}
 													<div class="space-y-2">
 														<h4 class="text-sm font-semibold text-slate-800">
@@ -1338,7 +1329,7 @@
 
 					<!-- Chart Section -->
 					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
-						<h3 class="mb-4 text-lg font-semibold text-slate-700">Demographic Analytics</h3>
+						<!-- <h3 class="mb-4 text-lg font-semibold text-slate-700">Demographic Analytics</h3> -->
 						<div class="rounded-lg bg-slate-50/50">
 							{#if currentCharts && currentCharts.length > 0}
 								<div class="space-y-6">
@@ -1485,14 +1476,6 @@
 	{/if}
 </div>
 
-<!-- Changes Made -->
-<!--
-- Scrollbar in Story Panel - Hidden
-- BaseMap Layer Changed to OSM Carto
-- Base Layers Added in Layer Toggle Panel
-- Questions Toggle Button - Hidden in Expanded Story view 
-  -->
-
 <style>
 	/* Ensure map containers resize properly */
 	.map-container {
@@ -1529,8 +1512,28 @@
 		min-width: 0;
 	}
 
+	/* Fullscreen mode adjustments */
+	:global(:fullscreen .map-container),
+	:global(:-webkit-full-screen .map-container),
+	:global(:-moz-full-screen .map-container),
+	:global(:-ms-fullscreen .map-container) {
+		position: relative !important;
+		width: 100vw !important;
+		height: 100vh !important;
+		z-index: 9998 !important;
+	}
+
+	/* Ensure controls are visible in fullscreen */
+	:global(:fullscreen .absolute),
+	:global(:-webkit-full-screen .absolute),
+	:global(:-moz-full-screen .absolute),
+	:global(:-ms-fullscreen .absolute) {
+		position: fixed !important;
+		z-index: 9999 !important;
+	}
+
 	/* Compact Time Slider Styles */
-	.compact-slider {
+	/* .compact-slider {
 		-webkit-appearance: none;
 		appearance: none;
 		height: 4px;
@@ -1572,16 +1575,16 @@
 	.compact-slider::-moz-range-thumb:hover {
 		transform: scale(1.1);
 		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
-	}
+	} */
 
-	.scrollbar-hide {
-		scrollbar-width: none; /* Firefox */
-		-ms-overflow-style: none; /* Internet Explorer 10+ */
+	/* .scrollbar-hide {
+		scrollbar-width: none; 
+		-ms-overflow-style: none; 
 	}
 
 	.scrollbar-hide::-webkit-scrollbar {
-		display: none; /* Safari and Chrome */
-	}
+		display: none; 
+	} */
 
 	.custom-shadow {
 		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); /* bigger shadow for Questions Button */
