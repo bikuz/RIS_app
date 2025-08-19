@@ -70,7 +70,7 @@
     },
 	{
       icon: Mountain,
-      value: "28-8,848 m",
+      value: "28 - 8,848 m",
       label: "Elevation range",
       color: "from-amber-500 to-orange-600",
     //   bgColor: "bg-gradient-to-br from-emerald-50 to-green-50",

@@ -1,23 +1,41 @@
+# Dependencies
 node_modules
 
 # Output
+.vscode
 .output
 .vercel
 .netlify
 .wrangler
-/.svelte-kit
-/build
-/iisnode
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Env
+# Environment files
 .env
 .env.*
 !.env.example
 !.env.test
+
+# Deployment
+*.zip
+*.zip.sha1
+*.zip.sha256
+*.zip.sha512
+*.zip.sha1.txt
+*.zip.sha256.txt
+*.zip.sha512.txt
+
+# IIS and deployment
+/iisnode
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Vite
 vite.config.js.timestamp-*
@@ -25,3 +43,11 @@ vite.config.ts.timestamp-*
 
 # Production
 web.config
+
+# SvelteKit
+/.svelte-kit
+/build
+
+# Build outputs
+/.svelte-kit
+/build

@@ -303,8 +303,7 @@
                 
                 view.goTo(initialPosition);
             });
-            console.log('ArcGIS 3D Map loaded successfully');
-            // await loadArcGISCSS();
+            // console.log('ArcGIS 3D Map loaded successfully');
             isLoading=false;
 
 
