@@ -203,6 +203,11 @@
 						source: new XYZ({
 							url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
 						})
+
+						// source: new XYZ({
+						// 	url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+						// 	// attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
+						// })
 					})
 				],
 				view: new View({
