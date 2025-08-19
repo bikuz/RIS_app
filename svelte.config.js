@@ -16,7 +16,10 @@ const config = {
 			envPrefix: 'VITE_',
 			// Force CommonJS output for IIS compatibility
 			polyfill: false
-		}) 
+		}) ,
+		paths:{
+			base: process.env.NODE_ENV === 'production' ? '/ris' : '',
+		}
 	}
 };
 

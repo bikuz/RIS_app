@@ -1,5 +1,6 @@
 import { goto } from '$app/navigation';
 import { Cloud, Users, Leaf, Snowflake, Sun, Mountain, Wind } from '@lucide/svelte';
+import { base } from '$app/paths';
 
 export const topicDetail ={
 	climate: 'Temperature trends, precipitation patterns, and climate change indicators',
@@ -55,7 +56,7 @@ export const topicAbstracts = [
 ];
 
 export function selectTopic(topic: string) {
-	goto(`/thematic/${topic}`);
+	goto(`${base}/thematic/${topic}`);
 }
 
 export function getTopicName(topic: string) {
