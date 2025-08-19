@@ -1078,6 +1078,7 @@
 			layer = new ImageLayer({
 				visible: true,
 				zIndex: 10,
+				opacity: 0.7, // Reduced opacity for better visibility
 				source: new ImageArcGISRest({
 					url: layerConfig.url,
 					crossOrigin: 'anonymous',
@@ -1093,6 +1094,7 @@
 			layer = new ImageLayer({
 				visible: true,
 				zIndex: 10,
+				opacity: 0.8, // Reduced opacity for better visibility
 				source: new ImageWMS({
 					url: layerConfig.url,
 					crossOrigin: 'anonymous',
