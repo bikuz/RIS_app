@@ -267,35 +267,35 @@
             const legendContent = document.getElementById('legend-content');
             legend.container = legendContent;
 
-            const everestPoint = new Point.default({
-                longitude: 86.9250,
-                latitude: 27.9881,
-                z: 9000
-            });
+            // const everestPoint = new Point.default({
+            //     longitude: 86.9250,
+            //     latitude: 27.9881,
+            //     z: 9000
+            // });
 
-            const labelGraphic = new Graphic.default({
-                geometry: everestPoint,
-                symbol: new TextSymbol.default({
-                    text: "Mount Everest\n8,848m",
-                    color: "white",
-                    haloColor: "black",
-                    haloSize: 1,
-                    font: { size: 12, weight: "bold" },
-                    yoffset: 20
-                })
-            });
-            view.graphics.add(labelGraphic);
+            // const labelGraphic = new Graphic.default({
+            //     geometry: everestPoint,
+            //     symbol: new TextSymbol.default({
+            //         text: "Mount Everest\n8,848m",
+            //         color: "white",
+            //         haloColor: "black",
+            //         haloSize: 1,
+            //         font: { size: 12, weight: "bold" },
+            //         yoffset: 20
+            //     })
+            // });
+            // view.graphics.add(labelGraphic);
 
             // Wait for view to load
             await view.when(() => {
                 const initialPosition = {
                     position: {
-                        longitude: 85.744974,
-                        latitude: 28.052163,
-                        z: 43778
+                        longitude: 84.130628,
+                        latitude: 2.984924,
+                        z: 6719155
                     },
-                    tilt: 72.8,
-                    heading: 93.9  // Looking from the north
+                    tilt: 20,
+                    heading: 2.6  // Looking from the north
                 };
                 
                 // Store the original camera position for reset functionality
@@ -369,7 +369,7 @@
             {/if}
 
             <!-- Camera parameters display -->
-            <div class="absolute bottom-4 right-4 bg-white bg-opacity-80 p-3 rounded-lg shadow-md text-sm hidden">
+            <div class="absolute bottom-4 right-4 bg-white bg-opacity-80 p-3 rounded-lg shadow-md text-sm">
                 <div class="grid grid-cols-2 gap-2">
                 <div class="font-semibold">Latitude:</div>
                 <div>{latitude.toFixed(6)}°</div>
