@@ -50,6 +50,10 @@
 	const HKH_CENTER = [82.94924, 27.6382055]; // Longitude, Latitude - adjusted for better HKH coverage
 	const HKH_ZOOM = 4.8; // Reduced zoom to show more of the HKH region
 
+	// Track fullscreen state
+	let isFullscreen = $state(false);
+	let fullscreenHandler: (() => void) | null = null;
+
 	// Time slider state management
 	let isTimeSliderVisible = $state(false);
 	let isPlaying = $state(false);
@@ -179,10 +183,15 @@
 
 		// Small delay to ensure container has proper dimensions
 		setTimeout(() => {
+			// Create custom fullscreen control that includes our custom elements
+			const fullScreenControl = new FullScreen({
+				source: mapContainer.parentElement || mapContainer // Use the parent container that includes our custom controls, fallback to mapContainer
+			});
+
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
-					new FullScreen(),
+					fullScreenControl,
 					new ScaleLine({ units: 'metric', bar: true })
 				]),
 				interactions: defaultInteractions({
@@ -201,6 +210,29 @@
 					zoom: HKH_ZOOM
 				})
 			});
+
+			// Listen for fullscreen changes
+			const handleFullscreenChange = () => {
+				const isCurrentlyFullscreen = document.fullscreenElement !== null;
+				isFullscreen = isCurrentlyFullscreen;
+
+				// Force map resize when entering/exiting fullscreen
+				setTimeout(() => {
+					if (map) {
+						map.updateSize();
+						map.render();
+					}
+				}, 100);
+			};
+
+			// Store handler reference for cleanup
+			fullscreenHandler = handleFullscreenChange;
+
+			// Add fullscreen event listeners
+			document.addEventListener('fullscreenchange', handleFullscreenChange);
+			document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
 			// Add some basic interaction
 			map.on('click', (event) => {
@@ -254,6 +286,16 @@
 		if (legendFetchTimeout) {
 			clearTimeout(legendFetchTimeout);
 		}
+
+		// Remove fullscreen event listeners
+		if (fullscreenHandler) {
+			document.removeEventListener('fullscreenchange', fullscreenHandler);
+			document.removeEventListener('webkitfullscreenchange', fullscreenHandler);
+			document.removeEventListener('mozfullscreenchange', fullscreenHandler);
+			document.removeEventListener('MSFullscreenChange', fullscreenHandler);
+			fullscreenHandler = null;
+		}
+
 		if (map) {
 			map.dispose();
 		}
@@ -929,7 +971,7 @@
 		// },
 		{
 			id: 'question-5',
-			question: 'What is the annual average anamoly trend over the past 30 years?',
+			question: 'What is the annual temperature anamoly trend over the past 30 years?',
 			dataset_id: 'annual-temp-anamoly-series'
 		}
 	];
@@ -1744,7 +1786,9 @@
 									<!-- Time Control Toggle Button -->
 									<button
 										on:click={toggleTimeSlider}
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl {isFullscreen
+											? 'z-[9999]'
+											: 'z-10'}"
 										title="Show Time Controls"
 									>
 										<Calendar class="h-4 w-4" />
@@ -1753,7 +1797,9 @@
 								{:else}
 									<!-- Expanded Time Slider Panel -->
 									<div
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-white/30 bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm"
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-white/30 bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm {isFullscreen
+											? 'z-[9999]'
+											: 'z-10'}"
 									>
 										<!-- Time Label -->
 										<!-- <div class="flex items-center space-x-2">
@@ -1825,7 +1871,9 @@
 							{:else if currentDataset && currentDataset.control_type === 'radio'}
 								<!-- Always show expanded Analysis Mode Radio Buttons Panel -->
 								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+										? 'z-[9999]'
+										: 'z-10'}"
 								>
 									<!-- Analysis Label -->
 									<!-- <div class="flex items-center space-x-2">
@@ -1861,7 +1909,9 @@
 							{:else if currentDataset && currentDataset.control_type === 'nested_radio'}
 								<!-- Always show expanded Nested Radio Controls Panel (Trend Analysis + Seasons) -->
 								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-6 rounded-full border border-white/30 bg-white/95 px-6 py-3 shadow-xl backdrop-blur-sm"
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-6 rounded-full border border-white/30 bg-white/95 px-6 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+										? 'z-[9999]'
+										: 'z-10'}"
 								>
 									<!-- Trend Analysis Section -->
 									<div class="flex items-center space-x-3">
@@ -1982,7 +2032,9 @@
 							{:else if currentDataset && currentDataset.control_type === 'temperature_threshold'}
 								<!-- Always show expanded Temperature Rise Threshold Panel -->
 								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+										? 'z-[9999]'
+										: 'z-10'}"
 								>
 									<!-- Temperature Rise Label -->
 									<div class="flex items-center space-x-2">
@@ -2092,7 +2144,7 @@
 
 							<!-- Legend Panel - Bottom Right -->
 							{#if currentDataset && Object.keys(legendData).length > 0}
-								<div class="absolute right-4 bottom-4">
+								<div class="absolute right-4 bottom-4 {isFullscreen ? 'z-[9999]' : 'z-10'}">
 									<!-- Legend Toggle Button -->
 									<button
 										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
@@ -2343,6 +2395,26 @@
 	/* Ensure flex children don't overflow */
 	:global(.flex > *) {
 		min-width: 0;
+	}
+
+	/* Fullscreen mode adjustments */
+	:global(:fullscreen .map-container),
+	:global(:-webkit-full-screen .map-container),
+	:global(:-moz-full-screen .map-container),
+	:global(:-ms-fullscreen .map-container) {
+		position: relative !important;
+		width: 100vw !important;
+		height: 100vh !important;
+		z-index: 9998 !important;
+	}
+
+	/* Ensure controls are visible in fullscreen */
+	:global(:fullscreen .absolute),
+	:global(:-webkit-full-screen .absolute),
+	:global(:-moz-full-screen .absolute),
+	:global(:-ms-fullscreen .absolute) {
+		position: fixed !important;
+		z-index: 9999 !important;
 	}
 
 	/* Compact Time Slider Styles */
