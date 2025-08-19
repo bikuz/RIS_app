@@ -3,6 +3,7 @@
 	import { Home, Cloud, Users, Leaf, Snowflake, Sun, Mountain, Wind, ChevronRight } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { base } from '$app/paths';
 
 	import {
 		topicIcons,
@@ -38,7 +39,7 @@
 <div class="min-h-screen bg-gray-50 p-6">
 	<!-- Top Navigation -->
 	<nav class="mb-6 flex flex-wrap gap-6">
-		<button onclick={()=>goto('/')} 
+		<button onclick={()=>goto(`${base}/`)} 
 			class="group min-w-fit flex-1 transform rounded-xl p-4 text-left transition-all duration-300 hover:scale-[1.02] 
 			border border-slate-200/50 bg-white/50 text-slate-700 hover:bg-white/80 hover:shadow-md "
 			>
