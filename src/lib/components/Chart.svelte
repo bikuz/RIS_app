@@ -5,7 +5,8 @@
 		chartData,
 		title = 'Chart',
 		subtitle = '',
-		chart_type = 'line'
+		chart_type = 'line',
+		plotOptions = {}
 	} = $props<{
 		chartData: {
 			categories: string[];
@@ -17,6 +18,7 @@
 		title?: string;
 		subtitle?: string;
 		chart_type?: string;
+		plotOptions?: any;
 	}>();
 
 	let chartContainer: HTMLDivElement;
@@ -124,6 +126,7 @@
 					}
 				},
 				plotOptions: {
+					...plotOptions,
 					line: {
 						dataLabels: {
 							enabled: false
@@ -171,7 +174,7 @@
 	}
 
 	onMount(() => {
-		console.log('HighchartsChart mounted');
+		console.log('HighchartsChart mounted', plotOptions);
 		loadHighcharts();
 	});
 
