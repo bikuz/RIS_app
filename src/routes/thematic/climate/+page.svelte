@@ -50,6 +50,10 @@
 	const HKH_CENTER = [82.94924, 27.6382055]; // Longitude, Latitude - adjusted for better HKH coverage
 	const HKH_ZOOM = 4.8; // Reduced zoom to show more of the HKH region
 
+	// Track fullscreen state
+	let isFullscreen = $state(false);
+	let fullscreenHandler: (() => void) | null = null;
+
 	// Time slider state management
 	let isTimeSliderVisible = $state(false);
 	let isPlaying = $state(false);
@@ -121,37 +125,56 @@
 		// This function would update the map layers based on the selected time
 		console.log('Updating map for time:', timePeriods[timeIndex]);
 
-		// Update map layers through the unified layer management system
-		if (currentDataset?.control_type === 'time_slider') {
-			updateMapLayers();
-		}
+		// Note: Map layers will be updated automatically by the main effect
+		// No need to call updateMapLayers() here as it would cause duplicate updates
 	}
 
-	// Watch for dataset or control state changes and update map layers accordingly
+	// Single consolidated effect for all map layer updates
 	$effect(() => {
-		// This will trigger when currentDataset, trendAnalysisMode, temperatureRiseThreshold, or currentTimeIndex changes
-		console.log('Dataset changed:', currentDataset?.id || 'null');
-		updateMapLayers();
-	});
+		// This will trigger when any of these state variables change
+		const dataset = currentDataset;
+		const trendMode = trendAnalysisMode;
+		const tempThreshold = temperatureRiseThreshold;
+		const timeIndex = currentTimeIndex;
+		const season = selectedSeason;
 
-	// Watch for trend analysis mode changes
-	$effect(() => {
-		if (currentDataset && currentDataset.control_type === 'radio') {
+		console.log(
+			'Main effect triggered - Dataset:',
+			dataset?.id || 'null',
+			'Control type:',
+			dataset?.control_type
+		);
+
+		// Only update map layers if we have a dataset
+		if (dataset) {
 			updateMapLayers();
 		}
 	});
 
-	// Watch for temperature rise threshold changes
-	$effect(() => {
-		if (currentDataset && currentDataset.control_type === 'temperature_threshold') {
-			updateMapLayers();
-		}
-	});
+	// Track if we've already set the default for the current dataset
+	let hasSetDefaultForDataset = $state<string | null>(null);
 
-	// Watch for time slider changes
+	// Separate effect ONLY for setting default time index when dataset changes
 	$effect(() => {
+		// Watch for dataset changes to set default time index
 		if (currentDataset && currentDataset.control_type === 'time_slider') {
-			updateMapLayers();
+			const datasetId = currentDataset.id;
+			const newDefaultIndex = defaultTimeIndex;
+
+			// Only set default if this is a new dataset or we haven't set it for this dataset yet
+			if (hasSetDefaultForDataset !== datasetId && newDefaultIndex >= 0) {
+				console.log(
+					'Setting time index to default:',
+					newDefaultIndex,
+					'for year:',
+					timePeriods[newDefaultIndex]?.year
+				);
+				currentTimeIndex = newDefaultIndex;
+				hasSetDefaultForDataset = datasetId;
+			}
+		} else {
+			// Reset when switching away from time slider datasets
+			hasSetDefaultForDataset = null;
 		}
 	});
 
@@ -160,10 +183,15 @@
 
 		// Small delay to ensure container has proper dimensions
 		setTimeout(() => {
+			// Create custom fullscreen control that includes our custom elements
+			const fullScreenControl = new FullScreen({
+				source: mapContainer.parentElement || mapContainer // Use the parent container that includes our custom controls, fallback to mapContainer
+			});
+
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
-					new FullScreen(),
+					fullScreenControl,
 					new ScaleLine({ units: 'metric', bar: true })
 				]),
 				interactions: defaultInteractions({
@@ -183,6 +211,29 @@
 				})
 			});
 
+			// Listen for fullscreen changes
+			const handleFullscreenChange = () => {
+				const isCurrentlyFullscreen = document.fullscreenElement !== null;
+				isFullscreen = isCurrentlyFullscreen;
+
+				// Force map resize when entering/exiting fullscreen
+				setTimeout(() => {
+					if (map) {
+						map.updateSize();
+						map.render();
+					}
+				}, 100);
+			};
+
+			// Store handler reference for cleanup
+			fullscreenHandler = handleFullscreenChange;
+
+			// Add fullscreen event listeners
+			document.addEventListener('fullscreenchange', handleFullscreenChange);
+			document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
 			// Add some basic interaction
 			map.on('click', (event) => {
 				const coordinate = event.coordinate;
@@ -195,6 +246,7 @@
 				// Load default layers after map is initialized only if a dataset is selected
 				setTimeout(() => {
 					if (currentDataset) {
+						console.log('Initial map layer update after map initialization');
 						updateMapLayers();
 					}
 				}, 200);
@@ -231,6 +283,19 @@
 		if (playInterval) {
 			clearInterval(playInterval);
 		}
+		if (legendFetchTimeout) {
+			clearTimeout(legendFetchTimeout);
+		}
+
+		// Remove fullscreen event listeners
+		if (fullscreenHandler) {
+			document.removeEventListener('fullscreenchange', fullscreenHandler);
+			document.removeEventListener('webkitfullscreenchange', fullscreenHandler);
+			document.removeEventListener('mozfullscreenchange', fullscreenHandler);
+			document.removeEventListener('MSFullscreenChange', fullscreenHandler);
+			fullscreenHandler = null;
+		}
+
 		if (map) {
 			map.dispose();
 		}
@@ -239,8 +304,8 @@
 	// Improved climate dataset structure for better map layer management
 	const climateDataset = [
 		{
-			id: 'temp-trend-30y',
-			title: 'Annual Temperature Trend Analysis',
+			id: 'temp-trend-10y',
+			title: 'Annual Temperature Trend Analysis of 10 Years',
 			description: 'Temperature trend analysis with overall vs significant trend options',
 			control_type: 'radio',
 			control_options: ['overall', 'significant'],
@@ -313,17 +378,73 @@
 					{
 						id: 'temp-trend-overall',
 						name: 'Overall Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 						layerIndex: 0,
 						mapserver: 'arcgis'
 					}
 				],
 				significant: [
 					{
-						id: 'temp-trend-overall',
+						id: 'temp-trend-significant',
 						name: 'Significant Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer',
-						layerIndex: 0,
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+						layerIndex: 5,
+						mapserver: 'arcgis'
+					}
+				]
+			}
+		},
+		{
+			id: 'temp-trend-30y',
+			title: 'Annual Temperature Trend Analysis',
+			description: 'Temperature trend analysis with overall vs significant trend options',
+			control_type: 'temperature_threshold',
+			control_options: ['0.5', '1.5', '2.0', '2.5'],
+			default_option: '1.5',
+			charts: [],
+			map_layers: {
+				'0.5': [
+					{
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
+						layerIndex: 1,
+						mapserver: 'arcgis'
+					}
+				],
+				'1': [
+					{
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
+						layerIndex: 2,
+						mapserver: 'arcgis'
+					}
+				],
+				'1.5': [
+					{
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
+						layerIndex: 3,
+						mapserver: 'arcgis'
+					}
+				],
+				'2': [
+					{
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
+						layerIndex: 4,
+						mapserver: 'arcgis'
+					}
+				],
+				'2.5': [
+					{
+						id: 'temp-trend-0.5',
+						name: 'Annual Temperature Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
+						layerIndex: 5,
 						mapserver: 'arcgis'
 					}
 				]
@@ -334,7 +455,7 @@
 			title: 'Regional Temperature Rise Analysis',
 			description: 'Temperature rise analysis with different threshold options',
 			control_type: 'temperature_threshold',
-			control_options: ['0.5', '1.5', '2.5'],
+			control_options: ['0.5', '1.5', '2.0', '2.5'],
 			default_option: '1.5',
 			charts: [
 				{
@@ -477,213 +598,351 @@
 			map_layers: {
 				'1995': {
 					id: 'temp-time-series-1995',
-					name: 'Annual Temperature 1995',
+					name: 'Temperature Anamoly 1995',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 0,
 					mapserver: 'arcgis'
 				},
 				'1996': {
 					id: 'temp-time-series-1996',
-					name: 'Annual Temperature 1996',
+					name: 'Temperature Anamoly 1996',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 1,
 					mapserver: 'arcgis'
 				},
 				'1997': {
 					id: 'temp-time-series-1997',
-					name: 'Annual Temperature 1997',
+					name: 'Temperature Anamoly 1997',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 2,
 					mapserver: 'arcgis'
 				},
 				'1998': {
 					id: 'temp-time-series-1998',
-					name: 'Annual Temperature 1998',
+					name: 'Temperature Anamoly 1998',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 3,
 					mapserver: 'arcgis'
 				},
 				'1999': {
 					id: 'temp-time-series-1999',
-					name: 'Annual Temperature 1999',
+					name: 'Temperature Anamoly 1999',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 4,
 					mapserver: 'arcgis'
 				},
 				'2000': {
 					id: 'temp-time-series-2000',
-					name: 'Annual Temperature 2000',
+					name: 'Temperature Anamoly 2000',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 5,
 					mapserver: 'arcgis'
 				},
 				'2001': {
 					id: 'temp-time-series-2001',
-					name: 'Annual Temperature 2001',
+					name: 'Temperature Anamoly 2001',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 6,
 					mapserver: 'arcgis'
 				},
 				'2002': {
 					id: 'temp-time-series-2002',
-					name: 'Annual Temperature 2002',
+					name: 'Temperature Anamoly 2002',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 7,
 					mapserver: 'arcgis'
 				},
 				'2003': {
 					id: 'temp-time-series-2003',
-					name: 'Annual Temperature 2003',
+					name: 'Temperature Anamoly 2003',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 8,
 					mapserver: 'arcgis'
 				},
 				'2004': {
 					id: 'temp-time-series-2004',
-					name: 'Annual Temperature 2004',
+					name: 'Temperature Anamoly 2004',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 9,
 					mapserver: 'arcgis'
 				},
 				'2005': {
 					id: 'temp-time-series-2005',
-					name: 'Annual Temperature 2005',
+					name: 'Temperature Anamoly 2005',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 10,
 					mapserver: 'arcgis'
 				},
 				'2006': {
 					id: 'temp-time-series-2006',
-					name: 'Annual Temperature 2006',
+					name: 'Temperature Anamoly 2006',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 11,
 					mapserver: 'arcgis'
 				},
 				'2007': {
 					id: 'temp-time-series-2007',
-					name: 'Annual Temperature 2007',
+					name: 'Temperature Anamoly 2007',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 12,
 					mapserver: 'arcgis'
 				},
 				'2008': {
 					id: 'temp-time-series-2008',
-					name: 'Annual Temperature 2008',
+					name: 'Temperature Anamoly 2008',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 13,
 					mapserver: 'arcgis'
 				},
 				'2009': {
 					id: 'temp-time-series-2009',
-					name: 'Annual Temperature 2009',
+					name: 'Temperature Anamoly 2009',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 14,
 					mapserver: 'arcgis'
 				},
 				'2010': {
 					id: 'temp-time-series-2010',
-					name: 'Annual Temperature 2010',
+					name: 'Temperature Anamoly 2010',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 15, // 15 is the layer index for 2010
 					mapserver: 'arcgis'
 				},
 				'2011': {
 					id: 'temp-time-series-2011',
-					name: 'Annual Temperature 2011',
+					name: 'Temperature Anamoly 2011',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 16, // 16 is the layer index for 2011
 					mapserver: 'arcgis'
 				},
 				'2012': {
 					id: 'temp-time-series-2012',
-					name: 'Annual Temperature 2012',
+					name: 'Temperature Anamoly 2012',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 17, // 17 is the layer index for 2012
 					mapserver: 'arcgis'
 				},
 				'2013': {
 					id: 'temp-time-series-2013',
-					name: 'Annual Temperature 2013',
+					name: 'Temperature Anamoly 2013',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 18,
 					mapserver: 'arcgis'
 				},
 				'2014': {
 					id: 'temp-time-series-2014',
-					name: 'Annual Temperature 2014',
+					name: 'Temperature Anamoly 2014',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 19, // 19 is the layer index for 2014
 					mapserver: 'arcgis'
 				},
 				'2015': {
 					id: 'temp-time-series-2015',
-					name: 'Annual Temperature 2015',
+					name: 'Temperature Anamoly 2015',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 20, // 20 is the layer index for 2015
 					mapserver: 'arcgis'
 				},
 				'2016': {
 					id: 'temp-time-series-2016',
-					name: 'Annual Temperature 2016',
+					name: 'Temperature Anamoly 2016',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 21, // 21 is the layer index for 2016
 					mapserver: 'arcgis'
 				},
 				'2017': {
 					id: 'temp-time-series-2017',
-					name: 'Annual Temperature 2017',
+					name: 'Temperature Anamoly 2017',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 22, // 22 is the layer index for 2017
 					mapserver: 'arcgis'
 				},
 				'2018': {
 					id: 'temp-time-series-2018',
-					name: 'Annual Temperature 2018',
+					name: 'Temperature Anamoly 2018',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 23, // 23 is the layer index for 2018
 					mapserver: 'arcgis'
 				},
 				'2019': {
 					id: 'temp-time-series-2019',
-					name: 'Annual Temperature 2019',
+					name: 'Temperature Anamoly 2019',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 24, // 24 is the layer index for 2019
 					mapserver: 'arcgis'
 				},
 				'2020': {
 					id: 'temp-time-series-2020',
-					name: 'Annual Temperature 2020',
+					name: 'Temperature Anamoly 2020',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 25, // 25 is the layer index for 2020
 					mapserver: 'arcgis'
 				},
 				'2021': {
 					id: 'temp-time-series-2021',
-					name: 'Annual Temperature 2021',
+					name: 'Temperature Anamoly 2021',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 26, // 26 is the layer index for 2021
 					mapserver: 'arcgis'
 				},
 				'2022': {
 					id: 'temp-time-series-2022',
-					name: 'Annual Temperature 2022',
+					name: 'Temperature Anamoly 2022',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 27, // 27 is the layer index for 2022
 					mapserver: 'arcgis'
 				},
 				'2023': {
 					id: 'temp-time-series-2023',
-					name: 'Annual Temperature 2023',
+					name: 'Temperature Anamoly 2023',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 28, // 28 is the layer index for 2023
 					mapserver: 'arcgis'
 				},
 				'2024': {
 					id: 'temp-time-series-2024',
-					name: 'Annual Temperature 2024',
+					name: 'Temperature Anamoly 2024',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 29, // 29 is the layer index for 2024
 					mapserver: 'arcgis'
+				}
+			}
+		},
+		{
+			id: 'seasonal-temp-trend',
+			title: 'Seasonal Temperature Trend Analysis',
+			description:
+				'Seasonal temperature trend analysis with overall vs significant trend options across different seasons',
+			control_type: 'nested_radio', // New control type for nested selections
+			control_options: {
+				trend_analysis: ['overall', 'significant'],
+				seasons: ['spring', 'summer', 'autumn', 'winter']
+			},
+			default_option: {
+				trend_analysis: 'overall',
+				season: 'spring'
+			},
+			charts: [
+				{
+					title: 'Seasonal Temperature Trends',
+					chart_type: 'line',
+					chart_data: {
+						categories: ['Spring', 'Summer', 'Autumn', 'Winter'],
+						series: [
+							{
+								name: 'Overall Trend (°C/decade)',
+								data: [0.8, 1.2, 0.9, 1.1]
+							},
+							{
+								name: 'Significant Trend (°C/decade)',
+								data: [0.6, 0.9, 0.7, 0.8]
+							}
+						]
+					}
+				},
+				{
+					title: 'Regional Seasonal Warming',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet'],
+						series: [
+							{
+								name: 'Spring (°C)',
+								data: [1.8, 2.1, 2.3, 2.5]
+							},
+							{
+								name: 'Summer (°C)',
+								data: [1.2, 1.5, 1.8, 2.0]
+							},
+							{
+								name: 'Autumn (°C)',
+								data: [1.6, 1.9, 2.1, 2.3]
+							},
+							{
+								name: 'Winter (°C)',
+								data: [2.2, 2.4, 2.6, 2.8]
+							}
+						]
+					}
+				}
+			],
+			map_layers: {
+				// Nested structure: trend_analysis -> season -> layer_config
+				overall: {
+					spring: [
+						{
+							id: 'seasonal-overall-spring',
+							name: 'Spring Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 1,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'seasonal-overall-summer',
+							name: 'Summer Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 2,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'seasonal-overall-autumn',
+							name: 'Autumn Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 3,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'seasonal-overall-winter',
+							name: 'Winter Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 4,
+							mapserver: 'arcgis'
+						}
+					]
+				},
+				significant: {
+					spring: [
+						{
+							id: 'seasonal-significant-spring',
+							name: 'Spring Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 8,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'seasonal-significant-summer',
+							name: 'Summer Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 7,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'seasonal-significant-autumn',
+							name: 'Autumn Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 9,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'seasonal-significant-winter',
+							name: 'Winter Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 6,
+							mapserver: 'arcgis'
+						}
+					]
 				}
 			}
 		}
@@ -692,27 +951,27 @@
 	const questions = [
 		{
 			id: 'question-1',
-			question: 'What is the annual average temperature trend over the past 30 years?',
+			question: 'Which areas have observed temperature rise  in last 30 years??',
 			dataset_id: 'temp-trend-30y'
 		},
-		{
-			id: 'question-2',
-			question: 'Which areas have observed temperature rise more than 0.5 degrees in last decade?',
-			dataset_id: 'temp-rise-decade'
-		},
-		{
-			id: 'question-3',
-			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?',
-			dataset_id: 'temp-rise-decade'
-		},
-		{
-			id: 'question-4',
-			question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?',
-			dataset_id: 'temp-rise-decade'
-		},
+		// {
+		// 	id: 'question-2',
+		// 	question: 'Which areas have observed temperature rise  in last 30 years?',
+		// 	dataset_id: 'temp-rise-decade'
+		// },
+		// {
+		// 	id: 'question-3',
+		// 	question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?',
+		// 	dataset_id: 'temp-rise-decade'
+		// },
+		// {
+		// 	id: 'question-4',
+		// 	question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?',
+		// 	dataset_id: 'temp-rise-decade'
+		// },
 		{
 			id: 'question-5',
-			question: 'What is the annual average temperature trend over the past 30 years?',
+			question: 'What is the annual temperature anamoly trend over the past 30 years?',
 			dataset_id: 'annual-temp-anamoly-series'
 		}
 	];
@@ -720,12 +979,12 @@
 		{
 			id: 'map-indicator-1',
 			title: 'Annual Temperature Trend',
-			dataset_id: 'temp-trend-30y'
+			dataset_id: 'temp-trend-10y'
 		},
 		{
 			id: 'map-indicator-2',
-			title: 'Temperature Rise',
-			dataset_id: 'temp-rise-decade'
+			title: 'Seasonal Temperature Trend',
+			dataset_id: 'seasonal-temp-trend'
 		},
 		{
 			id: 'map-indicator-3',
@@ -744,6 +1003,9 @@
 
 	// Track temperature rise threshold selection
 	let temperatureRiseThreshold = $state<'0.5' | '1' | '1.5' | '2' | '2.5'>('1.5');
+
+	// Track seasonal selection for nested radio controls
+	let selectedSeason = $state<'spring' | 'summer' | 'autumn' | 'winter'>('spring');
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
@@ -819,6 +1081,17 @@
 		return periods;
 	});
 
+	// Calculate default time index based on dataset's default_year
+	let defaultTimeIndex = $derived.by(() => {
+		if (!currentDataset?.time_dimension?.default_year || !timePeriods.length) {
+			return 0;
+		}
+
+		const defaultYear = currentDataset.time_dimension.default_year;
+		const index = timePeriods.findIndex((period) => period.year === defaultYear);
+		return index !== -1 ? index : 0;
+	});
+
 	// Watch for layout state changes and update map size
 	$effect(() => {
 		// This effect runs whenever layoutState changes
@@ -874,6 +1147,7 @@
 			layer = new ImageLayer({
 				visible: true,
 				zIndex: 10,
+				opacity: 0.7, // Reduced opacity for better visibility
 				source: new ImageArcGISRest({
 					url: layerConfig.url,
 					crossOrigin: 'anonymous',
@@ -889,6 +1163,7 @@
 			layer = new ImageLayer({
 				visible: true,
 				zIndex: 10,
+				opacity: 0.8, // Reduced opacity for better visibility
 				source: new ImageWMS({
 					url: layerConfig.url,
 					crossOrigin: 'anonymous',
@@ -950,73 +1225,109 @@
 		});
 	}
 
+	// Debounce timer for legend fetching
+	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
+
 	// Fetch legend data for current layers
 	async function fetchLegendData() {
-		// Clear legend data first
-		legendData = {};
-
-		if (!currentDataset || !currentMapLayers) {
-			return;
+		// Clear any existing timeout
+		if (legendFetchTimeout) {
+			clearTimeout(legendFetchTimeout);
 		}
 
-		// Get current layers based on control type
-		let layersToFetch: any[] = [];
+		// Debounce the legend fetch to prevent rapid requests
+		legendFetchTimeout = setTimeout(async () => {
+			// Clear legend data first
+			legendData = {};
 
-		if (currentDataset.control_type === 'radio') {
-			const selectedLayers = currentMapLayers[trendAnalysisMode];
-			layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-		} else if (currentDataset.control_type === 'temperature_threshold') {
-			const selectedLayers = currentMapLayers[temperatureRiseThreshold];
-			layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-		} else if (currentDataset.control_type === 'time_slider') {
-			const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
-			const currentTimeLayer = (currentMapLayers as any)[currentYear];
-			if (currentTimeLayer) {
-				layersToFetch = [currentTimeLayer];
+			if (!currentDataset || !currentMapLayers) {
+				return;
 			}
-		}
 
-		// Fetch legend for each layer
-		for (const layer of layersToFetch) {
-			if (!layer) continue;
+			console.log('Fetching legend data for dataset:', currentDataset.id);
 
-			const uniqueKey = `${layer.url}_${layer.layerIndex}`;
+			// Get current layers based on control type
+			let layersToFetch: any[] = [];
 
-			if (layer.mapserver === 'arcgis') {
-				try {
-					const legendUrl = `${layer.url}/legend?f=json`;
-					const response = await fetch(legendUrl);
-					const data = await response.json();
-
-					const targetLayerId = parseInt(layer.layerIndex);
-					const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
-
-					if (layerLegend) {
-						legendData[uniqueKey] = {
-							name: layer.name,
-							items: layerLegend.legend.map((item: any) => ({
-								label: item.label,
-								imageData: `data:image/png;base64,${item.imageData}`
-							}))
-						};
-					}
-				} catch (error) {
-					console.error('Error fetching ArcGIS legend:', error);
+			if (currentDataset.control_type === 'radio') {
+				const selectedLayers = currentMapLayers[trendAnalysisMode];
+				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+			} else if (currentDataset.control_type === 'temperature_threshold') {
+				const selectedLayers = currentMapLayers[temperatureRiseThreshold];
+				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+			} else if (currentDataset.control_type === 'time_slider') {
+				const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
+				const currentTimeLayer = (currentMapLayers as any)[currentYear];
+				if (currentTimeLayer) {
+					layersToFetch = [currentTimeLayer];
 				}
-			} else {
-				// Handle WMS/GeoServer layers
-				const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
-				legendData[uniqueKey] = {
-					name: layer.name,
-					items: [
-						{
-							label: layer.name,
-							imageUrl: legendUrl
-						}
-					]
-				};
+			} else if (currentDataset.control_type === 'nested_radio') {
+				const trendLayers = (currentMapLayers as any)[trendAnalysisMode];
+				if (trendLayers && trendLayers[selectedSeason]) {
+					const selectedLayers = trendLayers[selectedSeason];
+					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+				}
 			}
-		}
+
+			// Fetch legend for each layer
+			for (const layer of layersToFetch) {
+				if (!layer) continue;
+
+				// Use a consistent key for time slider datasets to avoid multiple legends
+				let uniqueKey: string;
+				if (currentDataset.control_type === 'time_slider') {
+					uniqueKey = `${currentDataset.id}_timeslider`; // Single consistent key for time slider
+				} else {
+					uniqueKey = `${layer.url}_${layer.layerIndex}`;
+				}
+
+				if (layer.mapserver === 'arcgis') {
+					try {
+						const legendUrl = `${layer.url}/legend?f=json`;
+						const response = await fetch(legendUrl);
+						const data = await response.json();
+
+						const targetLayerId = parseInt(layer.layerIndex);
+						const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
+
+						if (layerLegend) {
+							// For time slider, use a generic name without the year
+							const legendName =
+								currentDataset.control_type === 'time_slider' ? 'Temperature Anomaly' : layer.name;
+
+							legendData[uniqueKey] = {
+								name: legendName,
+								items: layerLegend.legend.map((item: any) => ({
+									label: item.label,
+									imageData: `data:image/png;base64,${item.imageData}`
+								}))
+							};
+						}
+					} catch (error) {
+						console.error('Error fetching ArcGIS legend:', error);
+					}
+				} else {
+					// Handle WMS/GeoServer layers
+					const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
+
+					// For time slider, use a generic name without the year
+					const legendName =
+						currentDataset.control_type === 'time_slider' ? 'Temperature Anomaly' : layer.name;
+
+					legendData[uniqueKey] = {
+						name: legendName,
+						items: [
+							{
+								label: legendName,
+								imageUrl: legendUrl
+							}
+						]
+					};
+				}
+			}
+
+			console.log('Legend data updated:', Object.keys(legendData));
+		}, 300); // 300ms debounce delay
 	}
 
 	// Update layers based on current dataset and control state
@@ -1032,10 +1343,19 @@
 			return;
 		}
 
+		console.log(
+			'Updating map layers for dataset:',
+			currentDataset.id,
+			'control_type:',
+			currentDataset.control_type
+		);
+
 		// Get current control state and add appropriate layers
 		if (currentDataset.control_type === 'radio') {
 			// For radio controls, show layer based on selected mode
+			console.log('Radio control - trendAnalysisMode:', trendAnalysisMode);
 			const selectedLayers = currentMapLayers[trendAnalysisMode];
+			console.log('Selected layers for', trendAnalysisMode, ':', selectedLayers);
 			if (selectedLayers) {
 				if (Array.isArray(selectedLayers)) {
 					addMultipleLayers(selectedLayers);
@@ -1059,6 +1379,17 @@
 			const currentTimeLayer = currentMapLayers && (currentMapLayers as any)[currentYear];
 			if (currentTimeLayer) {
 				addWMSLayer(currentTimeLayer);
+			}
+		} else if (currentDataset.control_type === 'nested_radio') {
+			// For nested radio controls, show layer based on both trend analysis and season
+			const trendLayers = (currentMapLayers as any)[trendAnalysisMode];
+			if (trendLayers && trendLayers[selectedSeason]) {
+				const selectedLayers = trendLayers[selectedSeason];
+				if (Array.isArray(selectedLayers)) {
+					addMultipleLayers(selectedLayers);
+				} else {
+					addWMSLayer(selectedLayers);
+				}
 			}
 		}
 
@@ -1087,6 +1418,21 @@
 				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
 			} else if (dataset?.control_type === 'temperature_threshold' && dataset.default_option) {
 				temperatureRiseThreshold = dataset.default_option as '0.5' | '1' | '1.5' | '2' | '2.5';
+			} else if (dataset?.control_type === 'nested_radio' && dataset.default_option) {
+				trendAnalysisMode = (dataset.default_option as any).trend_analysis as
+					| 'overall'
+					| 'significant';
+				selectedSeason = (dataset.default_option as any).season as
+					| 'spring'
+					| 'summer'
+					| 'autumn'
+					| 'winter';
+			} else if (dataset?.control_type === 'time_slider' && dataset.time_dimension?.default_year) {
+				// Set time index to match default year - this will be handled by the effect watcher
+				console.log(
+					'Time slider dataset selected, default year:',
+					dataset.time_dimension.default_year
+				);
 			}
 		}
 
@@ -1124,6 +1470,21 @@
 				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
 			} else if (dataset?.control_type === 'temperature_threshold' && dataset.default_option) {
 				temperatureRiseThreshold = dataset.default_option as '0.5' | '1.5' | '2.5';
+			} else if (dataset?.control_type === 'nested_radio' && dataset.default_option) {
+				trendAnalysisMode = (dataset.default_option as any).trend_analysis as
+					| 'overall'
+					| 'significant';
+				selectedSeason = (dataset.default_option as any).season as
+					| 'spring'
+					| 'summer'
+					| 'autumn'
+					| 'winter';
+			} else if (dataset?.control_type === 'time_slider' && dataset.time_dimension?.default_year) {
+				// Set time index to match default year - this will be handled by the effect watcher
+				console.log(
+					'Time slider dataset selected, default year:',
+					dataset.time_dimension.default_year
+				);
 			}
 		}
 
@@ -1203,7 +1564,7 @@
 		class:col-span-12={layoutState === 'left-full'}
 	>
 		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
+		<div class="rounded-2xl border border-white/20 bg-white/100 p-6">
 			<div class="mb-6 flex items-center justify-between">
 				<div class="flex items-center space-x-3">
 					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
@@ -1256,12 +1617,12 @@
 				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+						: 'text-sm leading-relaxed'} text-slate-700 transition-all duration-300"
 				>
 					Historically, the climate of the HKH has experienced significant changes that are closely
 					related to the rise and fall of regional cultures and civilizations. The region is one of
-					the most climate-sensitive mountain systems in the world. Known as the “Third Pole” for
-					its vast ice reserves, the HKH plays a critical role in regulating Asia’s climate and
+					the most climate-sensitive mountain systems in the world. Known as the "Third Pole" for
+					its vast ice reserves, the HKH plays a critical role in regulating Asia's climate and
 					serves as the source of ten major river systems that sustain the livelihoods of over 1.6
 					billion people downstream. However, the impacts of climate change are being felt here more
 					intensely than the global average, with temperatures rising significantly faster than
@@ -1425,7 +1786,9 @@
 									<!-- Time Control Toggle Button -->
 									<button
 										on:click={toggleTimeSlider}
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl {isFullscreen
+											? 'z-[9999]'
+											: 'z-10'}"
 										title="Show Time Controls"
 									>
 										<Calendar class="h-4 w-4" />
@@ -1434,16 +1797,18 @@
 								{:else}
 									<!-- Expanded Time Slider Panel -->
 									<div
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-white/30 bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm"
+										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-white/30 bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm {isFullscreen
+											? 'z-[9999]'
+											: 'z-10'}"
 									>
 										<!-- Time Label -->
-										<div class="flex items-center space-x-2">
+										<!-- <div class="flex items-center space-x-2">
 											<Calendar class="h-4 w-4 text-blue-600" />
 											<span class="text-sm font-medium text-slate-700">Time</span>
-										</div>
+										</div> -->
 
 										<!-- Separator -->
-										<div class="h-4 w-px bg-slate-300"></div>
+										<!-- <div class="h-4 w-px bg-slate-300"></div> -->
 
 										<!-- Step Backward -->
 										<button
@@ -1506,16 +1871,18 @@
 							{:else if currentDataset && currentDataset.control_type === 'radio'}
 								<!-- Always show expanded Analysis Mode Radio Buttons Panel -->
 								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+										? 'z-[9999]'
+										: 'z-10'}"
 								>
 									<!-- Analysis Label -->
-									<div class="flex items-center space-x-2">
+									<!-- <div class="flex items-center space-x-2">
 										<Layers class="h-4 w-4 text-blue-600" />
 										<span class="text-sm font-medium text-slate-700">Trend</span>
-									</div>
+									</div> -->
 
 									<!-- Separator -->
-									<div class="h-4 w-px bg-slate-300"></div>
+									<!-- <div class="h-4 w-px bg-slate-300"></div> -->
 
 									<!-- Overall Option -->
 									<label class="flex cursor-pointer items-center space-x-2">
@@ -1539,10 +1906,135 @@
 										<span class="text-sm font-medium text-slate-700">Significant</span>
 									</label>
 								</div>
+							{:else if currentDataset && currentDataset.control_type === 'nested_radio'}
+								<!-- Always show expanded Nested Radio Controls Panel (Trend Analysis + Seasons) -->
+								<div
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-6 rounded-full border border-white/30 bg-white/95 px-6 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+										? 'z-[9999]'
+										: 'z-10'}"
+								>
+									<!-- Trend Analysis Section -->
+									<div class="flex items-center space-x-3">
+										<!-- <div class="flex items-center space-x-2">
+											<Layers class="h-4 w-4 text-blue-600" />
+											<span class="text-sm font-medium text-slate-700">Trend</span>
+										</div> -->
+
+										<!-- Overall Option -->
+										<label class="flex cursor-pointer items-center space-x-1.5">
+											<input
+												type="radio"
+												bind:group={trendAnalysisMode}
+												value="overall"
+												class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
+											/>
+											<span class="text-xs font-medium text-slate-700">Overall</span>
+										</label>
+
+										<!-- Significant Option -->
+										<label class="flex cursor-pointer items-center space-x-1.5">
+											<input
+												type="radio"
+												bind:group={trendAnalysisMode}
+												value="significant"
+												class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
+											/>
+											<span class="text-xs font-medium text-slate-700">Significant</span>
+										</label>
+									</div>
+
+									<!-- Separator -->
+									<div class="h-5 w-px bg-slate-300"></div>
+
+									<!-- Seasonal Selection Section -->
+									<div class="flex items-center space-x-3">
+										<!-- <div class="flex items-center space-x-2">
+											<Calendar class="h-4 w-4 text-green-600" />
+											<span class="text-sm font-medium text-slate-700">Season</span>
+										</div> -->
+
+										<!-- Season Options as Toggle Buttons -->
+										<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
+											<!-- Spring Option -->
+											<label class="relative cursor-pointer">
+												<input
+													type="radio"
+													bind:group={selectedSeason}
+													value="spring"
+													class="peer sr-only"
+												/>
+												<div
+													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													'spring'
+														? 'text-white'
+														: 'text-slate-600'}"
+												>
+													Spring
+												</div>
+											</label>
+
+											<!-- Summer Option -->
+											<label class="relative cursor-pointer">
+												<input
+													type="radio"
+													bind:group={selectedSeason}
+													value="summer"
+													class="peer sr-only"
+												/>
+												<div
+													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													'summer'
+														? 'text-white'
+														: 'text-slate-600'}"
+												>
+													Summer
+												</div>
+											</label>
+
+											<!-- Autumn Option -->
+											<label class="relative cursor-pointer">
+												<input
+													type="radio"
+													bind:group={selectedSeason}
+													value="autumn"
+													class="peer sr-only"
+												/>
+												<div
+													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													'autumn'
+														? 'text-white'
+														: 'text-slate-600'}"
+												>
+													Autumn
+												</div>
+											</label>
+
+											<!-- Winter Option -->
+											<label class="relative cursor-pointer">
+												<input
+													type="radio"
+													bind:group={selectedSeason}
+													value="winter"
+													class="peer sr-only"
+												/>
+												<div
+													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													'winter'
+														? 'text-white'
+														: 'text-slate-600'}"
+												>
+													Winter
+												</div>
+											</label>
+										</div>
+									</div>
+								</div>
 							{:else if currentDataset && currentDataset.control_type === 'temperature_threshold'}
 								<!-- Always show expanded Temperature Rise Threshold Panel -->
 								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm"
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+										? 'z-[9999]'
+										: 'z-10'}"
 								>
 									<!-- Temperature Rise Label -->
 									<div class="flex items-center space-x-2">
@@ -1652,7 +2144,7 @@
 
 							<!-- Legend Panel - Bottom Right -->
 							{#if currentDataset && Object.keys(legendData).length > 0}
-								<div class="absolute right-4 bottom-4">
+								<div class="absolute right-4 bottom-4 {isFullscreen ? 'z-[9999]' : 'z-10'}">
 									<!-- Legend Toggle Button -->
 									<button
 										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
@@ -1664,7 +2156,7 @@
 												<span class="font-medium text-slate-700">Legend</span>
 											{/if}
 										</div>
-										<svg
+										<!-- <svg
 											class="h-4 w-4 transform text-slate-600 transition-transform duration-300 {legendCollapsed
 												? 'rotate-180'
 												: ''}"
@@ -1678,7 +2170,7 @@
 												stroke-width="2"
 												d="M19 9l-7 7-7-7"
 											/>
-										</svg>
+										</svg> -->
 									</button>
 
 									<!-- Legend Content -->
@@ -1686,7 +2178,7 @@
 										<div
 											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
 										>
-											<div class="max-h-[300px] space-y-4 overflow-y-auto">
+											<div class="max-h-[320px] space-y-4 overflow-y-auto">
 												{#each Object.keys(legendData) as uniqueKey}
 													<div class="space-y-2">
 														<h4 class="text-sm font-semibold text-slate-800">
@@ -1812,62 +2304,64 @@
 </div>
 
 <!-- Fixed Floating Questions Button and Panel -->
-<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
-	<div
-		class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
-		class:scale-0={!isQuestionsPanelOpen}
-		class:scale-100={isQuestionsPanelOpen}
-		class:opacity-0={!isQuestionsPanelOpen}
-		class:opacity-100={isQuestionsPanelOpen}
-		class:pointer-events-none={!isQuestionsPanelOpen}
-	>
-		<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-			<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
-				<Info class="h-4 w-4 text-white" />
+{#if layoutState !== 'left-full'}
+	<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
+		<div
+			class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+			class:scale-0={!isQuestionsPanelOpen}
+			class:scale-100={isQuestionsPanelOpen}
+			class:opacity-0={!isQuestionsPanelOpen}
+			class:opacity-100={isQuestionsPanelOpen}
+			class:pointer-events-none={!isQuestionsPanelOpen}
+		>
+			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+				<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
+					<Info class="h-4 w-4 text-white" />
+				</div>
+				<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
 			</div>
-			<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
-		</div>
 
-		<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
-			{#each questions as questionItem, index}
-				<button
-					class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
-					questionItem.id
-						? 'border-blue-500 bg-blue-50 shadow-md'
-						: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-					on:click={() => selectQuestion(questionItem.id)}
-				>
-					<div class="flex items-start space-x-2">
-						<div class="mt-1 flex-shrink-0">
-							{#if selectedQuestionId === questionItem.id}
-								<CheckCircle class="h-4 w-4 text-blue-600" />
-							{:else}
-								<div
-									class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
-								></div>
-							{/if}
+			<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
+				{#each questions as questionItem, index}
+					<button
+						class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
+						questionItem.id
+							? 'border-blue-500 bg-blue-50 shadow-md'
+							: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+						on:click={() => selectQuestion(questionItem.id)}
+					>
+						<div class="flex items-start space-x-2">
+							<div class="mt-1 flex-shrink-0">
+								{#if selectedQuestionId === questionItem.id}
+									<CheckCircle class="h-4 w-4 text-blue-600" />
+								{:else}
+									<div
+										class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
+									></div>
+								{/if}
+							</div>
+							<p
+								class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+									? 'font-medium text-blue-700'
+									: 'text-slate-600 group-hover:text-slate-800'}"
+							>
+								{questionItem.question}
+							</p>
 						</div>
-						<p
-							class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-								? 'font-medium text-blue-700'
-								: 'text-slate-600 group-hover:text-slate-800'}"
-						>
-							{questionItem.question}
-						</p>
-					</div>
-				</button>
-			{/each}
+					</button>
+				{/each}
+			</div>
 		</div>
-	</div>
 
-	<button
-		on:click={toggleQuestionsPanel}
-		class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
-		aria-label="Toggle questions panel"
-	>
-		<HelpCircle class="h-6 w-6" />
-	</button>
-</div>
+		<button
+			on:click={toggleQuestionsPanel}
+			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
+			aria-label="Toggle questions panel"
+		>
+			<HelpCircle class="h-6 w-6" />
+		</button>
+	</div>
+{/if}
 
 <style>
 	/* Ensure map containers resize properly */
@@ -1903,6 +2397,26 @@
 	/* Ensure flex children don't overflow */
 	:global(.flex > *) {
 		min-width: 0;
+	}
+
+	/* Fullscreen mode adjustments */
+	:global(:fullscreen .map-container),
+	:global(:-webkit-full-screen .map-container),
+	:global(:-moz-full-screen .map-container),
+	:global(:-ms-fullscreen .map-container) {
+		position: relative !important;
+		width: 100vw !important;
+		height: 100vh !important;
+		z-index: 9998 !important;
+	}
+
+	/* Ensure controls are visible in fullscreen */
+	:global(:fullscreen .absolute),
+	:global(:-webkit-full-screen .absolute),
+	:global(:-moz-full-screen .absolute),
+	:global(:-ms-fullscreen .absolute) {
+		position: fixed !important;
+		z-index: 9999 !important;
 	}
 
 	/* Compact Time Slider Styles */
