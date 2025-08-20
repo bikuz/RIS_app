@@ -31,15 +31,15 @@ export const topicColors = {
 	'air-quality': 'from-red-500 to-stone-500'
 };
 
-export const topicHoverColors = {
-	climate: 'from-blue-600 to-cyan-600',
-	demography: 'from-purple-600 to-pink-600',
-	ecosystem: 'from-[#8cab5c] to-emerald-600',
-	cryosphere: 'from-cyan-600 to-blue-600',
-	weather: 'from-yellow-600 to-orange-600',
-	physiography: 'from-stone-600 to-amber-600',
-	'air-quality': 'from-red-600 to-stone-600'
-};
+// export const topicHoverColors = {
+// 	climate: 'from-blue-600 to-cyan-600',
+// 	demography: 'from-purple-600 to-pink-600',
+// 	ecosystem: 'from-[#8cab5c] to-emerald-600',
+// 	cryosphere: 'from-cyan-600 to-blue-600',
+// 	weather: 'from-yellow-600 to-orange-600',
+// 	physiography: 'from-stone-600 to-amber-600',
+// 	'air-quality': 'from-red-600 to-stone-600'
+// };
 export const topicAbstracts = [
 	{
 		topic: 'climate',
