@@ -612,44 +612,159 @@
 			},
 			charts: [
 				{
-					title: 'Annual Temperature Anomaly',
-					chart_type: 'line',
+					title: 'Temperature Anomalies (1995–2024)',
+					chart_type: 'column',
+					yAxisTitle: 'Temperature Anomaly (°C)',
 					chart_data: {
 						categories: [
-							'2000',
-							'2001',
-							'2002',
-							'2003',
-							'2004',
-							'2005',
-							'2006',
-							'2007',
-							'2008',
-							'2009',
-							'2010',
-							'2011',
-							'2012',
-							'2013',
-							'2014',
-							'2015',
-							'2016',
-							'2017',
-							'2018',
-							'2019',
-							'2020',
-							'2021',
-							'2022',
-							'2023',
-							'2024'
+							1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+							2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022,
+							2023, 2024
+						],
+						plotLines: [
+							{
+								color: '#666666',
+								width: 1.3,
+								value: 0, // baseline at 0°C
+								zIndex: 5
+							}
+						],
+						plotOptions: {
+							column: {
+								zones: [
+									{
+										value: 0, // values < 0
+										color: '#4C4CFF'
+									},
+									{
+										color: '#FF4C4C' // values >= 0
+									}
+								]
+							}
+						},
+						series: [
+							{
+								name: 'Anomaly',
+								data: [
+									-0.5494, -0.4961, -1.305, 0.0726, 0.3329, -0.38, 0.1546, -0.1055, 0.0281, 0.0185,
+									-0.2289, 0.4456, 0.1589, -0.1417, 0.3663, 0.63, 0.0042, -0.3543, 0.1069, 0.0474,
+									0.3258, 1.0569, 0.7923, 0.45, 0.112, 0.3581, 0.8142, 0.7695, 0.6875, 1.1673
+								]
+							}
+						]
+					}
+				},
+				{
+					title: 'Temperature Anomalies - Line Chart with Running Means',
+					chart_type: 'line',
+					yAxisTitle: 'Temperature Anomaly (°C)',
+					chart_data: {
+						categories: [
+							1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+							2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022,
+							2023, 2024
+						],
+						plotLines: [
+							{
+								color: '#666666',
+								width: 1.3,
+								value: 0, // baseline at 0°C
+								zIndex: 5
+							}
 						],
 						series: [
 							{
-								name: 'count',
+								name: 'Anomaly',
 								data: [
-									4.8877, 5.418, 5.1678, 5.281, 5.2809, 5.0343, 5.7049, 5.4111, 5.12, 5.6186,
-									5.8814, 5.2644, 4.9087, 5.378, 5.3068, 5.5846, 6.3035, 6.0406, 5.7105, 5.3807,
-									5.6059, 6.0672, 6.0279, 5.9556, 6.4178
-								]
+									-0.5494, -0.4961, -1.305, 0.0726, 0.3329, -0.38, 0.1546, -0.1055, 0.0281, 0.0185,
+									-0.2289, 0.4456, 0.1589, -0.1417, 0.3663, 0.63, 0.0042, -0.3543, 0.1069, 0.0474,
+									0.3258, 1.0569, 0.7923, 0.45, 0.112, 0.3581, 0.8142, 0.7695, 0.6875, 1.1673
+								],
+								color: '#AA4643',
+								marker: {
+									enabled: false,
+									radius: 3
+								}
+							},
+							{
+								name: '5-Year Running Mean',
+								data: [
+									null,
+									null,
+									-0.389,
+									-0.3551,
+									-0.225,
+									0.0149,
+									0.006,
+									-0.0569,
+									-0.0266,
+									0.0316,
+									0.0844,
+									0.0505,
+									0.12,
+									0.2918,
+									0.2035,
+									0.1009,
+									0.1506,
+									0.0868,
+									0.026,
+									0.2365,
+									0.4659,
+									0.5345,
+									0.5474,
+									0.5539,
+									0.5053,
+									0.5008,
+									0.5483,
+									0.7593,
+									null,
+									null
+								],
+								color: '#FFA000',
+								dashStyle: 'Dash',
+								marker: {
+									enabled: false
+								}
+							},
+							{
+								name: '10-Year Running Mean',
+								data: [
+									null,
+									null,
+									null,
+									null,
+									null,
+									-0.2229,
+									-0.1909,
+									-0.0967,
+									0.0497,
+									0.0282,
+									0.0316,
+									0.1326,
+									0.1175,
+									0.0927,
+									0.1005,
+									0.1034,
+									0.1589,
+									0.22,
+									0.2834,
+									0.3425,
+									0.3171,
+									0.2899,
+									0.3709,
+									0.4833,
+									0.5414,
+									0.6534,
+									null,
+									null,
+									null,
+									null
+								],
+								color: '#4C4CFF',
+								dashStyle: 'Dash',
+								marker: {
+									enabled: false
+								}
 							}
 						]
 					}
@@ -921,6 +1036,14 @@
 							'1.97–2.06',
 							'2.06–2.14',
 							'2.14–2.23'
+						],
+						plotLines: [
+							{
+								color: '#666',
+								width: 1,
+								value: 0, // baseline at 0°C
+								zIndex: 4
+							}
 						],
 						plotOptions: {
 							column: {
@@ -2419,8 +2542,8 @@
 												title={chart.title}
 												subtitle="Hindu Kush Himalaya Region Climate Data"
 												chart_type={chart.chart_type}
-												yAxisTitle={chart.yAxisTitle}
-												plotOptions={chart.chart_data.plotOptions}
+												yAxisTitle={chart.yAxisTitle || 'Value'}
+												plotOptions={chart.chart_data.plotOptions || {}}
 											/>
 										</div>
 									{/each}

@@ -7,13 +7,24 @@
 		subtitle = '',
 		chart_type = 'line',
 		plotOptions = {},
-		yAxisTitle = 'Value'
+		yAxisTitle = 'Value',
+		plotLines = []
 	} = $props<{
 		chartData: {
-			categories: string[];
+			categories: (string | number)[];
 			series: Array<{
 				name: string;
-				data: number[];
+				data: (number | null)[];
+				color?: string;
+				marker?: any;
+				dashStyle?: string;
+			}>;
+			plotOptions?: any;
+			plotLines?: Array<{
+				color: string;
+				width: number;
+				value: number;
+				zIndex?: number;
 			}>;
 		};
 		title?: string;
@@ -21,6 +32,12 @@
 		chart_type?: string;
 		plotOptions?: any;
 		yAxisTitle?: string;
+		plotLines?: Array<{
+			color: string;
+			width: number;
+			value: number;
+			zIndex?: number;
+		}>;
 	}>();
 
 	let chartContainer: HTMLDivElement;
@@ -104,6 +121,7 @@
 							fontWeight: '500'
 						}
 					},
+					plotLines: [...plotLines, ...(chartData.plotLines || [])],
 					gridLineColor: '#e2e8f0',
 					lineColor: '#cbd5e1',
 					tickColor: '#cbd5e1',
@@ -114,21 +132,22 @@
 						}
 					}
 				},
-				// tooltip: {
-				// 	backgroundColor: 'rgba(255, 255, 255, 0.95)',
-				// 	borderColor: '#e2e8f0',
-				// 	borderRadius: 8,
-				// 	shadow: true,
-				// 	style: {
-				// 		fontSize: '12px'
-				// 	},
-				// 	formatter: function () {
-				// 		return `<b>${this.series.name}</b><br/>
-				//                 ${this.x}: <b>${this.y} mm</b>`;
-				// 	}
-				// },
+				tooltip: {
+					backgroundColor: 'rgba(255, 255, 255, 0.95)',
+					borderColor: '#e2e8f0',
+					borderRadius: 8,
+					shadow: true,
+					style: {
+						fontSize: '12px'
+					},
+					formatter: function (this: any) {
+						return `<b>${this.series.name}</b><br/>
+                                ${this.x}: <b>${this.y}</b>`;
+					}
+				},
 				plotOptions: {
 					...plotOptions,
+					...(chartData.plotOptions || {}),
 					line: {
 						dataLabels: {
 							enabled: false
@@ -141,11 +160,12 @@
 						}
 					}
 				},
-				series: chartData.series.map((serie, index) => ({
+				series: chartData.series.map((serie: any, index: number) => ({
 					...serie,
-					color: index === 0 ? '#3b82f6' : '#10b981',
+					color: serie.color || (index === 0 ? '#3b82f6' : '#10b981'),
 					marker: {
-						fillColor: index === 0 ? '#3b82f6' : '#10b981',
+						...serie.marker,
+						fillColor: serie.color || (index === 0 ? '#3b82f6' : '#10b981'),
 						lineColor: '#ffffff',
 						lineWidth: 2,
 						radius: 4
