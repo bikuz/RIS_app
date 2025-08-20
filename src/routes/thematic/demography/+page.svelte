@@ -1329,7 +1329,7 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												subtitle="Hindu Kush Himalaya Region Demographic Data"
+												
 												chart_type={chart.chart_type}
 											/>
 										</div>
