@@ -55,27 +55,27 @@
 					</p>
 				</div>
 				<div>
-					<h4 class="mb-4 text-lg font-semibold">Quick Links</h4>
+					<!-- <h4 class="mb-4 text-lg font-semibold">Quick Links</h4>
 					<ul class="space-y-2 ">
 						<li><a href="/about" class="hover:text-white">About</a></li>
 						<li><a href="/data-policy" class="hover:text-white">Data Policy</a></li>
 						<li><a href="/api" class="hover:text-white">API Documentation</a></li>
 						<li><a href="/contact" class="hover:text-white">Contact</a></li>
-					</ul>
+					</ul> -->
 				</div>
 				<div>
-					<h4 class="mb-4 text-lg font-semibold">Resources</h4>
+					<!-- <h4 class="mb-4 text-lg font-semibold">Resources</h4>
 					<ul class="space-y-2 ">
 						<li><a href="/tutorials" class="hover:text-white">Tutorials</a></li>
 						<li><a href="/documentation" class="hover:text-white">Documentation</a></li>
 						<li><a href="/support" class="hover:text-white">Support</a></li>
 						<li><a href="/faq" class="hover:text-white">FAQ</a></li>
-					</ul>
+					</ul> -->
 				</div>
 				<div>
 					<h4 class="mb-4 text-lg font-semibold">Connect</h4>
 					<p class="mb-2  ">info@icimod.org</p>
-					<p class=" ">ICIMOD, Kathmandu, Nepal</p>
+					<p class=" ">ICIMOD, Nepal</p>
 				</div>
 			</div>
 			<div class="mt-8 border-t border-white-800 pt-8 text-center ">

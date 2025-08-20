@@ -46,13 +46,18 @@
 
 	async function loadHighcharts() {
 		try {
-			// Dynamic import of Highcharts
+			// Load core Highcharts
 			const HighchartsModule = await import('highcharts');
 			Highcharts = HighchartsModule.default;
-			console.log('Highcharts loaded successfully');
+
+			// Load and initialize the exporting module
+			const ExportingModule = await import('highcharts/modules/exporting');
+			ExportingModule(Highcharts);
+
+			console.log('Highcharts and exporting module loaded successfully');
 			createChart();
 		} catch (error) {
-			console.error('Failed to load Highcharts:', error);
+			console.error('Failed to load Highcharts or exporting module:', error);
 		}
 	}
 
@@ -171,6 +176,9 @@
 						radius: 4
 					}
 				})),
+				exporing:{
+					enabled: true
+				},
 				legend: {
 					align: 'center',
 					verticalAlign: 'bottom',
