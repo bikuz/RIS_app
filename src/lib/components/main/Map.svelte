@@ -344,9 +344,10 @@
 					style="max-height: {layerListCollapsed ? '40px' : '200px'}"
 				>
 					<!-- Header -->
-					<div
-						class="flex cursor-pointer items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2"
-						on:click={() => (layerListCollapsed = !layerListCollapsed)}
+					<button
+						type="button"
+						class="flex w-full cursor-pointer items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2"
+						onclick={() => (layerListCollapsed = !layerListCollapsed)}
 					>
 						<div class="flex items-center">
 							<Layers class="h-4 w-4 text-gray-600" />
@@ -357,7 +358,7 @@
 						</div>
 						<!-- <span class="text-gray-500 transition-transform duration-300" 
                               style="transform: rotate({layerListCollapsed ? '-90deg' : '0deg'})">▼</span> -->
-					</div>
+					</button>
 
 					<!-- Content -->
 					<div
@@ -372,7 +373,7 @@
 								<input
 									type="checkbox"
 									checked={layerVisibility.hkhOutline}
-									on:change={() => toggleLayer('hkhOutline')}
+									onchange={() => toggleLayer('hkhOutline')}
 									class="h-4 w-4 rounded border-gray-300 text-blue-600 group-hover:border-blue-400 focus:ring-blue-500"
 								/>
 								<span class="group-hover:text-blue-600">HKH Outline</span>
@@ -394,7 +395,7 @@
 								<input
 									type="checkbox"
 									checked={layerVisibility.glacier}
-									on:change={() => toggleLayer('glacier')}
+									onchange={() => toggleLayer('glacier')}
 									class="h-4 w-4 rounded border-gray-300 text-blue-600 group-hover:border-blue-400 focus:ring-blue-500"
 								/>
 								<span class="group-hover:text-blue-600">Glacier</span>
@@ -405,7 +406,7 @@
 								<input
 									type="checkbox"
 									checked={layerVisibility.mountainRegion}
-									on:change={() => toggleLayer('mountainRegion')}
+									onchange={() => toggleLayer('mountainRegion')}
 									class="h-4 w-4 rounded border-gray-300 text-blue-600 group-hover:border-blue-400 focus:ring-blue-500"
 								/>
 								<span class="group-hover:text-blue-600">Mountain Region</span>
@@ -416,7 +417,7 @@
 								<input
 									type="checkbox"
 									checked={layerVisibility.nightTime}
-									on:change={() => toggleLayer('nightTime')}
+									onchange={() => toggleLayer('nightTime')}
 									class="h-4 w-4 rounded border-gray-300 text-blue-600 group-hover:border-blue-400 focus:ring-blue-500"
 								/>
 								<span class="group-hover:text-blue-600">Night Time</span>
@@ -429,14 +430,15 @@
 				<div
 					class="absolute top-4 left-16 overflow-hidden bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-300"
 				>
-					<div
+					<button
+						type="button"
 						class="flex cursor-pointer items-center justify-between border-b border-gray-200 bg-gray-50 px-2 py-2"
-						on:click={resetMapView}
+						onclick={resetMapView}
 					>
 						<div class="flex items-center">
 							<HomeIcon class="h-4 w-4 text-gray-600" />
 						</div>
-					</div>
+					</button>
 				</div>
 
 				<!-- Legend overlay -->
@@ -444,9 +446,10 @@
 					class="absolute bottom-6 left-4 overflow-hidden rounded-lg bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-300"
 					style="max-height: {legendCollapsed ? '40px' : '300px'}"
 				>
-					<div
-						class="flex cursor-pointer items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2"
-						on:click={() => (legendCollapsed = !legendCollapsed)}
+					<button
+						type="button"
+						class="flex w-full cursor-pointer items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2"
+						onclick={() => (legendCollapsed = !legendCollapsed)}
 					>
 						<div class="flex items-center">
 							<List class="h-4 w-4 text-gray-600" />
@@ -455,7 +458,7 @@
 								style="display: {legendCollapsed ? 'none' : 'block'}">Legend</span
 							>
 						</div>
-					</div>
+					</button>
 
 					<!-- Content -->
 					<div
