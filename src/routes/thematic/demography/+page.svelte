@@ -346,7 +346,7 @@
 					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['2015', '2020', '2025', '2030 (Projected)'],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
 								name: 'Population (millions)',
@@ -359,7 +359,7 @@
 			map_data: {
 				name: 'Population Trends across HKH',
 				layer_id: 0,
-				description: 'Population distribution across HKH region for 2025'
+				description: 'Population density distribution (people/sq km)'
 			},
 			control_type: 'none'
 		},
@@ -370,7 +370,7 @@
 					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['2015', '2020', '2025', '2030 (Projected)'],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
 								name: 'Population (millions)',
@@ -394,7 +394,7 @@
 					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['2015', '2020', '2025', '2030 (Projected)'],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
 								name: 'Population (millions)',
@@ -418,7 +418,7 @@
 					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['2015', '2020', '2025', '2030 (Projected)'],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
 								name: 'Population (millions)',
@@ -442,7 +442,7 @@
 					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['2015', '2020', '2025', '2030 (Projected)'],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
 								name: 'Population (millions)',
@@ -466,7 +466,7 @@
 					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['2015', '2020', '2025', '2030 (Projected)'],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
 								name: 'Population (millions)',
@@ -490,7 +490,7 @@
 					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: ['2015', '2020', '2025', '2030 (Projected)'],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
 								name: 'Population (millions)',
@@ -506,38 +506,62 @@
 				description: 'Ratio of total dependent population'
 			},
 			control_type: 'none'
+		},
+		{
+			id: 'urban-center',
+			charts: [
+				{
+					title: 'Population Distribution',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['2015', '2020', '2025', '2030'],
+						series: [
+							{
+								name: 'Population (millions)',
+								data: [207.357006, 221.147189, 233.295930, 246.467761]
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'Urban Center Location',
+				layer_id: 8,
+				description: 'Location of Urban Center'
+			},
+			control_type: 'none'
 		}
 	];
 
-	// Updated questions - latter three layers
+	// Updated questions 
 	const questions = [
 		{
 			id: 'question-1',
-			question: 'What is the child-woman ratio distribution across the HKH region in 2025?',
-			dataset_id: 'child-woman-ratio-2025'
+			question: 'Show me the locations of urban center in HKH Region.',
+			dataset_id: 'urban-center'
 		}
 	];
 
-	// Updated information layers - first three layers
+	// Updated information layers 
 	const information_layers = [
 		{
 			id: 'info-layer-1',
-			title: 'Population 2025',
+			title: 'Population Density',
 			dataset_id: 'population-2025'
 		},
 		{
 			id: 'info-layer-2',
-			title: 'Sex Ratio 2025',
+			title: 'Sex Ratio',
 			dataset_id: 'sex-ratio-2025'
 		},
 		{
 			id: 'info-layer-3',
-			title: 'Proportion of Age >=75',
+			title: 'Proportion of Population Age >=75',
 			dataset_id: 'aged-75-proportion'
 		},
 		{
 			id: 'info-layer-4',
-			title: 'Child-Woman Ratio 2025',
+			title: 'Child-Woman Ratio',
 			dataset_id: 'child-woman-ratio-2025'
 		},
 		{
@@ -549,6 +573,11 @@
 			id: 'info-layer-6',
 			title: 'Age Dependency Ratio',
 			dataset_id: 'age-dependency-ratio-2025'
+		},
+		{
+			id: 'info-layer-7',
+			title: 'Total Dependency Ratio',
+			dataset_id: 'total-dependency-ratio-2025'
 		}
 	];
 
@@ -598,11 +627,11 @@
 		// 	name: 'Soil',
 		// 	url: BASELAYERS_URL
 		// },
-		{
-			id: 3,
-			name: 'River',
-			url: BASELAYERS_URL
-		}
+		// {
+		// 	id: 3,
+		// 	name: 'River',
+		// 	url: BASELAYERS_URL
+		// }
 	];
 
 	// Function to toggle base layers
