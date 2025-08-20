@@ -71,9 +71,9 @@ export function getTopicColor(topic: string): string {
 	return topicColors[topic as keyof typeof topicColors] || 'from-gray-500 to-slate-500';
 }
 
-export function getTopicHoverColor(topic: string): string {
-	return topicColors[topic as keyof typeof topicHoverColors] || 'from-gray-600 to-slate-600';
-}
+// export function getTopicHoverColor(topic: string): string {
+// 	return topicColors[topic as keyof typeof topicHoverColors] || 'from-gray-600 to-slate-600';
+// }
 
 // export function getTopicDetail(topic: string): string {
 // 	return thematicAreas[topic as keyof typeof topicHoverColors] || 'from-gray-600 to-slate-600';
