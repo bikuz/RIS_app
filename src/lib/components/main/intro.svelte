@@ -156,7 +156,7 @@
 					<div class="space-y-4">
 						<!-- <Map/> -->
 						{#if Map3D}
-							<svelte:component this={Map3D} />
+							<Map3D />
 						{/if}
 					</div>
 				</div>

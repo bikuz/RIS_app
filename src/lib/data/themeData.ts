@@ -1,5 +1,6 @@
 import { goto } from '$app/navigation';
 import { Cloud, Users, Leaf, Snowflake, Sun, Mountain, Wind } from '@lucide/svelte';
+import { base } from '$app/paths';
 
 export const topicDetail ={
 	climate: 'Temperature trends, precipitation patterns, and climate change indicators',
@@ -30,15 +31,15 @@ export const topicColors = {
 	'air-quality': 'from-red-500 to-stone-500'
 };
 
-export const topicHoverColors = {
-	climate: 'from-blue-600 to-cyan-600',
-	demography: 'from-purple-600 to-pink-600',
-	ecosystem: 'from-[#8cab5c] to-emerald-600',
-	cryosphere: 'from-cyan-600 to-blue-600',
-	weather: 'from-yellow-600 to-orange-600',
-	physiography: 'from-stone-600 to-amber-600',
-	'air-quality': 'from-red-600 to-stone-600'
-};
+// export const topicHoverColors = {
+// 	climate: 'from-blue-600 to-cyan-600',
+// 	demography: 'from-purple-600 to-pink-600',
+// 	ecosystem: 'from-[#8cab5c] to-emerald-600',
+// 	cryosphere: 'from-cyan-600 to-blue-600',
+// 	weather: 'from-yellow-600 to-orange-600',
+// 	physiography: 'from-stone-600 to-amber-600',
+// 	'air-quality': 'from-red-600 to-stone-600'
+// };
 export const topicAbstracts = [
 	{
 		topic: 'climate',
@@ -55,7 +56,7 @@ export const topicAbstracts = [
 ];
 
 export function selectTopic(topic: string) {
-	goto(`/thematic/${topic}`);
+	goto(`${base}/thematic/${topic}`);
 }
 
 export function getTopicName(topic: string) {
@@ -70,9 +71,9 @@ export function getTopicColor(topic: string): string {
 	return topicColors[topic as keyof typeof topicColors] || 'from-gray-500 to-slate-500';
 }
 
-export function getTopicHoverColor(topic: string): string {
-	return topicColors[topic as keyof typeof topicHoverColors] || 'from-gray-600 to-slate-600';
-}
+// export function getTopicHoverColor(topic: string): string {
+// 	return topicColors[topic as keyof typeof topicHoverColors] || 'from-gray-600 to-slate-600';
+// }
 
 // export function getTopicDetail(topic: string): string {
 // 	return thematicAreas[topic as keyof typeof topicHoverColors] || 'from-gray-600 to-slate-600';

@@ -3,7 +3,7 @@
 </script>
 
 <section class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-green-600 text-white">
-	<img src="src/lib/assets/images/banner.jpg"/>
+	<img src="src/lib/assets/images/banner.jpg" alt="HKH Banner" />
 	
 	<div class="absolute inset-0 bg-black/20"></div>
 	<div class="relative px-8 py-16 md:py-12">
