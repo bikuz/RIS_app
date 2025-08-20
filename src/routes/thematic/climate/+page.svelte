@@ -317,7 +317,7 @@
 			default_option: 'overall',
 			charts: [
 				{
-					title: 'Overall Annual Mean Temperature Trend',
+					title: 'Annual Mean Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
 					chart_data: {
@@ -359,79 +359,91 @@
 							column: {
 								pointPadding: 0,
 								groupPadding: 0,
-								borderWidth: 0
+								borderWidth: 0,
+								grouping: false, // This is key for true overlapping
+								pointPlacement: 0
 							}
 						},
 						series: [
 							{
-								name: 'Annual trend Overall',
+								name: 'Overall trends',
 								data: [
 									3, 5, 18, 29, 58, 220, 379, 490, 708, 667, 658, 604, 574, 501, 444, 387, 310, 185,
 									140, 94, 94, 65, 42, 28, 25, 14, 10, 3, 5, 2, 2, 2
 								],
-								color: '#7cb5ec'
-							}
-						]
-					}
-				},
-				{
-					title: 'Significant Annual Mean Temperature Trend',
-					chart_type: 'column',
-					yAxisTitle: 'Count',
-					chart_data: {
-						categories: [
-							'0.12–0.16',
-							'0.16–0.19',
-							'0.19–0.23',
-							'0.23–0.26',
-							'0.26–0.30',
-							'0.30–0.34',
-							'0.34–0.37',
-							'0.37–0.41',
-							'0.41–0.44',
-							'0.44–0.48',
-							'0.48–0.52',
-							'0.52–0.55',
-							'0.55–0.59',
-							'0.59–0.62',
-							'0.62–0.66',
-							'0.66–0.69',
-							'0.69–0.73',
-							'0.73–0.77',
-							'0.77–0.80',
-							'0.80–0.84',
-							'0.84–0.87',
-							'0.87–0.91',
-							'0.91–0.95',
-							'0.95–0.98',
-							'0.98–1.02',
-							'1.02–1.05',
-							'1.05–1.09',
-							'1.09–1.12',
-							'1.12–1.16',
-							'1.16–1.20',
-							'1.20–1.23',
-							'1.23–1.27'
-						],
-						plotOptions: {
-							column: {
-								pointPadding: 0,
-								groupPadding: 0,
-								borderWidth: 0
-							}
-						},
-						series: [
+								color: 'rgba(173, 216, 230, 0.8)', // Light blue like in your reference
+								zIndex: 1
+							},
 							{
-								name: 'Significant trend',
+								name: 'Significant trends',
 								data: [
-									40, 156, 216, 285, 454, 457, 507, 477, 505, 460, 407, 369, 352, 265, 209, 138,
-									114, 72, 79, 57, 40, 37, 23, 15, 11, 9, 4, 3, 2, 3, 2, 1
+									0, 0, 0, 0, 0, 40, 156, 216, 285, 454, 457, 507, 477, 505, 460, 407, 369, 352,
+									265, 209, 138, 114, 72, 79, 57, 40, 37, 23, 15, 11, 9, 4
 								],
-								color: '#7cb5ec'
+								color: 'rgba(255, 99, 71, 0.8)', // Reddish color like in your reference
+								zIndex: 2
 							}
 						]
 					}
 				}
+				// {
+				// 	title: 'Significant Annual Mean Temperature Trend',
+				// 	chart_type: 'column',
+				// 	yAxisTitle: 'Count',
+				// 	chart_data: {
+				// 		categories: [
+				// 			'0.12–0.16',
+				// 			'0.16–0.19',
+				// 			'0.19–0.23',
+				// 			'0.23–0.26',
+				// 			'0.26–0.30',
+				// 			'0.30–0.34',
+				// 			'0.34–0.37',
+				// 			'0.37–0.41',
+				// 			'0.41–0.44',
+				// 			'0.44–0.48',
+				// 			'0.48–0.52',
+				// 			'0.52–0.55',
+				// 			'0.55–0.59',
+				// 			'0.59–0.62',
+				// 			'0.62–0.66',
+				// 			'0.66–0.69',
+				// 			'0.69–0.73',
+				// 			'0.73–0.77',
+				// 			'0.77–0.80',
+				// 			'0.80–0.84',
+				// 			'0.84–0.87',
+				// 			'0.87–0.91',
+				// 			'0.91–0.95',
+				// 			'0.95–0.98',
+				// 			'0.98–1.02',
+				// 			'1.02–1.05',
+				// 			'1.05–1.09',
+				// 			'1.09–1.12',
+				// 			'1.12–1.16',
+				// 			'1.16–1.20',
+				// 			'1.20–1.23',
+				// 			'1.23–1.27'
+				// 		],
+				// 		plotOptions: {
+				// 			column: {
+				// 				pointPadding: 0,
+				// 				groupPadding: 0,
+				// 				borderWidth: 0
+				// 			}
+				// 		},
+				// 		series: [
+				// 			{
+				// 				name: 'Significant trend',
+				// 				data: [
+				// 					40, 156, 216, 285, 454, 457, 507, 477, 505, 460, 407, 369, 352, 265, 209, 138,
+				// 					114, 72, 79, 57, 40, 37, 23, 15, 11, 9, 4, 3, 2, 3, 2, 1
+				// 				],
+				// 				color: '#7cb5ec'
+				// 			}
+				// 		]
+				// 	}
+				// }
 			],
 			map_layers: {
 				overall: [
