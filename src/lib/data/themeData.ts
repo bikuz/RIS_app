@@ -24,7 +24,7 @@ export const topicIcons = {
 export const topicColors = {
 	climate: 'from-blue-500 to-cyan-500',
 	demography: 'from-purple-500 to-pink-500',
-	ecosystem: 'from-[#b1d777] to-emerald-500',
+	ecosystem: 'from-emerald-500 to-[#7fac39]',
 	cryosphere: 'from-cyan-500 to-blue-500',
 	weather: 'from-yellow-500 to-orange-500',
 	physiography: 'from-stone-500 to-amber-500',
