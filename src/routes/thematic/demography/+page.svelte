@@ -343,46 +343,23 @@
 			id: 'population-2025',
 			charts: [
 				{
-					title: 'Population Distribution 2025',
+					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
 								name: 'Population (millions)',
-								data: [12.5, 29.8, 0.8, 3.5, 39.8, 12.4, 9.1, 2.3]
-							}
-						],
-						yaxis_text: 'Total Population'
-					}
-				},
-				{
-					title: 'Population Growth Rate',
-					chart_type: 'line',
-					chart_data: {
-						categories: ['2020', '2021', '2022', '2023', '2024', '2025'],
-						series: [
-							{
-								name: 'Growth Rate (%)',
-								data: [1.2, 1.1, 1.0, 0.9, 0.8, 0.7]
+								data: [207.357006, 221.147189, 233.295930, 246.467761]
 							}
 						]
 					}
 				}
 			],
 			map_data: {
-				name: 'Population 2025',
+				name: 'Population Trends across HKH',
 				layer_id: 0,
-				description: 'Population distribution across HKH region for 2025'
+				description: 'Population density distribution (people/sq km)'
 			},
 			control_type: 'none'
 		},
@@ -390,23 +367,14 @@
 			id: 'sex-ratio-2025',
 			charts: [
 				{
-					title: 'Sex Ratio Distribution 2025',
+					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
-								name: 'Males per 100 Females',
-								data: [105, 94, 113, 98, 106, 107, 102, 100]
+								name: 'Population (millions)',
+								data: [207.357006, 221.147189, 233.295930, 246.467761]
 							}
 						]
 					}
@@ -423,23 +391,14 @@
 			id: 'aged-75-proportion',
 			charts: [
 				{
-					title: 'Proportion of Age >=75 Years',
+					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
-								name: 'Percentage (%)',
-								data: [3.2, 2.8, 4.1, 3.5, 2.1, 2.9, 2.7, 3]
+								name: 'Population (millions)',
+								data: [207.357006, 221.147189, 233.295930, 246.467761]
 							}
 						]
 					}
@@ -456,23 +415,14 @@
 			id: 'child-woman-ratio-2025',
 			charts: [
 				{
-					title: 'Child Woman Ratio 2025',
+					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
-								name: 'Children per 1000 Women',
-								data: [385, 298, 421, 312, 512, 467, 314, 422]
+								name: 'Population (millions)',
+								data: [207.357006, 221.147189, 233.295930, 246.467761]
 							}
 						]
 					}
@@ -489,23 +439,14 @@
 			id: 'child-dependency-ratio-2025',
 			charts: [
 				{
-					title: 'Child Dependency Ratio 2025',
+					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
-								name: 'Dependency Ratio',
-								data: [42.5, 35.2, 38.9, 33.1, 58.7, 51.3, 23.2, 42.1]
+								name: 'Population (millions)',
+								data: [207.357006, 221.147189, 233.295930, 246.467761]
 							}
 						]
 					}
@@ -522,23 +463,14 @@
 			id: 'age-dependency-ratio-2025',
 			charts: [
 				{
-					title: 'Age Dependency Ratio 2025',
+					title: 'Population Distribution',
 					chart_type: 'column',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
+						categories: ['2015', '2020', '2025', '2030'],
 						series: [
 							{
-								name: 'Dependency Ratio',
-								data: [48.2, 41.5, 44.3, 38.9, 62.1, 56.7, 32.2, 49.2]
+								name: 'Population (millions)',
+								data: [207.357006, 221.147189, 233.295930, 246.467761]
 							}
 						]
 					}
@@ -550,44 +482,102 @@
 				description: 'Ratio of dependents (0-14 and 65+) to working age population (15-64)'
 			},
 			control_type: 'none'
+		},
+		{
+			id: 'total-dependency-ratio-2025',
+			charts: [
+				{
+					title: 'Population Distribution',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['2015', '2020', '2025', '2030'],
+						series: [
+							{
+								name: 'Population (millions)',
+								data: [207.357006, 221.147189, 233.295930, 246.467761]
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'Total Dependency Ratio 2025',
+				layer_id: 6,
+				description: 'Ratio of total dependent population'
+			},
+			control_type: 'none'
+		},
+		{
+			id: 'urban-center',
+			charts: [
+				{
+					title: 'Population Distribution',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['2015', '2020', '2025', '2030'],
+						series: [
+							{
+								name: 'Population (millions)',
+								data: [207.357006, 221.147189, 233.295930, 246.467761]
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'Urban Center Location',
+				layer_id: 8,
+				description: 'Location of Urban Center'
+			},
+			control_type: 'none'
 		}
 	];
 
-	// Updated questions - latter three layers
+	// Updated questions 
 	const questions = [
 		{
 			id: 'question-1',
-			question: 'What is the child-woman ratio distribution across the HKH region in 2025?',
-			dataset_id: 'child-woman-ratio-2025'
-		},
-		{
-			id: 'question-2',
-			question: 'Which areas have the highest child dependency ratio in 2025?',
-			dataset_id: 'child-dependency-ratio-2025'
-		},
-		{
-			id: 'question-3',
-			question: 'How does the age dependency ratio vary across different HKH countries?',
-			dataset_id: 'age-dependency-ratio-2025'
+			question: 'Show me the locations of urban center in HKH Region.',
+			dataset_id: 'urban-center'
 		}
 	];
 
-	// Updated information layers - first three layers
+	// Updated information layers 
 	const information_layers = [
 		{
 			id: 'info-layer-1',
-			title: 'Population 2025',
+			title: 'Population Density',
 			dataset_id: 'population-2025'
 		},
 		{
 			id: 'info-layer-2',
-			title: 'Sex Ratio 2025',
+			title: 'Sex Ratio',
 			dataset_id: 'sex-ratio-2025'
 		},
 		{
 			id: 'info-layer-3',
-			title: 'Proportion of Age >=75',
+			title: 'Proportion of Population Age >=75',
 			dataset_id: 'aged-75-proportion'
+		},
+		{
+			id: 'info-layer-4',
+			title: 'Child-Woman Ratio',
+			dataset_id: 'child-woman-ratio-2025'
+		},
+		{
+			id: 'info-layer-5',
+			title: 'Child-Dependency Ratio',
+			dataset_id: 'child-dependency-ratio-2025'
+		},
+		{
+			id: 'info-layer-6',
+			title: 'Age Dependency Ratio',
+			dataset_id: 'age-dependency-ratio-2025'
+		},
+		{
+			id: 'info-layer-7',
+			title: 'Total Dependency Ratio',
+			dataset_id: 'total-dependency-ratio-2025'
 		}
 	];
 
@@ -637,11 +627,11 @@
 		// 	name: 'Soil',
 		// 	url: BASELAYERS_URL
 		// },
-		{
-			id: 3,
-			name: 'River',
-			url: BASELAYERS_URL
-		}
+		// {
+		// 	id: 3,
+		// 	name: 'River',
+		// 	url: BASELAYERS_URL
+		// }
 	];
 
 	// Function to toggle base layers
@@ -1124,9 +1114,7 @@
 
 							<div class="mt-4 w-full text-center">
 								<p class="text-sm leading-relaxed text-slate-700">
-									<span class="font-semibold text-slate-800"
-										>Mountain communities</span
-									>
+									<span class="font-semibold text-slate-800">Mountain communities</span>
 								</p>
 							</div>
 						</div>
@@ -1347,7 +1335,7 @@
 							{:else}
 								<div class="flex h-80 items-center justify-center">
 									<div class="text-center text-slate-500">
-										<p class="text-sm">Select a question to view related charts</p>
+										<!-- <p class="text-sm">Select a question to view related charts</p> -->
 									</div>
 								</div>
 							{/if}

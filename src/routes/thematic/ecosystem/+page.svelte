@@ -921,6 +921,7 @@
 												title={chart.title}
 												subtitle="Hindu Kush Himalaya Region Ecosystem Data"
 												chart_type={chart.chart_type}
+												yAxisTitle="Land Cover (hectares)"
 											/>
 										</div>
 									{/each}
