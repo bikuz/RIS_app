@@ -310,15 +310,16 @@
 	const climateDataset = [
 		{
 			id: 'temp-trend-10y',
-			title: 'Annual Temperature Trend Analysis of 10 Years',
+			title: 'Overall Annual Temperature Trend Analysis of 10 Years',
 			description: 'Temperature trend analysis with overall vs significant trend options',
 			control_type: 'radio',
 			control_options: ['overall', 'significant'],
 			default_option: 'overall',
 			charts: [
 				{
-					title: 'Annual Mean Temperature Trend',
+					title: 'Overall Annual Mean Temperature Trend',
 					chart_type: 'column',
+					yAxisTitle: 'Count',
 					chart_data: {
 						categories: [
 							'-0.08–-0.03',
@@ -363,10 +364,68 @@
 						},
 						series: [
 							{
-								name: 'Frequency',
+								name: 'Annual trend Overall',
 								data: [
 									3, 5, 18, 29, 58, 220, 379, 490, 708, 667, 658, 604, 574, 501, 444, 387, 310, 185,
 									140, 94, 94, 65, 42, 28, 25, 14, 10, 3, 5, 2, 2, 2
+								],
+								color: '#7cb5ec'
+							}
+						]
+					}
+				},
+				{
+					title: 'Significant Annual Mean Temperature Trend',
+					chart_type: 'column',
+					yAxisTitle: 'Count',
+					chart_data: {
+						categories: [
+							'0.12–0.16',
+							'0.16–0.19',
+							'0.19–0.23',
+							'0.23–0.26',
+							'0.26–0.30',
+							'0.30–0.34',
+							'0.34–0.37',
+							'0.37–0.41',
+							'0.41–0.44',
+							'0.44–0.48',
+							'0.48–0.52',
+							'0.52–0.55',
+							'0.55–0.59',
+							'0.59–0.62',
+							'0.62–0.66',
+							'0.66–0.69',
+							'0.69–0.73',
+							'0.73–0.77',
+							'0.77–0.80',
+							'0.80–0.84',
+							'0.84–0.87',
+							'0.87–0.91',
+							'0.91–0.95',
+							'0.95–0.98',
+							'0.98–1.02',
+							'1.02–1.05',
+							'1.05–1.09',
+							'1.09–1.12',
+							'1.12–1.16',
+							'1.16–1.20',
+							'1.20–1.23',
+							'1.23–1.27'
+						],
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0
+							}
+						},
+						series: [
+							{
+								name: 'Significant trend',
+								data: [
+									40, 156, 216, 285, 454, 457, 507, 477, 505, 460, 407, 369, 352, 265, 209, 138,
+									114, 72, 79, 57, 40, 37, 23, 15, 11, 9, 4, 3, 2, 3, 2, 1
 								],
 								color: '#7cb5ec'
 							}
@@ -585,7 +644,7 @@
 						],
 						series: [
 							{
-								name: 'Annual Temperature (°C)',
+								name: 'count',
 								data: [
 									4.8877, 5.418, 5.1678, 5.281, 5.2809, 5.0343, 5.7049, 5.4111, 5.12, 5.6186,
 									5.8814, 5.2644, 4.9087, 5.378, 5.3068, 5.5846, 6.3035, 6.0406, 5.7105, 5.3807,
@@ -825,43 +884,175 @@
 			},
 			charts: [
 				{
-					title: 'Seasonal Temperature Trends',
-					chart_type: 'line',
+					title: 'Overall Winter Temperature Trend',
+					chart_type: 'column',
+					yAxisTitle: 'Count',
 					chart_data: {
-						categories: ['Spring', 'Summer', 'Autumn', 'Winter'],
+						categories: [
+							'-0.5–-0.42',
+							'-0.42–-0.33',
+							'-0.33–-0.24',
+							'-0.24–-0.16',
+							'-0.16–-0.07',
+							'-0.07–0.01',
+							'0.01–0.10',
+							'0.10–0.18',
+							'0.18–0.27',
+							'0.27–0.35',
+							'0.35–0.44',
+							'0.44–0.52',
+							'0.52–0.61',
+							'0.61–0.69',
+							'0.69–0.78',
+							'0.78–0.86',
+							'0.86–0.95',
+							'0.95–1.03',
+							'1.03–1.12',
+							'1.12–1.21',
+							'1.21–1.29',
+							'1.29–1.38',
+							'1.38–1.46',
+							'1.46–1.55',
+							'1.55–1.63',
+							'1.63–1.72',
+							'1.72–1.80',
+							'1.80–1.89',
+							'1.89–1.97',
+							'1.97–2.06',
+							'2.06–2.14',
+							'2.14–2.23'
+						],
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0
+							}
+						},
 						series: [
 							{
-								name: 'Overall Trend (°C/decade)',
-								data: [0.8, 1.2, 0.9, 1.1]
-							},
-							{
-								name: 'Significant Trend (°C/decade)',
-								data: [0.6, 0.9, 0.7, 0.8]
+								name: 'Overall Winter Temperature Trend',
+								data: [
+									7, 11, 23, 68, 122, 239, 420, 730, 861, 859, 844, 628, 435, 311, 251, 225, 172,
+									126, 117, 75, 55, 51, 36, 26, 22, 5, 20, 13, 8, 2, 2, 2
+								],
+								color: '#7cb5ec'
 							}
 						]
 					}
 				},
 				{
-					title: 'Regional Seasonal Warming',
+					title: 'Overall Summer Temperature Trend',
 					chart_type: 'column',
+					yAxisTitle: 'Count',
 					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet'],
+						categories: [
+							'-0.22–-0.16',
+							'-0.16–-0.11',
+							'-0.11–-0.05',
+							'-0.05–0.01',
+							'0.01–0.06',
+							'0.06–0.12',
+							'0.12–0.17',
+							'0.17–0.23',
+							'0.23–0.28',
+							'0.28–0.34',
+							'0.34–0.39',
+							'0.39–0.45',
+							'0.45–0.50',
+							'0.50–0.56',
+							'0.56–0.61',
+							'0.61–0.67',
+							'0.67–0.72',
+							'0.72–0.78',
+							'0.78–0.84',
+							'0.84–0.89',
+							'0.89–0.95',
+							'0.95–1.00',
+							'1.00–1.06',
+							'1.06–1.11',
+							'1.11–1.17',
+							'1.17–1.22',
+							'1.22–1.28',
+							'1.28–1.33',
+							'1.33–1.39',
+							'1.39–1.44',
+							'1.44–1.50',
+							'1.50–1.55'
+						],
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0
+							}
+						},
 						series: [
 							{
-								name: 'Spring (°C)',
-								data: [1.8, 2.1, 2.3, 2.5]
-							},
+								name: 'Overall Summer Temperature Trend',
+								data: [
+									1, 2, 15, 34, 59, 112, 298, 424, 704, 950, 1145, 1125, 881, 503, 255, 120, 58, 16,
+									13, 22, 6, 7, 3, 5, 1, 0, 0, 3, 1, 0, 1, 2
+								],
+								color: '#7cb5ec'
+							}
+						]
+					}
+				},
+				{
+					title: 'Overall Spring Temperature Trend',
+					chart_type: 'column',
+					yAxisTitle: 'Count',
+					chart_data: {
+						categories: [
+							'-0.42–-0.36',
+							'-0.36–-0.29',
+							'-0.29–-0.23',
+							'-0.23–-0.17',
+							'-0.17–-0.10',
+							'-0.10–-0.04',
+							'-0.04–0.02',
+							'0.02–0.09',
+							'0.09–0.15',
+							'0.15–0.21',
+							'0.21–0.28',
+							'0.28–0.34',
+							'0.34–0.40',
+							'0.40–0.47',
+							'0.47–0.53',
+							'0.53–0.59',
+							'0.59–0.65',
+							'0.65–0.72',
+							'0.72–0.78',
+							'0.78–0.84',
+							'0.84–0.91',
+							'0.91–0.97',
+							'0.97–1.03',
+							'1.03–1.10',
+							'1.10–1.16',
+							'1.16–1.22',
+							'1.22–1.29',
+							'1.29–1.35',
+							'1.35–1.41',
+							'1.41–1.48',
+							'1.48–1.54',
+							'1.54–1.60'
+						],
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0
+							}
+						},
+						series: [
 							{
-								name: 'Summer (°C)',
-								data: [1.2, 1.5, 1.8, 2.0]
-							},
-							{
-								name: 'Autumn (°C)',
-								data: [1.6, 1.9, 2.1, 2.3]
-							},
-							{
-								name: 'Winter (°C)',
-								data: [2.2, 2.4, 2.6, 2.8]
+								name: 'Overall Spring Temperature Trend',
+								data: [
+									6, 7, 14, 24, 61, 83, 183, 372, 582, 821, 809, 772, 688, 605, 443, 298, 283, 198,
+									151, 109, 71, 45, 43, 37, 18, 16, 6, 5, 6, 5, 4, 1
+								],
+								color: '#7cb5ec'
 							}
 						]
 					}
@@ -2228,6 +2419,7 @@
 												title={chart.title}
 												subtitle="Hindu Kush Himalaya Region Climate Data"
 												chart_type={chart.chart_type}
+												yAxisTitle={chart.yAxisTitle}
 												plotOptions={chart.chart_data.plotOptions}
 											/>
 										</div>

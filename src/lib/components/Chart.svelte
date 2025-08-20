@@ -6,7 +6,8 @@
 		title = 'Chart',
 		subtitle = '',
 		chart_type = 'line',
-		plotOptions = {}
+		plotOptions = {},
+		yAxisTitle = 'Value'
 	} = $props<{
 		chartData: {
 			categories: string[];
@@ -19,6 +20,7 @@
 		subtitle?: string;
 		chart_type?: string;
 		plotOptions?: any;
+		yAxisTitle?: string;
 	}>();
 
 	let chartContainer: HTMLDivElement;
@@ -95,7 +97,7 @@
 				},
 				yAxis: {
 					title: {
-						text: 'Rainfall (mm)',
+						text: yAxisTitle,
 						style: {
 							color: '#64748b',
 							fontSize: '12px',
@@ -112,19 +114,19 @@
 						}
 					}
 				},
-				tooltip: {
-					backgroundColor: 'rgba(255, 255, 255, 0.95)',
-					borderColor: '#e2e8f0',
-					borderRadius: 8,
-					shadow: true,
-					style: {
-						fontSize: '12px'
-					},
-					formatter: function () {
-						return `<b>${this.series.name}</b><br/>
-                                ${this.x}: <b>${this.y} mm</b>`;
-					}
-				},
+				// tooltip: {
+				// 	backgroundColor: 'rgba(255, 255, 255, 0.95)',
+				// 	borderColor: '#e2e8f0',
+				// 	borderRadius: 8,
+				// 	shadow: true,
+				// 	style: {
+				// 		fontSize: '12px'
+				// 	},
+				// 	formatter: function () {
+				// 		return `<b>${this.series.name}</b><br/>
+				//                 ${this.x}: <b>${this.y} mm</b>`;
+				// 	}
+				// },
 				plotOptions: {
 					...plotOptions,
 					line: {
