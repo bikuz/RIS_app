@@ -341,44 +341,44 @@
 	const demographicDataset = [
 		{
 			id: 'population-2025',
-			charts: [
-				{
-					title: 'Population Distribution 2025',
-					chart_type: 'column',
-					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
-						series: [
-							{
-								name: 'Population (millions)',
-								data: [12.5, 29.8, 0.8, 3.5, 39.8, 12.4, 9.1, 2.3]
-							}
-						],
-						yaxis_text: 'Total Population'
-					}
-				},
-				{
-					title: 'Population Growth Rate',
-					chart_type: 'line',
-					chart_data: {
-						categories: ['2020', '2021', '2022', '2023', '2024', '2025'],
-						series: [
-							{
-								name: 'Growth Rate (%)',
-								data: [1.2, 1.1, 1.0, 0.9, 0.8, 0.7]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Population Distribution 2025',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: [
+			// 				'Afghanistan',
+			// 				'Bangladesh',
+			// 				'Bhutan',
+			// 				'China',
+			// 				'India',
+			// 				'Nepal',
+			// 				'Pakistan',
+			// 				'Myanmar'
+			// 			],
+			// 			series: [
+			// 				{
+			// 					name: 'Population (millions)',
+			// 					data: [12.5, 29.8, 0.8, 3.5, 39.8, 12.4, 9.1, 2.3]
+			// 				}
+			// 			],
+			// 			yaxis_text: 'Total Population'
+			// 		}
+			// 	},
+			// 	{
+			// 		title: 'Population Growth Rate',
+			// 		chart_type: 'line',
+			// 		chart_data: {
+			// 			categories: ['2020', '2021', '2022', '2023', '2024', '2025'],
+			// 			series: [
+			// 				{
+			// 					name: 'Growth Rate (%)',
+			// 					data: [1.2, 1.1, 1.0, 0.9, 0.8, 0.7]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Population 2025',
 				layer_id: 0,
@@ -388,30 +388,30 @@
 		},
 		{
 			id: 'sex-ratio-2025',
-			charts: [
-				{
-					title: 'Sex Ratio Distribution 2025',
-					chart_type: 'column',
-					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
-						series: [
-							{
-								name: 'Males per 100 Females',
-								data: [105, 94, 113, 98, 106, 107, 102, 100]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Sex Ratio Distribution 2025',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: [
+			// 				'Afghanistan',
+			// 				'Bangladesh',
+			// 				'Bhutan',
+			// 				'China',
+			// 				'India',
+			// 				'Nepal',
+			// 				'Pakistan',
+			// 				'Myanmar'
+			// 			],
+			// 			series: [
+			// 				{
+			// 					name: 'Males per 100 Females',
+			// 					data: [105, 94, 113, 98, 106, 107, 102, 100]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Sex Ratio 2025',
 				layer_id: 1,
@@ -421,30 +421,30 @@
 		},
 		{
 			id: 'aged-75-proportion',
-			charts: [
-				{
-					title: 'Proportion of Age >=75 Years',
-					chart_type: 'column',
-					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
-						series: [
-							{
-								name: 'Percentage (%)',
-								data: [3.2, 2.8, 4.1, 3.5, 2.1, 2.9, 2.7, 3]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Proportion of Age >=75 Years',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: [
+			// 				'Afghanistan',
+			// 				'Bangladesh',
+			// 				'Bhutan',
+			// 				'China',
+			// 				'India',
+			// 				'Nepal',
+			// 				'Pakistan',
+			// 				'Myanmar'
+			// 			],
+			// 			series: [
+			// 				{
+			// 					name: 'Percentage (%)',
+			// 					data: [3.2, 2.8, 4.1, 3.5, 2.1, 2.9, 2.7, 3]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Proportion of Age >=75',
 				layer_id: 2,
@@ -454,30 +454,30 @@
 		},
 		{
 			id: 'child-woman-ratio-2025',
-			charts: [
-				{
-					title: 'Child Woman Ratio 2025',
-					chart_type: 'column',
-					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
-						series: [
-							{
-								name: 'Children per 1000 Women',
-								data: [385, 298, 421, 312, 512, 467, 314, 422]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Child Woman Ratio 2025',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: [
+			// 				'Afghanistan',
+			// 				'Bangladesh',
+			// 				'Bhutan',
+			// 				'China',
+			// 				'India',
+			// 				'Nepal',
+			// 				'Pakistan',
+			// 				'Myanmar'
+			// 			],
+			// 			series: [
+			// 				{
+			// 					name: 'Children per 1000 Women',
+			// 					data: [385, 298, 421, 312, 512, 467, 314, 422]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Child Woman Ratio 2025',
 				layer_id: 3,
@@ -487,30 +487,30 @@
 		},
 		{
 			id: 'child-dependency-ratio-2025',
-			charts: [
-				{
-					title: 'Child Dependency Ratio 2025',
-					chart_type: 'column',
-					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
-						series: [
-							{
-								name: 'Dependency Ratio',
-								data: [42.5, 35.2, 38.9, 33.1, 58.7, 51.3, 23.2, 42.1]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Child Dependency Ratio 2025',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: [
+			// 				'Afghanistan',
+			// 				'Bangladesh',
+			// 				'Bhutan',
+			// 				'China',
+			// 				'India',
+			// 				'Nepal',
+			// 				'Pakistan',
+			// 				'Myanmar'
+			// 			],
+			// 			series: [
+			// 				{
+			// 					name: 'Dependency Ratio',
+			// 					data: [42.5, 35.2, 38.9, 33.1, 58.7, 51.3, 23.2, 42.1]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Child Dependency Ratio 2025',
 				layer_id: 4,
@@ -520,30 +520,30 @@
 		},
 		{
 			id: 'age-dependency-ratio-2025',
-			charts: [
-				{
-					title: 'Age Dependency Ratio 2025',
-					chart_type: 'column',
-					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
-							'India',
-							'Nepal',
-							'Pakistan',
-							'Myanmar'
-						],
-						series: [
-							{
-								name: 'Dependency Ratio',
-								data: [48.2, 41.5, 44.3, 38.9, 62.1, 56.7, 32.2, 49.2]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Age Dependency Ratio 2025',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: [
+			// 				'Afghanistan',
+			// 				'Bangladesh',
+			// 				'Bhutan',
+			// 				'China',
+			// 				'India',
+			// 				'Nepal',
+			// 				'Pakistan',
+			// 				'Myanmar'
+			// 			],
+			// 			series: [
+			// 				{
+			// 					name: 'Dependency Ratio',
+			// 					data: [48.2, 41.5, 44.3, 38.9, 62.1, 56.7, 32.2, 49.2]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Age Dependency Ratio 2025',
 				layer_id: 5,
@@ -1347,7 +1347,7 @@
 							{:else}
 								<div class="flex h-80 items-center justify-center">
 									<div class="text-center text-slate-500">
-										<p class="text-sm">Select a question to view related charts</p>
+										<!-- <p class="text-sm">Select a question to view related charts</p> -->
 									</div>
 								</div>
 							{/if}
