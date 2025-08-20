@@ -8,7 +8,8 @@
 		chart_type = 'line',
 		plotOptions = {},
 		yAxisTitle = 'Value',
-		plotLines = []
+		plotLines = [],
+		xAxisConfig = null
 	} = $props<{
 		chartData: {
 			categories: (string | number)[];
@@ -38,6 +39,27 @@
 			value: number;
 			zIndex?: number;
 		}>;
+		xAxisConfig?: {
+			type?: 'linear' | 'category';
+			min?: number;
+			max?: number;
+			title?: {
+				text: string;
+			};
+			labels?: {
+				formatter?: (this: { value: number }) => string;
+				style?: any;
+			};
+			tickInterval?: number;
+			gridLineWidth?: number;
+			plotLines?: Array<{
+				color: string;
+				width: number;
+				value: number;
+				zIndex?: number;
+				dashStyle?: string;
+			}>;
+		};
 	}>();
 
 	let chartContainer: HTMLDivElement;
@@ -49,7 +71,12 @@
 			// Dynamic import of Highcharts
 			const HighchartsModule = await import('highcharts');
 			Highcharts = HighchartsModule.default;
-			console.log('Highcharts loaded successfully');
+
+			// Load and initialize the exporting module
+			// const ExportingModule = await import('highcharts/modules/exporting');
+			// ExportingModule(Highcharts);
+
+			console.log('Highcharts and exporting module loaded successfully');
 			createChart();
 		} catch (error) {
 			console.error('Failed to load Highcharts:', error);
@@ -99,19 +126,40 @@
 						color: '#64748b'
 					}
 				},
-				xAxis: {
-					categories: chartData.categories,
-					gridLineWidth: 1,
-					gridLineColor: '#e2e8f0',
-					lineColor: '#cbd5e1',
-					tickColor: '#cbd5e1',
-					labels: {
-						style: {
-							color: '#64748b',
-							fontSize: '12px'
+				xAxis: xAxisConfig
+					? {
+							type: xAxisConfig.type || 'linear',
+							min: xAxisConfig.min,
+							max: xAxisConfig.max,
+							title: xAxisConfig.title,
+							labels: {
+								formatter: xAxisConfig.labels?.formatter,
+								style: {
+									color: '#64748b',
+									fontSize: '12px',
+									...xAxisConfig.labels?.style
+								}
+							},
+							tickInterval: xAxisConfig.tickInterval,
+							gridLineWidth: xAxisConfig.gridLineWidth ?? 1,
+							gridLineColor: '#e2e8f0',
+							lineColor: '#cbd5e1',
+							tickColor: '#cbd5e1',
+							plotLines: xAxisConfig.plotLines || []
 						}
-					}
-				},
+					: {
+							categories: chartData.categories,
+							gridLineWidth: 1,
+							gridLineColor: '#e2e8f0',
+							lineColor: '#cbd5e1',
+							tickColor: '#cbd5e1',
+							labels: {
+								style: {
+									color: '#64748b',
+									fontSize: '12px'
+								}
+							}
+						},
 				yAxis: {
 					title: {
 						text: yAxisTitle,
@@ -171,6 +219,9 @@
 						radius: 4
 					}
 				})),
+				exporting: {
+					enabled: true
+				},
 				legend: {
 					align: 'center',
 					verticalAlign: 'bottom',
