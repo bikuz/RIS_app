@@ -121,6 +121,46 @@
 					}
 				}
 			]
+		},
+		{
+			id: 'browning-greening',
+			title: 'Browning Greening',
+			description: 'Browning Greening in the HKH region',
+			control_type: 'none',
+			map_layers: {
+				// For 'none' control type, you can use a simple structure
+				// or just provide the layers directly
+				default: [
+					{
+						id: 'browning-greening-layer',
+						name: 'Browning Greening',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_NDVI/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
+		},
+		{
+			id: 'ndvi-trend',
+			title: 'NDVI Trend (2000-2023)',
+			description: 'NDVI Trend in the HKH region',
+			control_type: 'none',
+			map_layers: {
+				// For 'none' control type, you can use a simple structure
+				// or just provide the layers directly
+				default: [
+					{
+						id: 'ndvi-trend-layer',
+						name: 'NDVI Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_NDVI/MapServer',
+						layerIndex: 1,
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
 		}
 	];
 
@@ -147,17 +187,17 @@
 			id: 'map-indicator-1',
 			title: 'Land Cover Distribution 2022',
 			dataset_id: 'land-cover-2022'
+		},
+		{
+			id: 'map-indicator-3',
+			title: 'NDVI Trend (2000-2023)',
+			dataset_id: 'ndvi-trend'
+		},
+		{
+			id: 'map-indicator-2',
+			title: 'Vegetation Health',
+			dataset_id: 'browning-greening'
 		}
-		// {
-		// 	id: 'map-indicator-2',
-		// 	title: 'Biodiversity Hotspots',
-		// 	dataset_id: 'biodiversity-hotspots'
-		// },
-		// {
-		// 	id: 'map-indicator-3',
-		// 	title: 'Protected Areas',
-		// 	dataset_id: 'forest-cover'
-		// }
 	];
 
 	// Track selected question - default to first question
@@ -290,8 +330,12 @@
 				}),
 				layers: [
 					new TileLayer({
+						// source: new XYZ({
+						// 	url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+						// })
 						source: new XYZ({
-							url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+							url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+							// attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
 						})
 					})
 				],
@@ -712,18 +756,60 @@
 					? 'space-y-6'
 					: 'space-y-4'} transition-all duration-300"
 			>
-				<!-- <p
+				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-700 transition-all duration-300"
 				>
-					The Hindu Kush Himalaya (HKH) region is recognized as one of the world's most biodiverse
-					mountain systems, harboring an extraordinary array of ecosystems from tropical forests to
-					alpine meadows. This vast region spans across eight countries and encompasses 35
-					biodiversity hotspots, making it a critical repository of global biological heritage. The
-					HKH supports over 25,000 plant species, including numerous endemic varieties, and provides
-					habitat for iconic wildlife such as snow leopards, Bengal tigers, one-horned rhinoceros,
-					and countless bird species.
+					The Hindu Kush Himalaya (HKH), often called the "Third Pole" for its vast reserves of snow
+					and ice, is home to one of the most diverse and unique collections of ecosystems on Earth.
+					It covers an area of about 4.3 million square kilometers. Within this immense expanse, the
+					region contains an extraordinary range of altitudes, from lowland plains and subtropical
+					valleys to towering peaks above 8,000 meters. This variation in elevation, combined with
+					diverse climatic zones, geology, and hydrology, gives rise to a mosaic of ecosystems that
+					support an exceptional level of biodiversity and sustain the livelihoods of nearly two
+					billion people downstream.
+				</p>
+				<!-- Second Image - Ecosystem 2 -->
+				{#if layoutState === 'left-full'}
+					<div class="flex justify-center">
+						<div
+							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+						>
+							<img src={ecosystem2} alt="Biodiversity impacts" class="h-80 object-contain" />
+							<div class="p-4">
+								<!-- <p class="text-center text-sm leading-relaxed text-slate-700">
+												<span>
+													<span class="font-semibold text-slate-800">Biodiversity impacts</span> of climate
+													change in the HKH region
+												</span>
+											</p> -->
+							</div>
+						</div>
+					</div>
+				{:else}
+					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+						<img src={ecosystem2} alt="Biodiversity impacts" class="h-55 w-full object-contain" />
+						<div class="p-2">
+							<!-- <p class="text-center text-xs text-slate-600">
+											<span>
+												<span class="font-semibold">Biodiversity impacts</span> of climate change in the HKH
+												region
+											</span>
+										</p> -->
+						</div>
+					</div>
+				{/if}
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					The ecosystems of the HKH are strongly shaped by altitude and climate. At the lower
+					elevations, subtropical and tropical ecosystems dominate, featuring dense forests,
+					wetlands, and fertile alluvial plains. These ecosystems are rich in species diversity and
+					provide critical services such as fertile soils for agriculture, water filtration, and
+					carbon sequestration.
 				</p>
 
 				<p
@@ -731,11 +817,12 @@
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					However, these precious ecosystems face unprecedented threats from climate change, habitat
-					fragmentation, and human encroachment. Rising temperatures are pushing species to higher
-					altitudes, disrupting established ecological relationships and threatening the survival of
-					cold-adapted species. Deforestation and land-use changes have fragmented critical wildlife
-					corridors, isolating populations and reducing genetic diversity.
+					Ascending the slopes, temperate ecosystems appear, often dominated by mixed coniferous and
+					broadleaf forests. These forests harbor globally significant biodiversity, including
+					charismatic species such as the red panda, Himalayan monal, and clouded leopard. At even
+					higher altitudes, alpine meadows and rangelands replace forests. These ecosystems, though
+					fragile, are crucial for pastoral communities and serve as habitats for rare species like
+					the snow leopard, Himalayan tahr, and Tibetan antelope.
 				</p>
 
 				<p
@@ -743,11 +830,11 @@
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					The region's forests, which act as crucial carbon sinks and regulate water cycles, are
-					under severe pressure from agricultural expansion, infrastructure development, and
-					unsustainable harvesting practices. Wetlands and grasslands, equally important for
-					biodiversity and ecosystem services, are being converted for agriculture and urban
-					development at alarming rates.
+					At the highest elevations, beyond the tree line, lie the cryospheric ecosystems: glaciers,
+					snowfields, permafrost, and ice-fed rivers. These provide the foundational hydrological
+					services that feed the great river systems of Asia—the Ganges, Indus, Brahmaputra,
+					Yangtze, Mekong, and many more. Thus, the HKH's ecosystems are vertically layered,
+					interconnected, and critical to the environmental balance of Asia.
 				</p>
 
 				<p
@@ -755,14 +842,38 @@
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					Conservation efforts in the HKH require urgent, coordinated action across borders.
-					Establishing and maintaining protected areas, creating wildlife corridors, and
-					implementing sustainable land management practices are essential. Community-based
-					conservation approaches that engage local populations as stewards of biodiversity have
-					shown promising results. Additionally, scientific research and monitoring programs are
-					crucial for understanding ecosystem dynamics and developing effective conservation
-					strategies that can adapt to changing environmental conditions.
-				</p> -->
+					The HKH is one of the world's biodiversity hotspots, with an estimated 35,000 species of
+					plants, including around 10,000 endemic species. The forests provide habitat for 300
+					species of mammals and more than 1,200 bird species, many of which are found nowhere else.
+					Endangered species such as the snow leopard, red panda, and Himalayan musk deer are
+					keystone species that reflect the health of their ecosystems. Rivers and wetlands of the
+					HKH are equally important, supporting fish populations, migratory birds, and human
+					communities dependent on freshwater resources.
+				</p>
+
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					The region's cultural diversity is intertwined with ecological diversity. Local
+					communities have coexisted with and shaped these ecosystems for centuries, developing
+					intricate knowledge systems, sustainable agricultural practices, and spiritual traditions
+					tied to mountains, rivers, and forests. Sacred landscapes, monasteries, and
+					community-managed forests highlight how ecosystems are both ecological and cultural
+					entities.
+				</p>
+
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Downstream, billions of people rely on the rivers and watersheds sustained by HKH
+					ecosystems for drinking water, irrigation, energy, and fisheries. For mountain
+					communities, rangelands and forests remain the backbone of livelihoods, while
+					ecosystem-based tourism and traditional crafts provide alternative income sources.
+				</p>
 
 				<!-- First Image - Ecosystem 1 -->
 				{#if layoutState === 'left-full'}
@@ -795,37 +906,30 @@
 						</div>
 					</div>
 				{/if}
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Despite their significance, HKH ecosystems are under severe threat. Climate change is
+					accelerating glacial melt, altering river flows, and pushing species to higher altitudes
+					where suitable habitats are limited. Rising temperatures threaten alpine ecosystems and
+					lead to the upward migration of treelines. Increasing frequency of extreme weather events,
+					such as floods, landslides, and droughts, further destabilizes fragile mountain systems.
+				</p>
 
-				<!-- Second Image - Ecosystem 2 -->
-				{#if layoutState === 'left-full'}
-					<div class="flex justify-center">
-						<div
-							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-						>
-							<img src={ecosystem2} alt="Biodiversity impacts" class="h-80 object-contain" />
-							<div class="p-4">
-								<!-- <p class="text-center text-sm leading-relaxed text-slate-700">
-									<span>
-										<span class="font-semibold text-slate-800">Biodiversity impacts</span> of climate
-										change in the HKH region
-									</span>
-								</p> -->
-							</div>
-						</div>
-					</div>
-				{:else}
-					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-						<img src={ecosystem2} alt="Biodiversity impacts" class="h-55 w-full object-contain" />
-						<div class="p-2">
-							<!-- <p class="text-center text-xs text-slate-600">
-								<span>
-									<span class="font-semibold">Biodiversity impacts</span> of climate change in the HKH
-									region
-								</span>
-							</p> -->
-						</div>
-					</div>
-				{/if}
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Human pressures add to these stresses. Deforestation, land-use change, overgrazing,
+					infrastructure development, and mining fragment habitats and reduce ecological resilience.
+					Rapid urbanization and population growth in foothill regions increase demand for natural
+					resources, often leading to unsustainable exploitation. Pollution, particularly plastic
+					waste and untreated sewage, contaminates rivers and wetlands, reducing water quality and
+					threatening aquatic ecosystems.
+				</p>
 			</div>
 		</div>
 	</div>

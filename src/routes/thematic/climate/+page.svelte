@@ -200,14 +200,14 @@
 				layers: [
 					new TileLayer({
 						// source: new OSM()
-						source: new XYZ({
-							url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-						})
-
 						// source: new XYZ({
-						// 	url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-						// 	// attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
+						// 	url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
 						// })
+
+						source: new XYZ({
+							url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+							// attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
+						})
 					})
 				],
 				view: new View({
@@ -317,50 +317,93 @@
 			default_option: 'overall',
 			charts: [
 				{
-					title: 'Annual Mean Temperature Trend',
+					title: 'Annual Mean Temperature Trends (°C/decade)',
 					chart_type: 'column',
-					yAxisTitle: 'Count',
+					yAxisTitle: 'count',
+					// xAxisConfig: {
+					// 	type: 'linear',
+					// 	min: -0.06,
+					// 	max: 1.26,
+					// 	title: {
+					// 		text: 'Temperature Change (°C/decade)'
+					// 	},
+					// 	labels: {
+					// 		formatter: function (this: { value: number }) {
+					// 			// Format the temperature values
+					// 			return this.value.toFixed(2);
+					// 		}
+					// 	},
+					// 	tickInterval: 0.1,
+					// 	gridLineWidth: 1,
+					// 	plotLines: [
+					// 		{
+					// 			color: '#666',
+					// 			width: 1,
+					// 			value: 0, // baseline at 0°C
+					// 			zIndex: 4
+					// 		}
+					// 	]
+					// },
 					chart_data: {
 						categories: [
-							'-0.08–-0.03',
-							'-0.03–0.01',
-							'0.01–0.05',
-							'0.05–0.09',
-							'0.09–0.13',
-							'0.13–0.18',
-							'0.18–0.22',
-							'0.22–0.26',
-							'0.26–0.30',
-							'0.30–0.34',
-							'0.34–0.39',
-							'0.39–0.43',
-							'0.43–0.47',
-							'0.47–0.51',
-							'0.51–0.55',
-							'0.55–0.60',
-							'0.60–0.64',
-							'0.64–0.68',
-							'0.68–0.72',
-							'0.72–0.76',
-							'0.76–0.81',
-							'0.81–0.85',
-							'0.85–0.89',
-							'0.89–0.93',
-							'0.93–0.97',
-							'0.97–1.02',
-							'1.02–1.06',
-							'1.06–1.10',
-							'1.10–1.14',
-							'1.14–1.18',
-							'1.18–1.23',
-							'1.23–1.27'
+							'-0.08 to -0.05',
+							'-0.05 to -0.02',
+							'-0.02 to 0.01',
+							'0.01 to 0.03',
+							'0.03 to 0.06',
+							'0.06 to 0.09',
+							'0.09 to 0.11',
+							'0.11 to 0.14',
+							'0.14 to 0.17',
+							'0.17 to 0.19',
+							'0.19 to 0.22',
+							'0.22 to 0.25',
+							'0.25 to 0.27',
+							'0.27 to 0.30',
+							'0.30 to 0.33',
+							'0.33 to 0.35',
+							'0.35 to 0.38',
+							'0.38 to 0.41',
+							'0.41 to 0.43',
+							'0.43 to 0.46',
+							'0.46 to 0.49',
+							'0.49 to 0.52',
+							'0.52 to 0.54',
+							'0.54 to 0.57',
+							'0.57 to 0.60',
+							'0.60 to 0.62',
+							'0.62 to 0.65',
+							'0.65 to 0.68',
+							'0.68 to 0.70',
+							'0.70 to 0.73',
+							'0.73 to 0.76',
+							'0.76 to 0.78',
+							'0.78 to 0.81',
+							'0.81 to 0.84',
+							'0.84 to 0.86',
+							'0.86 to 0.89',
+							'0.89 to 0.92',
+							'0.92 to 0.95',
+							'0.95 to 0.97',
+							'0.97 to 1.00',
+							'1.00 to 1.03',
+							'1.03 to 1.05',
+							'1.05 to 1.08',
+							'1.08 to 1.11',
+							'1.11 to 1.13',
+							'1.13 to 1.16',
+							'1.16 to 1.19',
+							'1.19 to 1.21',
+							'1.21 to 1.24',
+							'1.24 to 1.27'
 						],
+
 						plotOptions: {
 							column: {
 								pointPadding: 0,
 								groupPadding: 0,
 								borderWidth: 0,
-								grouping: false, // This is key for true overlapping
+								grouping: false,
 								pointPlacement: 0
 							}
 						},
@@ -368,8 +411,9 @@
 							{
 								name: 'Overall trends',
 								data: [
-									3, 5, 18, 29, 58, 220, 379, 490, 708, 667, 658, 604, 574, 501, 444, 387, 310, 185,
-									140, 94, 94, 65, 42, 28, 25, 14, 10, 3, 5, 2, 2, 2
+									1, 3, 4, 8, 13, 25, 15, 59, 170, 158, 272, 342, 288, 523, 475, 322, 464, 426, 296,
+									403, 389, 346, 216, 301, 255, 155, 197, 114, 82, 86, 61, 50, 55, 46, 22, 34, 25,
+									19, 8, 13, 6, 4, 3, 3, 1, 2, 2, 1, 2, 1
 								],
 								color: 'rgba(173, 216, 230, 0.8)', // Light blue like in your reference
 								zIndex: 1
@@ -377,8 +421,9 @@
 							{
 								name: 'Significant trends',
 								data: [
-									0, 0, 0, 0, 0, 40, 156, 216, 285, 454, 457, 507, 477, 505, 460, 407, 369, 352,
-									265, 209, 138, 114, 72, 79, 57, 40, 37, 23, 15, 11, 9, 4
+									0, 0, 0, 0, 0, 0, 0, 8, 73, 102, 174, 199, 201, 392, 384, 273, 421, 399, 284, 389,
+									378, 341, 211, 299, 251, 155, 195, 114, 82, 86, 61, 50, 55, 46, 22, 34, 25, 19, 8,
+									13, 6, 4, 3, 3, 1, 2, 2, 1, 2, 1
 								],
 								color: 'rgba(255, 99, 71, 0.8)', // Reddish color like in your reference
 								zIndex: 2
@@ -1011,44 +1056,88 @@
 			},
 			charts: [
 				{
-					title: 'Overall Winter Temperature Trend',
+					title: 'Winter Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
+					// xAxisConfig: {
+					// 	type: 'linear',
+					// 	min: -0.5,
+					// 	max: 2.23,
+					// 	title: {
+					// 		text: 'Temperature Change (°C/decade)'
+					// 	},
+					// 	labels: {
+					// 		formatter: function () {
+					// 			// Format the temperature values
+					// 			return this.value.toFixed(2);
+					// 		}
+					// 	},
+					// 	tickInterval: 0.5,
+					// 	gridLineWidth: 1,
+					// 	plotLines: [
+					// 		{
+					// 			color: '#666',
+					// 			width: 1,
+					// 			value: 0, // baseline at 0°C
+					// 			zIndex: 4
+					// 		}
+					// 	]
+					// },
 					chart_data: {
+						// Remove categories since we're using numeric x-axis
 						categories: [
-							'-0.5–-0.42',
-							'-0.42–-0.33',
-							'-0.33–-0.24',
-							'-0.24–-0.16',
-							'-0.16–-0.07',
-							'-0.07–0.01',
-							'0.01–0.10',
-							'0.10–0.18',
-							'0.18–0.27',
-							'0.27–0.35',
-							'0.35–0.44',
-							'0.44–0.52',
-							'0.52–0.61',
-							'0.61–0.69',
-							'0.69–0.78',
-							'0.78–0.86',
-							'0.86–0.95',
-							'0.95–1.03',
-							'1.03–1.12',
-							'1.12–1.21',
-							'1.21–1.29',
-							'1.29–1.38',
-							'1.38–1.46',
-							'1.46–1.55',
-							'1.55–1.63',
-							'1.63–1.72',
-							'1.72–1.80',
-							'1.80–1.89',
-							'1.89–1.97',
-							'1.97–2.06',
-							'2.06–2.14',
-							'2.14–2.23'
+							'-0.50 to -0.45',
+							'-0.45 to -0.39',
+							'-0.39 to -0.34',
+							'-0.34 to -0.28',
+							'-0.28 to -0.23',
+							'-0.23 to -0.17',
+							'-0.17 to -0.12',
+							'-0.12 to -0.06',
+							'-0.06 to -0.01',
+							'-0.01 to 0.05',
+							'0.05 to 0.10',
+							'0.10 to 0.15',
+							'0.15 to 0.21',
+							'0.21 to 0.26',
+							'0.26 to 0.32',
+							'0.32 to 0.37',
+							'0.37 to 0.43',
+							'0.43 to 0.48',
+							'0.48 to 0.54',
+							'0.54 to 0.59',
+							'0.59 to 0.65',
+							'0.65 to 0.70',
+							'0.70 to 0.76',
+							'0.76 to 0.81',
+							'0.81 to 0.86',
+							'0.86 to 0.92',
+							'0.92 to 0.97',
+							'0.97 to 1.03',
+							'1.03 to 1.08',
+							'1.08 to 1.14',
+							'1.14 to 1.19',
+							'1.19 to 1.25',
+							'1.25 to 1.30',
+							'1.30 to 1.36',
+							'1.36 to 1.41',
+							'1.41 to 1.46',
+							'1.46 to 1.52',
+							'1.52 to 1.57',
+							'1.57 to 1.63',
+							'1.63 to 1.68',
+							'1.68 to 1.74',
+							'1.74 to 1.79',
+							'1.79 to 1.85',
+							'1.85 to 1.90',
+							'1.90 to 1.96',
+							'1.96 to 2.01',
+							'2.01 to 2.07',
+							'2.07 to 2.12',
+							'2.12 to 2.17',
+							'2.17 to 2.23'
 						],
+
 						plotLines: [
 							{
 								color: '#666',
@@ -1061,137 +1150,961 @@
 							column: {
 								pointPadding: 0,
 								groupPadding: 0,
-								borderWidth: 0
+								borderWidth: 0,
+								grouping: false,
+								pointPlacement: 0
 							}
 						},
 						series: [
 							{
-								name: 'Overall Winter Temperature Trend',
+								name: 'Overall winter trends',
 								data: [
-									7, 11, 23, 68, 122, 239, 420, 730, 861, 859, 844, 628, 435, 311, 251, 225, 172,
-									126, 117, 75, 55, 51, 36, 26, 22, 5, 20, 13, 8, 2, 2, 2
+									5, 2, 8, 11, 21, 56, 49, 100, 152, 229, 278, 396, 607, 477, 639, 518, 556, 420,
+									399, 240, 237, 184, 171, 135, 130, 137, 79, 84, 79, 73, 41, 44, 29, 38, 16, 24,
+									23, 8, 17, 3, 10, 10, 12, 6, 5, 2, 1, 1, 1, 2
 								],
-								color: '#7cb5ec'
+								color: 'rgba(173, 216, 230, 0.8)', // Light blue
+								zIndex: 1
+							},
+							{
+								name: 'Significant trends',
+								data: [
+									0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 5, 27, 69, 81, 50, 32, 21, 33, 42, 50, 44,
+									48, 48, 40, 43, 43, 52, 27, 32, 20, 27, 11, 18, 13, 7, 10, 3, 5, 10, 10, 5, 3, 1,
+									1, 0, 1, 1
+								],
+								color: 'rgba(255, 99, 71, 0.85)', // Coral/reddish
+								zIndex: 2
 							}
 						]
 					}
 				},
+
+				// {
+				// 	title: 'Overall Winter Temperature Trend',
+				// 	chart_type: 'column',
+				// 	yAxisTitle: 'Count',
+				// 	xAxisConfig: {
+				// 		type: 'linear',
+				// 		min: -0.5,
+				// 		max: 2.23,
+				// 		title: {
+				// 			text: 'Temperature Change (°C/decade)'
+				// 		},
+				// 		labels: {
+				// 			formatter: function (this: { value: number }) {
+				// 				// Format the temperature values
+				// 				return this.value.toFixed(2);
+				// 			}
+				// 		},
+				// 		tickInterval: 0.5,
+				// 		gridLineWidth: 1,
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		]
+				// 	},
+				// 	chart_data: {
+				// 		// Remove categories since we're using numeric x-axis
+				// 		// categories: [...],
+
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		],
+				// 		plotOptions: {
+				// 			column: {
+				// 				pointPadding: 0,
+				// 				groupPadding: 0,
+				// 				borderWidth: 0
+				// 			}
+				// 		},
+				// 		series: [
+				// 			{
+				// 				name: 'Overall Winter Temperature Trend',
+				// 				data: [
+				// 					// Convert to [x, y] format where x is the temperature value
+				// 					[-0.46, 7],
+				// 					[-0.375, 11],
+				// 					[-0.285, 23],
+				// 					[-0.2, 68],
+				// 					[-0.115, 122],
+				// 					[-0.03, 239],
+				// 					[0.055, 420],
+				// 					[0.14, 730],
+				// 					[0.225, 861],
+				// 					[0.31, 859],
+				// 					[0.395, 844],
+				// 					[0.48, 628],
+				// 					[0.565, 435],
+				// 					[0.65, 311],
+				// 					[0.735, 251],
+				// 					[0.82, 225],
+				// 					[0.905, 172],
+				// 					[0.99, 126],
+				// 					[1.075, 117],
+				// 					[1.16, 75],
+				// 					[1.245, 55],
+				// 					[1.33, 51],
+				// 					[1.415, 36],
+				// 					[1.5, 26],
+				// 					[1.585, 22],
+				// 					[1.67, 5],
+				// 					[1.755, 20],
+				// 					[1.84, 13],
+				// 					[1.925, 8],
+				// 					[2.01, 2],
+				// 					[2.095, 2],
+				// 					[2.18, 2]
+				// 				],
+				// 				color: '#7cb5ec'
+				// 			}
+				// 		]
+				// 	}
+				// },
+				// {
+				// 	title: 'Significant Winter Temperature Trend',
+				// 	chart_type: 'column',
+				// 	yAxisTitle: 'Count',
+				// 	xAxisConfig: {
+				// 		type: 'linear',
+				// 		min: -0.5,
+				// 		max: 2.23,
+				// 		title: {
+				// 			text: 'Temperature Change (°C/decade)'
+				// 		},
+				// 		labels: {
+				// 			formatter: function () {
+				// 				// Format the temperature values
+				// 				return this.value.toFixed(2);
+				// 			}
+				// 		},
+				// 		tickInterval: 0.5,
+				// 		gridLineWidth: 1,
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		]
+				// 	},
+				// 	chart_data: {
+				// 		// Remove categories since we're using numeric x-axis
+				// 		// categories: [...],
+
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		],
+				// 		plotOptions: {
+				// 			column: {
+				// 				pointPadding: 0,
+				// 				groupPadding: 0,
+				// 				borderWidth: 0
+				// 			}
+				// 		},
+				// 		series: [
+				// 			{
+				// 				name: 'Significant Winter Temperature Trend',
+				// 				data: [
+				// 					// Convert to [x, y] format
+				// 					[-0.46, 1],
+				// 					[-0.375, 0],
+				// 					[-0.285, 0],
+				// 					[-0.2, 0],
+				// 					[-0.115, 0],
+				// 					[-0.03, 0],
+				// 					[0.055, 20],
+				// 					[0.14, 110],
+				// 					[0.225, 89],
+				// 					[0.31, 45],
+				// 					[0.395, 34],
+				// 					[0.48, 64],
+				// 					[0.565, 64],
+				// 					[0.65, 76],
+				// 					[0.735, 64],
+				// 					[0.82, 59],
+				// 					[0.905, 59],
+				// 					[0.99, 62],
+				// 					[1.075, 42],
+				// 					[1.16, 33],
+				// 					[1.245, 24],
+				// 					[1.33, 26],
+				// 					[1.415, 12],
+				// 					[1.5, 11],
+				// 					[1.585, 6],
+				// 					[1.67, 13],
+				// 					[1.755, 12],
+				// 					[1.84, 4],
+				// 					[1.925, 2],
+				// 					[2.01, 0],
+				// 					[2.095, 2]
+				// 				],
+				// 				color: '#7cb5ec'
+				// 			}
+				// 		]
+				// 	}
+				// },
+
 				{
-					title: 'Overall Summer Temperature Trend',
+					title: 'Summer Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
+					// xAxisConfig: {
+					// 	type: 'linear',
+					// 	min: -0.5,
+					// 	max: 2.23,
+					// 	title: {
+					// 		text: 'Summer Temperature Trend (°C/decade)'
+					// 	},
+					// 	labels: {
+					// 		formatter: function () {
+					// 			return this.value.toFixed(1);
+					// 		},
+					// 		style: {
+					// 			fontSize: '12px'
+					// 		}
+					// 	},
+					// 	tickInterval: 0.5,
+					// 	gridLineWidth: 1,
+					// 	plotLines: [
+					// 		{
+					// 			color: '#666',
+					// 			width: 2,
+					// 			value: 0, // baseline at 0°C
+					// 			zIndex: 4,
+					// 			dashStyle: 'Dash'
+					// 		}
+					// 	]
+					// },
 					chart_data: {
+						// Remove categories since we're using numeric x-axis
 						categories: [
-							'-0.22–-0.16',
-							'-0.16–-0.11',
-							'-0.11–-0.05',
-							'-0.05–0.01',
-							'0.01–0.06',
-							'0.06–0.12',
-							'0.12–0.17',
-							'0.17–0.23',
-							'0.23–0.28',
-							'0.28–0.34',
-							'0.34–0.39',
-							'0.39–0.45',
-							'0.45–0.50',
-							'0.50–0.56',
-							'0.56–0.61',
-							'0.61–0.67',
-							'0.67–0.72',
-							'0.72–0.78',
-							'0.78–0.84',
-							'0.84–0.89',
-							'0.89–0.95',
-							'0.95–1.00',
-							'1.00–1.06',
-							'1.06–1.11',
-							'1.11–1.17',
-							'1.17–1.22',
-							'1.22–1.28',
-							'1.28–1.33',
-							'1.33–1.39',
-							'1.39–1.44',
-							'1.44–1.50',
-							'1.50–1.55'
+							'-0.22 to -0.18',
+							'-0.18 to -0.15',
+							'-0.15 to -0.11',
+							'-0.11 to -0.07',
+							'-0.07 to -0.04',
+							'-0.04 to 0',
+							'0 to 0.03',
+							'0.03 to 0.07',
+							'0.07 to 0.1',
+							'0.1 to 0.14',
+							'0.14 to 0.17',
+							'0.17 to 0.21',
+							'0.21 to 0.24',
+							'0.24 to 0.28',
+							'0.28 to 0.32',
+							'0.32 to 0.35',
+							'0.35 to 0.39',
+							'0.39 to 0.42',
+							'0.42 to 0.46',
+							'0.46 to 0.49',
+							'0.49 to 0.53',
+							'0.53 to 0.56',
+							'0.56 to 0.6',
+							'0.6 to 0.63',
+							'0.63 to 0.67',
+							'0.67 to 0.7',
+							'0.7 to 0.74',
+							'0.74 to 0.78',
+							'0.78 to 0.81',
+							'0.81 to 0.85',
+							'0.85 to 0.88',
+							'0.88 to 0.92',
+							'0.92 to 0.95',
+							'0.95 to 0.99',
+							'0.99 to 1.02',
+							'1.02 to 1.06',
+							'1.06 to 1.09',
+							'1.09 to 1.13',
+							'1.13 to 1.17',
+							'1.17 to 1.2',
+							'1.2 to 1.24',
+							'1.24 to 1.27',
+							'1.27 to 1.31',
+							'1.31 to 1.34',
+							'1.34 to 1.38',
+							'1.38 to 1.41',
+							'1.41 to 1.45',
+							'1.45 to 1.48',
+							'1.48 to 1.52',
+							'1.52 to 1.55'
+						],
+
+						plotLines: [
+							{
+								color: '#666',
+								width: 1,
+								value: 0, // baseline at 0°C
+								zIndex: 4
+							}
 						],
 						plotOptions: {
 							column: {
 								pointPadding: 0,
 								groupPadding: 0,
-								borderWidth: 0
+								borderWidth: 0,
+								grouping: false,
+								pointPlacement: 0
 							}
 						},
 						series: [
 							{
-								name: 'Overall Summer Temperature Trend',
+								name: 'Overall summer trends',
 								data: [
-									1, 2, 15, 34, 59, 112, 298, 424, 704, 950, 1145, 1125, 881, 503, 255, 120, 58, 16,
-									13, 22, 6, 7, 3, 5, 1, 0, 0, 3, 1, 0, 1, 2
+									1, 2, 0, 6, 11, 29, 25, 47, 60, 132, 197, 302, 261, 538, 701, 518, 864, 626, 759,
+									465, 526, 195, 192, 101, 71, 35, 25, 13, 8, 8, 16, 6, 3, 4, 3, 3, 3, 3, 0, 0, 0,
+									0, 3, 1, 0, 0, 0, 0, 1, 1
 								],
-								color: '#7cb5ec'
+								color: 'rgba(173, 216, 230, 0.8)',
+								zIndex: 1
+							},
+							{
+								name: 'Significant trends',
+								data: [
+									0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 62, 87, 99, 308, 492, 437, 764, 577, 720, 454, 508,
+									185, 181, 96, 64, 35, 23, 13, 8, 8, 16, 6, 3, 4, 3, 3, 3, 3, 0, 0, 0, 0, 3, 1, 0,
+									0, 0, 0, 1, 1
+								],
+								color: 'rgba(255, 99, 71, 0.85)',
+								zIndex: 2
 							}
 						]
 					}
 				},
+
 				{
-					title: 'Overall Spring Temperature Trend',
+					title: 'Spring Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
+					// xAxisConfig: {
+					// 	type: 'linear',
+					// 	min: -0.5,
+					// 	max: 2.23,
+					// 	title: {
+					// 		text: 'Spring Temperature Trend (°C/decade)'
+					// 	},
+					// 	labels: {
+					// 		formatter: function () {
+					// 			return this.value.toFixed(1);
+					// 		},
+					// 		style: {
+					// 			fontSize: '12px'
+					// 		}
+					// 	},
+					// 	tickInterval: 0.5,
+					// 	gridLineWidth: 1,
+					// 	plotLines: [
+					// 		{
+					// 			color: '#666',
+					// 			width: 2,
+					// 			value: 0, // baseline at 0°C
+					// 			zIndex: 4,
+					// 			dashStyle: 'Dash'
+					// 		}
+					// 	]
+					// },
 					chart_data: {
+						// Remove categories since we're using numeric x-axis
 						categories: [
-							'-0.42–-0.36',
-							'-0.36–-0.29',
-							'-0.29–-0.23',
-							'-0.23–-0.17',
-							'-0.17–-0.10',
-							'-0.10–-0.04',
-							'-0.04–0.02',
-							'0.02–0.09',
-							'0.09–0.15',
-							'0.15–0.21',
-							'0.21–0.28',
-							'0.28–0.34',
-							'0.34–0.40',
-							'0.40–0.47',
-							'0.47–0.53',
-							'0.53–0.59',
-							'0.59–0.65',
-							'0.65–0.72',
-							'0.72–0.78',
-							'0.78–0.84',
-							'0.84–0.91',
-							'0.91–0.97',
-							'0.97–1.03',
-							'1.03–1.10',
-							'1.10–1.16',
-							'1.16–1.22',
-							'1.22–1.29',
-							'1.29–1.35',
-							'1.35–1.41',
-							'1.41–1.48',
-							'1.48–1.54',
-							'1.54–1.60'
+							'-0.42 to -0.38',
+							'-0.38 to -0.34',
+							'-0.34 to -0.30',
+							'-0.30 to -0.26',
+							'-0.26 to -0.22',
+							'-0.22 to -0.18',
+							'-0.18 to -0.14',
+							'-0.14 to -0.10',
+							'-0.10 to -0.06',
+							'-0.06 to -0.01',
+							'-0.01 to 0.03',
+							'0.03 to 0.07',
+							'0.07 to 0.11',
+							'0.11 to 0.15',
+							'0.15 to 0.19',
+							'0.19 to 0.23',
+							'0.23 to 0.27',
+							'0.27 to 0.31',
+							'0.31 to 0.35',
+							'0.35 to 0.39',
+							'0.39 to 0.43',
+							'0.43 to 0.47',
+							'0.47 to 0.51',
+							'0.51 to 0.55',
+							'0.55 to 0.59',
+							'0.59 to 0.63',
+							'0.63 to 0.67',
+							'0.67 to 0.71',
+							'0.71 to 0.75',
+							'0.75 to 0.79',
+							'0.79 to 0.83',
+							'0.83 to 0.87',
+							'0.87 to 0.92',
+							'0.92 to 0.96',
+							'0.96 to 1.00',
+							'1.00 to 1.04',
+							'1.04 to 1.08',
+							'1.08 to 1.12',
+							'1.12 to 1.16',
+							'1.16 to 1.20',
+							'1.20 to 1.24',
+							'1.24 to 1.28',
+							'1.28 to 1.32',
+							'1.32 to 1.36',
+							'1.36 to 1.40',
+							'1.40 to 1.44',
+							'1.44 to 1.48',
+							'1.48 to 1.52',
+							'1.52 to 1.56',
+							'1.56 to 1.60'
+						],
+
+						plotLines: [
+							{
+								color: '#666',
+								width: 1,
+								value: 0, // baseline at 0°C
+								zIndex: 4
+							}
 						],
 						plotOptions: {
 							column: {
 								pointPadding: 0,
 								groupPadding: 0,
-								borderWidth: 0
+								borderWidth: 0,
+								grouping: false,
+								pointPlacement: 0
 							}
 						},
 						series: [
 							{
-								name: 'Overall Spring Temperature Trend',
+								name: 'Overall spring trends',
 								data: [
-									6, 7, 14, 24, 61, 83, 183, 372, 582, 821, 809, 772, 688, 605, 443, 298, 283, 198,
-									151, 109, 71, 45, 43, 37, 18, 16, 6, 5, 6, 5, 4, 1
+									4, 2, 5, 8, 10, 16, 29, 40, 49, 100, 154, 221, 312, 392, 518, 523, 509, 465, 497,
+									422, 420, 366, 317, 188, 191, 187, 150, 130, 112, 80, 80, 49, 45, 27, 24, 32, 24,
+									16, 9, 9, 10, 3, 1, 5, 4, 5, 1, 1, 3, 0
 								],
-								color: '#7cb5ec'
+								color: 'rgba(173, 216, 230, 0.8)',
+								zIndex: 1
+							},
+							{
+								name: 'Significant trends',
+								data: [
+									0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9, 22, 44, 55, 109, 130, 157, 155, 150,
+									95, 106, 109, 105, 95, 81, 60, 68, 46, 43, 26, 24, 32, 24, 16, 9, 9, 10, 3, 1, 5,
+									4, 5, 1, 1, 3, 0
+								],
+								color: 'rgba(255, 99, 71, 0.85)',
+								zIndex: 2
+							}
+						]
+					}
+				},
+
+				{
+					title: 'Autumn Temperature Trend',
+					chart_type: 'column',
+					yAxisTitle: 'Count',
+					// xAxisConfig: {
+					// 	type: 'linear',
+					// 	min: -0.39,
+					// 	max: 1.4,
+					// 	title: {
+					// 		text: 'Autumn Temperature Trend (°C/decade)'
+					// 	},
+					// 	labels: {
+					// 		formatter: function () {
+					// 			return this.value.toFixed(1);
+					// 		},
+					// 		style: {
+					// 			fontSize: '12px'
+					// 		}
+					// 	},
+					// 	tickInterval: 0.5,
+					// 	gridLineWidth: 1,
+					// 	plotLines: [
+					// 		{
+					// 			color: '#666',
+					// 			width: 2,
+					// 			value: 0, // baseline at 0°C
+					// 			zIndex: 4,
+					// 			dashStyle: 'Dash'
+					// 		}
+					// 	]
+					// },
+					chart_data: {
+						// Remove categories since we're using numeric x-axis
+						categories: [
+							'-0.42 to -0.38',
+							'-0.38 to -0.34',
+							'-0.34 to -0.30',
+							'-0.30 to -0.26',
+							'-0.26 to -0.22',
+							'-0.22 to -0.18',
+							'-0.18 to -0.14',
+							'-0.14 to -0.10',
+							'-0.10 to -0.06',
+							'-0.06 to -0.01',
+							'-0.01 to 0.03',
+							'0.03 to 0.07',
+							'0.07 to 0.11',
+							'0.11 to 0.15',
+							'0.15 to 0.19',
+							'0.19 to 0.23',
+							'0.23 to 0.27',
+							'0.27 to 0.31',
+							'0.31 to 0.35',
+							'0.35 to 0.39',
+							'0.39 to 0.43',
+							'0.43 to 0.47',
+							'0.47 to 0.51',
+							'0.51 to 0.55',
+							'0.55 to 0.59',
+							'0.59 to 0.63',
+							'0.63 to 0.67',
+							'0.67 to 0.71',
+							'0.71 to 0.75',
+							'0.75 to 0.79',
+							'0.79 to 0.83',
+							'0.83 to 0.87',
+							'0.87 to 0.92',
+							'0.92 to 0.96',
+							'0.96 to 1.00',
+							'1.00 to 1.04',
+							'1.04 to 1.08',
+							'1.08 to 1.12',
+							'1.12 to 1.16',
+							'1.16 to 1.20',
+							'1.20 to 1.24',
+							'1.24 to 1.28',
+							'1.28 to 1.32',
+							'1.32 to 1.36',
+							'1.36 to 1.40',
+							'1.40 to 1.44',
+							'1.44 to 1.48',
+							'1.48 to 1.52',
+							'1.52 to 1.56',
+							'1.56 to 1.60'
+						],
+
+						plotLines: [
+							{
+								color: '#666',
+								width: 1,
+								value: 0, // baseline at 0°C
+								zIndex: 4
+							}
+						],
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0,
+								grouping: false,
+								pointPlacement: 0
+							}
+						},
+						series: [
+							{
+								name: 'Overall autumn trends',
+								data: [
+									4, 2, 5, 8, 10, 16, 29, 40, 49, 100, 154, 221, 312, 392, 518, 523, 509, 465, 497,
+									422, 420, 366, 317, 188, 191, 187, 150, 130, 112, 80, 80, 49, 45, 27, 24, 32, 24,
+									16, 9, 9, 10, 3, 1, 5, 4, 5, 1, 1, 3, 0
+								],
+								color: 'rgba(173, 216, 230, 0.8)',
+								zIndex: 1
+							},
+							{
+								name: 'Significant trends',
+								data: [
+									0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9, 22, 44, 55, 109, 130, 157, 155, 150,
+									95, 106, 109, 105, 95, 81, 60, 68, 46, 43, 26, 24, 32, 24, 16, 9, 9, 10, 3, 1, 5,
+									4, 5, 1, 1, 3, 0
+								],
+								color: 'rgba(255, 99, 71, 0.85)',
+								zIndex: 2
 							}
 						]
 					}
 				}
+
+				// {
+				// 	title: 'Overall Summer Temperature Trend',
+				// 	chart_type: 'column',
+				// 	yAxisTitle: 'Count',
+				// 	xAxisConfig: {
+				// 		type: 'linear',
+				// 		min: -0.5,
+				// 		max: 2.23,
+				// 		title: {
+				// 			text: 'Temperature Change (°C/decade)'
+				// 		},
+				// 		labels: {
+				// 			formatter: function () {
+				// 				// Format the temperature values
+				// 				return this.value.toFixed(2);
+				// 			}
+				// 		},
+				// 		tickInterval: 0.5,
+				// 		gridLineWidth: 1,
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		]
+				// 	},
+				// 	chart_data: {
+				// 		// Remove categories since we're using numeric x-axis
+				// 		// categories: [...],
+
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		],
+				// 		plotOptions: {
+				// 			column: {
+				// 				pointPadding: 0,
+				// 				groupPadding: 0,
+				// 				borderWidth: 0
+				// 			}
+				// 		},
+				// 		series: [
+				// 			{
+				// 				name: 'Overall Summer Temperature Trend',
+				// 				data: [
+				// 					// Convert to [x, y] format where x is the temperature value
+				// 					[-0.46, 1],
+				// 					[-0.375, 2],
+				// 					[-0.285, 15],
+				// 					[-0.2, 34],
+				// 					[-0.115, 59],
+				// 					[-0.03, 112],
+				// 					[0.055, 298],
+				// 					[0.14, 424],
+				// 					[0.225, 704],
+				// 					[0.31, 950],
+				// 					[0.395, 1145],
+				// 					[0.48, 1125],
+				// 					[0.565, 881],
+				// 					[0.65, 503],
+				// 					[0.735, 255],
+				// 					[0.82, 120],
+				// 					[0.905, 58],
+				// 					[0.99, 16],
+				// 					[1.075, 13],
+				// 					[1.16, 22],
+				// 					[1.245, 6],
+				// 					[1.33, 7],
+				// 					[1.415, 3],
+				// 					[1.5, 5],
+				// 					[1.585, 1],
+				// 					[1.67, 0],
+				// 					[1.755, 0],
+				// 					[1.84, 3],
+				// 					[1.925, 1],
+				// 					[2.01, 0],
+				// 					[2.095, 1],
+				// 					[2.18, 2]
+				// 				],
+				// 				color: '#7cb5ec'
+				// 			}
+				// 		]
+				// 	}
+				// },
+				// {
+				// 	title: 'Significant Summer Temperature Trend',
+				// 	chart_type: 'column',
+				// 	yAxisTitle: 'Count',
+				// 	xAxisConfig: {
+				// 		type: 'linear',
+				// 		min: -0.5,
+				// 		max: 2.23,
+				// 		title: {
+				// 			text: 'Temperature Change (°C/decade)'
+				// 		},
+				// 		labels: {
+				// 			formatter: function () {
+				// 				// Format the temperature values
+				// 				return this.value.toFixed(2);
+				// 			}
+				// 		},
+				// 		tickInterval: 0.5,
+				// 		gridLineWidth: 1,
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		]
+				// 	},
+				// 	chart_data: {
+				// 		// Remove categories since we're using numeric x-axis
+				// 		// categories: [...],
+
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		],
+				// 		plotOptions: {
+				// 			column: {
+				// 				pointPadding: 0,
+				// 				groupPadding: 0,
+				// 				borderWidth: 0
+				// 			}
+				// 		},
+				// 		series: [
+				// 			{
+				// 				name: 'Significant Summer Temperature Trend',
+				// 				data: [
+				// 					// Convert to [x, y] format where x is the temperature value
+				// 					[-0.46, 48],
+				// 					[-0.375, 87],
+				// 					[-0.285, 132],
+				// 					[-0.2, 384],
+				// 					[-0.115, 546],
+				// 					[-0.03, 798],
+				// 					[0.055, 883],
+				// 					[0.14, 785],
+				// 					[0.225, 684],
+				// 					[0.31, 349],
+				// 					[0.395, 211],
+				// 					[0.48, 117],
+				// 					[0.565, 65],
+				// 					[0.65, 26],
+				// 					[0.735, 14],
+				// 					[0.82, 10],
+				// 					[0.905, 19],
+				// 					[0.99, 8],
+				// 					[1.075, 4],
+				// 					[1.16, 6],
+				// 					[1.245, 3],
+				// 					[1.33, 3],
+				// 					[1.415, 0],
+				// 					[1.5, 0],
+				// 					[1.585, 1],
+				// 					[1.67, 2],
+				// 					[1.755, 1],
+				// 					[1.84, 1],
+				// 					[1.925, 0],
+				// 					[2.01, 0],
+				// 					[2.095, 1],
+				// 					[2.18, 2]
+				// 				],
+				// 				color: '#7cb5ec'
+				// 			}
+				// 		]
+				// 	}
+				// },
+
+				// {
+				// 	title: 'Overall Spring Temperature Trend',
+				// 	chart_type: 'column',
+				// 	yAxisTitle: 'Count',
+				// 	xAxisConfig: {
+				// 		type: 'linear',
+				// 		min: -0.5,
+				// 		max: 2.23,
+				// 		title: {
+				// 			text: 'Temperature Change (°C/decade)'
+				// 		},
+				// 		labels: {
+				// 			formatter: function () {
+				// 				// Format the temperature values
+				// 				return this.value.toFixed(2);
+				// 			}
+				// 		},
+				// 		tickInterval: 0.5,
+				// 		gridLineWidth: 1,
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		]
+				// 	},
+				// 	chart_data: {
+				// 		// Remove categories since we're using numeric x-axis
+				// 		// categories: [...],
+
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		],
+				// 		plotOptions: {
+				// 			column: {
+				// 				pointPadding: 0,
+				// 				groupPadding: 0,
+				// 				borderWidth: 0
+				// 			}
+				// 		},
+				// 		series: [
+				// 			{
+				// 				name: 'Overall Spring Temperature Trend',
+				// 				data: [
+				// 					// Convert to [x, y] format where x is the temperature value
+				// 					[-0.46, 6],
+				// 					[-0.375, 7],
+				// 					[-0.285, 14],
+				// 					[-0.2, 24],
+				// 					[-0.115, 61],
+				// 					[-0.03, 83],
+				// 					[0.055, 183],
+				// 					[0.14, 372],
+				// 					[0.225, 582],
+				// 					[0.31, 821],
+				// 					[0.395, 809],
+				// 					[0.48, 772],
+				// 					[0.565, 688],
+				// 					[0.65, 605],
+				// 					[0.735, 443],
+				// 					[0.82, 298],
+				// 					[0.905, 283],
+				// 					[0.99, 198],
+				// 					[1.075, 151],
+				// 					[1.16, 109],
+				// 					[1.245, 71],
+				// 					[1.33, 45],
+				// 					[1.415, 43],
+				// 					[1.5, 37],
+				// 					[1.585, 18],
+				// 					[1.67, 16],
+				// 					[1.755, 6],
+				// 					[1.84, 5],
+				// 					[1.925, 6],
+				// 					[2.01, 5],
+				// 					[2.095, 4],
+				// 					[2.18, 1]
+				// 				],
+				// 				color: '#7cb5ec'
+				// 			}
+				// 		]
+				// 	}
+				// },
+				// {
+				// 	title: 'Significant Spring Temperature Trend',
+				// 	chart_type: 'column',
+				// 	yAxisTitle: 'Count',
+				// 	xAxisConfig: {
+				// 		type: 'linear',
+				// 		min: -0.5,
+				// 		max: 2.23,
+				// 		title: {
+				// 			text: 'Temperature Change (°C/decade)'
+				// 		},
+				// 		labels: {
+				// 			formatter: function () {
+				// 				// Format the temperature values
+				// 				return this.value.toFixed(2);
+				// 			}
+				// 		},
+				// 		tickInterval: 0.5,
+				// 		gridLineWidth: 1,
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		]
+				// 	},
+				// 	chart_data: {
+				// 		// Remove categories since we're using numeric x-axis
+				// 		// categories: [...],
+
+				// 		plotLines: [
+				// 			{
+				// 				color: '#666',
+				// 				width: 1,
+				// 				value: 0, // baseline at 0°C
+				// 				zIndex: 4
+				// 			}
+				// 		],
+				// 		plotOptions: {
+				// 			column: {
+				// 				pointPadding: 0,
+				// 				groupPadding: 0,
+				// 				borderWidth: 0
+				// 			}
+				// 		},
+				// 		series: [
+				// 			{
+				// 				name: 'Significant Spring Temperature Trend',
+				// 				data: [
+				// 					// Convert to [x, y] format where x is the temperature value
+				// 					[-0.46, 5],
+				// 					[-0.375, 26],
+				// 					[-0.285, 50],
+				// 					[-0.2, 81],
+				// 					[-0.115, 127],
+				// 					[-0.03, 175],
+				// 					[0.055, 172],
+				// 					[0.14, 176],
+				// 					[0.225, 115],
+				// 					[0.31, 122],
+				// 					[0.395, 119],
+				// 					[0.48, 104],
+				// 					[0.565, 72],
+				// 					[0.65, 78],
+				// 					[0.735, 54],
+				// 					[0.82, 41],
+				// 					[0.905, 30],
+				// 					[0.99, 26],
+				// 					[1.075, 38],
+				// 					[1.16, 22],
+				// 					[1.245, 13],
+				// 					[1.33, 13],
+				// 					[1.415, 10],
+				// 					[1.5, 3],
+				// 					[1.585, 1],
+				// 					[1.67, 7],
+				// 					[1.755, 4],
+				// 					[1.84, 4],
+				// 					[1.925, 1],
+				// 					[2.01, 3],
+				// 					[2.095, 1],
+				// 					[2.18, 1]
+				// 				],
+				// 				color: '#7cb5ec'
+				// 			}
+				// 		]
+				// 	}
+				// }
 			],
 			map_layers: {
 				// Nested structure: trend_analysis -> season -> layer_config
@@ -1280,7 +2193,7 @@
 			id: 'question-1',
 			question: 'Which areas have observed temperature rise  in last 30 years??',
 			dataset_id: 'temp-trend-30y'
-		},
+		}
 		// {
 		// 	id: 'question-2',
 		// 	question: 'Which areas have observed temperature rise  in last 30 years?',
@@ -1296,11 +2209,11 @@
 		// 	question: 'Which areas have observed temperature rise more than 2.5 degrees in last decade?',
 		// 	dataset_id: 'temp-rise-decade'
 		// },
-		{
-			id: 'question-5',
-			question: 'What is the annual temperature anamoly trend over the past 30 years?',
-			dataset_id: 'annual-temp-anamoly-series'
-		}
+		// {
+		// 	id: 'question-5',
+		// 	question: 'What is the annual temperature anamoly trend over the past 30 years?',
+		// 	dataset_id: 'annual-temp-anamoly-series'
+		// }
 	];
 	const information_layers = [
 		{
@@ -1347,7 +2260,7 @@
 	let legendCollapsed = $state(false);
 
 	// Track questions panel state
-	let isQuestionsPanelOpen = $state(false);
+	let isQuestionsPanelOpen = $state(true);
 	function toggleQuestionsPanel() {
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
@@ -1726,6 +2639,11 @@
 
 	// Function to handle question selection
 	function selectQuestion(questionId: string) {
+		// Stop playback if currently playing
+		if (isPlaying) {
+			stopPlayback();
+		}
+
 		selectedQuestionId = questionId;
 		// Clear information layer selection when selecting a question
 		selectedInformationLayer = null;
@@ -1768,6 +2686,11 @@
 
 	// Function to select information layer
 	function selectInformationLayer(layerId: string) {
+		// Stop playback if currently playing
+		if (isPlaying) {
+			stopPlayback();
+		}
+
 		// If clicking the same layer, deselect it
 		if (selectedInformationLayer === layerId) {
 			selectedInformationLayer = null;
