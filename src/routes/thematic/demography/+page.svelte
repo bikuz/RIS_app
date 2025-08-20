@@ -2,6 +2,9 @@
 	import { onMount, onDestroy } from 'svelte';
 	import demogr_1 from '$lib/assets/images/Demography_1.png';
 	import demogr_2 from '$lib/assets/images/Demography_2.png';
+	import { getTopicName, getTopicIcon, getTopicColor } from '$lib/data/themeData.js';
+	const topic = 'demography';
+	const TopicIcon = getTopicIcon(topic);
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
@@ -63,154 +66,7 @@
 	const BASELAYERS_URL =
 		'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer';
 
-	// Time slider state management
-	// let isTimeSliderVisible = $state(false);
-	// let isPlaying = $state(false);
-	// let currentTimeIndex = $state(0);
-	// let playbackSpeed = $state(1000); // milliseconds between frames
-	// let playInterval: number | null = null;
-
-	// Time periods for climate data (can be customized based on your data)
-	// const timePeriods = [
-	// 	{ year: 1995, label: '1995', season: 'Annual' },
-	// 	{ year: 1996, label: '1996', season: 'Annual' },
-	// 	{ year: 1997, label: '1997', season: 'Annual' },
-	// 	{ year: 1998, label: '1998', season: 'Annual' },
-	// 	{ year: 1999, label: '1999', season: 'Annual' },
-	// 	{ year: 2000, label: '2000', season: 'Annual' },
-	// 	{ year: 2001, label: '2001', season: 'Annual' },
-	// 	{ year: 2002, label: '2002', season: 'Annual' },
-	// 	{ year: 2003, label: '2003', season: 'Annual' },
-	// 	{ year: 2004, label: '2004', season: 'Annual' },
-	// 	{ year: 2005, label: '2005', season: 'Annual' },
-	// 	{ year: 2006, label: '2006', season: 'Annual' },
-	// 	{ year: 2007, label: '2007', season: 'Annual' },
-	// 	{ year: 2008, label: '2008', season: 'Annual' },
-	// 	{ year: 2009, label: '2009', season: 'Annual' },
-	// 	{ year: 2010, label: '2010', season: 'Annual' },
-	// 	{ year: 2011, label: '2011', season: 'Annual' },
-	// 	{ year: 2012, label: '2012', season: 'Annual' },
-	// 	{ year: 2013, label: '2013', season: 'Annual' },
-	// 	{ year: 2014, label: '2014', season: 'Annual' },
-	// 	{ year: 2015, label: '2015', season: 'Annual' },
-	// 	{ year: 2016, label: '2016', season: 'Annual' },
-	// 	{ year: 2017, label: '2017', season: 'Annual' },
-	// 	{ year: 2018, label: '2018', season: 'Annual' },
-	// 	{ year: 2019, label: '2019', season: 'Annual' },
-	// 	{ year: 2020, label: '2020', season: 'Annual' },
-	// 	{ year: 2021, label: '2021', season: 'Annual' },
-	// 	{ year: 2022, label: '2022', season: 'Annual' },
-	// 	{ year: 2023, label: '2023', season: 'Annual' },
-	// 	{ year: 2024, label: '2024', season: 'Annual' }
-	// ];
-
-	// // Time slider functions
-	// function toggleTimeSlider() {
-	// 	isTimeSliderVisible = !isTimeSliderVisible;
-	// 	if (!isTimeSliderVisible && isPlaying) {
-	// 		stopPlayback();
-	// 	}
-	// }
-
-	// function togglePlayback() {
-	// 	if (isPlaying) {
-	// 		stopPlayback();
-	// 	} else {
-	// 		startPlayback();
-	// 	}
-	// }
-
-	// function startPlayback() {
-	// 	if (playInterval) clearInterval(playInterval);
-
-	// 	isPlaying = true;
-	// 	playInterval = setInterval(() => {
-	// 		if (currentTimeIndex < timePeriods.length - 1) {
-	// 			currentTimeIndex++;
-	// 			updateMapForTime(currentTimeIndex);
-	// 		} else {
-	// 			// Loop back to start or stop
-	// 			currentTimeIndex = 0;
-	// 			updateMapForTime(currentTimeIndex);
-	// 			// Uncomment next line to stop at end instead of looping
-	// 			// stopPlayback();
-	// 		}
-	// 	}, playbackSpeed);
-	// }
-
-	// function stopPlayback() {
-	// 	if (playInterval) {
-	// 		clearInterval(playInterval);
-	// 		playInterval = null;
-	// 	}
-	// 	isPlaying = false;
-	// }
-
-	// function goToTime(index: number) {
-	// 	if (index >= 0 && index < timePeriods.length) {
-	// 		currentTimeIndex = index;
-	// 		updateMapForTime(index);
-	// 	}
-	// }
-
-	// function stepBackward() {
-	// 	if (currentTimeIndex > 0) {
-	// 		goToTime(currentTimeIndex - 1);
-	// 	}
-	// }
-
-	// function stepForward() {
-	// 	if (currentTimeIndex < timePeriods.length - 1) {
-	// 		goToTime(currentTimeIndex + 1);
-	// 	}
-	// }
-
-	// function updateMapForTime(timeIndex: number) {
-	// 	// This function would update the map layers based on the selected time
-	// 	// You can modify ArcGIS parameters or switch between different temporal layers
-	// 	console.log('Updating map for time:', timePeriods[timeIndex]);
-
-	// 	// Example: Update ArcGIS layer with time parameter if needed
-	// 	if (map && selectedInformationLayer) {
-	// 		const layers = map.getLayers().getArray();
-	// 		layers.forEach((layer) => {
-	// 			if (layer.get('layerId') !== undefined) {
-	// 				const source = (layer as ImageLayer<any>).getSource();
-	// 				if (source && source instanceof ImageArcGISRest) {
-	// 					// Update ArcGIS parameters with time if your service supports it
-	// 					const currentParams = source.getParams();
-	// 					source.updateParams({
-	// 						...currentParams
-	// 						// Add time parameter if your ArcGIS service supports temporal data
-	// 						// time: timePeriods[timeIndex].year.toString()
-	// 					});
-	// 				}
-	// 			}
-	// 		});
-	// 	}
-	// }
-
-	// // Function to handle trend analysis mode changes
-	// function updateMapForTrendMode(mode: 'overall' | 'significant') {
-	// 	console.log('Updating map for trend analysis mode:', mode);
-	// 	// Implementation for trend mode changes if needed
-	// }
-
-	// // Watch for trend analysis mode changes
-	// $effect(() => {
-	// 	updateMapForTrendMode(trendAnalysisMode);
-	// });
-
-	// // Function to handle temperature rise threshold changes
-	// function updateMapForTemperatureRise(threshold: '0.5' | '1.5' | '2.5') {
-	// 	console.log('Updating map for temperature rise threshold:', threshold);
-	// 	// Implementation for temperature threshold changes if needed
-	// }
-
-	// // Watch for temperature rise threshold changes
-	// $effect(() => {
-	// 	updateMapForTemperatureRise(temperatureRiseThreshold);
-	// });
+	
 
 	function initializeMap() {
 		if (!mapContainer) return;
@@ -586,6 +442,14 @@
 
 	// Track selected information layer (single selection) - default to Population 2025
 	let selectedInformationLayer = $state<string | null>('Population 2025');
+
+		let hoveredLayerId = '';
+
+	const getDescription = (datasetId) => {
+		const dataset = demographicDataset.find(d => d.id === datasetId);
+		return dataset?.map_data?.description || '';
+	};
+
 
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
@@ -998,31 +862,18 @@
 	}
 </script>
 
-<!-- 3-Column Layout with Dynamic States -->
-<div class="relative grid grid-cols-12 items-stretch gap-6">
-	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
-	{#if layoutState === 'hide-left'}
-		<button
-			onclick={() => setLayoutState('default')}
-			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
-			title="Show Story Panel"
-		>
-			<ChevronsRight class="h-4 w-4" />
-		</button>
-	{/if}
-	<!-- Left Sidebar - Story + Questions -->
-
+<div class="relative grid grid-cols-1 gap-6 xl:grid-cols-16">
+	<!-- Left Panel - Story -->
 	<div
-		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto"
+		class="xl:col-span-4"
 		class:hidden={layoutState === 'hide-left'}
-		class:col-span-12={layoutState === 'left-full'}
+		class:xl:col-span-16={layoutState === 'left-full'}
 	>
-		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
+		<div class="sticky top-8 rounded-2xl border border-slate-200/50 bg-white/70 p-6">
 			<div class="mb-6 flex items-center justify-between">
 				<div class="flex items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
-						<Users class="h-5 w-5 text-white" />
+					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
+						<TopicIcon class="h-5 w-5 text-white" />
 					</div>
 					<h3
 						class="{layoutState === 'left-full'
@@ -1071,7 +922,7 @@
 				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+						: 'text-sm leading-relaxed'} text-slate-700 transition-all duration-300"
 				>
 					The Hindu Kush Himalaya (HKH) region is home to over 270 million people, with demographic
 					patterns that reflect diverse cultural, economic, and environmental conditions across
@@ -1135,17 +986,7 @@
 									</p>
 								</div>
 							</div>
-							<!-- <div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-							<img src={climate_2} alt="Population centers" class="h-55 w-full object-contain" />
-							<div class="p-2">
-								<p class="text-center text-xs text-slate-600">
-									<span>
-										<span class="font-semibold"> Urban growth in mountain valleys </span>
-										showing demographic concentration</span
-									>
-								</p>
-							</div>
-						</div> -->
+							
 						</div>
 					{/if}
 				</div>
@@ -1155,7 +996,7 @@
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					The region’s rural people live in remote and environmentally harsh areas with poor social
+					The region's rural people live in remote and environmentally harsh areas with poor social
 					and physical infrastructures and unfavourable market conditions. Traditional subsistence
 					smallholder farming and migratory pastoral livelihoods in these mountain regions face
 					increasing challenges from the impacts of climate change, human-animal conflicts,
@@ -1168,239 +1009,225 @@
 		</div>
 	</div>
 
-	<!-- Main Content Area - Unified container with common white background -->
+	<!-- Center Panel - Map and Charts -->
 	<div
-		class="sticky col-span-9"
-		class:col-span-12={layoutState === 'hide-left'}
+		class="xl:col-span-9"
 		class:hidden={layoutState === 'left-full'}
+		class:xl:col-span-13={layoutState === 'hide-left'}
 	>
-		<div class="rounded-2xl border border-white/20 bg-white p-6 shadow-xl backdrop-blur-sm">
-			<div class="flex gap-6">
-				<!-- Left part: Map and Charts -->
-				<div
-					class="flex min-w-0 flex-col gap-6 {layoutState === 'hide-left' ? 'flex-1' : 'flex-1'}"
-				>
-					<!-- Map Section -->
-					<div
-						class="relative h-[60vh] max-h-[800px] min-h-[500px] overflow-hidden rounded-xl border border-slate-200/30"
-					>
-						<div class="map-container flex h-full flex-col">
-							<div
-								bind:this={mapContainer}
-								class="map-element h-full w-full overflow-hidden rounded-xl"
-							></div>
+		<div class="sticky top-8 rounded-2xl border border-slate-200/50 bg-white/70 p-6">
+			<!-- Map Section -->
+			<div
+				class="mb-6 overflow-hidden rounded-2xl border border-slate-200/50 bg-white/50 backdrop-blur-sm"
+			>
+				<div class="relative h-[60vh] max-h-[800px] min-h-[500px] overflow-hidden">
+					<div class="map-container flex h-full flex-col">
+						<div
+							bind:this={mapContainer}
+							class="map-element h-full w-full overflow-hidden"
+						></div>
 
-							<!-- Home Reset Button -->
-							<button
-								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
-								onclick={() => {
-									if (map) {
-										map.getView().setCenter(fromLonLat(HKH_CENTER));
-										map.getView().setZoom(HKH_ZOOM);
-									}
-								}}
-								title="Reset to Home View"
-							>
-								<House class="h-4 w-4 text-slate-600" />
-							</button>
+						<!-- Home Reset Button -->
+						<button
+							class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+							onclick={() => {
+								if (map) {
+									map.getView().setCenter(fromLonLat(HKH_CENTER));
+									map.getView().setZoom(HKH_ZOOM);
+								}
+							}}
+							title="Reset to Home View"
+						>
+							<House class="h-4 w-4 text-slate-600" />
+						</button>
 
-							<!-- Layer Toggler Button -->
-							<button
-								class="absolute top-[3.75rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
-								onclick={() => (layersPanelOpen = !layersPanelOpen)}
-							>
-								{#if layersPanelOpen}
-									<ChevronsRight class="h-4 w-4" />
-								{:else}
-									<Layers class="h-4 w-4" />
-								{/if}
-							</button>
-
-							<!-- Layer Toggler Panel -->
-							<div
-								class="absolute top-[5.5rem] right-2 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
-									? 'max-h-96 opacity-100'
-									: 'max-h-0 opacity-0'}"
-							>
-								<div class="p-3">
-									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
-									<div class="space-y-2">
-										{#each baseLayers as layerInfo}
-											<label class="flex items-center space-x-2 text-sm">
-												<input
-													type="checkbox"
-													checked={!!activeBaseLayers[layerInfo.id]}
-													onchange={(e) => {
-														toggleBaseLayer(layerInfo.id, e.target.checked);
-														e.target.blur(); // Removes focus from the checkbox
-													}}
-													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-												/>
-												<span>{layerInfo.name}</span>
-											</label>
-										{/each}
-									</div>
-								</div>
-							</div>
-
-							<!-- Legend Panel - Bottom Right -->
-							{#if currentDataset && Object.keys(legendData).length > 0}
-								<div class="absolute right-2 bottom-2">
-									<!-- Legend Toggle Button -->
-									<button
-										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
-										onclick={() => (legendCollapsed = !legendCollapsed)}
-									>
-										<div class="flex items-center space-x-2">
-											<List class="h-4 w-4 text-blue-600" />
-											{#if !legendCollapsed}
-												<span class="font-medium text-slate-700">Legend</span>
-											{/if}
-										</div>
-										<!-- <svg
-											class="h-4 w-4 transform text-slate-600 transition-transform duration-300 {legendCollapsed
-												? 'rotate-180'
-												: ''}"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M19 9l-7 7-7-7"
-											/>
-										</svg> -->
-									</button>
-
-									<!-- Legend Content -->
-									{#if !legendCollapsed}
-										<div
-											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
-										>
-											<div class="max-h-[300px] w-35 space-y-4">
-												{#each Object.keys(legendData) as uniqueKey}
-													<div class="space-y-2">
-														<h4 class="text-sm font-semibold text-slate-800">
-															{legendData[uniqueKey].name}
-														</h4>
-														<div class="space-y-1">
-															{#each legendData[uniqueKey].items as item}
-																<div class="flex items-center space-x-2">
-																	{#if item.imageData}
-																		<img
-																			src={item.imageData}
-																			alt={item.label}
-																			class="h-4 w-5 flex-shrink-0"
-																		/>
-																	{:else if item.imageUrl}
-																		<img
-																			src={item.imageUrl}
-																			alt={item.label}
-																			class="h-4 w-5 flex-shrink-0"
-																		/>
-																	{/if}
-																	<span class="text-xs text-slate-700">{item.label}</span>
-																</div>
-															{/each}
-														</div>
-													</div>
-												{/each}
-											</div>
-										</div>
-									{/if}
-								</div>
+						<!-- Layer Toggler Button -->
+						<button
+							class="absolute top-[3.75rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
+							onclick={() => (layersPanelOpen = !layersPanelOpen)}>
+							{#if layersPanelOpen}
+								<ChevronsRight class="h-4 w-4" />
+							{:else}
+								<Layers class="h-4 w-4" />
 							{/if}
-						</div>
-					</div>
+						</button>
 
-					<!-- Chart Section -->
-					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
-						<!-- <h3 class="mb-4 text-lg font-semibold text-slate-700">Demographic Analytics</h3> -->
-						<div class="rounded-lg bg-slate-50/50">
-							{#if currentCharts && currentCharts.length > 0}
-								<div class="space-y-6">
-									{#each currentCharts as chart, index}
-										<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
-											<Chart
-												chartData={chart.chart_data}
-												title={chart.title}
-												subtitle="Hindu Kush Himalaya Region Demographic Data"
-												chart_type={chart.chart_type}
+						<!-- Layer Toggler Panel -->
+						<div
+							class="absolute top-[5.5rem] right-2 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+								? 'max-h-96 opacity-100'
+								: 'max-h-0 opacity-0'}"
+						>
+							<div class="p-3">
+								<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
+								<div class="space-y-2">
+									{#each baseLayers as layerInfo}
+										<label class="flex items-center space-x-2 text-sm">
+											<input
+												type="checkbox"
+												checked={!!activeBaseLayers[layerInfo.id]}
+												onchange={(e) => {
+													toggleBaseLayer(layerInfo.id, e.target.checked);
+													e.target.blur(); // Removes focus from the checkbox
+												}}
+												class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
 											/>
-										</div>
+											<span>{layerInfo.name}</span>
+										</label>
 									{/each}
 								</div>
-							{:else}
-								<div class="flex h-80 items-center justify-center">
-									<div class="text-center text-slate-500">
-										<!-- <p class="text-sm">Select a question to view related charts</p> -->
-									</div>
-								</div>
-							{/if}
+							</div>
 						</div>
+
+						<!-- Legend Panel - Bottom Right -->
+						{#if currentDataset && Object.keys(legendData).length > 0}
+							<div class="absolute right-2 bottom-2">
+								<!-- Legend Toggle Button -->
+								<button
+									class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+									onclick={() => (legendCollapsed = !legendCollapsed)}>
+									<div class="flex items-center space-x-2">
+										<List class="h-4 w-4 text-blue-600" />
+										{#if !legendCollapsed}
+											<span class="font-medium text-slate-700">Legend</span>
+										{/if}
+									</div>
+									
+								</button>
+
+								{#if !legendCollapsed}
+									<div
+										class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
+									>
+										<div class="max-h-[300px] w-35 space-y-4">
+											{#each Object.keys(legendData) as uniqueKey}
+												<div class="space-y-2">
+													<h4 class="text-sm font-semibold text-slate-800">
+														{legendData[uniqueKey].name}
+													</h4>
+													<div class="space-y-1">
+														{#each legendData[uniqueKey].items as item}
+															<div class="flex items-center space-x-2">
+																{#if item.imageData}
+																	<img
+																		src={item.imageData}
+																		alt={item.label}
+																		class="h-4 w-5 flex-shrink-0"
+																	/>
+																{:else if item.imageUrl}
+																	<img
+																		src={item.imageUrl}
+																		alt={item.label}
+																		class="h-4 w-5 flex-shrink-0"
+																	/>
+																{/if}
+																<span class="text-xs text-slate-700">{item.label}</span>
+															</div>
+														{/each}
+													</div>
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/if}
+							</div>
+						{/if}
 					</div>
 				</div>
+			</div>
 
-				<!-- Right part: Information Layer and Questions -->
-				<div class="w-80 flex-shrink-0">
-					<div
-						class="top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
-					>
-						<!-- Information Layer Header -->
-						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-							<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
-								<Layers class="h-5 w-5 text-white" />
+			<!-- Chart section -->
+			<div
+				class="overflow-hidden rounded-2xl border border-slate-200/50 bg-white/50 backdrop-blur-sm"
+			>
+				<div class="rounded-xl bg-slate-50/30 p-6">
+					{#if currentCharts && currentCharts.length > 0}
+						<div class="space-y-6">
+							{#each currentCharts as chart, index}
+								<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
+									<Chart
+										chartData={chart.chart_data}
+										title={chart.title}
+										subtitle="Hindu Kush Himalaya Region Demographic Data"
+										chart_type={chart.chart_type}
+									/>
+								</div>
+							{/each}
+						</div>
+					{:else}
+						<div class="flex h-80 items-center justify-center">
+							<div class="text-center text-slate-500">
+								<!-- <p class="text-sm">Select a question to view related charts</p> -->
 							</div>
-							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
 						</div>
-
-						<!-- Information Layer Content -->
-						<div class="flex-1 overflow-y-auto">
-							{#if information_layers && information_layers.length > 0}
-								<div class="space-y-3">
-									{#each information_layers as layer, index}
-										<button
-											onclick={() => selectInformationLayer(layer.title)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
-											layer.title
-												? 'border-blue-500 bg-blue-50 shadow-md'
-												: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-										>
-											<div class="flex items-start space-x-3 text-left">
-												<div class="flex-1">
-													<h4
-														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'font-medium text-blue-700'
-															: 'text-slate-600 group-hover:text-slate-800'}"
-													>
-														{layer.title}
-													</h4>
-												</div>
-											</div>
-										</button>
-									{/each}
-								</div>
-							{:else}
-								<div class="flex h-40 items-center justify-center">
-									<div class="text-center text-slate-500">
-										<Layers class="mx-auto mb-2 h-8 w-8 text-slate-400" />
-										<p class="text-sm">No indicators available</p>
-										<p class="text-xs">Select a question to view map layers</p>
-									</div>
-								</div>
-							{/if}
-						</div>
-
-						<!-- Questions section - now empty, button moved to fixed position -->
-						<div class="relative mt-6 flex min-h-0 flex-1 flex-col pt-6"></div>
-					</div>
+					{/if}
 				</div>
 			</div>
 		</div>
 	</div>
+
+	<!-- Right Panel - Information Layer -->
+	<div
+		class="xl:col-span-3"
+		class:hidden={layoutState === 'left-full'}
+	>
+		<div class="sticky top-8 rounded-2xl border border-slate-200/50 bg-white/70 p-6">
+			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+				<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
+					<Layers class="h-5 w-5 text-white" />
+				</div>
+				<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
+			</div>
+
+			<div class="flex-1 overflow-y-auto">
+				{#if information_layers && information_layers.length > 0}
+					<div class="space-y-3">
+						{#each information_layers as layer, index}
+							<button
+								onclick={() => selectInformationLayer(layer.title)}
+								class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+								layer.title
+									? 'border-blue-500 bg-blue-50 shadow-md'
+									: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+							>
+								<div class="flex items-start space-x-3 text-left">
+									<div class="flex-1">
+										<h4
+											class="text-sm font-medium {selectedInformationLayer === layer.title
+												? 'font-medium text-blue-700'
+												: 'text-slate-600 group-hover:text-slate-800'}"
+										>
+											{layer.title}
+										</h4>
+									</div>
+								</div>
+							</button>
+						{/each}
+					</div>
+				{:else}
+					<div class="flex h-40 items-center justify-center">
+						<div class="text-center text-slate-500">
+							<Layers class="mx-auto mb-2 h-8 w-8 text-slate-400" />
+							<p class="text-sm">No indicators available</p>
+							<p class="text-xs">Select a question to view map layers</p>
+						</div>
+					</div>
+				{/if}
+			</div>
+		</div>
+	</div>
 </div>
+
+<!-- Floating Reopen Button - Only visible when left panel is hidden -->
+{#if layoutState === 'hide-left'}
+	<button
+		onclick={() => setLayoutState('default')}
+		class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+		title="Show Story Panel"
+	>
+		<ChevronsRight class="h-4 w-4" />
+	</button>
+{/if}
 
 <!-- Conditionally render floating questions button -->
 <div>
@@ -1415,7 +1242,7 @@
 				class:pointer-events-none={!isQuestionsPanelOpen}
 			>
 				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 p-2">
+					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
 						<Info class="h-4 w-4 text-white" />
 					</div>
 					<h3 class="text-lg font-bold text-slate-800">Explore Questions</h3>
@@ -1455,7 +1282,7 @@
 
 			<button
 				onclick={toggleQuestionsPanel}
-				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r {getTopicColor(topic)} text-white"
 				aria-label="Toggle questions panel"
 			>
 				<HelpCircle class="h-6 w-6" />
@@ -1519,60 +1346,6 @@
 		position: fixed !important;
 		z-index: 9999 !important;
 	}
-
-	/* Compact Time Slider Styles */
-	/* .compact-slider {
-		-webkit-appearance: none;
-		appearance: none;
-		height: 4px;
-		border-radius: 2px;
-		background: linear-gradient(to right, #e2e8f0 0%, #cbd5e1 100%);
-		outline: none;
-		transition: all 0.3s ease;
-	}
-
-	.compact-slider::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		background: linear-gradient(135deg, #6366f1, #8b5cf6);
-		cursor: pointer;
-		border: 1px solid white;
-		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
-		transition: all 0.2s ease;
-	}
-
-	.compact-slider::-webkit-slider-thumb:hover {
-		transform: scale(1.1);
-		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
-	}
-
-	.compact-slider::-moz-range-thumb {
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		background: linear-gradient(135deg, #6366f1, #8b5cf6);
-		cursor: pointer;
-		border: 1px solid white;
-		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
-		transition: all 0.2s ease;
-	}
-
-	.compact-slider::-moz-range-thumb:hover {
-		transform: scale(1.1);
-		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
-	} */
-
-	/* .scrollbar-hide {
-		scrollbar-width: none; 
-		-ms-overflow-style: none; 
-	}
-
-	.scrollbar-hide::-webkit-scrollbar {
-		display: none; 
-	} */
 
 	.custom-shadow {
 		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); /* bigger shadow for Questions Button */
