@@ -1,51 +1,196 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import climate_1 from '$lib/assets/images/climate_1.png';
-	import climate_2 from '$lib/assets/images/climate_2.png';
+
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
 	import OSM from 'ol/source/OSM';
+	import XYZ from 'ol/source/XYZ';
 	import { fromLonLat } from 'ol/proj';
-	import TileWMS from 'ol/source/TileWMS';
+	import { defaults as defaultInteractions } from 'ol/interaction';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import {
-		Cloud,
+		Wind,
 		CheckCircle,
 		Layers,
 		Info,
 		Eye,
 		EyeOff,
 		ChevronUp,
-		ChevronDown
+		ChevronDown,
+		ChevronLeft,
+		ChevronRight,
+		ChevronsLeft,
+		ChevronsRight,
+		HelpCircle,
+		List
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
 
-	let { currentTopic = 'climate', width = '100%', height = '400px' } = $props();
+	let { currentTopic = 'air-quality', width = '100%', height = '400px' } = $props();
 
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
 
 	// Hindu Kush Himalaya region coordinates (optimized for full HKH view)
-	const HKH_CENTER = [77.5, 32.5]; // Longitude, Latitude - adjusted for better HKH coverage
-	const HKH_ZOOM = 5; // Reduced zoom to show more of the HKH region
+	const HKH_CENTER = [82.94924, 27.6382055]; // Longitude, Latitude - adjusted for better HKH coverage
+	const HKH_ZOOM = 4.8; // Reduced zoom to show more of the HKH region
+
+	// Track fullscreen state
+	let isFullscreen = $state(false);
+	let fullscreenHandler: (() => void) | null = null;
+
+	// Layout states: 'default' | 'hide-left' | 'left-full'
+	let layoutState = $state('default');
+
+	// Track questions panel state
+	let isQuestionsPanelOpen = $state(false);
+	function toggleQuestionsPanel() {
+		isQuestionsPanelOpen = !isQuestionsPanelOpen;
+	}
+
+	// Sample ecosystem datasets structure
+	const ecosystemDataset = [
+		{
+			id: 'forest-cover',
+			title: 'Forest Cover Analysis',
+			description: 'Forest cover distribution and changes in the HKH region',
+			control_type: 'simple',
+			charts: [
+				{
+					title: 'Forest Cover by Region',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['Nepal', 'Bhutan', 'India', 'Pakistan', 'Afghanistan', 'Myanmar'],
+						series: [
+							{
+								name: 'Forest Cover (%)',
+								data: [44.7, 71.0, 24.4, 5.1, 2.1, 42.9]
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			id: 'biodiversity-hotspots',
+			title: 'Biodiversity Hotspots',
+			description: 'Key biodiversity areas and endemic species distribution',
+			control_type: 'simple',
+			charts: [
+				{
+					title: 'Endemic Species Count',
+					chart_type: 'line',
+					chart_data: {
+						categories: ['2000', '2005', '2010', '2015', '2020', '2024'],
+						series: [
+							{
+								name: 'Documented Species',
+								data: [15420, 16200, 17100, 18300, 19500, 20800]
+							}
+						]
+					}
+				}
+			]
+		}
+	];
+
+	const questions: any = [
+		// {
+		// 	id: 'question-1',
+		// 	question: 'Which areas have the highest forest cover in the HKH region?',
+		// 	dataset_id: 'forest-cover'
+		// },
+		// {
+		// 	id: 'question-2',
+		// 	question: 'Where are the major biodiversity hotspots located?',
+		// 	dataset_id: 'biodiversity-hotspots'
+		// },
+		// {
+		// 	id: 'question-3',
+		// 	question: 'How has ecosystem degradation affected wildlife corridors?',
+		// 	dataset_id: 'forest-cover'
+		// }
+	];
+
+	const information_layers: any = [
+		// {
+		// 	id: 'map-indicator-1',
+		// 	title: 'Forest Cover Distribution',
+		// 	dataset_id: 'forest-cover'
+		// },
+		// {
+		// 	id: 'map-indicator-2',
+		// 	title: 'Biodiversity Hotspots',
+		// 	dataset_id: 'biodiversity-hotspots'
+		// },
+		// {
+		// 	id: 'map-indicator-3',
+		// 	title: 'Protected Areas',
+		// 	dataset_id: 'forest-cover'
+		// }
+	];
+
+	// Track selected question - default to first question
+	let selectedQuestionId = $state('');
+
+	// Track selected information layer (single selection)
+	let selectedInformationLayer = $state<string | null>('Forest Cover Distribution');
+
+	// Get current dataset based on selected question or information layer
+	let currentDataset = $derived.by(() => {
+		// First priority: selected question
+		if (selectedQuestionId) {
+			const selectedQuestion = questions.find((q) => q.id === selectedQuestionId);
+			if (selectedQuestion?.dataset_id) {
+				return ecosystemDataset.find((item) => item.id === selectedQuestion.dataset_id);
+			}
+		}
+
+		// Second priority: selected information layer
+		if (selectedInformationLayer) {
+			const selectedLayer = information_layers.find(
+				(layer) => layer.title === selectedInformationLayer
+			);
+			if (selectedLayer?.dataset_id) {
+				return ecosystemDataset.find((item) => item.id === selectedLayer.dataset_id);
+			}
+		}
+
+		// Default: nothing selected, return null
+		return null;
+	});
+
+	// Extract current data from dataset
+	let currentCharts = $derived(currentDataset?.charts || []);
+
 	function initializeMap() {
 		if (!mapContainer) return;
 
 		// Small delay to ensure container has proper dimensions
 		setTimeout(() => {
+			// Create custom fullscreen control
+			const fullScreenControl = new FullScreen({
+				source: mapContainer.parentElement || mapContainer
+			});
+
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
-					new FullScreen(),
+					fullScreenControl,
 					new ScaleLine({ units: 'metric', bar: true })
 				]),
+				interactions: defaultInteractions({
+					mouseWheelZoom: false
+				}),
 				layers: [
 					new TileLayer({
-						source: new OSM()
+						source: new XYZ({
+							url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+						})
 					})
 				],
 				view: new View({
@@ -53,6 +198,29 @@
 					zoom: HKH_ZOOM
 				})
 			});
+
+			// Listen for fullscreen changes
+			const handleFullscreenChange = () => {
+				const isCurrentlyFullscreen = document.fullscreenElement !== null;
+				isFullscreen = isCurrentlyFullscreen;
+
+				// Force map resize when entering/exiting fullscreen
+				setTimeout(() => {
+					if (map) {
+						map.updateSize();
+						map.render();
+					}
+				}, 100);
+			};
+
+			// Store handler reference for cleanup
+			fullscreenHandler = handleFullscreenChange;
+
+			// Add fullscreen event listeners
+			document.addEventListener('fullscreenchange', handleFullscreenChange);
+			document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
 			// Add some basic interaction
 			map.on('click', (event) => {
@@ -91,501 +259,483 @@
 		}
 	});
 
+	// Cleanup on destroy
 	onDestroy(() => {
+		// Remove fullscreen event listeners
+		if (fullscreenHandler) {
+			document.removeEventListener('fullscreenchange', fullscreenHandler);
+			document.removeEventListener('webkitfullscreenchange', fullscreenHandler);
+			document.removeEventListener('mozfullscreenchange', fullscreenHandler);
+			document.removeEventListener('MSFullscreenChange', fullscreenHandler);
+			fullscreenHandler = null;
+		}
+
 		if (map) {
 			map.dispose();
 		}
 	});
 
-	// Generic climate dataset - array format for better structure
-	const climateDataset = [
-		{
-			id: 'temp-trend-30y',
-			question: 'What is the annual average temperature trend over the past 30 years',
-			charts: [
-				{
-					title: 'Annual Mean Temperature Trend',
-					chart_type: 'line',
-					chart_data: {
-						categories: [
-							'1995',
-							'1996',
-							'1997',
-							'1998',
-							'1999',
-							'2000',
-							'2001',
-							'2002',
-							'2003',
-							'2004',
-							'2005',
-							'2006',
-							'2007',
-							'2008',
-							'2009',
-							'2010',
-							'2011',
-							'2012',
-							'2013',
-							'2014',
-							'2015',
-							'2016',
-							'2017',
-							'2018',
-							'2019',
-							'2020',
-							'2021',
-							'2022',
-							'2023',
-							'2024'
-						],
-						series: [
-							{
-								name: 'Annual Mean Temperature (°C)',
-								data: [
-									4.7179, 4.7636, 3.9891, 5.3438, 5.5866, 4.8877, 5.418, 5.1678, 5.281, 5.2809,
-									5.0343, 5.7049, 5.4111, 5.12, 5.6186, 5.8814, 5.2644, 4.9087, 5.378, 5.3068,
-									5.5846, 6.3035, 6.0406, 5.7105, 5.3807, 5.6059, 6.0672, 6.0279, 5.9556, 6.4178
-								]
-							}
-						]
-					}
-				},
-				{
-					title: 'Temperature Distribution by Decade',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['1995-2004', '2005-2014', '2015-2024'],
-						series: [
-							{
-								name: 'Average Temperature (°C)',
-								data: [5.06, 5.35, 5.89]
-							}
-						]
-					}
+	// Watch for layout state changes and update map size
+	$effect(() => {
+		// This effect runs whenever layoutState changes
+		layoutState;
+
+		// Multiple resize attempts with different timings
+		if (map && mapContainer) {
+			// Immediate attempt
+			requestAnimationFrame(() => {
+				if (map) {
+					map.updateSize();
 				}
-			],
-			map_data: [
-				{
-					name: 'Annual Temperature Trend',
-					wms_url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-					layer_name: 'springs:hkh_lc_2021'
-				},
-				{
-					name: 'Temp Rise > 0.5°C',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
-				},
-				{
-					name: 'Temp Rise > 1.5°C',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
-				},
-				{
-					name: 'Temp Rise > 2.5°C',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_30y'
+			});
+
+			// Delayed attempt
+			setTimeout(() => {
+				if (map) {
+					map.updateSize();
+					map.render();
 				}
-			]
-		},
-		{
-			id: 'temp-rise-decade',
-			question: 'Which areas have observed temperature rise more than 1.5 degrees in last decade?',
-			charts: [
-				{
-					title: 'Regional Temperature Rise (Last Decade)',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['Kashmir', 'Nepal', 'Bhutan', 'Tibet', 'Afghanistan', 'Pakistan'],
-						series: [
-							{
-								name: 'Temperature Rise (°C)',
-								data: [2.1, 1.8, 2.3, 2.5, 1.9, 2.0]
-							}
-						]
-					}
-				},
-				{
-					title: 'Temperature Anomaly Comparison',
-					chart_type: 'line',
-					chart_data: {
-						categories: ['2019', '2020', '2021', '2022', '2023', '2024'],
-						series: [
-							{
-								name: 'HKH Temperature Anomaly (°C)',
-								data: [0.8, 1.2, 0.9, 1.4, 1.1, 1.6]
-							},
-							{
-								name: 'Global Temperature Anomaly (°C)',
-								data: [0.6, 0.8, 0.7, 0.9, 0.8, 1.0]
-							}
-						]
-					}
+			}, 150);
+
+			// Final attempt after all transitions
+			setTimeout(() => {
+				if (map) {
+					map.updateSize();
+					map.render();
 				}
-			],
-			map_data: [
-				{
-					name: 'Regional Temperature Rise',
-					wms_url: 'https://example.com/geoserver/wms',
-					layer_name: 'climate:temp_rise_regions',
-					style: 'temperature_rise_style',
-					description: 'Areas with temperature rise >1.5°C in last decade'
-				},
-				{
-					name: 'Temperature Anomaly Comparison',
-					wms_url: 'https://example.com/geoserver/climate/wms',
-					layer_name: 'climate:temp_anomaly_comparison',
-					style: 'comparison_style',
-					description: 'HKH vs Global temperature anomaly comparison'
-				}
-			]
+			}, 400);
 		}
-	];
-
-	// Extract questions for UI (now simpler)
-	const climateQuestions = climateDataset.map((item) => ({
-		id: item.id,
-		question: item.question
-	}));
-
-	// Track selected question - default to first question
-	let selectedQuestionId = $state('temp-trend-30y');
-
-	// Track active/visible map layers
-	let activeMapLayers = $state(new Set<string>());
-
-	// Track map data container collapse state
-	let isMapDataCollapsed = $state(false);
-
-	// Get current dataset based on selected question
-	let currentDataset = $derived(
-		selectedQuestionId
-			? climateDataset.find((item) => item.id === selectedQuestionId)
-			: climateDataset[0]
-	);
-
-	// Extract current data from dataset
-	let currentCharts = $derived(currentDataset?.charts || []);
-	let currentMapData = $derived(currentDataset?.map_data);
-
-	// Get layer by ID from map (your better approach)
-	const getLayerById = (layerID: string): any | null => {
-		if (!map) return null;
-		const layers = map.getLayers().getArray();
-		for (const layer of layers) {
-			if (layer.get('id') === layerID) {
-				return layer;
-			}
-		}
-		return null;
-	};
-
-	// Add WMS layer to map with ID
-	function addWMSLayer(mapLayerData: any) {
-		if (!map) return;
-
-		const wmsLayer = new TileLayer({
-			source: new TileWMS({
-				url: mapLayerData.wms_url,
-				params: {
-					LAYERS: mapLayerData.layer_name,
-					TILED: true
-				},
-				serverType: 'geoserver'
-			})
-		});
-
-		// Set the ID for later retrieval (your approach)
-		wmsLayer.set('id', mapLayerData.layer_name);
-
-		// Add to map
-		map.addLayer(wmsLayer);
-		console.log('Added layer:', mapLayerData.layer_name);
-	}
-
-	// Remove layer from map by ID
-	function removeWMSLayer(layerName: string) {
-		if (!map) return;
-
-		const layer = getLayerById(layerName);
-		if (layer) {
-			map.removeLayer(layer);
-			console.log('Removed layer:', layerName);
-		}
-	}
+	});
 
 	// Function to handle question selection
-	function selectQuestion(questionId: string, questionText: string) {
+	function selectQuestion(questionId: string) {
 		selectedQuestionId = questionId;
-		console.log('Question selected:', questionId, questionText);
-		console.log('Map data:', currentMapData);
+		// Clear information layer selection when selecting a question
+		selectedInformationLayer = null;
 
-		// Reset active layers when question changes
-		// First remove all WMS layers
-		activeMapLayers.forEach((layerName: string) => {
-			removeWMSLayer(layerName);
-		});
-		activeMapLayers.clear();
+		console.log('Question selected:', questionId);
 	}
 
-	// Function to toggle map layer visibility
-	function toggleMapLayer(layerName: string) {
-		// Find the layer data
-		const layerData = currentMapData?.find((layer) => layer.layer_name === layerName);
-		if (!layerData) {
-			console.error('Layer data not found for:', layerName);
+	// Function to select information layer
+	function selectInformationLayer(layerId: string) {
+		// If clicking the same layer, deselect it
+		if (selectedInformationLayer === layerId) {
+			selectedInformationLayer = null;
 			return;
 		}
 
-		if (activeMapLayers.has(layerName)) {
-			// Remove layer
-			activeMapLayers.delete(layerName);
-			removeWMSLayer(layerName);
-		} else {
-			// Add layer
-			activeMapLayers.add(layerName);
-			addWMSLayer(layerData);
-		}
+		// Simply select the layer
+		selectedInformationLayer = layerId;
+		// Clear question selection when selecting an information layer
+		selectedQuestionId = '';
 
-		// Trigger reactivity
-		activeMapLayers = new Set(activeMapLayers);
-		console.log('Layer toggled:', layerName, 'Active:', activeMapLayers.has(layerName));
+		console.log('Information layer selected:', layerId);
+	}
+
+	// Function to set specific layout state
+	function setLayoutState(state: 'default' | 'hide-left' | 'left-full') {
+		layoutState = state;
+
+		// Force map resize with multiple attempts to ensure it works
+		const forceMapResize = () => {
+			if (map && mapContainer) {
+				// Clear any existing size constraints
+				const mapElement = mapContainer;
+				mapElement.style.width = '100%';
+				mapElement.style.maxWidth = '100%';
+
+				// First immediate update
+				map.updateSize();
+
+				// Second update after a short delay
+				setTimeout(() => {
+					if (map) {
+						map.updateSize();
+						// Force a render
+						map.render();
+					}
+				}, 100);
+
+				// Third update after CSS transitions complete
+				setTimeout(() => {
+					if (map) {
+						// Force complete resize
+						const view = map.getView();
+						const currentCenter = view.getCenter();
+						const currentZoom = view.getZoom();
+
+						map.updateSize();
+						map.render();
+
+						// Restore view if it changed
+						if (currentCenter && currentZoom) {
+							view.setCenter(currentCenter);
+							view.setZoom(currentZoom);
+						}
+
+						console.log('Map resized for layout:', state);
+					}
+				}, 350);
+			}
+		};
+
+		// Use requestAnimationFrame to ensure DOM updates are complete
+		requestAnimationFrame(() => {
+			forceMapResize();
+		});
 	}
 </script>
 
-<!-- 3-Column Layout -->
-<div class="grid grid-cols-12 items-stretch gap-8">
-	<!-- Left Sidebar -->
-	<div class="col-span-3 flex">
-		<div
-			class="sticky top-6 h-fit max-h-[calc(100vh-14rem)] flex-1 overflow-y-auto rounded-2xl border border-white/20 bg-white/70 p-6 shadow-xl backdrop-blur-sm"
+<!-- 3-Column Layout with Dynamic States -->
+<div class="relative grid grid-cols-12 items-stretch gap-6">
+	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
+	{#if layoutState === 'hide-left'}
+		<button
+			on:click={() => setLayoutState('default')}
+			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+			title="Show Story Panel"
 		>
-			<div class="mb-6 flex items-center space-x-3">
-				<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
-					<Cloud class="h-5 w-5 text-white" />
-				</div>
-				<h3 class="text-lg font-bold text-slate-800">
-					Climate Change in the Hindu Kush Himalaya (HKH)
-				</h3>
-			</div>
+			<ChevronsRight class="h-4 w-4" />
+		</button>
+	{/if}
 
-			<div class="space-y-4">
-				<p class="text-justify text-sm leading-relaxed text-slate-600">
-					Historically, the climate of the HKH has experienced significant changes that are closely
-					related to the rise and fall of regional cultures and civilizations. The region is one of
-					the most climate-sensitive mountain systems in the world. Known as the “Third Pole” for
-					its vast ice reserves, the HKH plays a critical role in regulating Asia’s climate and
-					serves as the source of ten major river systems that sustain the livelihoods of over 1.6
-					billion people downstream. However, the impacts of climate change are being felt here more
-					intensely than the global average, with temperatures rising significantly faster than
-					elsewhere.
-				</p>
-				<p class="text-justify text-sm leading-relaxed text-slate-600">
-					In the future, even if global warming is kept to 1.5 °C, warming in the Hindu Kush
-					Himalaya (HKH) region will likely be at least 0.3 °C higher, and in the northwest Himalaya
-					and Karakoram at least 0.7 °C higher. Such large warming could trigger a multitude of
-					biophysical and socio-economic impacts, such as biodiversity loss, increased glacial
-					melting, and less predictable water availability—all of which will impact livelihoods and
-					well-being in the HKH.
-				</p>
-				<p class="text-justify text-sm leading-relaxed text-slate-600">
-					Glaciers in the HKH are retreating at unprecedented rates, snow cover is diminishing, and
-					permafrost is degrading, all of which are altering river flows and threatening water
-					security.
-				</p>
-				<p class="text-justify text-sm leading-relaxed text-slate-600">
-					Climate change is also amplifying the frequency and severity of extreme weather events,
-					including floods, droughts, and landslides, which pose immediate risks to lives,
-					infrastructure, and economies. The loss of cryospheric mass not only threatens long-term
-					water availability but also increases the risk of glacial lake outburst floods (GLOFs)
-					that can devastate downstream communities.
-				</p>
-				<p class="text-justify text-sm leading-relaxed text-slate-600">
-					The impacts extend beyond the physical environment to agriculture, biodiversity, and
-					cultural heritage. Shifts in seasonal patterns are affecting crop yields, while warming
-					temperatures are pushing species to higher altitudes, disrupting delicate alpine
-					ecosystems. Many communities in the HKH rely on climate-sensitive livelihoods such as
-					farming, herding, and tourism, making them particularly vulnerable.
-				</p>
-				<p class="text-justify text-sm leading-relaxed text-slate-600">
-					Addressing climate change in the HKH requires urgent, coordinated, and region-wide action.
-					This includes investing in climate-resilient infrastructure, expanding early warning
-					systems, improving water management, and enhancing scientific monitoring of glaciers and
-					weather patterns. Regional cooperation is essential for sharing data, aligning adaptation
-					strategies, and managing shared water resources sustainably. Equally important is
-					empowering local communities with knowledge, technology, and resources to adapt to
-					changing conditions while preserving the environmental and cultural richness of the HKH.
-				</p>
-			</div>
-
-			<!-- Images Section -->
-			<div class="mt-6 space-y-4">
-				<!-- Image 1 -->
-				<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-					<img src={climate_1} alt="Himalayan glacial retreat" class="h-40 w-full object-cover" />
-					<div class="p-3">
-						<p class="text-xs text-slate-600">
-							<span class="font-medium"
-								>We see <span>less snow</span> on the mountain peaks in recent years.
-							</span>
-						</p>
+	<!-- Left Sidebar - Story + Information -->
+	<div
+		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-16rem)] flex-1 space-y-6 overflow-y-auto"
+		class:hidden={layoutState === 'hide-left'}
+		class:col-span-12={layoutState === 'left-full'}
+	>
+		<!-- Story Section -->
+		<div class="rounded-2xl border border-white/20 bg-white/100 p-6">
+			<div class="mb-6 flex items-center justify-between">
+				<div class="flex items-center space-x-3">
+					<div class="rounded-lg bg-gradient-to-r from-red-500 to-stone-500 p-2">
+						<Wind class="h-5 w-5 text-white" />
 					</div>
-				</div>
-
-				<!-- Image 2 -->
-				<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-					<img
-						src={climate_2}
-						alt="Hindu Kush Himalaya climate impacts"
-						class="h-40 w-full object-cover"
-					/>
-					<div class="p-3">
-						<p class="text-xs text-slate-600">
-							Flooded street in Kathmandu after a less than an hour <span class="font-medium">
-								heavy downpour
-							</span>
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Main Content Area - Split into Map and Chart sections -->
-	<div class="col-span-6 flex flex-col gap-4">
-		<!-- Map Section -->
-		<div
-			class="relative flex-1 overflow-hidden rounded-xl border border-slate-200/50 bg-white shadow-sm"
-		>
-			<div
-				class="map-container flex flex-col bg-white/70 backdrop-blur-sm"
-				class:h-full={height === '100%'}
-			>
-				<div
-					bind:this={mapContainer}
-					class="map-element overflow-hidden rounded-2xl border border-slate-200/50"
-					style="width: {width}; {height === '100%' ? 'min-height: 600px;' : `height: ${height};`}"
-					class:flex-1={height === '100%'}
-				></div>
-			</div>
-
-			<!-- Map Data Container - Bottom Right (Collapsible) -->
-			{#if currentMapData && currentMapData.length > 0}
-				<div
-					class="absolute right-4 bottom-4 w-64 rounded-xl border border-white/20 bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-300"
-				>
-					<!-- Header with collapse toggle -->
-					<button
-						on:click={() => (isMapDataCollapsed = !isMapDataCollapsed)}
-						class="flex w-full items-center justify-between rounded-t-xl p-3 transition-colors duration-200 hover:bg-white/50"
+					<h3
+						class="{layoutState === 'left-full'
+							? 'text-2xl'
+							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
 					>
-						<div class="flex items-center space-x-2">
-							<!-- <div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-1">
-								<Layers class="h-3 w-3 text-white" />
-							</div> -->
-							<h4 class="text-sm font-bold text-slate-800">Indicators</h4>
-						</div>
-						{#if isMapDataCollapsed}
-							<ChevronDown class="h-4 w-4 text-slate-600" />
-						{:else}
-							<ChevronUp class="h-4 w-4 text-slate-600" />
-						{/if}
-					</button>
-
-					<!-- Collapsible content -->
-					{#if !isMapDataCollapsed}
-						<div class="border-t border-white/30 p-3">
-							<div class="max-h-40 space-y-2 overflow-y-auto">
-								{#each currentMapData as mapLayer, index}
-									<button
-										on:click={() => toggleMapLayer(mapLayer.layer_name)}
-										class="w-full rounded-lg border px-3 py-2 backdrop-blur-sm transition-all duration-200 hover:shadow-sm {activeMapLayers.has(
-											mapLayer.layer_name
-										)
-											? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-sm'
-											: 'border-slate-200/30 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/50'}"
-									>
-										<div class="flex items-center justify-between text-left">
-											<div class="flex items-center space-x-2">
-												{#if activeMapLayers.has(mapLayer.layer_name)}
-													<Eye class="h-3 w-3 flex-shrink-0 text-green-600" />
-												{:else}
-													<EyeOff class="h-3 w-3 flex-shrink-0 text-slate-400" />
-												{/if}
-												<span
-													class="text-xs font-medium {activeMapLayers.has(mapLayer.layer_name)
-														? 'text-green-800'
-														: 'text-slate-800'} truncate"
-												>
-													{mapLayer.name}
-												</span>
-											</div>
-										</div>
-									</button>
-								{/each}
-							</div>
-						</div>
+						Air Quality in HKH
+					</h3>
+				</div>
+				<div class="flex items-center space-x-2">
+					{#if layoutState !== 'left-full'}
+						<!-- Hide Left Panel Button -->
+						<button
+							on:click={() => setLayoutState('hide-left')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Hide Story Panel"
+						>
+							<ChevronsLeft class="h-4 w-4" />
+						</button>
+						<!-- Expand Story Button -->
+						<button
+							on:click={() => setLayoutState('left-full')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Expand Story"
+						>
+							<ChevronsRight class="h-4 w-4" />
+						</button>
+					{:else}
+						<!-- Back to Default Button -->
+						<button
+							on:click={() => setLayoutState('default')}
+							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							title="Back to Default"
+						>
+							<ChevronsLeft class="h-4 w-4" />
+						</button>
 					{/if}
 				</div>
-			{/if}
-		</div>
+			</div>
 
-		<!-- Chart Section -->
-		<div class="flex-1 rounded-xl border border-slate-200/50 bg-white p-4 shadow-sm">
-			<h3 class="mb-3 text-lg font-semibold text-slate-700">Climate Charts & Analytics</h3>
-			<div class="rounded-lg bg-slate-50/50 p-2">
-				{#if currentCharts && currentCharts.length > 0}
-					<div class="space-y-6">
-						{#each currentCharts as chart, index}
-							<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
-								<Chart
-									chartData={chart.chart_data}
-									title={chart.title}
-									subtitle="Hindu Kush Himalaya Region Climate Data"
-									chart_type={chart.chart_type}
-								/>
-							</div>
-						{/each}
-					</div>
-				{:else}
-					<div class="flex h-80 items-center justify-center">
-						<div class="text-center text-slate-500">
-							<p class="text-sm">Select a question to view related charts</p>
-						</div>
-					</div>
-				{/if}
+			<div
+				class="{layoutState === 'left-full'
+					? 'space-y-6'
+					: 'space-y-4'} transition-all duration-300"
+			>
+				<!-- <p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-700 transition-all duration-300"
+				>
+					The Hindu Kush Himalaya (HKH) region is recognized as one of the world's most biodiverse
+					mountain systems, harboring an extraordinary array of ecosystems from tropical forests to
+					alpine meadows. This vast region spans across eight countries and encompasses 35
+					biodiversity hotspots, making it a critical repository of global biological heritage. The
+					HKH supports over 25,000 plant species, including numerous endemic varieties, and provides
+					habitat for iconic wildlife such as snow leopards, Bengal tigers, one-horned rhinoceros,
+					and countless bird species.
+				</p>
+
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					However, these precious ecosystems face unprecedented threats from climate change, habitat
+					fragmentation, and human encroachment. Rising temperatures are pushing species to higher
+					altitudes, disrupting established ecological relationships and threatening the survival of
+					cold-adapted species. Deforestation and land-use changes have fragmented critical wildlife
+					corridors, isolating populations and reducing genetic diversity.
+				</p>
+
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					The region's forests, which act as crucial carbon sinks and regulate water cycles, are
+					under severe pressure from agricultural expansion, infrastructure development, and
+					unsustainable harvesting practices. Wetlands and grasslands, equally important for
+					biodiversity and ecosystem services, are being converted for agriculture and urban
+					development at alarming rates.
+				</p>
+
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Conservation efforts in the HKH require urgent, coordinated action across borders.
+					Establishing and maintaining protected areas, creating wildlife corridors, and
+					implementing sustainable land management practices are essential. Community-based
+					conservation approaches that engage local populations as stewards of biodiversity have
+					shown promising results. Additionally, scientific research and monitoring programs are
+					crucial for understanding ecosystem dynamics and developing effective conservation
+					strategies that can adapt to changing environmental conditions.
+				</p> -->
 			</div>
 		</div>
 	</div>
 
-	<!-- Right Sidebar -->
-	<div class="col-span-3 flex">
-		<div class="flex-1 rounded-xl border border-slate-200/50 bg-white p-4 shadow-sm">
-			<h3 class="mb-4 text-sm font-semibold text-slate-700">Possible Questions</h3>
-			<div class="space-y-3">
-				{#each climateQuestions as questionItem, index}
+	<!-- Main Content Area - Unified container with common white background -->
+	<div
+		class="sticky col-span-9"
+		class:col-span-12={layoutState === 'hide-left'}
+		class:hidden={layoutState === 'left-full'}
+	>
+		<div class="rounded-2xl border border-white/20 bg-white p-6 shadow-xl backdrop-blur-sm">
+			<div class="flex gap-6">
+				<!-- Left part: Map and Charts -->
+				<div
+					class="flex min-w-0 flex-col gap-6 {layoutState === 'hide-left' ? 'flex-1' : 'flex-1'}"
+				>
+					<!-- Map Section -->
 					<div
-						class="group cursor-pointer rounded-lg border p-3 transition-all {selectedQuestionId ===
-						questionItem.id
-							? 'border-blue-500 bg-blue-50 shadow-md'
-							: 'border-slate-100 hover:border-blue-200 hover:bg-blue-50/50'}"
-						role="button"
-						tabindex="0"
-						on:click={() => selectQuestion(questionItem.id, questionItem.question)}
+						class="relative h-[60vh] max-h-[800px] min-h-[500px] overflow-hidden rounded-xl border border-slate-200/30"
 					>
-						<p
-							class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-								? 'font-medium text-blue-700'
-								: 'text-slate-600'}"
-						>
-							{questionItem.question}
-						</p>
+						<div class="map-container flex h-full flex-col">
+							<div
+								bind:this={mapContainer}
+								class="map-element h-full w-full overflow-hidden rounded-xl"
+							></div>
+						</div>
 					</div>
-				{/each}
+
+					<!-- Chart Section -->
+					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
+						<div class="rounded-lg bg-slate-50/50">
+							{#if currentDataset && currentCharts && currentCharts.length > 0}
+								<div class="space-y-6">
+									{#each currentCharts as chart, index}
+										<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
+											<Chart
+												chartData={chart.chart_data}
+												title={chart.title}
+												subtitle="Hindu Kush Himalaya Region Ecosystem Data"
+												chart_type={chart.chart_type}
+											/>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<div class="flex h-80 items-center justify-center">
+									<div class="text-center text-slate-500">
+										<p class="text-sm">
+											Select a question or information layer to view related charts
+										</p>
+									</div>
+								</div>
+							{/if}
+						</div>
+					</div>
+				</div>
+
+				<!-- Right part: Information Layer -->
+				<div class="w-80 flex-shrink-0">
+					<div
+						class=" top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
+					>
+						<!-- Information Layer Header -->
+						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+							<div class="rounded-lg bg-gradient-to-r from-red-500 to-stone-500 p-2">
+								<Layers class="h-5 w-5 text-white" />
+							</div>
+							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
+						</div>
+
+						<!-- Information Layer Content -->
+						<div class="flex-1 overflow-y-auto">
+							{#if information_layers && information_layers.length > 0}
+								<div class="space-y-3">
+									{#each information_layers as layer, index}
+										<button
+											on:click={() => selectInformationLayer(layer.title)}
+											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+											layer.title
+												? 'border-red-300 bg-gradient-to-r from-red-50/90 to-stone-50/90 shadow-md'
+												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+										>
+											<div class="flex items-start space-x-3 text-left">
+												<div class="flex-1">
+													<h4
+														class="text-sm font-medium {selectedInformationLayer === layer.title
+															? 'text-red-800'
+															: 'text-slate-800'} mb-1"
+													>
+														{layer.title}
+													</h4>
+												</div>
+											</div>
+										</button>
+									{/each}
+								</div>
+							{:else}
+								<div class="flex h-40 items-center justify-center">
+									<div class="text-center text-slate-500">
+										<Layers class="mx-auto mb-2 h-8 w-8 text-slate-400" />
+										<p class="text-sm">No indicators available</p>
+										<p class="text-xs">Select a question to view map layers</p>
+									</div>
+								</div>
+							{/if}
+						</div>
+
+						<!-- Questions section - now empty, button moved to fixed position -->
+						<div class="relative mt-6 flex min-h-0 flex-1 flex-col pt-6"></div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
 
+<!-- Fixed Floating Questions Button and Panel -->
+{#if layoutState !== 'left-full'}
+	<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
+		<div
+			class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+			class:scale-0={!isQuestionsPanelOpen}
+			class:scale-100={isQuestionsPanelOpen}
+			class:opacity-0={!isQuestionsPanelOpen}
+			class:opacity-100={isQuestionsPanelOpen}
+			class:pointer-events-none={!isQuestionsPanelOpen}
+		>
+			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+				<div class="rounded-lg bg-gradient-to-r from-red-500 to-stone-500 p-2">
+					<Info class="h-4 w-4 text-white" />
+				</div>
+				<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
+			</div>
+
+			<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
+				{#each questions as questionItem, index}
+					<button
+						class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
+						questionItem.id
+							? 'border-red-500 bg-red-50 shadow-md'
+							: 'border-slate-200/50 bg-white/50 hover:border-red-300 hover:bg-red-50/70 hover:shadow-sm'}"
+						on:click={() => selectQuestion(questionItem.id)}
+					>
+						<div class="flex items-start space-x-2">
+							<div class="mt-1 flex-shrink-0">
+								{#if selectedQuestionId === questionItem.id}
+									<CheckCircle class="h-4 w-4 text-green-600" />
+								{:else}
+									<div
+										class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-red-400"
+									></div>
+								{/if}
+							</div>
+							<p
+								class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+									? 'font-medium text-red-700'
+									: 'text-slate-600 group-hover:text-slate-800'}"
+							>
+								{questionItem.question}
+							</p>
+						</div>
+					</button>
+				{/each}
+			</div>
+		</div>
+
+		<button
+			on:click={toggleQuestionsPanel}
+			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-stone-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
+			aria-label="Toggle questions panel"
+		>
+			<HelpCircle class="h-6 w-6" />
+		</button>
+	</div>
+{/if}
+
 <style>
+	/* Ensure map containers resize properly */
+	.map-container {
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.map-element {
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
+		transition: all 0.3s ease;
+		overflow: hidden;
+	}
+
+	/* Force OpenLayers map to be responsive */
+	:global(.ol-viewport) {
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
+		overflow: hidden !important;
+	}
+
+	:global(.ol-overlaycontainer-stopevent) {
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
+	}
+
+	/* Ensure flex children don't overflow */
+	:global(.flex > *) {
+		min-width: 0;
+	}
+
+	/* Fullscreen mode adjustments */
+	:global(:fullscreen .map-container),
+	:global(:-webkit-full-screen .map-container),
+	:global(:-moz-full-screen .map-container),
+	:global(:-ms-fullscreen .map-container) {
+		position: relative !important;
+		width: 100vw !important;
+		height: 100vh !important;
+		z-index: 9998 !important;
+	}
+
+	/* Ensure controls are visible in fullscreen */
+	:global(:fullscreen .absolute),
+	:global(:-webkit-full-screen .absolute),
+	:global(:-moz-full-screen .absolute),
+	:global(:-ms-fullscreen .absolute) {
+		position: fixed !important;
+		z-index: 9999 !important;
+	}
 </style>
