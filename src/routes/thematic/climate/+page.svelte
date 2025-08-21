@@ -312,15 +312,17 @@
 		{
 			id: 'temp-trend-10y',
 			title: 'Overall Annual Temperature Trend Analysis of 10 Years',
+
 			description: 'Temperature trend analysis with overall vs significant trend options',
 			control_type: 'radio',
 			control_options: ['overall', 'significant'],
 			default_option: 'overall',
 			charts: [
 				{
-					title: 'Annual Mean Temperature Trends (°C/decade)',
+					title: 'Distribution of Annual Mean Temperature Trends (°C/decade)',
 					chart_type: 'column',
 					yAxisTitle: 'count',
+					// subtitle: 'Mean Temperature: 2.00°C/decade',
 					// xAxisConfig: {
 					// 	type: 'linear',
 					// 	min: -0.06,
@@ -1057,7 +1059,7 @@
 			},
 			charts: [
 				{
-					title: 'Winter Temperature Trend',
+					title: 'Distribution of Winter Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
 					// xAxisConfig: {
@@ -1362,7 +1364,7 @@
 				// },
 
 				{
-					title: 'Summer Temperature Trend',
+					title: 'Distribution of Summer Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
 					// xAxisConfig: {
@@ -1490,7 +1492,7 @@
 				},
 
 				{
-					title: 'Spring Temperature Trend',
+					title: 'Distribution of Spring Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
 					// xAxisConfig: {
@@ -1618,7 +1620,7 @@
 				},
 
 				{
-					title: 'Autumn Temperature Trend',
+					title: 'Distribution of Autumn Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
 					// xAxisConfig: {
@@ -3655,7 +3657,7 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												subtitle="Hindu Kush Himalaya Region Climate Data"
+												subtitle={chart.subtitle || 'Hindu Kush Himalaya Region Climate Data'}
 												chart_type={chart.chart_type}
 												yAxisTitle={(chart as any).yAxisTitle || 'Value'}
 												plotOptions={(chart.chart_data as any).plotOptions || {}}
