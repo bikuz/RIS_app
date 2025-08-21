@@ -321,7 +321,7 @@
 				{
 					title: 'Distribution of Annual Mean Temperature Trends (°C/decade)',
 					chart_type: 'column',
-					yAxisTitle: 'count',
+					yAxisTitle: 'Frequency',
 					// subtitle: 'Mean Temperature: 2.00°C/decade',
 					// xAxisConfig: {
 					// 	type: 'linear',
@@ -670,12 +670,15 @@
 				format: 'YYYY',
 				animation_speed: 1500
 			},
+			
 			charts: [
 				{
 					title: 'Temperature Anomalies (1995–2024)',
 					chart_type: 'column',
 					yAxisTitle: 'Temperature Anomaly (°C)',
+					showLegend: false,
 					chart_data: {
+						
 						categories: [
 							1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
 							2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022,
@@ -1061,7 +1064,7 @@
 				{
 					title: 'Distribution of Winter Temperature Trend',
 					chart_type: 'column',
-					yAxisTitle: 'Count',
+					yAxisTitle: 'Frequency',
 					// xAxisConfig: {
 					// 	type: 'linear',
 					// 	min: -0.5,
@@ -1366,7 +1369,7 @@
 				{
 					title: 'Distribution of Summer Temperature Trend',
 					chart_type: 'column',
-					yAxisTitle: 'Count',
+					yAxisTitle: 'Frequency',
 					// xAxisConfig: {
 					// 	type: 'linear',
 					// 	min: -0.5,
@@ -1494,7 +1497,7 @@
 				{
 					title: 'Distribution of Spring Temperature Trend',
 					chart_type: 'column',
-					yAxisTitle: 'Count',
+					yAxisTitle: 'Frequency',
 					// xAxisConfig: {
 					// 	type: 'linear',
 					// 	min: -0.5,
@@ -1622,7 +1625,7 @@
 				{
 					title: 'Distribution of Autumn Temperature Trend',
 					chart_type: 'column',
-					yAxisTitle: 'Count',
+					yAxisTitle: 'Frequency',
 					// xAxisConfig: {
 					// 	type: 'linear',
 					// 	min: -0.39,
@@ -3661,6 +3664,7 @@
 												chart_type={chart.chart_type}
 												yAxisTitle={(chart as any).yAxisTitle || 'Value'}
 												plotOptions={(chart.chart_data as any).plotOptions || {}}
+												showLegend={chart.showLegend}
 											/>
 										</div>
 									{/each}
