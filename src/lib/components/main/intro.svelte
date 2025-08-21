@@ -62,7 +62,7 @@
     },
 	{
       icon: Users,
-      value: "270+ M",
+      value: "233+ M",
       label: "Population",
       color: "from-violet-500 to-purple-600",
     //   bgColor: "bg-gradient-to-br from-violet-50 to-purple-50",
