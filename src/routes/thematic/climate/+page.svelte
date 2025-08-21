@@ -35,7 +35,8 @@
 		SkipBack,
 		SkipForward,
 		Calendar,
-		List
+		List,
+		House
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
@@ -311,15 +312,17 @@
 		{
 			id: 'temp-trend-10y',
 			title: 'Overall Annual Temperature Trend Analysis of 10 Years',
+
 			description: 'Temperature trend analysis with overall vs significant trend options',
 			control_type: 'radio',
 			control_options: ['overall', 'significant'],
 			default_option: 'overall',
 			charts: [
 				{
-					title: 'Annual Mean Temperature Trends (°C/decade)',
+					title: 'Distribution of Annual Mean Temperature Trends (°C/decade)',
 					chart_type: 'column',
 					yAxisTitle: 'count',
+					// subtitle: 'Mean Temperature: 2.00°C/decade',
 					// xAxisConfig: {
 					// 	type: 'linear',
 					// 	min: -0.06,
@@ -415,7 +418,7 @@
 									403, 389, 346, 216, 301, 255, 155, 197, 114, 82, 86, 61, 50, 55, 46, 22, 34, 25,
 									19, 8, 13, 6, 4, 3, 3, 1, 2, 2, 1, 2, 1
 								],
-								color: 'rgba(173, 216, 230, 0.8)', // Light blue like in your reference
+								color: '#3B82F6', // Modern blue
 								zIndex: 1
 							},
 							{
@@ -425,7 +428,7 @@
 									378, 341, 211, 299, 251, 155, 195, 114, 82, 86, 61, 50, 55, 46, 22, 34, 25, 19, 8,
 									13, 6, 4, 3, 3, 1, 2, 2, 1, 2, 1
 								],
-								color: 'rgba(255, 99, 71, 0.8)', // Reddish color like in your reference
+								color: '#EF4444', // Modern red
 								zIndex: 2
 							}
 						]
@@ -691,10 +694,10 @@
 								zones: [
 									{
 										value: 0, // values < 0
-										color: '#4C4CFF'
+										color: '#3B82F6' // Modern blue for negative values
 									},
 									{
-										color: '#FF4C4C' // values >= 0
+										color: '#EF4444' // Modern red for positive values
 									}
 								]
 							}
@@ -737,7 +740,7 @@
 									-0.2289, 0.4456, 0.1589, -0.1417, 0.3663, 0.63, 0.0042, -0.3543, 0.1069, 0.0474,
 									0.3258, 1.0569, 0.7923, 0.45, 0.112, 0.3581, 0.8142, 0.7695, 0.6875, 1.1673
 								],
-								color: '#AA4643',
+								color: '#3B82F6', // Modern blue
 								marker: {
 									enabled: false,
 									radius: 3
@@ -777,7 +780,7 @@
 									null,
 									null
 								],
-								color: '#FFA000',
+								color: '#F59E0B', // Modern amber
 								dashStyle: 'Dash',
 								marker: {
 									enabled: false
@@ -817,7 +820,7 @@
 									null,
 									null
 								],
-								color: '#4C4CFF',
+								color: '#8B5CF6', // Modern purple
 								dashStyle: 'Dash',
 								marker: {
 									enabled: false
@@ -1056,7 +1059,7 @@
 			},
 			charts: [
 				{
-					title: 'Winter Temperature Trend',
+					title: 'Distribution of Winter Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
 					// xAxisConfig: {
@@ -1163,7 +1166,7 @@
 									399, 240, 237, 184, 171, 135, 130, 137, 79, 84, 79, 73, 41, 44, 29, 38, 16, 24,
 									23, 8, 17, 3, 10, 10, 12, 6, 5, 2, 1, 1, 1, 2
 								],
-								color: 'rgba(173, 216, 230, 0.8)', // Light blue
+								color: '#3B82F6', // Modern blue
 								zIndex: 1
 							},
 							{
@@ -1173,7 +1176,7 @@
 									48, 48, 40, 43, 43, 52, 27, 32, 20, 27, 11, 18, 13, 7, 10, 3, 5, 10, 10, 5, 3, 1,
 									1, 0, 1, 1
 								],
-								color: 'rgba(255, 99, 71, 0.85)', // Coral/reddish
+								color: '#EF4444', // Modern red
 								zIndex: 2
 							}
 						]
@@ -1361,7 +1364,7 @@
 				// },
 
 				{
-					title: 'Summer Temperature Trend',
+					title: 'Distribution of Summer Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
 					// xAxisConfig: {
@@ -1471,7 +1474,7 @@
 									465, 526, 195, 192, 101, 71, 35, 25, 13, 8, 8, 16, 6, 3, 4, 3, 3, 3, 3, 0, 0, 0,
 									0, 3, 1, 0, 0, 0, 0, 1, 1
 								],
-								color: 'rgba(173, 216, 230, 0.8)',
+								color: '#3B82F6', // Modern blue
 								zIndex: 1
 							},
 							{
@@ -1481,7 +1484,7 @@
 									185, 181, 96, 64, 35, 23, 13, 8, 8, 16, 6, 3, 4, 3, 3, 3, 3, 0, 0, 0, 0, 3, 1, 0,
 									0, 0, 0, 1, 1
 								],
-								color: 'rgba(255, 99, 71, 0.85)',
+								color: '#EF4444', // Modern red
 								zIndex: 2
 							}
 						]
@@ -1489,7 +1492,7 @@
 				},
 
 				{
-					title: 'Spring Temperature Trend',
+					title: 'Distribution of Spring Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
 					// xAxisConfig: {
@@ -1599,7 +1602,7 @@
 									422, 420, 366, 317, 188, 191, 187, 150, 130, 112, 80, 80, 49, 45, 27, 24, 32, 24,
 									16, 9, 9, 10, 3, 1, 5, 4, 5, 1, 1, 3, 0
 								],
-								color: 'rgba(173, 216, 230, 0.8)',
+								color: '#3B82F6', // Modern blue
 								zIndex: 1
 							},
 							{
@@ -1609,7 +1612,7 @@
 									95, 106, 109, 105, 95, 81, 60, 68, 46, 43, 26, 24, 32, 24, 16, 9, 9, 10, 3, 1, 5,
 									4, 5, 1, 1, 3, 0
 								],
-								color: 'rgba(255, 99, 71, 0.85)',
+								color: '#EF4444', // Modern red
 								zIndex: 2
 							}
 						]
@@ -1617,7 +1620,7 @@
 				},
 
 				{
-					title: 'Autumn Temperature Trend',
+					title: 'Distribution of Autumn Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Count',
 					// xAxisConfig: {
@@ -1727,7 +1730,7 @@
 									422, 420, 366, 317, 188, 191, 187, 150, 130, 112, 80, 80, 49, 45, 27, 24, 32, 24,
 									16, 9, 9, 10, 3, 1, 5, 4, 5, 1, 1, 3, 0
 								],
-								color: 'rgba(173, 216, 230, 0.8)',
+								color: '#3B82F6', // Modern blue
 								zIndex: 1
 							},
 							{
@@ -1737,7 +1740,7 @@
 									95, 106, 109, 105, 95, 81, 60, 68, 46, 43, 26, 24, 32, 24, 16, 9, 9, 10, 3, 1, 5,
 									4, 5, 1, 1, 3, 0
 								],
-								color: 'rgba(255, 99, 71, 0.85)',
+								color: '#EF4444', // Modern red
 								zIndex: 2
 							}
 						]
@@ -2265,6 +2268,75 @@
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
 
+	// Add new state variables for layers panel
+	let layersPanelOpen = $state(false);
+	let activeBaseLayers = $state<Record<number, boolean>>({});
+
+	// Define base layers from HKH/Outline service
+	const baseLayers = [
+		{
+			id: 0,
+			name: 'Outline',
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
+		}
+	];
+
+	// Function to toggle base layers
+	async function toggleBaseLayer(layerId: number, checked: boolean) {
+		if (!map) return;
+		activeBaseLayers = { ...activeBaseLayers, [layerId]: checked };
+
+		if (checked) {
+			const layerInfo = baseLayers.find((l) => l.id === layerId);
+			if (!layerInfo) return;
+
+			let layer;
+
+			if (layerId === 0) {
+				// Apply special styling or configuration for layerId 0 (Outline)
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 10, // Higher z-index for outline to ensure visibility
+					opacity: 0.7 // Slightly higher opacity for better visibility
+				});
+			} else {
+				// Default configuration for other layers
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 5 // Higher than climate layers but lower than outline
+				});
+			}
+
+			layer.set('baseLayerId', layerId);
+			map.addLayer(layer);
+		} else {
+			const layers = map.getLayers().getArray();
+			for (const layer of layers) {
+				if (layer.get('baseLayerId') === layerId) {
+					map.removeLayer(layer);
+					break;
+				}
+			}
+		}
+
+		// Update legend after changing layers
+		fetchLegendData();
+	}
+
 	// Get current dataset based on selected question or information layer
 	let currentDataset = $derived.by(() => {
 		// First priority: selected question
@@ -2376,6 +2448,29 @@
 		return null;
 	};
 
+	// Function to fetch ArcGIS legend
+	async function fetchArcGISLegend(serviceUrl: string, layerId: number) {
+		try {
+			const legendUrl = `${serviceUrl}/legend?f=json`;
+			const response = await fetch(legendUrl);
+			const data = await response.json();
+
+			const layerLegend = data.layers.find((l: any) => l.layerId === layerId);
+			if (layerLegend) {
+				return {
+					name: layerLegend.layerName,
+					items: layerLegend.legend.map((item: any) => ({
+						label: item.label,
+						imageData: `data:image/png;base64,${item.imageData}`
+					}))
+				};
+			}
+		} catch (error) {
+			console.error('Error fetching ArcGIS legend:', error);
+		}
+		return null;
+	}
+
 	// Add layer to map based on layer configuration
 	function addWMSLayer(layerConfig: any) {
 		if (!map || !layerConfig) return;
@@ -2480,89 +2575,132 @@
 			// Clear legend data first
 			legendData = {};
 
-			if (!currentDataset || !currentMapLayers) {
-				return;
-			}
+			// Get all layers from the map (including base layers)
+			if (map) {
+				const layers = map.getLayers().getArray();
 
-			console.log('Fetching legend data for dataset:', currentDataset.id);
+				for (const layer of layers) {
+					// Type guard to check if layer has getSource method
+					if ('getSource' in layer && typeof layer.getSource === 'function') {
+						const source = (layer as any).getSource();
 
-			// Get current layers based on control type
-			let layersToFetch: any[] = [];
-
-			if (currentDataset.control_type === 'radio') {
-				const selectedLayers = currentMapLayers[trendAnalysisMode];
-				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-			} else if (currentDataset.control_type === 'temperature_threshold') {
-				const selectedLayers = currentMapLayers[temperatureRiseThreshold];
-				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-			} else if (currentDataset.control_type === 'time_slider') {
-				const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
-				const currentTimeLayer = (currentMapLayers as any)[currentYear];
-				if (currentTimeLayer) {
-					layersToFetch = [currentTimeLayer];
-				}
-			} else if (currentDataset.control_type === 'nested_radio') {
-				const trendLayers = (currentMapLayers as any)[trendAnalysisMode];
-				if (trendLayers && trendLayers[selectedSeason]) {
-					const selectedLayers = trendLayers[selectedSeason];
-					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-				}
-			}
-
-			// Fetch legend for each layer
-			for (const layer of layersToFetch) {
-				if (!layer) continue;
-
-				// Use a consistent key for time slider datasets to avoid multiple legends
-				let uniqueKey: string;
-				if (currentDataset.control_type === 'time_slider') {
-					uniqueKey = `${currentDataset.id}_timeslider`; // Single consistent key for time slider
-				} else {
-					uniqueKey = `${layer.url}_${layer.layerIndex}`;
-				}
-
-				if (layer.mapserver === 'arcgis') {
-					try {
-						const legendUrl = `${layer.url}/legend?f=json`;
-						const response = await fetch(legendUrl);
-						const data = await response.json();
-
-						const targetLayerId = parseInt(layer.layerIndex);
-						const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
-
-						if (layerLegend) {
-							// For time slider, use a generic name without the year
-							const legendName =
-								currentDataset.control_type === 'time_slider' ? 'Temperature Anomaly' : layer.name;
-
-							legendData[uniqueKey] = {
-								name: legendName,
-								items: layerLegend.legend.map((item: any) => ({
-									label: item.label,
-									imageData: `data:image/png;base64,${item.imageData}`
-								}))
-							};
-						}
-					} catch (error) {
-						console.error('Error fetching ArcGIS legend:', error);
-					}
-				} else {
-					// Handle WMS/GeoServer layers
-					const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
-
-					// For time slider, use a generic name without the year
-					const legendName =
-						currentDataset.control_type === 'time_slider' ? 'Temperature Anomaly' : layer.name;
-
-					legendData[uniqueKey] = {
-						name: legendName,
-						items: [
-							{
-								label: legendName,
-								imageUrl: legendUrl
+						if (source instanceof ImageArcGISRest) {
+							// Handle layerId 0 explicitly, without using || that treats 0 as falsy
+							let layerId = (layer as any).get('layerId');
+							if (layerId === undefined || layerId === null) {
+								layerId = (layer as any).get('baseLayerId');
 							}
-						]
-					};
+
+							const serviceUrl = source.getUrl();
+
+							console.log('Found ArcGIS layer - ID:', layerId, 'URL:', serviceUrl);
+
+							if (layerId !== undefined && layerId !== null && serviceUrl) {
+								const legendKey = `${serviceUrl}_${layerId}`;
+
+								if (!legendData[legendKey]) {
+									console.log('Fetching legend for layer:', layerId);
+									const legend = await fetchArcGISLegend(serviceUrl, layerId);
+									if (legend) {
+										legendData[legendKey] = legend;
+										console.log('Legend fetched successfully for layer:', layerId);
+									} else {
+										console.log('No legend data returned for layer:', layerId);
+									}
+								} else {
+									legendData[legendKey] = legendData[legendKey];
+									console.log('Using cached legend for layer:', layerId);
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Also fetch legend for climate data layers if dataset is selected
+			if (currentDataset && currentMapLayers) {
+				console.log('Fetching legend data for dataset:', currentDataset.id);
+
+				// Get current layers based on control type
+				let layersToFetch: any[] = [];
+
+				if (currentDataset.control_type === 'radio') {
+					const selectedLayers = currentMapLayers[trendAnalysisMode];
+					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+				} else if (currentDataset.control_type === 'temperature_threshold') {
+					const selectedLayers = currentMapLayers[temperatureRiseThreshold];
+					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+				} else if (currentDataset.control_type === 'time_slider') {
+					const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
+					const currentTimeLayer = (currentMapLayers as any)[currentYear];
+					if (currentTimeLayer) {
+						layersToFetch = [currentTimeLayer];
+					}
+				} else if (currentDataset.control_type === 'nested_radio') {
+					const trendLayers = (currentMapLayers as any)[trendAnalysisMode];
+					if (trendLayers && trendLayers[selectedSeason]) {
+						const selectedLayers = trendLayers[selectedSeason];
+						layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+					}
+				}
+
+				// Fetch legend for each climate layer
+				for (const layer of layersToFetch) {
+					if (!layer) continue;
+
+					// Use a consistent key for time slider datasets to avoid multiple legends
+					let uniqueKey: string;
+					if (currentDataset.control_type === 'time_slider') {
+						uniqueKey = `${currentDataset.id}_timeslider`; // Single consistent key for time slider
+					} else {
+						uniqueKey = `${layer.url}_${layer.layerIndex}`;
+					}
+
+					if (layer.mapserver === 'arcgis') {
+						try {
+							const legendUrl = `${layer.url}/legend?f=json`;
+							const response = await fetch(legendUrl);
+							const data = await response.json();
+
+							const targetLayerId = parseInt(layer.layerIndex);
+							const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
+
+							if (layerLegend) {
+								// For time slider, use a generic name without the year
+								const legendName =
+									currentDataset.control_type === 'time_slider'
+										? 'Temperature Anomaly'
+										: layer.name;
+
+								legendData[uniqueKey] = {
+									name: legendName,
+									items: layerLegend.legend.map((item: any) => ({
+										label: item.label,
+										imageData: `data:image/png;base64,${item.imageData}`
+									}))
+								};
+							}
+						} catch (error) {
+							console.error('Error fetching ArcGIS legend:', error);
+						}
+					} else {
+						// Handle WMS/GeoServer layers
+						const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
+
+						// For time slider, use a generic name without the year
+						const legendName =
+							currentDataset.control_type === 'time_slider' ? 'Temperature Anomaly' : layer.name;
+
+						legendData[uniqueKey] = {
+							name: legendName,
+							items: [
+								{
+									label: legendName,
+									imageUrl: legendUrl
+								}
+							]
+						};
+					}
 				}
 			}
 
@@ -3030,6 +3168,60 @@
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
 
+							<!-- Home Reset Button -->
+							<button
+								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								on:click={() => {
+									if (map) {
+										map.getView().setCenter(fromLonLat(HKH_CENTER));
+										map.getView().setZoom(HKH_ZOOM);
+									}
+								}}
+								title="Reset to Home View"
+							>
+								<House class="h-4 w-4 text-slate-600" />
+							</button>
+
+							<!-- Layer Toggler Button -->
+							<button
+								class="absolute top-[3.75rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
+								on:click={() => (layersPanelOpen = !layersPanelOpen)}
+							>
+								{#if layersPanelOpen}
+									<ChevronsRight class="h-4 w-4" />
+								{:else}
+									<Layers class="h-4 w-4" />
+								{/if}
+							</button>
+
+							<!-- Layer Toggler Panel -->
+							<div
+								class="absolute top-[5.5rem] right-2 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+									? 'max-h-96 opacity-100'
+									: 'max-h-0 opacity-0'}"
+							>
+								<div class="p-3">
+									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
+									<div class="space-y-2">
+										{#each baseLayers as layerInfo}
+											<label class="flex items-center space-x-2 text-sm">
+												<input
+													type="checkbox"
+													checked={!!activeBaseLayers[layerInfo.id]}
+													on:change={(e) => {
+														const target = e.target as HTMLInputElement;
+														toggleBaseLayer(layerInfo.id, target.checked);
+														target.blur(); // Removes focus from the checkbox
+													}}
+													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+												/>
+												<span>{layerInfo.name}</span>
+											</label>
+										{/each}
+									</div>
+								</div>
+							</div>
+
 							<!-- Dynamic Control Panel at Bottom -->
 							{#if currentDataset && currentDataset.control_type === 'time_slider'}
 								{#if !isTimeSliderVisible}
@@ -3159,52 +3351,42 @@
 							{:else if currentDataset && currentDataset.control_type === 'nested_radio'}
 								<!-- Always show expanded Nested Radio Controls Panel (Trend Analysis + Seasons) -->
 								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-6 rounded-full border border-white/30 bg-white/95 px-6 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-4 py-1 shadow-xl backdrop-blur-sm {isFullscreen
 										? 'z-[9999]'
 										: 'z-10'}"
 								>
 									<!-- Trend Analysis Section -->
-									<div class="flex items-center space-x-3">
-										<!-- <div class="flex items-center space-x-2">
-											<Layers class="h-4 w-4 text-blue-600" />
-											<span class="text-sm font-medium text-slate-700">Trend</span>
-										</div> -->
-
+									<div class="flex items-center space-x-2">
 										<!-- Overall Option -->
-										<label class="flex cursor-pointer items-center space-x-1.5">
+										<label class="flex cursor-pointer items-center space-x-1">
 											<input
 												type="radio"
 												bind:group={trendAnalysisMode}
 												value="overall"
-												class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
+												class="h-3 w-3 border-gray-300 text-blue-600 focus:ring-blue-500"
 											/>
 											<span class="text-xs font-medium text-slate-700">Overall</span>
 										</label>
 
 										<!-- Significant Option -->
-										<label class="flex cursor-pointer items-center space-x-1.5">
+										<label class="flex cursor-pointer items-center space-x-1">
 											<input
 												type="radio"
 												bind:group={trendAnalysisMode}
 												value="significant"
-												class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
+												class="h-3 w-3 border-gray-300 text-blue-600 focus:ring-blue-500"
 											/>
 											<span class="text-xs font-medium text-slate-700">Significant</span>
 										</label>
 									</div>
 
 									<!-- Separator -->
-									<div class="h-5 w-px bg-slate-300"></div>
+									<div class="h-4 w-px bg-slate-300"></div>
 
 									<!-- Seasonal Selection Section -->
-									<div class="flex items-center space-x-3">
-										<!-- <div class="flex items-center space-x-2">
-											<Calendar class="h-4 w-4 text-green-600" />
-											<span class="text-sm font-medium text-slate-700">Season</span>
-										</div> -->
-
+									<div class="flex items-center space-x-2">
 										<!-- Season Options as Toggle Buttons -->
-										<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
+										<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-0.5">
 											<!-- Spring Option -->
 											<label class="relative cursor-pointer">
 												<input
@@ -3214,7 +3396,7 @@
 													class="peer sr-only"
 												/>
 												<div
-													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
 													'spring'
 														? 'text-white'
 														: 'text-slate-600'}"
@@ -3232,7 +3414,7 @@
 													class="peer sr-only"
 												/>
 												<div
-													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
 													'summer'
 														? 'text-white'
 														: 'text-slate-600'}"
@@ -3250,7 +3432,7 @@
 													class="peer sr-only"
 												/>
 												<div
-													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
 													'autumn'
 														? 'text-white'
 														: 'text-slate-600'}"
@@ -3268,7 +3450,7 @@
 													class="peer sr-only"
 												/>
 												<div
-													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
 													'winter'
 														? 'text-white'
 														: 'text-slate-600'}"
@@ -3475,10 +3657,10 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												subtitle="Hindu Kush Himalaya Region Climate Data"
+												subtitle={chart.subtitle || 'Hindu Kush Himalaya Region Climate Data'}
 												chart_type={chart.chart_type}
-												yAxisTitle={chart.yAxisTitle || 'Value'}
-												plotOptions={chart.chart_data.plotOptions || {}}
+												yAxisTitle={(chart as any).yAxisTitle || 'Value'}
+												plotOptions={(chart.chart_data as any).plotOptions || {}}
 											/>
 										</div>
 									{/each}

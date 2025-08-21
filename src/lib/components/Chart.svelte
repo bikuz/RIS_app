@@ -9,7 +9,8 @@
 		plotOptions = {},
 		yAxisTitle = 'Value',
 		plotLines = [],
-		xAxisConfig = null
+		xAxisConfig = null,
+		showLegend = true
 	} = $props<{
 		chartData: {
 			categories: (string | number)[];
@@ -60,6 +61,7 @@
 				dashStyle?: string;
 			}>;
 		};
+		showLegend?: boolean;
 	}>();
 
 	let chartContainer: HTMLDivElement;
@@ -222,19 +224,23 @@
 				exporting: {
 					enabled: true
 				},
-				legend: {
-					align: 'center',
-					verticalAlign: 'bottom',
-					borderWidth: 0,
-					itemStyle: {
-						color: '#64748b',
-						fontSize: '12px',
-						fontWeight: '500'
-					},
-					itemHoverStyle: {
-						color: '#1e293b'
-					}
-				},
+				legend: showLegend
+					? {
+							align: 'center',
+							verticalAlign: 'bottom',
+							borderWidth: 0,
+							itemStyle: {
+								color: '#64748b',
+								fontSize: '12px',
+								fontWeight: '500'
+							},
+							itemHoverStyle: {
+								color: '#1e293b'
+							}
+						}
+					: {
+							enabled: false
+						},
 				credits: {
 					enabled: false
 				}
