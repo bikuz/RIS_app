@@ -3159,7 +3159,7 @@
 							{:else if currentDataset && currentDataset.control_type === 'nested_radio'}
 								<!-- Always show expanded Nested Radio Controls Panel (Trend Analysis + Seasons) -->
 								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-6 rounded-full border border-white/30 bg-white/95 px-6 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-6 rounded-full border border-white/30 bg-white/95 px-6 py-1 shadow-xl backdrop-blur-sm {isFullscreen
 										? 'z-[9999]'
 										: 'z-10'}"
 								>

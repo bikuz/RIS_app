@@ -106,7 +106,7 @@
 							{
 								name: 'Land Cover (hectares)',
 								data: [
-									{ y: 484185046.72, color: '#006f00' },
+									{ y: 84185046.72, color: '#006f00' },
 									{ y: 159413631.12, color: '#91ef7a' },
 									{ y: 20996243.19, color: '#f6ee04' },
 									{ y: 77065078.77, color: '#dcd4e1' },
