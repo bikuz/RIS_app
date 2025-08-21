@@ -35,7 +35,8 @@
 		SkipBack,
 		SkipForward,
 		Calendar,
-		List
+		List,
+		House
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
@@ -2265,6 +2266,75 @@
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
 
+	// Add new state variables for layers panel
+	let layersPanelOpen = $state(false);
+	let activeBaseLayers = $state<Record<number, boolean>>({});
+
+	// Define base layers from HKH/Outline service
+	const baseLayers = [
+		{
+			id: 0,
+			name: 'Outline',
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
+		}
+	];
+
+	// Function to toggle base layers
+	async function toggleBaseLayer(layerId: number, checked: boolean) {
+		if (!map) return;
+		activeBaseLayers = { ...activeBaseLayers, [layerId]: checked };
+
+		if (checked) {
+			const layerInfo = baseLayers.find((l) => l.id === layerId);
+			if (!layerInfo) return;
+
+			let layer;
+
+			if (layerId === 0) {
+				// Apply special styling or configuration for layerId 0 (Outline)
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 10, // Higher z-index for outline to ensure visibility
+					opacity: 0.7 // Slightly higher opacity for better visibility
+				});
+			} else {
+				// Default configuration for other layers
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 5 // Higher than climate layers but lower than outline
+				});
+			}
+
+			layer.set('baseLayerId', layerId);
+			map.addLayer(layer);
+		} else {
+			const layers = map.getLayers().getArray();
+			for (const layer of layers) {
+				if (layer.get('baseLayerId') === layerId) {
+					map.removeLayer(layer);
+					break;
+				}
+			}
+		}
+
+		// Update legend after changing layers
+		fetchLegendData();
+	}
+
 	// Get current dataset based on selected question or information layer
 	let currentDataset = $derived.by(() => {
 		// First priority: selected question
@@ -2376,6 +2446,29 @@
 		return null;
 	};
 
+	// Function to fetch ArcGIS legend
+	async function fetchArcGISLegend(serviceUrl: string, layerId: number) {
+		try {
+			const legendUrl = `${serviceUrl}/legend?f=json`;
+			const response = await fetch(legendUrl);
+			const data = await response.json();
+
+			const layerLegend = data.layers.find((l: any) => l.layerId === layerId);
+			if (layerLegend) {
+				return {
+					name: layerLegend.layerName,
+					items: layerLegend.legend.map((item: any) => ({
+						label: item.label,
+						imageData: `data:image/png;base64,${item.imageData}`
+					}))
+				};
+			}
+		} catch (error) {
+			console.error('Error fetching ArcGIS legend:', error);
+		}
+		return null;
+	}
+
 	// Add layer to map based on layer configuration
 	function addWMSLayer(layerConfig: any) {
 		if (!map || !layerConfig) return;
@@ -2480,89 +2573,132 @@
 			// Clear legend data first
 			legendData = {};
 
-			if (!currentDataset || !currentMapLayers) {
-				return;
-			}
+			// Get all layers from the map (including base layers)
+			if (map) {
+				const layers = map.getLayers().getArray();
 
-			console.log('Fetching legend data for dataset:', currentDataset.id);
+				for (const layer of layers) {
+					// Type guard to check if layer has getSource method
+					if ('getSource' in layer && typeof layer.getSource === 'function') {
+						const source = (layer as any).getSource();
 
-			// Get current layers based on control type
-			let layersToFetch: any[] = [];
-
-			if (currentDataset.control_type === 'radio') {
-				const selectedLayers = currentMapLayers[trendAnalysisMode];
-				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-			} else if (currentDataset.control_type === 'temperature_threshold') {
-				const selectedLayers = currentMapLayers[temperatureRiseThreshold];
-				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-			} else if (currentDataset.control_type === 'time_slider') {
-				const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
-				const currentTimeLayer = (currentMapLayers as any)[currentYear];
-				if (currentTimeLayer) {
-					layersToFetch = [currentTimeLayer];
-				}
-			} else if (currentDataset.control_type === 'nested_radio') {
-				const trendLayers = (currentMapLayers as any)[trendAnalysisMode];
-				if (trendLayers && trendLayers[selectedSeason]) {
-					const selectedLayers = trendLayers[selectedSeason];
-					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-				}
-			}
-
-			// Fetch legend for each layer
-			for (const layer of layersToFetch) {
-				if (!layer) continue;
-
-				// Use a consistent key for time slider datasets to avoid multiple legends
-				let uniqueKey: string;
-				if (currentDataset.control_type === 'time_slider') {
-					uniqueKey = `${currentDataset.id}_timeslider`; // Single consistent key for time slider
-				} else {
-					uniqueKey = `${layer.url}_${layer.layerIndex}`;
-				}
-
-				if (layer.mapserver === 'arcgis') {
-					try {
-						const legendUrl = `${layer.url}/legend?f=json`;
-						const response = await fetch(legendUrl);
-						const data = await response.json();
-
-						const targetLayerId = parseInt(layer.layerIndex);
-						const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
-
-						if (layerLegend) {
-							// For time slider, use a generic name without the year
-							const legendName =
-								currentDataset.control_type === 'time_slider' ? 'Temperature Anomaly' : layer.name;
-
-							legendData[uniqueKey] = {
-								name: legendName,
-								items: layerLegend.legend.map((item: any) => ({
-									label: item.label,
-									imageData: `data:image/png;base64,${item.imageData}`
-								}))
-							};
-						}
-					} catch (error) {
-						console.error('Error fetching ArcGIS legend:', error);
-					}
-				} else {
-					// Handle WMS/GeoServer layers
-					const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
-
-					// For time slider, use a generic name without the year
-					const legendName =
-						currentDataset.control_type === 'time_slider' ? 'Temperature Anomaly' : layer.name;
-
-					legendData[uniqueKey] = {
-						name: legendName,
-						items: [
-							{
-								label: legendName,
-								imageUrl: legendUrl
+						if (source instanceof ImageArcGISRest) {
+							// Handle layerId 0 explicitly, without using || that treats 0 as falsy
+							let layerId = (layer as any).get('layerId');
+							if (layerId === undefined || layerId === null) {
+								layerId = (layer as any).get('baseLayerId');
 							}
-						]
-					};
+
+							const serviceUrl = source.getUrl();
+
+							console.log('Found ArcGIS layer - ID:', layerId, 'URL:', serviceUrl);
+
+							if (layerId !== undefined && layerId !== null && serviceUrl) {
+								const legendKey = `${serviceUrl}_${layerId}`;
+
+								if (!legendData[legendKey]) {
+									console.log('Fetching legend for layer:', layerId);
+									const legend = await fetchArcGISLegend(serviceUrl, layerId);
+									if (legend) {
+										legendData[legendKey] = legend;
+										console.log('Legend fetched successfully for layer:', layerId);
+									} else {
+										console.log('No legend data returned for layer:', layerId);
+									}
+								} else {
+									legendData[legendKey] = legendData[legendKey];
+									console.log('Using cached legend for layer:', layerId);
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Also fetch legend for climate data layers if dataset is selected
+			if (currentDataset && currentMapLayers) {
+				console.log('Fetching legend data for dataset:', currentDataset.id);
+
+				// Get current layers based on control type
+				let layersToFetch: any[] = [];
+
+				if (currentDataset.control_type === 'radio') {
+					const selectedLayers = currentMapLayers[trendAnalysisMode];
+					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+				} else if (currentDataset.control_type === 'temperature_threshold') {
+					const selectedLayers = currentMapLayers[temperatureRiseThreshold];
+					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+				} else if (currentDataset.control_type === 'time_slider') {
+					const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
+					const currentTimeLayer = (currentMapLayers as any)[currentYear];
+					if (currentTimeLayer) {
+						layersToFetch = [currentTimeLayer];
+					}
+				} else if (currentDataset.control_type === 'nested_radio') {
+					const trendLayers = (currentMapLayers as any)[trendAnalysisMode];
+					if (trendLayers && trendLayers[selectedSeason]) {
+						const selectedLayers = trendLayers[selectedSeason];
+						layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
+					}
+				}
+
+				// Fetch legend for each climate layer
+				for (const layer of layersToFetch) {
+					if (!layer) continue;
+
+					// Use a consistent key for time slider datasets to avoid multiple legends
+					let uniqueKey: string;
+					if (currentDataset.control_type === 'time_slider') {
+						uniqueKey = `${currentDataset.id}_timeslider`; // Single consistent key for time slider
+					} else {
+						uniqueKey = `${layer.url}_${layer.layerIndex}`;
+					}
+
+					if (layer.mapserver === 'arcgis') {
+						try {
+							const legendUrl = `${layer.url}/legend?f=json`;
+							const response = await fetch(legendUrl);
+							const data = await response.json();
+
+							const targetLayerId = parseInt(layer.layerIndex);
+							const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
+
+							if (layerLegend) {
+								// For time slider, use a generic name without the year
+								const legendName =
+									currentDataset.control_type === 'time_slider'
+										? 'Temperature Anomaly'
+										: layer.name;
+
+								legendData[uniqueKey] = {
+									name: legendName,
+									items: layerLegend.legend.map((item: any) => ({
+										label: item.label,
+										imageData: `data:image/png;base64,${item.imageData}`
+									}))
+								};
+							}
+						} catch (error) {
+							console.error('Error fetching ArcGIS legend:', error);
+						}
+					} else {
+						// Handle WMS/GeoServer layers
+						const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
+
+						// For time slider, use a generic name without the year
+						const legendName =
+							currentDataset.control_type === 'time_slider' ? 'Temperature Anomaly' : layer.name;
+
+						legendData[uniqueKey] = {
+							name: legendName,
+							items: [
+								{
+									label: legendName,
+									imageUrl: legendUrl
+								}
+							]
+						};
+					}
 				}
 			}
 
@@ -3030,6 +3166,60 @@
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
 
+							<!-- Home Reset Button -->
+							<button
+								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								on:click={() => {
+									if (map) {
+										map.getView().setCenter(fromLonLat(HKH_CENTER));
+										map.getView().setZoom(HKH_ZOOM);
+									}
+								}}
+								title="Reset to Home View"
+							>
+								<House class="h-4 w-4 text-slate-600" />
+							</button>
+
+							<!-- Layer Toggler Button -->
+							<button
+								class="absolute top-[3.75rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
+								on:click={() => (layersPanelOpen = !layersPanelOpen)}
+							>
+								{#if layersPanelOpen}
+									<ChevronsRight class="h-4 w-4" />
+								{:else}
+									<Layers class="h-4 w-4" />
+								{/if}
+							</button>
+
+							<!-- Layer Toggler Panel -->
+							<div
+								class="absolute top-[5.5rem] right-2 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+									? 'max-h-96 opacity-100'
+									: 'max-h-0 opacity-0'}"
+							>
+								<div class="p-3">
+									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
+									<div class="space-y-2">
+										{#each baseLayers as layerInfo}
+											<label class="flex items-center space-x-2 text-sm">
+												<input
+													type="checkbox"
+													checked={!!activeBaseLayers[layerInfo.id]}
+													on:change={(e) => {
+														const target = e.target as HTMLInputElement;
+														toggleBaseLayer(layerInfo.id, target.checked);
+														target.blur(); // Removes focus from the checkbox
+													}}
+													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+												/>
+												<span>{layerInfo.name}</span>
+											</label>
+										{/each}
+									</div>
+								</div>
+							</div>
+
 							<!-- Dynamic Control Panel at Bottom -->
 							{#if currentDataset && currentDataset.control_type === 'time_slider'}
 								{#if !isTimeSliderVisible}
@@ -3467,8 +3657,8 @@
 												title={chart.title}
 												subtitle="Hindu Kush Himalaya Region Climate Data"
 												chart_type={chart.chart_type}
-												yAxisTitle={chart.yAxisTitle || 'Value'}
-												plotOptions={chart.chart_data.plotOptions || {}}
+												yAxisTitle={(chart as any).yAxisTitle || 'Value'}
+												plotOptions={(chart.chart_data as any).plotOptions || {}}
 											/>
 										</div>
 									{/each}
