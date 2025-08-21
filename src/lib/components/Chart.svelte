@@ -68,7 +68,7 @@
 
 	async function loadHighcharts() {
 		try {
-			// Load core Highcharts
+			// Dynamic import of Highcharts
 			const HighchartsModule = await import('highcharts');
 			Highcharts = HighchartsModule.default;
 
@@ -79,7 +79,7 @@
 			console.log('Highcharts and exporting module loaded successfully');
 			createChart();
 		} catch (error) {
-			console.error('Failed to load Highcharts or exporting module:', error);
+			console.error('Failed to load Highcharts:', error);
 		}
 	}
 
