@@ -3159,52 +3159,42 @@
 							{:else if currentDataset && currentDataset.control_type === 'nested_radio'}
 								<!-- Always show expanded Nested Radio Controls Panel (Trend Analysis + Seasons) -->
 								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-6 rounded-full border border-white/30 bg-white/95 px-6 py-1 shadow-xl backdrop-blur-sm {isFullscreen
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-4 py-1 shadow-xl backdrop-blur-sm {isFullscreen
 										? 'z-[9999]'
 										: 'z-10'}"
 								>
 									<!-- Trend Analysis Section -->
-									<div class="flex items-center space-x-3">
-										<!-- <div class="flex items-center space-x-2">
-											<Layers class="h-4 w-4 text-blue-600" />
-											<span class="text-sm font-medium text-slate-700">Trend</span>
-										</div> -->
-
+									<div class="flex items-center space-x-2">
 										<!-- Overall Option -->
-										<label class="flex cursor-pointer items-center space-x-1.5">
+										<label class="flex cursor-pointer items-center space-x-1">
 											<input
 												type="radio"
 												bind:group={trendAnalysisMode}
 												value="overall"
-												class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
+												class="h-3 w-3 border-gray-300 text-blue-600 focus:ring-blue-500"
 											/>
 											<span class="text-xs font-medium text-slate-700">Overall</span>
 										</label>
 
 										<!-- Significant Option -->
-										<label class="flex cursor-pointer items-center space-x-1.5">
+										<label class="flex cursor-pointer items-center space-x-1">
 											<input
 												type="radio"
 												bind:group={trendAnalysisMode}
 												value="significant"
-												class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
+												class="h-3 w-3 border-gray-300 text-blue-600 focus:ring-blue-500"
 											/>
 											<span class="text-xs font-medium text-slate-700">Significant</span>
 										</label>
 									</div>
 
 									<!-- Separator -->
-									<div class="h-5 w-px bg-slate-300"></div>
+									<div class="h-4 w-px bg-slate-300"></div>
 
 									<!-- Seasonal Selection Section -->
-									<div class="flex items-center space-x-3">
-										<!-- <div class="flex items-center space-x-2">
-											<Calendar class="h-4 w-4 text-green-600" />
-											<span class="text-sm font-medium text-slate-700">Season</span>
-										</div> -->
-
+									<div class="flex items-center space-x-2">
 										<!-- Season Options as Toggle Buttons -->
-										<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
+										<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-0.5">
 											<!-- Spring Option -->
 											<label class="relative cursor-pointer">
 												<input
@@ -3214,7 +3204,7 @@
 													class="peer sr-only"
 												/>
 												<div
-													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
 													'spring'
 														? 'text-white'
 														: 'text-slate-600'}"
@@ -3232,7 +3222,7 @@
 													class="peer sr-only"
 												/>
 												<div
-													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
 													'summer'
 														? 'text-white'
 														: 'text-slate-600'}"
@@ -3250,7 +3240,7 @@
 													class="peer sr-only"
 												/>
 												<div
-													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
 													'autumn'
 														? 'text-white'
 														: 'text-slate-600'}"
@@ -3268,7 +3258,7 @@
 													class="peer sr-only"
 												/>
 												<div
-													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
 													'winter'
 														? 'text-white'
 														: 'text-slate-600'}"
