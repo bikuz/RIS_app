@@ -622,18 +622,27 @@
 		if (!map) return;
 
 		const layers = map.getLayers().getArray().slice();
+		console.log('Clearing ecosystem layers. Total layers found:', layers.length);
+
 		layers.forEach((layer) => {
 			const layerId = layer.get('id');
 			// Remove layers that have an ID (our custom layers), keep base layer
 			if (layerId && map) {
-				map.removeLayer(layerId);
+				console.log('Removing layer with ID:', layerId);
+				map.removeLayer(layer);
 			}
 		});
+
+		console.log('Ecosystem layers cleared. Remaining layers:', map.getLayers().getArray().length);
 	}
 
 	// Update layers based on current dataset
 	function updateMapLayers() {
 		if (!map) return;
+
+		console.log('=== Starting updateMapLayers ===');
+		console.log('Current dataset:', currentDataset?.id);
+		console.log('Layers before clearing:', map.getLayers().getArray().length);
 
 		// Always clear existing ecosystem layers first
 		clearEcosystemLayers();
@@ -656,12 +665,17 @@
 			const layers = currentDataset.map_layers.default;
 			if (layers) {
 				if (Array.isArray(layers)) {
+					console.log('Adding multiple layers:', layers.length);
 					addMultipleLayers(layers);
 				} else {
+					console.log('Adding single layer:', layers.name);
 					addWMSLayer(layers);
 				}
 			}
 		}
+
+		console.log('Layers after adding:', map.getLayers().getArray().length);
+		console.log('=== Finished updateMapLayers ===');
 
 		// Fetch legend data after updating layers
 		fetchLegendData();
