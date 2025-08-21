@@ -72,8 +72,7 @@
 								? 'bg-slate-200/50'
 								: 'bg-slate-100 group-hover:bg-slate-200'}"
 					>
-						<svelte:component
-							this={IconComponent}
+						<IconComponent
 							class="h-5 w-5 {currentTopic === topic ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-slate-600'}"
 						/>
 					</div>
