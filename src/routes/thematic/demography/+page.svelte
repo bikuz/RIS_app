@@ -368,21 +368,21 @@
 		},
 		{
 			id: 'sex-ratio-2025',
-			charts: [
-				{
-					title: 'Population Distribution',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['2015', '2020', '2025', '2030'],
-						series: [
-							{
-								name: 'Population (millions)',
-								data: [207.357006, 221.147189, 233.295930, 246.467761]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Population Distribution',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: ['2015', '2020', '2025', '2030'],
+			// 			series: [
+			// 				{
+			// 					name: 'Population (millions)',
+			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Sex Ratio 2025',
 				layer_id: 1,
@@ -392,21 +392,21 @@
 		},
 		{
 			id: 'aged-75-proportion',
-			charts: [
-				{
-					title: 'Population Distribution',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['2015', '2020', '2025', '2030'],
-						series: [
-							{
-								name: 'Population (millions)',
-								data: [207.357006, 221.147189, 233.295930, 246.467761]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Population Distribution',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: ['2015', '2020', '2025', '2030'],
+			// 			series: [
+			// 				{
+			// 					name: 'Population (millions)',
+			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Proportion of Age >=75',
 				layer_id: 2,
@@ -416,21 +416,21 @@
 		},
 		{
 			id: 'child-woman-ratio-2025',
-			charts: [
-				{
-					title: 'Population Distribution',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['2015', '2020', '2025', '2030'],
-						series: [
-							{
-								name: 'Population (millions)',
-								data: [207.357006, 221.147189, 233.295930, 246.467761]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Population Distribution',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: ['2015', '2020', '2025', '2030'],
+			// 			series: [
+			// 				{
+			// 					name: 'Population (millions)',
+			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Child Woman Ratio 2025',
 				layer_id: 3,
@@ -440,21 +440,21 @@
 		},
 		{
 			id: 'child-dependency-ratio-2025',
-			charts: [
-				{
-					title: 'Population Distribution',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['2015', '2020', '2025', '2030'],
-						series: [
-							{
-								name: 'Population (millions)',
-								data: [207.357006, 221.147189, 233.295930, 246.467761]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Population Distribution',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: ['2015', '2020', '2025', '2030'],
+			// 			series: [
+			// 				{
+			// 					name: 'Population (millions)',
+			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Child Dependency Ratio 2025',
 				layer_id: 4,
@@ -464,21 +464,21 @@
 		},
 		{
 			id: 'age-dependency-ratio-2025',
-			charts: [
-				{
-					title: 'Population Distribution',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['2015', '2020', '2025', '2030'],
-						series: [
-							{
-								name: 'Population (millions)',
-								data: [207.357006, 221.147189, 233.295930, 246.467761]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Population Distribution',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: ['2015', '2020', '2025', '2030'],
+			// 			series: [
+			// 				{
+			// 					name: 'Population (millions)',
+			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Age Dependency Ratio 2025',
 				layer_id: 5,
@@ -488,21 +488,21 @@
 		},
 		{
 			id: 'total-dependency-ratio-2025',
-			charts: [
-				{
-					title: 'Population Distribution',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['2015', '2020', '2025', '2030'],
-						series: [
-							{
-								name: 'Population (millions)',
-								data: [207.357006, 221.147189, 233.295930, 246.467761]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Population Distribution',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: ['2015', '2020', '2025', '2030'],
+			// 			series: [
+			// 				{
+			// 					name: 'Population (millions)',
+			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Total Dependency Ratio 2025',
 				layer_id: 6,
@@ -512,21 +512,21 @@
 		},
 		{
 			id: 'urban-center',
-			charts: [
-				{
-					title: 'Population Distribution',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['2015', '2020', '2025', '2030'],
-						series: [
-							{
-								name: 'Population (millions)',
-								data: [207.357006, 221.147189, 233.295930, 246.467761]
-							}
-						]
-					}
-				}
-			],
+			// charts: [
+			// 	{
+			// 		title: 'Population Distribution',
+			// 		chart_type: 'column',
+			// 		chart_data: {
+			// 			categories: ['2015', '2020', '2025', '2030'],
+			// 			series: [
+			// 				{
+			// 					name: 'Population (millions)',
+			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
+			// 				}
+			// 			]
+			// 		}
+			// 	}
+			// ],
 			map_data: {
 				name: 'Urban Center Location',
 				layer_id: 8,
@@ -549,7 +549,7 @@
 	const information_layers = [
 		{
 			id: 'info-layer-1',
-			title: 'Population Density',
+			title: 'Population 2025',
 			dataset_id: 'population-2025'
 		},
 		{

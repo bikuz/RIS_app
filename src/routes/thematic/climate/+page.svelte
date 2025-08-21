@@ -321,7 +321,7 @@
 				{
 					title: 'Distribution of Annual Mean Temperature Trends (°C/decade)',
 					chart_type: 'column',
-					yAxisTitle: 'Frequency',
+					yAxisTitle: 'Pixel count',
 					// subtitle: 'Mean Temperature: 2.00°C/decade',
 					// xAxisConfig: {
 					// 	type: 'linear',
@@ -718,7 +718,7 @@
 					}
 				},
 				{
-					title: 'Temperature Anomalies - Line Chart with Running Means',
+					title: 'Running Mean Temperature',
 					chart_type: 'line',
 					yAxisTitle: 'Temperature Anomaly (°C)',
 					chart_data: {
@@ -1064,7 +1064,7 @@
 				{
 					title: 'Distribution of Winter Temperature Trend',
 					chart_type: 'column',
-					yAxisTitle: 'Frequency',
+					yAxisTitle: 'Pixel count',
 					// xAxisConfig: {
 					// 	type: 'linear',
 					// 	min: -0.5,
@@ -1369,7 +1369,7 @@
 				{
 					title: 'Distribution of Summer Temperature Trend',
 					chart_type: 'column',
-					yAxisTitle: 'Frequency',
+					yAxisTitle: 'Pixel count',
 					// xAxisConfig: {
 					// 	type: 'linear',
 					// 	min: -0.5,
@@ -1497,7 +1497,7 @@
 				{
 					title: 'Distribution of Spring Temperature Trend',
 					chart_type: 'column',
-					yAxisTitle: 'Frequency',
+					yAxisTitle: 'Pixel count',
 					// xAxisConfig: {
 					// 	type: 'linear',
 					// 	min: -0.5,
@@ -1625,7 +1625,7 @@
 				{
 					title: 'Distribution of Autumn Temperature Trend',
 					chart_type: 'column',
-					yAxisTitle: 'Frequency',
+					yAxisTitle: 'Pixel count',
 					// xAxisConfig: {
 					// 	type: 'linear',
 					// 	min: -0.39,
@@ -3660,7 +3660,7 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												subtitle={chart.subtitle || 'Hindu Kush Himalaya Region Climate Data'}
+												subtitle={chart.subtitle }
 												chart_type={chart.chart_type}
 												yAxisTitle={(chart as any).yAxisTitle || 'Value'}
 												plotOptions={(chart.chart_data as any).plotOptions || {}}
@@ -3669,14 +3669,14 @@
 										</div>
 									{/each}
 								</div>
-							{:else}
+							<!-- {:else}
 								<div class="flex h-80 items-center justify-center">
 									<div class="text-center text-slate-500">
 										<p class="text-sm">
 											Select a question or information layer to view related charts
 										</p>
 									</div>
-								</div>
+								</div> -->
 							{/if}
 						</div>
 					</div>

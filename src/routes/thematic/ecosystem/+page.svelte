@@ -1045,14 +1045,14 @@
 										</div>
 									{/each}
 								</div>
-							{:else}
+							<!-- {:else}
 								<div class="flex h-80 items-center justify-center">
 									<div class="text-center text-slate-500">
 										<p class="text-sm">
 											Select a question or information layer to view related charts
 										</p>
 									</div>
-								</div>
+								</div> -->
 							{/if}
 						</div>
 					</div>
