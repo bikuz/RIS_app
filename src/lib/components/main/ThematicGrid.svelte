@@ -37,16 +37,19 @@
 			{/each} -->
 
             {#each Object.entries(topicIcons) as [topic, IconComponent]}
+                {@const isDisabled = ['cryosphere', 'weather', 'physiography', 'air-quality'].includes(topic)}
                 <button 
-                onclick={() => selectTopic(topic)}
-                class="group block p-8 bg-gradient-to-br from-gray-100 to-blue-50 transition-all duration-300 rounded-lg 
-						hover:bg-gray-100 hover:shadow-lg hover:cursor-pointer"
+                onclick={() => !isDisabled && selectTopic(topic)}
+                disabled={isDisabled}
+                class="group block p-8 transition-all duration-300 rounded-lg 
+						{!isDisabled 
+							? 'bg-gradient-to-br from-gray-100 to-blue-50 hover:bg-gray-100 hover:shadow-lg hover:cursor-pointer' 
+							: 'bg-gray-100/50 cursor-not-allowed opacity-60'}"
             >
                 <div class="flex flex-col items-center text-center space-y-4">
                     <div class="p-4 rounded-full bg-gradient-to-r {getTopicColor(topic)} text-white transition-colors
-								group-hover:shadow-xl transition-shadow duration-300">
-                        <svelte:component
-                        this={IconComponent}
+								{!isDisabled ? 'group-hover:shadow-xl transition-shadow duration-300' : ''}">
+                        <IconComponent
                         class="h-5 w-5"
                     />
                     </div>
