@@ -124,8 +124,8 @@
 		},
 		{
 			id: 'browning-greening',
-			title: 'Browning Greening',
-			description: 'Browning Greening in the HKH region',
+			title: 'Vegetation Health',
+			description: 'Vegetation Health in the HKH region',
 			control_type: 'none',
 			map_layers: {
 				// For 'none' control type, you can use a simple structure
@@ -133,7 +133,7 @@
 				default: [
 					{
 						id: 'browning-greening-layer',
-						name: 'Browning Greening',
+						name: 'Vegetation Health',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_NDVI/MapServer',
 						layerIndex: 0,
 						mapserver: 'arcgis'
