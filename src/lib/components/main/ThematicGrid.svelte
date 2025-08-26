@@ -37,7 +37,7 @@
 			{/each} -->
 
             {#each Object.entries(topicIcons) as [topic, IconComponent]}
-                {@const isDisabled = ['cryosphere', 'weather', 'physiography', 'air-quality'].includes(topic)}
+                {@const isDisabled = ['weather', 'physiography', 'air-quality'].includes(topic)}
                 <button 
                 onclick={() => !isDisabled && selectTopic(topic)}
                 disabled={isDisabled}
