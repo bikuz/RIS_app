@@ -66,7 +66,7 @@
 
 	let chartContainer: HTMLDivElement;
 	let chart: any = null;
-	let Highcharts: any = null;
+	let Highcharts: any = $state(null);
 
 	async function loadHighcharts() {
 		try {
