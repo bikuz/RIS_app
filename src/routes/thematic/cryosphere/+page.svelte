@@ -1,17 +1,25 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-
+	import cryo1 from '$lib/assets/images/cryo1.jpg';
+	import { getTopicName, getTopicIcon, getTopicColor } from '$lib/data/themeData.js';
+	const topic = 'cryosphere';
+	const TopicIcon = getTopicIcon(topic);
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
+	import ImageLayer from 'ol/layer/Image';
 	import OSM from 'ol/source/OSM';
 	import XYZ from 'ol/source/XYZ';
+	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
 	import { fromLonLat } from 'ol/proj';
 	import { defaults as defaultInteractions } from 'ol/interaction';
+	import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import {
-		Snowflake,
+		House,
+		Cloud,
+		Users,
 		CheckCircle,
 		Layers,
 		Info,
@@ -23,14 +31,21 @@
 		ChevronRight,
 		ChevronsLeft,
 		ChevronsRight,
+		Minimize2,
+		Maximize2,
 		HelpCircle,
+		Play,
+		Pause,
+		SkipBack,
+		SkipForward,
+		Calendar,
 		List
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
 
-	let { currentTopic = 'cryosphere', width = '100%', height = '400px' } = $props();
+	// let { currentTopic = 'demography', width = '100%', height = '400px' } = $props();
 
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
@@ -43,138 +58,169 @@
 	let isFullscreen = $state(false);
 	let fullscreenHandler: (() => void) | null = null;
 
-	// Layout states: 'default' | 'hide-left' | 'left-full'
-	let layoutState = $state('default');
+	// // ArcGIS MapServer configuration
+	// const ARCGIS_MAPSERVER_URL = 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/';
 
-	// Track questions panel state
-	let isQuestionsPanelOpen = $state(false);
-	function toggleQuestionsPanel() {
-		isQuestionsPanelOpen = !isQuestionsPanelOpen;
-	}
+	const BASELAYERS_URL =
+		'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer';
 
-	// Sample ecosystem datasets structure
-	const ecosystemDataset = [
-		{
-			id: 'forest-cover',
-			title: 'Forest Cover Analysis',
-			description: 'Forest cover distribution and changes in the HKH region',
-			control_type: 'simple',
-			charts: [
-				{
-					title: 'Forest Cover by Region',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['Nepal', 'Bhutan', 'India', 'Pakistan', 'Afghanistan', 'Myanmar'],
-						series: [
-							{
-								name: 'Forest Cover (%)',
-								data: [44.7, 71.0, 24.4, 5.1, 2.1, 42.9]
-							}
-						]
-					}
-				}
-			]
-		},
-		{
-			id: 'biodiversity-hotspots',
-			title: 'Biodiversity Hotspots',
-			description: 'Key biodiversity areas and endemic species distribution',
-			control_type: 'simple',
-			charts: [
-				{
-					title: 'Endemic Species Count',
-					chart_type: 'line',
-					chart_data: {
-						categories: ['2000', '2005', '2010', '2015', '2020', '2024'],
-						series: [
-							{
-								name: 'Documented Species',
-								data: [15420, 16200, 17100, 18300, 19500, 20800]
-							}
-						]
-					}
-				}
-			]
-		}
-	];
+	// Time slider state management
+	// let isTimeSliderVisible = $state(false);
+	// let isPlaying = $state(false);
+	// let currentTimeIndex = $state(0);
+	// let playbackSpeed = $state(1000); // milliseconds between frames
+	// let playInterval: number | null = null;
 
-	const questions: any = [
-		// {
-		// 	id: 'question-1',
-		// 	question: 'Which areas have the highest forest cover in the HKH region?',
-		// 	dataset_id: 'forest-cover'
-		// },
-		// {
-		// 	id: 'question-2',
-		// 	question: 'Where are the major biodiversity hotspots located?',
-		// 	dataset_id: 'biodiversity-hotspots'
-		// },
-		// {
-		// 	id: 'question-3',
-		// 	question: 'How has ecosystem degradation affected wildlife corridors?',
-		// 	dataset_id: 'forest-cover'
-		// }
-	];
+	// Time periods for climate data (can be customized based on your data)
+	// const timePeriods = [
+	// 	{ year: 1995, label: '1995', season: 'Annual' },
+	// 	{ year: 1996, label: '1996', season: 'Annual' },
+	// 	{ year: 1997, label: '1997', season: 'Annual' },
+	// 	{ year: 1998, label: '1998', season: 'Annual' },
+	// 	{ year: 1999, label: '1999', season: 'Annual' },
+	// 	{ year: 2000, label: '2000', season: 'Annual' },
+	// 	{ year: 2001, label: '2001', season: 'Annual' },
+	// 	{ year: 2002, label: '2002', season: 'Annual' },
+	// 	{ year: 2003, label: '2003', season: 'Annual' },
+	// 	{ year: 2004, label: '2004', season: 'Annual' },
+	// 	{ year: 2005, label: '2005', season: 'Annual' },
+	// 	{ year: 2006, label: '2006', season: 'Annual' },
+	// 	{ year: 2007, label: '2007', season: 'Annual' },
+	// 	{ year: 2008, label: '2008', season: 'Annual' },
+	// 	{ year: 2009, label: '2009', season: 'Annual' },
+	// 	{ year: 2010, label: '2010', season: 'Annual' },
+	// 	{ year: 2011, label: '2011', season: 'Annual' },
+	// 	{ year: 2012, label: '2012', season: 'Annual' },
+	// 	{ year: 2013, label: '2013', season: 'Annual' },
+	// 	{ year: 2014, label: '2014', season: 'Annual' },
+	// 	{ year: 2015, label: '2015', season: 'Annual' },
+	// 	{ year: 2016, label: '2016', season: 'Annual' },
+	// 	{ year: 2017, label: '2017', season: 'Annual' },
+	// 	{ year: 2018, label: '2018', season: 'Annual' },
+	// 	{ year: 2019, label: '2019', season: 'Annual' },
+	// 	{ year: 2020, label: '2020', season: 'Annual' },
+	// 	{ year: 2021, label: '2021', season: 'Annual' },
+	// 	{ year: 2022, label: '2022', season: 'Annual' },
+	// 	{ year: 2023, label: '2023', season: 'Annual' },
+	// 	{ year: 2024, label: '2024', season: 'Annual' }
+	// ];
 
-	const information_layers: any = [
-		// {
-		// 	id: 'map-indicator-1',
-		// 	title: 'Forest Cover Distribution',
-		// 	dataset_id: 'forest-cover'
-		// },
-		// {
-		// 	id: 'map-indicator-2',
-		// 	title: 'Biodiversity Hotspots',
-		// 	dataset_id: 'biodiversity-hotspots'
-		// },
-		// {
-		// 	id: 'map-indicator-3',
-		// 	title: 'Protected Areas',
-		// 	dataset_id: 'forest-cover'
-		// }
-	];
+	// // Time slider functions
+	// function toggleTimeSlider() {
+	// 	isTimeSliderVisible = !isTimeSliderVisible;
+	// 	if (!isTimeSliderVisible && isPlaying) {
+	// 		stopPlayback();
+	// 	}
+	// }
 
-	// Track selected question - default to first question
-	let selectedQuestionId = $state('');
+	// function togglePlayback() {
+	// 	if (isPlaying) {
+	// 		stopPlayback();
+	// 	} else {
+	// 		startPlayback();
+	// 	}
+	// }
 
-	// Track selected information layer (single selection)
-	let selectedInformationLayer = $state<string | null>('Forest Cover Distribution');
+	// function startPlayback() {
+	// 	if (playInterval) clearInterval(playInterval);
 
-	// Get current dataset based on selected question or information layer
-	let currentDataset = $derived.by(() => {
-		// First priority: selected question
-		if (selectedQuestionId) {
-			const selectedQuestion = questions.find((q) => q.id === selectedQuestionId);
-			if (selectedQuestion?.dataset_id) {
-				return ecosystemDataset.find((item) => item.id === selectedQuestion.dataset_id);
-			}
-		}
+	// 	isPlaying = true;
+	// 	playInterval = setInterval(() => {
+	// 		if (currentTimeIndex < timePeriods.length - 1) {
+	// 			currentTimeIndex++;
+	// 			updateMapForTime(currentTimeIndex);
+	// 		} else {
+	// 			// Loop back to start or stop
+	// 			currentTimeIndex = 0;
+	// 			updateMapForTime(currentTimeIndex);
+	// 			// Uncomment next line to stop at end instead of looping
+	// 			// stopPlayback();
+	// 		}
+	// 	}, playbackSpeed);
+	// }
 
-		// Second priority: selected information layer
-		if (selectedInformationLayer) {
-			const selectedLayer = information_layers.find(
-				(layer) => layer.title === selectedInformationLayer
-			);
-			if (selectedLayer?.dataset_id) {
-				return ecosystemDataset.find((item) => item.id === selectedLayer.dataset_id);
-			}
-		}
+	// function stopPlayback() {
+	// 	if (playInterval) {
+	// 		clearInterval(playInterval);
+	// 		playInterval = null;
+	// 	}
+	// 	isPlaying = false;
+	// }
 
-		// Default: nothing selected, return null
-		return null;
-	});
+	// function goToTime(index: number) {
+	// 	if (index >= 0 && index < timePeriods.length) {
+	// 		currentTimeIndex = index;
+	// 		updateMapForTime(index);
+	// 	}
+	// }
 
-	// Extract current data from dataset
-	let currentCharts = $derived(currentDataset?.charts || []);
+	// function stepBackward() {
+	// 	if (currentTimeIndex > 0) {
+	// 		goToTime(currentTimeIndex - 1);
+	// 	}
+	// }
+
+	// function stepForward() {
+	// 	if (currentTimeIndex < timePeriods.length - 1) {
+	// 		goToTime(currentTimeIndex + 1);
+	// 	}
+	// }
+
+	// function updateMapForTime(timeIndex: number) {
+	// 	// This function would update the map layers based on the selected time
+	// 	// You can modify ArcGIS parameters or switch between different temporal layers
+	// 	console.log('Updating map for time:', timePeriods[timeIndex]);
+
+	// 	// Example: Update ArcGIS layer with time parameter if needed
+	// 	if (map && selectedInformationLayer) {
+	// 		const layers = map.getLayers().getArray();
+	// 		layers.forEach((layer) => {
+	// 			if (layer.get('layerId') !== undefined) {
+	// 				const source = (layer as ImageLayer<any>).getSource();
+	// 				if (source && source instanceof ImageArcGISRest) {
+	// 					// Update ArcGIS parameters with time if your service supports it
+	// 					const currentParams = source.getParams();
+	// 					source.updateParams({
+	// 						...currentParams
+	// 						// Add time parameter if your ArcGIS service supports temporal data
+	// 						// time: timePeriods[timeIndex].year.toString()
+	// 					});
+	// 				}
+	// 			}
+	// 		});
+	// 	}
+	// }
+
+	// // Function to handle trend analysis mode changes
+	// function updateMapForTrendMode(mode: 'overall' | 'significant') {
+	// 	console.log('Updating map for trend analysis mode:', mode);
+	// 	// Implementation for trend mode changes if needed
+	// }
+
+	// // Watch for trend analysis mode changes
+	// $effect(() => {
+	// 	updateMapForTrendMode(trendAnalysisMode);
+	// });
+
+	// // Function to handle temperature rise threshold changes
+	// function updateMapForTemperatureRise(threshold: '0.5' | '1.5' | '2.5') {
+	// 	console.log('Updating map for temperature rise threshold:', threshold);
+	// 	// Implementation for temperature threshold changes if needed
+	// }
+
+	// // Watch for temperature rise threshold changes
+	// $effect(() => {
+	// 	updateMapForTemperatureRise(temperatureRiseThreshold);
+	// });
 
 	function initializeMap() {
 		if (!mapContainer) return;
 
 		// Small delay to ensure container has proper dimensions
 		setTimeout(() => {
-			// Create custom fullscreen control
+			// Create custom fullscreen control that includes our custom elements
 			const fullScreenControl = new FullScreen({
-				source: mapContainer.parentElement || mapContainer
+				source: mapContainer.parentElement || mapContainer // Use the parent container that includes our custom controls, fallback to mapContainer
 			});
 
 			map = new Map({
@@ -188,8 +234,19 @@
 				}),
 				layers: [
 					new TileLayer({
+						// source: new XYZ({
+						// 	url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+						// 	attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
+						// })
+
+						// source: new XYZ({
+						// 	url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+						// 	attributions: '© OpenStreetMap contributors © CARTO'
+						// })
+
 						source: new XYZ({
-							url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+							url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+							// attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
 						})
 					})
 				],
@@ -198,6 +255,13 @@
 					zoom: HKH_ZOOM
 				})
 			});
+
+			// Add default layer (Population 2025 - Layer 0) when map initializes
+			addArcGISLayer(
+				'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier/MapServer',
+				0,
+				'Glacier'
+			);
 
 			// Listen for fullscreen changes
 			const handleFullscreenChange = () => {
@@ -261,6 +325,9 @@
 
 	// Cleanup on destroy
 	onDestroy(() => {
+		// if (playInterval) {
+		// 	clearInterval(playInterval);
+		// }
 		// Remove fullscreen event listeners
 		if (fullscreenHandler) {
 			document.removeEventListener('fullscreenchange', fullscreenHandler);
@@ -274,6 +341,276 @@
 			map.dispose();
 		}
 	});
+
+	// Updated demographic dataset with ArcGIS layers
+	const cryoDataset = [
+		{
+			id: 'glacier',
+			charts: [
+				{
+					title: 'Glaciers in Major Basins of HKH',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['Amudarya', 'Brahmaputra', 'Ganga', 'Indus', 'Irrawaddy'],
+						series: [
+							{
+								name: 'Number of Glaciers',
+								data: [3277, 10274, 7963, 17925, 133],
+								color: '#45c8ff'
+							},
+							{
+								name: 'Area of Glaciers (sq. km)',
+								data: [2567, 12898, 9017, 20789, 35],
+								color: '#6d68de'
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'Glacier Numbers across HKH',
+				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier/MapServer',
+				layer_id: 0,
+				description: 'Number of Glaciers across HKH'
+			},
+			control_type: 'none'
+		},
+		{
+			id: 'glacial_lake',
+			charts: [
+				{
+					title: 'Glacial Lakes in Major River Basins of HKH',
+					chart_type: 'column',
+					chart_data: {
+						categories: ['Amudarya', 'Brahmaputra', 'Ganga', 'Indus', 'Irrawaddy', 'Mansarovar'],
+						series: [
+							{
+								name: 'Number of Glacial Lakes',
+								data: [1474, 13642, 4082, 5689, 525, 202],
+								color: '#45c8ff'
+							},
+							{
+								name: 'Area of Glaciers (sq. km)',
+								data: [66.1, 883.55, 208.59, 260.54, 16.15, 9.27],
+								color: '#6d68de'
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'Glacial Lake',
+				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/GlacialLake/MapServer',
+				layer_id: 0,
+				description: 'Glacial Lakes across HKH'
+			},
+			control_type: 'none'
+		},
+		{
+			id: 'glof',
+			charts: [
+				{
+					title: 'Glacial Lake Outburst Floods (GLOFs) Mechanism',
+					chart_type: 'pie',
+					chart_data: {
+						series: [
+							{
+								colorByPoint: true,
+								data: [
+									{ name: 'Permafrost thaw, Moraine failure', y: 1 },
+									{ name: 'Permafrost thaw, subglacial channel', y: 1 },
+									{ name: 'Dam piping', y: 5 },
+									{ name: 'Dam seepage', y: 1 },
+									{ name: 'Englacial tunnel', y: 2 },
+									{ name: 'Ice core thawing', y: 10 },
+									{ name: 'Moraine collapse', y: 16 },
+									{ name: 'Moraine collapse, permafrost thaw', y: 1 },
+									{ name: 'Overflow', y: 1 },
+									{ name: 'Overtopping', y: 1 },
+									{ name: 'Subglacial tunnel', y: 142 },
+									{ name: 'Subglacial tunnel, overtopping', y: 1 },
+									{ name: 'Supraglacial lake drainage', y: 5 },
+									{ name: 'Unknown', y: 549 }
+								]
+							}
+						]
+					}
+				},
+				{
+					title: 'No. of GLOFs by Lake Types',
+					chart_type: 'column',
+					chart_data: {
+						categories: [
+							'Moraine dammed',
+							'Ice dammed',
+							'Supraglacial',
+							'Unknown',
+							'Water pocket',
+							'Bedrock',
+							'Landslide dammed'
+						],
+						series: [
+							{
+								name: 'Lake Types',
+								data: [363, 236, 75, 31, 22, 6, 3]
+							}
+						]
+					}
+				}
+			],
+			map_data: {
+				name: 'GLOFs',
+				layer_id: 0,
+				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/GLOF/MapServer',
+				description: 'GLOFs in High Mountain Asia'
+			},
+			control_type: 'none'
+		}
+	];
+
+	// Updated questions
+	const questions = [
+		// {
+		// 	id: 'question-1',
+		// 	question: 'Show me the locations of glacial lake outburst floods in HKH Region.',
+		// 	dataset_id: 'glof'
+		// }
+	];
+
+	// Updated information layers
+	const information_layers = [
+		{
+			id: 'info-layer-1',
+			title: 'Glacier',
+			dataset_id: 'glacier'
+		},
+		{
+			id: 'info-layer-2',
+			title: 'Glacial Lake',
+			dataset_id: 'glacial_lake'
+		},
+		{
+			id: 'info-layer-3',
+			title: 'Glacial Lake Outburst Flood (GLOF)',
+			dataset_id: 'glof'
+		}
+	];
+
+	// Track selected question - default to first question
+	let selectedQuestionId = $state('');
+
+	// Track selected information layer (single selection) - default to Population 2025
+	let selectedInformationLayer = $state<string | null>('Glacier');
+
+	// Track radio button selection for trend analysis
+	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
+
+	// Track temperature rise threshold selection
+	let temperatureRiseThreshold = $state<'0.5' | '1.5' | '2.5'>('1.5');
+
+	// Layout states: 'default' | 'hide-left' | 'left-full'
+	let layoutState = $state('default');
+
+	// Legend state management
+	let legendData = $state<
+		Record<
+			string,
+			{ name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }
+		>
+	>({});
+	let legendCollapsed = $state(false);
+
+	// Track questions panel state
+	let isQuestionsPanelOpen = $state(false);
+	function toggleQuestionsPanel() {
+		isQuestionsPanelOpen = !isQuestionsPanelOpen;
+	}
+
+	// Add new state variables for layers panel
+	let layersPanelOpen = $state(false);
+	let activeBaseLayers = $state({});
+
+	// Define base layers from HKH/Outline service
+	const baseLayers = [
+		{
+			key: 'outline', // unique for app logic
+			name: 'Outline',
+			arcgisLayerId: 0, // actual ArcGIS layer id
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
+		},
+		{
+			key: 'basin',
+			name: 'Basin',
+			arcgisLayerId: 0,
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Basin/MapServer'
+		}
+	];
+
+	// Function to toggle base layers
+	async function toggleBaseLayer(layerKey: string, checked: boolean) {
+		if (!map) return;
+
+		activeBaseLayers = { ...activeBaseLayers, [layerKey]: checked };
+
+		const layerInfo = baseLayers.find((l) => l.key === layerKey);
+		if (!layerInfo) return;
+
+		if (checked) {
+			const layer = new ImageLayer({
+				source: new ImageArcGISRest({
+					url: layerInfo.url,
+					params: {
+						LAYERS: `show:${layerInfo.arcgisLayerId}`, // always 0 in your case
+						FORMAT: 'PNG32',
+						TRANSPARENT: true
+					}
+				}),
+				zIndex: 1,
+				opacity: layerKey === 'outline' ? 0.5 : 1 // optional styling
+			});
+
+			layer.set('baseLayerKey', layerKey); // track with unique key
+			map.addLayer(layer);
+		} else {
+			const layers = map.getLayers().getArray();
+			for (const layer of layers) {
+				if (layer.get('baseLayerKey') === layerKey) {
+					map.removeLayer(layer);
+					break;
+				}
+			}
+		}
+
+		updateLegend();
+	}
+
+	// Get current dataset based on selected question or information layer
+	let currentDataset = $derived.by(() => {
+		// First priority: selected question
+		if (selectedQuestionId) {
+			const selectedQuestion = questions.find((q) => q.id === selectedQuestionId);
+			if (selectedQuestion?.dataset_id) {
+				return cryoDataset.find((item) => item.id === selectedQuestion.dataset_id);
+			}
+		}
+
+		// Second priority: selected information layer
+		if (selectedInformationLayer) {
+			const selectedLayer = information_layers.find(
+				(layer) => layer.title === selectedInformationLayer
+			);
+			if (selectedLayer?.dataset_id) {
+				return cryoDataset.find((item) => item.id === selectedLayer.dataset_id);
+			}
+		}
+
+		// Default: first dataset
+		return cryoDataset[0];
+	});
+
+	// Extract current data from dataset
+	let currentCharts = $derived(currentDataset?.charts || []);
+	let currentMapData = $derived(currentDataset?.map_data);
 
 	// Watch for layout state changes and update map size
 	$effect(() => {
@@ -307,29 +644,191 @@
 		}
 	});
 
+	// Get layer by layer ID from map
+	const getLayerByLayerId = (layerId: number): any | null => {
+		if (!map) return null;
+		const layers = map.getLayers().getArray();
+		for (const layer of layers) {
+			if (layer.get('layerId') === layerId) {
+				return layer;
+			}
+		}
+		return null;
+	};
+
+	// Function to fetch ArcGIS legend
+	async function fetchArcGISLegend(serviceUrl: string, layerId: number) {
+		try {
+			const legendUrl = `${serviceUrl}/legend?f=json`;
+			const response = await fetch(legendUrl);
+			const data = await response.json();
+
+			const layerLegend = data.layers.find((l: any) => l.layerId === layerId);
+			if (layerLegend) {
+				return {
+					name: layerLegend.layerName,
+					items: layerLegend.legend.map((item: any) => ({
+						label: item.label,
+						imageData: `data:image/png;base64,${item.imageData}`
+					}))
+				};
+			}
+		} catch (error) {
+			console.error('Error fetching ArcGIS legend:', error);
+		}
+		return null;
+	}
+
+	// Update legend when layers change
+	async function updateLegend() {
+		const newLegendData = {};
+
+		// Get all layers from the map
+		if (map) {
+			const layers = map.getLayers().getArray();
+
+			for (const layer of layers) {
+				const source = layer.getSource();
+
+				if (source instanceof ImageArcGISRest) {
+					// Handle layerId 0 explicitly, without using || that treats 0 as falsy
+					let layerId = layer.get('layerId');
+					if (layerId === undefined || layerId === null) {
+						layerId = layer.get('baseLayerId');
+					}
+
+					const serviceUrl = source.getUrl();
+
+					console.log('Found ArcGIS layer - ID:', layerId, 'URL:', serviceUrl);
+
+					if (layerId !== undefined && layerId !== null && serviceUrl) {
+						const legendKey = `${serviceUrl}_${layerId}`;
+
+						if (!legendData[legendKey]) {
+							console.log('Fetching legend for layer:', layerId);
+							const legend = await fetchArcGISLegend(serviceUrl, layerId);
+							if (legend) {
+								newLegendData[legendKey] = legend;
+								console.log('Legend fetched successfully for layer:', layerId);
+							} else {
+								console.log('No legend data returned for layer:', layerId);
+							}
+						} else {
+							newLegendData[legendKey] = legendData[legendKey];
+							console.log('Using cached legend for layer:', layerId);
+						}
+					}
+				}
+			}
+		}
+
+		legendData = newLegendData;
+		console.log('Final legend data:', legendData); // Debug log
+	}
+
+	// Modified addArcGISLayer to update legend
+	async function addArcGISLayer(url: string, layerId: number, layerName: string) {
+		if (!map) return;
+		removeAllDemographicLayers();
+
+		const arcgisLayer = new ImageLayer({
+			source: new ImageArcGISRest({
+				url: url,
+				params: {
+					LAYERS: `show:${layerId}`,
+					FORMAT: 'PNG32',
+					TRANSPARENT: true
+				}
+			}),
+			zIndex: 2
+		});
+
+		arcgisLayer.set('layerId', layerId);
+		arcgisLayer.set('layerName', layerName);
+		arcgisLayer.set('serviceUrl', url);
+		map.addLayer(arcgisLayer);
+
+		console.log('Added layer - ID:', layerId, 'Name:', layerName); // Debug log
+
+		// Add a small delay to ensure the layer is fully loaded before updating legend
+		setTimeout(async () => {
+			await updateLegend();
+			console.log('Legend update completed'); // Debug log
+		}, 100);
+	}
+
+	// Remove all demographic layers from map
+	function removeAllDemographicLayers() {
+		if (!map) return;
+
+		const layers = map.getLayers().getArray();
+		const layersToRemove: any[] = [];
+
+		// Find all demographic layers (those with layerId property)
+		layers.forEach((layer) => {
+			if (layer.get('layerId') !== undefined) {
+				layersToRemove.push(layer);
+			}
+		});
+
+		// Remove all found demographic layers
+		layersToRemove.forEach((layer) => {
+			map!.removeLayer(layer);
+			console.log('Removed layer:', layer.get('layerName'));
+		});
+	}
+
 	// Function to handle question selection
 	function selectQuestion(questionId: string) {
 		selectedQuestionId = questionId;
 		// Clear information layer selection when selecting a question
 		selectedInformationLayer = null;
 
+		// Find the dataset and add the corresponding layer
+		const selectedQuestion = questions.find((q) => q.id === questionId);
+		if (selectedQuestion?.dataset_id) {
+			const dataset = cryoDataset.find((item) => item.id === selectedQuestion.dataset_id);
+			if (dataset?.map_data) {
+				addArcGISLayer(dataset.map_data.layer_id, dataset.map_data.name);
+			}
+
+			// if (dataset?.control_type === 'time_slider') {
+			// 	isTimeSliderVisible = true;
+			// } else {
+			// 	isTimeSliderVisible = false;
+			// }
+		}
+
 		console.log('Question selected:', questionId);
 	}
 
 	// Function to select information layer
 	function selectInformationLayer(layerId: string) {
-		// If clicking the same layer, deselect it
-		if (selectedInformationLayer === layerId) {
-			selectedInformationLayer = null;
-			return;
-		}
-
-		// Simply select the layer
+		// Always select the layer and add it to the map (no toggle off functionality)
 		selectedInformationLayer = layerId;
 		// Clear question selection when selecting an information layer
 		selectedQuestionId = '';
 
+		const selectedLayer = information_layers.find((layer) => layer.title === layerId);
+		if (selectedLayer?.dataset_id) {
+			const dataset = cryoDataset.find((item) => item.id === selectedLayer.dataset_id);
+			if (dataset?.map_data) {
+				addArcGISLayer(dataset.map_data.url, dataset.map_data.layer_id, dataset.map_data.name);
+			}
+		}
+
 		console.log('Information layer selected:', layerId);
+	}
+
+	// Function to cycle through layout states
+	function toggleLayoutState() {
+		if (layoutState === 'default') {
+			layoutState = 'hide-left';
+		} else if (layoutState === 'hide-left') {
+			layoutState = 'left-full';
+		} else {
+			layoutState = 'default';
+		}
 	}
 
 	// Function to set specific layout state
@@ -391,40 +890,40 @@
 	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
 	{#if layoutState === 'hide-left'}
 		<button
-			on:click={() => setLayoutState('default')}
-			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+			onclick={() => setLayoutState('default')}
+			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
 			title="Show Story Panel"
 		>
 			<ChevronsRight class="h-4 w-4" />
 		</button>
 	{/if}
+	<!-- Left Sidebar - Story + Questions -->
 
-	<!-- Left Sidebar - Story + Information -->
 	<div
-		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-16rem)] flex-1 space-y-6 overflow-y-auto"
+		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto"
 		class:hidden={layoutState === 'hide-left'}
 		class:col-span-12={layoutState === 'left-full'}
 	>
 		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/100 p-6">
+		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
 			<div class="mb-6 flex items-center justify-between">
 				<div class="flex items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 p-2">
-						<Snowflake class="h-5 w-5 text-white" />
+					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
+						<TopicIcon class="h-5 w-5 text-white" />
 					</div>
 					<h3
 						class="{layoutState === 'left-full'
 							? 'text-2xl'
 							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
 					>
-						Cryosphere Dynamics in HKH
+						Cryosphere Status in HKH
 					</h3>
 				</div>
 				<div class="flex items-center space-x-2">
 					{#if layoutState !== 'left-full'}
 						<!-- Hide Left Panel Button -->
 						<button
-							on:click={() => setLayoutState('hide-left')}
+							onclick={() => setLayoutState('hide-left')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Hide Story Panel"
 						>
@@ -432,7 +931,7 @@
 						</button>
 						<!-- Expand Story Button -->
 						<button
-							on:click={() => setLayoutState('left-full')}
+							onclick={() => setLayoutState('left-full')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Expand Story"
 						>
@@ -441,7 +940,7 @@
 					{:else}
 						<!-- Back to Default Button -->
 						<button
-							on:click={() => setLayoutState('default')}
+							onclick={() => setLayoutState('default')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Back to Default"
 						>
@@ -456,57 +955,95 @@
 					? 'space-y-6'
 					: 'space-y-4'} transition-all duration-300"
 			>
-				<!-- <p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-700 transition-all duration-300"
-				>
-					The Hindu Kush Himalaya (HKH) region is recognized as one of the world's most biodiverse
-					mountain systems, harboring an extraordinary array of ecosystems from tropical forests to
-					alpine meadows. This vast region spans across eight countries and encompasses 35
-					biodiversity hotspots, making it a critical repository of global biological heritage. The
-					HKH supports over 25,000 plant species, including numerous endemic varieties, and provides
-					habitat for iconic wildlife such as snow leopards, Bengal tigers, one-horned rhinoceros,
-					and countless bird species.
-				</p>
-
 				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					However, these precious ecosystems face unprecedented threats from climate change, habitat
-					fragmentation, and human encroachment. Rising temperatures are pushing species to higher
-					altitudes, disrupting established ecological relationships and threatening the survival of
-					cold-adapted species. Deforestation and land-use changes have fragmented critical wildlife
-					corridors, isolating populations and reducing genetic diversity.
+				The Hindu Kush Himalaya (HKH) contains the world’s greatest areal extent and volume of permanent ice and
+				permafrost outside the polar regions. Consequently, glaciers, snow, and permafrost as well as most other components of the
+				cryosphere have undergone significant changes during recent decades, related to climatic forcing. One of the impacts of glacier recession or retreat is the formation of new glacial lakes by the accumulation of
+				meltwater resulting from the glacier retreat between the frontal moraine and the retreating glacier or the expansion
+				and merging of the existing ones. Sudden release of water held by more or less unstable moraine complexes due
+				to its breaching or slope failure results in the phenomenon known as glacial lake outburst flood (GLOF).
 				</p>
+				<!-- Images Section - Responsive Layout -->
+				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
+					{#if layoutState === 'left-full'}
+						<!-- Full Width Layout -->
+						<div class="flex flex-wrap justify-center gap-6">
+							<div
+								class="w-full overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto"
+							>
+								<img
+									src={cryo1}
+									alt="HKH demographic diversity"
+									class="mx-auto h-80 object-contain"
+								/>
+							</div>
 
+							<div
+								class="w-full overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto"
+							>
+								<img src={demogr_1} alt="Population centers" class="mx-auto h-80 object-contain" />
+							</div>
+
+							<div class="mt-4 w-full text-center">
+								<p class="text-sm leading-relaxed text-slate-700">
+									<span class="font-semibold text-slate-800">Mountain communities</span>
+								</p>
+							</div>
+						</div>
+					{:else}
+						<!-- Default Layout - Stacked Images -->
+						<div class="space-y-3">
+							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+								<img
+									src={cryo1}
+									alt="HKH demographic diversity"
+									class="h-50 w-full object-contain"
+								/>
+								<div class="p-2">
+									<p class="text-center text-xs text-slate-600">
+										<!-- <span
+											><span class="font-semibold">Mountain communities</span>
+										</span> -->
+									</p>
+								</div>
+							</div>
+							<!-- <div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+							<img src={climate_2} alt="Population centers" class="h-55 w-full object-contain" />
+							<div class="p-2">
+								<p class="text-center text-xs text-slate-600">
+									<span>
+										<span class="font-semibold"> Urban growth in mountain valleys </span>
+										showing demographic concentration</span
+									>
+								</p>
+							</div>
+						</div> -->
+						</div>
+					{/if}
+				</div>
 				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					The region's forests, which act as crucial carbon sinks and regulate water cycles, are
-					under severe pressure from agricultural expansion, infrastructure development, and
-					unsustainable harvesting practices. Wetlands and grasslands, equally important for
-					biodiversity and ecosystem services, are being converted for agriculture and urban
-					development at alarming rates.
+				The HKH is characterized by the widespread presence of such glacial lakes and many of them are potential
+				sources of flood. The HKH has experienced numerous GLOF events, some of them with transboundary impacts. An increase of GLOF events
+				over the period 1940–2000 has been reported in the Himalaya although the trend has been considered statistically
+				insignificant. In addition
+				to direct damages, indirect damages — business closures or revenue losses incurred from a breakdown in supplies,
+				or costs incurred in ensuring people’s health and wellbeing, and traffic stoppages due to damaged trails, roads, and
+				bridges — are also commonly associated with GLOFs.
 				</p>
-
 				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					Conservation efforts in the HKH require urgent, coordinated action across borders.
-					Establishing and maintaining protected areas, creating wildlife corridors, and
-					implementing sustainable land management practices are essential. Community-based
-					conservation approaches that engage local populations as stewards of biodiversity have
-					shown promising results. Additionally, scientific research and monitoring programs are
-					crucial for understanding ecosystem dynamics and developing effective conservation
-					strategies that can adapt to changing environmental conditions.
-				</p> -->
+				</p>
 			</div>
 		</div>
 	</div>
@@ -532,20 +1069,143 @@
 								bind:this={mapContainer}
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
+
+							<!-- Home Reset Button -->
+							<button
+								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								onclick={() => {
+									if (map) {
+										map.getView().setCenter(fromLonLat(HKH_CENTER));
+										map.getView().setZoom(HKH_ZOOM);
+									}
+								}}
+								title="Reset to Home View"
+							>
+								<House class="h-4 w-4 text-slate-600" />
+							</button>
+
+							<!-- Layer Toggler Button -->
+							<button
+								class="absolute top-[3.75rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
+								onclick={() => (layersPanelOpen = !layersPanelOpen)}
+							>
+								{#if layersPanelOpen}
+									<ChevronsRight class="h-4 w-4" />
+								{:else}
+									<Layers class="h-4 w-4" />
+								{/if}
+							</button>
+
+							<!-- Layer Toggler Panel -->
+							<div
+								class="absolute top-[5.5rem] right-2 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+									? 'max-h-96 opacity-100'
+									: 'max-h-0 opacity-0'}"
+							>
+								<div class="p-3">
+									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
+									<div class="space-y-2">
+										{#each baseLayers as layerInfo}
+											<label class="flex items-center space-x-2 text-sm">
+												<input
+													type="checkbox"
+													checked={!!activeBaseLayers[layerInfo.key]}
+													onchange={(e) => {
+														toggleBaseLayer(layerInfo.key, e.target.checked);
+														e.target.blur();
+													}}
+													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+												/>
+												<span>{layerInfo.name}</span>
+											</label>
+										{/each}
+									</div>
+								</div>
+							</div>
+
+							<!-- Legend Panel - Bottom Right -->
+							{#if currentDataset && Object.keys(legendData).length > 0}
+								<div class="absolute right-2 bottom-2">
+									<!-- Legend Toggle Button -->
+									<button
+										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										onclick={() => (legendCollapsed = !legendCollapsed)}
+									>
+										<div class="flex items-center space-x-2">
+											<List class="h-4 w-4 text-blue-600" />
+											{#if !legendCollapsed}
+												<span class="font-medium text-slate-700">Legend</span>
+											{/if}
+										</div>
+										<!-- <svg
+											class="h-4 w-4 transform text-slate-600 transition-transform duration-300 {legendCollapsed
+												? 'rotate-180'
+												: ''}"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M19 9l-7 7-7-7"
+											/>
+										</svg> -->
+									</button>
+
+									<!-- Legend Content -->
+									{#if !legendCollapsed}
+										<div
+											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
+										>
+											<div class="max-h-[300px] w-35 space-y-4">
+												{#each Object.keys(legendData) as uniqueKey}
+													<div class="space-y-2">
+														<h4 class="text-sm font-semibold text-slate-800">
+															{legendData[uniqueKey].name}
+														</h4>
+														<div class="space-y-1">
+															{#each legendData[uniqueKey].items as item}
+																<div class="flex items-center space-x-2">
+																	{#if item.imageData}
+																		<img
+																			src={item.imageData}
+																			alt={item.label}
+																			class="h-4 w-5 flex-shrink-0"
+																		/>
+																	{:else if item.imageUrl}
+																		<img
+																			src={item.imageUrl}
+																			alt={item.label}
+																			class="h-4 w-5 flex-shrink-0"
+																		/>
+																	{/if}
+																	<span class="text-xs text-slate-700">{item.label}</span>
+																</div>
+															{/each}
+														</div>
+													</div>
+												{/each}
+											</div>
+										</div>
+									{/if}
+								</div>
+							{/if}
 						</div>
 					</div>
 
 					<!-- Chart Section -->
 					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
+						<!-- <h3 class="mb-4 text-lg font-semibold text-slate-700">Demographic Analytics</h3> -->
 						<div class="rounded-lg bg-slate-50/50">
-							{#if currentDataset && currentCharts && currentCharts.length > 0}
+							{#if currentCharts && currentCharts.length > 0}
 								<div class="space-y-6">
 									{#each currentCharts as chart, index}
 										<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												subtitle="Hindu Kush Himalaya Region Ecosystem Data"
 												chart_type={chart.chart_type}
 											/>
 										</div>
@@ -554,9 +1214,7 @@
 							{:else}
 								<div class="flex h-80 items-center justify-center">
 									<div class="text-center text-slate-500">
-										<p class="text-sm">
-											Select a question or information layer to view related charts
-										</p>
+										<!-- <p class="text-sm">Select a question to view related charts</p> -->
 									</div>
 								</div>
 							{/if}
@@ -564,14 +1222,14 @@
 					</div>
 				</div>
 
-				<!-- Right part: Information Layer -->
+				<!-- Right part: Information Layer and Questions -->
 				<div class="w-80 flex-shrink-0">
 					<div
-						class=" top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
+						class="top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
 					>
 						<!-- Information Layer Header -->
 						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-							<div class="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 p-2">
+							<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
 								<Layers class="h-5 w-5 text-white" />
 							</div>
 							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
@@ -583,18 +1241,18 @@
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
 										<button
-											on:click={() => selectInformationLayer(layer.title)}
+											onclick={() => selectInformationLayer(layer.title)}
 											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
 											layer.title
-												? 'border-cyan-300 bg-gradient-to-r from-cyan-50/90 to-blue-50/90 shadow-md'
-												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+												? 'border-blue-500 bg-blue-50 shadow-md'
+												: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
 										>
 											<div class="flex items-start space-x-3 text-left">
 												<div class="flex-1">
 													<h4
 														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'text-cyan-800'
-															: 'text-slate-800'} mb-1"
+															? 'font-medium text-blue-700'
+															: 'text-slate-600 group-hover:text-slate-800'}"
 													>
 														{layer.title}
 													</h4>
@@ -623,65 +1281,69 @@
 	</div>
 </div>
 
-<!-- Fixed Floating Questions Button and Panel -->
-{#if layoutState !== 'left-full'}
-	<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
-		<div
-			class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
-			class:scale-0={!isQuestionsPanelOpen}
-			class:scale-100={isQuestionsPanelOpen}
-			class:opacity-0={!isQuestionsPanelOpen}
-			class:opacity-100={isQuestionsPanelOpen}
-			class:pointer-events-none={!isQuestionsPanelOpen}
-		>
-			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-				<div class="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 p-2">
-					<Info class="h-4 w-4 text-white" />
+<!-- Conditionally render floating questions button -->
+<div>
+	{#if layoutState !== 'left-full'}
+		<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
+			<div
+				class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+				class:scale-0={!isQuestionsPanelOpen}
+				class:scale-100={isQuestionsPanelOpen}
+				class:opacity-0={!isQuestionsPanelOpen}
+				class:opacity-100={isQuestionsPanelOpen}
+				class:pointer-events-none={!isQuestionsPanelOpen}
+			>
+				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
+						<Info class="h-4 w-4 text-white" />
+					</div>
+					<h3 class="text-lg font-bold text-slate-800">Explore Questions</h3>
 				</div>
-				<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
-			</div>
 
-			<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
-				{#each questions as questionItem, index}
-					<button
-						class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
-						questionItem.id
-							? 'border-cyan-500 bg-cyan-50 shadow-md'
-							: 'border-slate-200/50 bg-white/50 hover:border-cyan-300 hover:bg-cyan-50/70 hover:shadow-sm'}"
-						on:click={() => selectQuestion(questionItem.id)}
-					>
-						<div class="flex items-start space-x-2">
-							<div class="mt-1 flex-shrink-0">
-								{#if selectedQuestionId === questionItem.id}
-									<CheckCircle class="h-4 w-4 text-green-600" />
-								{:else}
-									<div
-										class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-cyan-400"
-									></div>
-								{/if}
+				<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
+					{#each questions as questionItem, index}
+						<button
+							class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
+							questionItem.id
+								? 'border-blue-500 bg-blue-50 shadow-md'
+								: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+							onclick={() => selectQuestion(questionItem.id)}
+						>
+							<div class="flex items-start space-x-2">
+								<div class="mt-1 flex-shrink-0">
+									{#if selectedQuestionId === questionItem.id}
+										<CheckCircle class="h-4 w-4 text-blue-600" />
+									{:else}
+										<div
+											class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
+										></div>
+									{/if}
+								</div>
+								<p
+									class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+										? 'font-medium text-blue-700'
+										: 'text-slate-600 group-hover:text-slate-800'}"
+								>
+									{questionItem.question}
+								</p>
 							</div>
-							<p
-								class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-									? 'font-medium text-cyan-700'
-									: 'text-slate-600 group-hover:text-slate-800'}"
-							>
-								{questionItem.question}
-							</p>
-						</div>
-					</button>
-				{/each}
+						</button>
+					{/each}
+				</div>
 			</div>
-		</div>
 
-		<button
-			on:click={toggleQuestionsPanel}
-			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
-			aria-label="Toggle questions panel"
-		>
-			<HelpCircle class="h-6 w-6" />
-		</button>
-	</div>
-{/if}
+			<button
+				onclick={toggleQuestionsPanel}
+				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r {getTopicColor(
+					topic
+				)} text-white"
+				aria-label="Toggle questions panel"
+			>
+				<HelpCircle class="h-6 w-6" />
+			</button>
+		</div>
+	{/if}
+</div>
 
 <style>
 	/* Ensure map containers resize properly */
@@ -737,5 +1399,71 @@
 	:global(:-ms-fullscreen .absolute) {
 		position: fixed !important;
 		z-index: 9999 !important;
+	}
+
+	/* Compact Time Slider Styles */
+	/* .compact-slider {
+		-webkit-appearance: none;
+		appearance: none;
+		height: 4px;
+		border-radius: 2px;
+		background: linear-gradient(to right, #e2e8f0 0%, #cbd5e1 100%);
+		outline: none;
+		transition: all 0.3s ease;
+	}
+
+	.compact-slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #6366f1, #8b5cf6);
+		cursor: pointer;
+		border: 1px solid white;
+		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
+		transition: all 0.2s ease;
+	}
+
+	.compact-slider::-webkit-slider-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+	}
+
+	.compact-slider::-moz-range-thumb {
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #6366f1, #8b5cf6);
+		cursor: pointer;
+		border: 1px solid white;
+		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
+		transition: all 0.2s ease;
+	}
+
+	.compact-slider::-moz-range-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+	} */
+
+	/* .scrollbar-hide {
+		scrollbar-width: none; 
+		-ms-overflow-style: none; 
+	}
+
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none; 
+	} */
+
+	.custom-shadow {
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); /* bigger shadow for Questions Button */
+		transition:
+			box-shadow 0.3s ease,
+			transform 0.3s ease;
+	}
+
+	.custom-shadow:hover {
+		/* box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);  */
+		transform: scale(1.1);
 	}
 </style>
