@@ -705,7 +705,7 @@
 	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
 	{#if layoutState === 'hide-left'}
 		<button
-			on:click={() => setLayoutState('default')}
+			onclick={() => setLayoutState('default')}
 			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
 			title="Show Story Panel"
 		>
@@ -738,7 +738,7 @@
 					{#if layoutState !== 'left-full'}
 						<!-- Hide Left Panel Button -->
 						<button
-							on:click={() => setLayoutState('hide-left')}
+							onclick={() => setLayoutState('hide-left')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Hide Story Panel"
 						>
@@ -746,7 +746,7 @@
 						</button>
 						<!-- Expand Story Button -->
 						<button
-							on:click={() => setLayoutState('left-full')}
+							onclick={() => setLayoutState('left-full')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Expand Story"
 						>
@@ -755,7 +755,7 @@
 					{:else}
 						<!-- Back to Default Button -->
 						<button
-							on:click={() => setLayoutState('default')}
+							onclick={() => setLayoutState('default')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Back to Default"
 						>
@@ -976,7 +976,7 @@
 									<!-- Legend Toggle Button -->
 									<button
 										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
-										on:click={() => (legendCollapsed = !legendCollapsed)}
+										onclick={() => (legendCollapsed = !legendCollapsed)}
 									>
 										<div class="flex items-center space-x-2">
 											<List class="h-4 w-4 text-green-600" />
@@ -1077,7 +1077,7 @@
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
 										<button
-											on:click={() => selectInformationLayer(layer.title)}
+											onclick={() => selectInformationLayer(layer.title)}
 											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
 											layer.title
 												? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
@@ -1142,7 +1142,7 @@
 						questionItem.id
 							? 'border-green-500 bg-green-50 shadow-md'
 							: 'border-slate-200/50 bg-white/50 hover:border-green-300 hover:bg-green-50/70 hover:shadow-sm'}"
-						on:click={() => selectQuestion(questionItem.id)}
+						onclick={() => selectQuestion(questionItem.id)}
 					>
 						<div class="flex items-start space-x-2">
 							<div class="mt-1 flex-shrink-0">
@@ -1168,7 +1168,7 @@
 		</div>
 
 		<button
-			on:click={toggleQuestionsPanel}
+			onclick={toggleQuestionsPanel}
 			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
 			aria-label="Toggle questions panel"
 		>

@@ -2941,7 +2941,7 @@
 	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
 	{#if layoutState === 'hide-left'}
 		<button
-			on:click={() => setLayoutState('default')}
+			onclick={() => setLayoutState('default')}
 			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
 			title="Show Story Panel"
 		>
@@ -2973,7 +2973,7 @@
 					{#if layoutState !== 'left-full'}
 						<!-- Hide Left Panel Button -->
 						<button
-							on:click={() => setLayoutState('hide-left')}
+							onclick={() => setLayoutState('hide-left')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Hide Story Panel"
 						>
@@ -2981,7 +2981,7 @@
 						</button>
 						<!-- Expand Story Button -->
 						<button
-							on:click={() => setLayoutState('left-full')}
+							onclick={() => setLayoutState('left-full')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Expand Story"
 						>
@@ -2990,7 +2990,7 @@
 					{:else}
 						<!-- Back to Default Button -->
 						<button
-							on:click={() => setLayoutState('default')}
+							onclick={() => setLayoutState('default')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Back to Default"
 						>
@@ -3174,7 +3174,7 @@
 							<!-- Home Reset Button -->
 							<button
 								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
-								on:click={() => {
+								onclick={() => {
 									if (map) {
 										map.getView().setCenter(fromLonLat(HKH_CENTER));
 										map.getView().setZoom(HKH_ZOOM);
@@ -3188,7 +3188,7 @@
 							<!-- Layer Toggler Button -->
 							<button
 								class="absolute top-[3.75rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
-								on:click={() => (layersPanelOpen = !layersPanelOpen)}
+								onclick={() => (layersPanelOpen = !layersPanelOpen)}
 							>
 								{#if layersPanelOpen}
 									<ChevronsRight class="h-4 w-4" />
@@ -3211,7 +3211,7 @@
 												<input
 													type="checkbox"
 													checked={!!activeBaseLayers[layerInfo.id]}
-													on:change={(e) => {
+													onchange={(e) => {
 														const target = e.target as HTMLInputElement;
 														toggleBaseLayer(layerInfo.id, target.checked);
 														target.blur(); // Removes focus from the checkbox
@@ -3230,7 +3230,7 @@
 								{#if !isTimeSliderVisible}
 									<!-- Time Control Toggle Button -->
 									<button
-										on:click={toggleTimeSlider}
+										onclick={toggleTimeSlider}
 										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl {isFullscreen
 											? 'z-[9999]'
 											: 'z-10'}"
@@ -3257,7 +3257,7 @@
 
 										<!-- Step Backward -->
 										<button
-											on:click={stepBackward}
+											onclick={stepBackward}
 											disabled={currentTimeIndex === 0}
 											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
 											title="Previous Year"
@@ -3267,7 +3267,7 @@
 
 										<!-- Play/Pause -->
 										<button
-											on:click={togglePlayback}
+											onclick={togglePlayback}
 											class="rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 p-2 text-white shadow-sm transition-all duration-200 hover:from-blue-600 hover:to-cyan-600 hover:shadow-md"
 											title={isPlaying ? 'Pause' : 'Play'}
 										>
@@ -3280,7 +3280,7 @@
 
 										<!-- Step Forward -->
 										<button
-											on:click={stepForward}
+											onclick={stepForward}
 											disabled={currentTimeIndex === timePeriods.length - 1}
 											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
 											title="Next Year"
@@ -3298,14 +3298,14 @@
 												min="0"
 												max={timePeriods.length - 1}
 												bind:value={currentTimeIndex}
-												on:input={(e) => goToTime(parseInt((e.target as HTMLInputElement).value))}
+												oninput={(e) => goToTime(parseInt((e.target as HTMLInputElement).value))}
 												class="compact-slider w-32"
 											/>
 										</div>
 
 										<!-- Close Button -->
 										<button
-											on:click={toggleTimeSlider}
+											onclick={toggleTimeSlider}
 											class="rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
 											title="Collapse"
 										>
@@ -3583,7 +3583,7 @@
 									<!-- Legend Toggle Button -->
 									<button
 										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
-										on:click={() => (legendCollapsed = !legendCollapsed)}
+										onclick={() => (legendCollapsed = !legendCollapsed)}
 									>
 										<div class="flex items-center space-x-2">
 											<List class="h-4 w-4 text-blue-600" />
@@ -3701,7 +3701,7 @@
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
 										<button
-											on:click={() => selectInformationLayer(layer.title)}
+											onclick={() => selectInformationLayer(layer.title)}
 											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
 											layer.title
 												? 'border-blue-300 bg-gradient-to-r from-blue-50/90 to-cyan-50/90 shadow-md'
@@ -3766,7 +3766,7 @@
 						questionItem.id
 							? 'border-blue-500 bg-blue-50 shadow-md'
 							: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-						on:click={() => selectQuestion(questionItem.id)}
+						onclick={() => selectQuestion(questionItem.id)}
 					>
 						<div class="flex items-start space-x-2">
 							<div class="mt-1 flex-shrink-0">
@@ -3792,7 +3792,7 @@
 		</div>
 
 		<button
-			on:click={toggleQuestionsPanel}
+			onclick={toggleQuestionsPanel}
 			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
 			aria-label="Toggle questions panel"
 		>
