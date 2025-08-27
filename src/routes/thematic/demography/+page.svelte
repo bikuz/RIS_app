@@ -229,7 +229,7 @@
 				target: mapContainer,
 				controls: defaultControls().extend([
 					fullScreenControl,
-					new ScaleLine({ units: 'metric', bar: true })
+					// new ScaleLine({ units: 'metric', bar: true })
 				]),
 				interactions: defaultInteractions({
 					mouseWheelZoom: false

@@ -226,8 +226,8 @@
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
-					fullScreenControl,
-					new ScaleLine({ units: 'metric', bar: true })
+					fullScreenControl
+					// new ScaleLine({ units: 'metric', bar: true })
 				]),
 				interactions: defaultInteractions({
 					mouseWheelZoom: false
@@ -960,13 +960,17 @@
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-				The Hindu Kush Himalaya (HKH) contains the world’s greatest areal extent and volume of permanent ice and
-				permafrost outside the polar regions. Consequently, glaciers, snow, and permafrost as well as most other components of the
-				cryosphere have undergone significant changes during recent decades, related to climatic forcing. One of the impacts of glacier recession or retreat is the formation of new glacial lakes by the accumulation of
-				meltwater resulting from the glacier retreat between the frontal moraine and the retreating glacier or the expansion
-				and merging of the existing ones. Sudden release of water held by more or less unstable moraine complexes due
-				to its breaching or slope failure results in the phenomenon known as glacial lake outburst flood (GLOF).
+					The Hindu Kush Himalaya (HKH) contains the world’s greatest areal extent and volume of
+					permanent ice and permafrost outside the polar regions. Consequently, glaciers, snow, and
+					permafrost as well as most other components of the cryosphere have undergone significant
+					changes during recent decades, related to climatic forcing. One of the impacts of glacier
+					recession or retreat is the formation of new glacial lakes by the accumulation of
+					meltwater resulting from the glacier retreat between the frontal moraine and the
+					retreating glacier or the expansion and merging of the existing ones. Sudden release of
+					water held by more or less unstable moraine complexes due to its breaching or slope
+					failure results in the phenomenon known as glacial lake outburst flood (GLOF).
 				</p>
+
 				<!-- Images Section - Responsive Layout -->
 				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
 					{#if layoutState === 'left-full'}
@@ -977,20 +981,20 @@
 							>
 								<img
 									src={cryo1}
-									alt="HKH demographic diversity"
+									alt="Glacial Lake in HMA"
 									class="mx-auto h-80 object-contain"
 								/>
 							</div>
 
-							<div
+							<!-- <div
 								class="w-full overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto"
 							>
-								<img src={demogr_1} alt="Population centers" class="mx-auto h-80 object-contain" />
-							</div>
+								<img src={cryo1} alt="Population centers" class="mx-auto h-80 object-contain" />
+							</div> -->
 
 							<div class="mt-4 w-full text-center">
 								<p class="text-sm leading-relaxed text-slate-700">
-									<span class="font-semibold text-slate-800">Mountain communities</span>
+									<span class="font-semibold text-slate-800">Glacial Lake in High Mountain</span>
 								</p>
 							</div>
 						</div>
@@ -1000,7 +1004,7 @@
 							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
 								<img
 									src={cryo1}
-									alt="HKH demographic diversity"
+									alt="Glacial Lake in High Mountain Asia"
 									class="h-50 w-full object-contain"
 								/>
 								<div class="p-2">
@@ -1025,24 +1029,20 @@
 						</div>
 					{/if}
 				</div>
+
 				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-				The HKH is characterized by the widespread presence of such glacial lakes and many of them are potential
-				sources of flood. The HKH has experienced numerous GLOF events, some of them with transboundary impacts. An increase of GLOF events
-				over the period 1940–2000 has been reported in the Himalaya although the trend has been considered statistically
-				insignificant. In addition
-				to direct damages, indirect damages — business closures or revenue losses incurred from a breakdown in supplies,
-				or costs incurred in ensuring people’s health and wellbeing, and traffic stoppages due to damaged trails, roads, and
-				bridges — are also commonly associated with GLOFs.
-				</p>
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
+					The HKH is characterized by the widespread presence of such glacial lakes and many of them
+					are potential sources of flood. The HKH has experienced numerous GLOF events, some of them
+					with transboundary impacts. An increase of GLOF events over the period 1940–2000 has been
+					reported in the Himalaya although the trend has been considered statistically
+					insignificant. In addition to direct damages, indirect damages — business closures or
+					revenue losses incurred from a breakdown in supplies, or costs incurred in ensuring
+					people’s health and wellbeing, and traffic stoppages due to damaged trails, roads, and
+					bridges — are also commonly associated with GLOFs.
 				</p>
 			</div>
 		</div>
