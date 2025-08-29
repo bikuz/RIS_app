@@ -3,7 +3,7 @@
 	import demogr_1 from '$lib/assets/images/Demography_1.png';
 	import demogr_2 from '$lib/assets/images/Demography_2.png';
 	import { getTopicName, getTopicIcon, getTopicColor } from '$lib/data/themeData.js';
-	const topic = 'demography';
+	const topic = 'human-dimensions';
 	const TopicIcon = getTopicIcon(topic);
 	import Map from 'ol/Map';
 	import View from 'ol/View';
@@ -1043,7 +1043,7 @@
 							? 'text-2xl'
 							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
 					>
-						Demographic Status in HKH
+						Human Dimensions Status in HKH
 					</h3>
 				</div>
 				<div class="flex items-center space-x-2">
