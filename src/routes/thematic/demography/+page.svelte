@@ -228,7 +228,7 @@
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
-					fullScreenControl,
+					fullScreenControl
 					// new ScaleLine({ units: 'metric', bar: true })
 				]),
 				interactions: defaultInteractions({
@@ -353,7 +353,7 @@
 						series: [
 							{
 								name: 'Population (millions)',
-								data: [207.357006, 221.147189, 233.295930, 246.467761],
+								data: [207.357006, 221.147189, 233.29593, 246.467761],
 								color: '#5f87c1'
 							}
 						]
@@ -512,6 +512,17 @@
 			control_type: 'none'
 		},
 		{
+			id: 'impervious_surface',
+
+			map_data: {
+				name: 'Impervious Surface',
+				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_HumanDimensions/MapServer',
+				layer_id: 0,
+				description: 'Impervious Surface'
+			},
+			control_type: 'none'
+		},
+		{
 			id: 'urban-center',
 			// charts: [
 			// 	{
@@ -537,7 +548,7 @@
 		}
 	];
 
-	// Updated questions 
+	// Updated questions
 	const questions = [
 		{
 			id: 'question-1',
@@ -546,7 +557,7 @@
 		}
 	];
 
-	// Updated information layers 
+	// Updated information layers
 	const information_layers = [
 		{
 			id: 'info-layer-1',
@@ -582,6 +593,11 @@
 			id: 'info-layer-7',
 			title: 'Total Dependency Ratio',
 			dataset_id: 'total-dependency-ratio-2025'
+		},
+		{
+			id: 'info-layer-8',
+			title: 'Impervious Surface',
+			dataset_id: 'impervious_surface'
 		}
 	];
 
@@ -625,7 +641,7 @@
 			id: 0,
 			name: 'Outline',
 			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
-		},
+		}
 		// {
 		// 	id: 1,
 		// 	name: 'Soil',
@@ -838,27 +854,31 @@
 	}
 
 	// Modified addArcGISLayer to update legend
-	async function addArcGISLayer(layerId: number, layerName: string) {
+	async function addArcGISLayer(layerId: number, layerName: string, url?: string) {
 		if (!map) return;
 		removeAllDemographicLayers();
 
+		// Use provided url if available, otherwise fall back to global default
+		const serviceUrl = url || ARCGIS_MAPSERVER_URL;
+
 		const arcgisLayer = new ImageLayer({
 			source: new ImageArcGISRest({
-				url: ARCGIS_MAPSERVER_URL,
+				url: serviceUrl,
 				params: {
 					LAYERS: `show:${layerId}`,
 					FORMAT: 'PNG32',
 					TRANSPARENT: true
 				}
 			}),
-			zIndex: 1
+			zIndex: 2
 		});
 
 		arcgisLayer.set('layerId', layerId);
 		arcgisLayer.set('layerName', layerName);
+		arcgisLayer.set('serviceUrl', serviceUrl);
 		map.addLayer(arcgisLayer);
 
-		console.log('Added layer - ID:', layerId, 'Name:', layerName); // Debug log
+		console.log('Added layer - ID:', layerId, 'Name:', layerName, 'URL:', serviceUrl); // Debug log
 
 		// Add a small delay to ensure the layer is fully loaded before updating legend
 		setTimeout(async () => {
@@ -888,25 +908,20 @@
 		});
 	}
 
-	// Function to handle question selection
 	function selectQuestion(questionId: string) {
 		selectedQuestionId = questionId;
-		// Clear information layer selection when selecting a question
-		selectedInformationLayer = null;
+		selectedInformationLayer = null; // clear info layer selection
 
-		// Find the dataset and add the corresponding layer
 		const selectedQuestion = questions.find((q) => q.id === questionId);
 		if (selectedQuestion?.dataset_id) {
 			const dataset = demographicDataset.find((item) => item.id === selectedQuestion.dataset_id);
 			if (dataset?.map_data) {
-				addArcGISLayer(dataset.map_data.layer_id, dataset.map_data.name);
+				addArcGISLayer(
+					dataset.map_data.layer_id,
+					dataset.map_data.name,
+					dataset.map_data.url // only passed if exists
+				);
 			}
-
-			// if (dataset?.control_type === 'time_slider') {
-			// 	isTimeSliderVisible = true;
-			// } else {
-			// 	isTimeSliderVisible = false;
-			// }
 		}
 
 		console.log('Question selected:', questionId);
@@ -914,24 +929,19 @@
 
 	// Function to select information layer
 	function selectInformationLayer(layerId: string) {
-		// Always select the layer and add it to the map (no toggle off functionality)
 		selectedInformationLayer = layerId;
-		// Clear question selection when selecting an information layer
-		selectedQuestionId = '';
+		selectedQuestionId = ''; // clear question selection
 
-		// Find the dataset and add the corresponding layer
 		const selectedLayer = information_layers.find((layer) => layer.title === layerId);
 		if (selectedLayer?.dataset_id) {
 			const dataset = demographicDataset.find((item) => item.id === selectedLayer.dataset_id);
 			if (dataset?.map_data) {
-				addArcGISLayer(dataset.map_data.layer_id, dataset.map_data.name);
+				addArcGISLayer(
+					dataset.map_data.layer_id,
+					dataset.map_data.name,
+					dataset.map_data.url // only passed if exists
+				);
 			}
-
-			// if (dataset?.control_type === 'time_slider') {
-			// 	isTimeSliderVisible = true;
-			// } else {
-			// 	isTimeSliderVisible = false;
-			// }
 		}
 
 		console.log('Information layer selected:', layerId);
@@ -1330,7 +1340,6 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												
 												chart_type={chart.chart_type}
 											/>
 										</div>
@@ -1459,7 +1468,9 @@
 
 			<button
 				onclick={toggleQuestionsPanel}
-				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r {getTopicColor(topic)} text-white"
+				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r {getTopicColor(
+					topic
+				)} text-white"
 				aria-label="Toggle questions panel"
 			>
 				<HelpCircle class="h-6 w-6" />
