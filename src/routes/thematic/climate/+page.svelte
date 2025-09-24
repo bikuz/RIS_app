@@ -192,7 +192,7 @@
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
-					fullScreenControl,
+					fullScreenControl
 					// new ScaleLine({ units: 'metric', bar: true })
 				]),
 				interactions: defaultInteractions({
@@ -670,7 +670,7 @@
 				format: 'YYYY',
 				animation_speed: 1500
 			},
-			
+
 			charts: [
 				{
 					title: 'Temperature Anomalies (1995–2024)',
@@ -678,7 +678,6 @@
 					yAxisTitle: 'Temperature Anomaly (°C)',
 					showLegend: false,
 					chart_data: {
-						
 						categories: [
 							1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
 							2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022,
@@ -2191,6 +2190,358 @@
 					]
 				}
 			}
+		},
+		{
+			id: 'ppt-trend-10y',
+			title: 'Overall Precipitation Trend Analysis of 10 Years',
+
+			description: 'Precipitation trend analysis with overall vs significant trend options',
+			control_type: 'radio',
+			control_options: ['overall', 'significant'],
+			default_option: 'overall',
+			charts: [],
+			map_layers: {
+				overall: [
+					{
+						id: 'ppt-trend-overall',
+						name: 'Overall Precipitation Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
+					}
+				],
+				significant: [
+					{
+						id: 'ppt-trend-significant',
+						name: 'Significant Precipitation Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+						layerIndex: 5,
+						mapserver: 'arcgis'
+					}
+				]
+			}
+		},
+		{
+			id: 'seasonal-ppt-trend',
+			title: 'Seasonal Precipitation Trend Analysis',
+			description:
+				'Seasonal precipitation trend analysis with overall vs significant trend options across different seasons',
+			control_type: 'nested_radio', // New control type for nested selections
+			control_options: {
+				trend_analysis: ['overall', 'significant'],
+				seasons: ['spring', 'summer', 'autumn', 'winter']
+			},
+			default_option: {
+				trend_analysis: 'overall',
+				season: 'spring'
+			},
+			charts: [],
+			map_layers: {
+				// Nested structure: trend_analysis -> season -> layer_config
+				overall: {
+					spring: [
+						{
+							id: 'seasonal-ppt-overall-spring',
+							name: 'Spring Precipitation Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+							layerIndex: 1,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'seasonal-ppt-overall-summer',
+							name: 'Summer Precipitation Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+							layerIndex: 2,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'seasonal-ppt-overall-autumn',
+							name: 'Autumn Precipitation Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+							layerIndex: 3,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'seasonal-ppt-overall-winter',
+							name: 'Winter Precipitation Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+							layerIndex: 4,
+							mapserver: 'arcgis'
+						}
+					]
+				},
+				significant: {
+					spring: [
+						{
+							id: 'seasonal-ppt-significant-spring',
+							name: 'Spring Precipitation Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+							layerIndex: 6,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'seasonal-ppt-significant-summer',
+							name: 'Summer Precipitation Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+							layerIndex: 7,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'seasonal-ppt-significant-autumn',
+							name: 'Autumn Precipitation Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+							layerIndex: 8,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'seasonal-ppt-significant-winter',
+							name: 'Winter Precipitation Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+							layerIndex: 9,
+							mapserver: 'arcgis'
+						}
+					]
+				}
+			}
+		},
+		{
+			id: 'annual-ppt-anamoly-series',
+			title: 'Time Series Precipitation Anomaly',
+			description: 'Time series analysis of annual precipitation with temporal controls',
+			control_type: 'time_slider',
+			time_dimension: {
+				start_year: 1995,
+				end_year: 2024,
+				step: 1,
+				default_year: 2024,
+				format: 'YYYY',
+				animation_speed: 1500
+			},
+			charts: [],
+			map_layers: {
+				'1995': {
+					id: 'ppt-time-series-1995',
+					name: 'Precipitation Anamoly 1995',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 0,
+					mapserver: 'arcgis'
+				},
+				'1996': {
+					id: 'ppt-time-series-1996',
+					name: 'Precipitation Anamoly 1996',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 1,
+					mapserver: 'arcgis'
+				},
+				'1997': {
+					id: 'ppt-time-series-1997',
+					name: 'Precipitation Anamoly 1997',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 2,
+					mapserver: 'arcgis'
+				},
+				'1998': {
+					id: 'ppt-time-series-1998',
+					name: 'Precipitation Anamoly 1998',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 3,
+					mapserver: 'arcgis'
+				},
+				'1999': {
+					id: 'ppt-time-series-1999',
+					name: 'Precipitation Anamoly 1999',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 4,
+					mapserver: 'arcgis'
+				},
+				'2000': {
+					id: 'ppt-time-series-2000',
+					name: 'Precipitation Anamoly 2000',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 5,
+					mapserver: 'arcgis'
+				},
+				'2001': {
+					id: 'ppt-time-series-2001',
+					name: 'Precipitation Anamoly 2001',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 6,
+					mapserver: 'arcgis'
+				},
+				'2002': {
+					id: 'ppt-time-series-2002',
+					name: 'Precipitation Anamoly 2002',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 7,
+					mapserver: 'arcgis'
+				},
+				'2003': {
+					id: 'ppt-time-series-2003',
+					name: 'Precipitation Anamoly 2003',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 8,
+					mapserver: 'arcgis'
+				},
+				'2004': {
+					id: 'ppt-time-series-2004',
+					name: 'Precipitation Anamoly 2004',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 9,
+					mapserver: 'arcgis'
+				},
+				'2005': {
+					id: 'ppt-time-series-2005',
+					name: 'Precipitation Anamoly 2005',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 10,
+					mapserver: 'arcgis'
+				},
+				'2006': {
+					id: 'ppt-time-series-2006',
+					name: 'Precipitation Anamoly 2006',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 11,
+					mapserver: 'arcgis'
+				},
+				'2007': {
+					id: 'ppt-time-series-2007',
+					name: 'Precipitation Anamoly 2007',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 12,
+					mapserver: 'arcgis'
+				},
+				'2008': {
+					id: 'ppt-time-series-2008',
+					name: 'Precipitation Anamoly 2008',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 13,
+					mapserver: 'arcgis'
+				},
+				'2009': {
+					id: 'ppt-time-series-2009',
+					name: 'Precipitation Anamoly 2009',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 14,
+					mapserver: 'arcgis'
+				},
+				'2010': {
+					id: 'ppt-time-series-2010',
+					name: 'Precipitation Anamoly 2010',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 15, // 15 is the layer index for 2010
+					mapserver: 'arcgis'
+				},
+				'2011': {
+					id: 'ppt-time-series-2011',
+					name: 'Precipitation Anamoly 2011',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 16, // 16 is the layer index for 2011
+					mapserver: 'arcgis'
+				},
+				'2012': {
+					id: 'ppt-time-series-2012',
+					name: 'Precipitation Anamoly 2012',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 17, // 17 is the layer index for 2012
+					mapserver: 'arcgis'
+				},
+				'2013': {
+					id: 'ppt-time-series-2013',
+					name: 'Precipitation Anamoly 2013',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 18,
+					mapserver: 'arcgis'
+				},
+				'2014': {
+					id: 'ppt-time-series-2014',
+					name: 'Precipitation Anamoly 2014',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 19, // 19 is the layer index for 2014
+					mapserver: 'arcgis'
+				},
+				'2015': {
+					id: 'ppt-time-series-2015',
+					name: 'Precipitation Anamoly 2015',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 20, // 20 is the layer index for 2015
+					mapserver: 'arcgis'
+				},
+				'2016': {
+					id: 'ppt-time-series-2016',
+					name: 'Precipitation Anamoly 2016',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 21, // 21 is the layer index for 2016
+					mapserver: 'arcgis'
+				},
+				'2017': {
+					id: 'ppt-time-series-2017',
+					name: 'Precipitation Anamoly 2017',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 22, // 22 is the layer index for 2017
+					mapserver: 'arcgis'
+				},
+				'2018': {
+					id: 'ppt-time-series-2018',
+					name: 'Precipitation Anamoly 2018',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 23, // 23 is the layer index for 2018
+					mapserver: 'arcgis'
+				},
+				'2019': {
+					id: 'ppt-time-series-2019',
+					name: 'Precipitation Anamoly 2019',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 24, // 24 is the layer index for 2019
+					mapserver: 'arcgis'
+				},
+				'2020': {
+					id: 'ppt-time-series-2020',
+					name: 'Precipitation Anamoly 2020',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 25, // 25 is the layer index for 2020
+					mapserver: 'arcgis'
+				},
+				'2021': {
+					id: 'ppt-time-series-2021',
+					name: 'Precipitation Anamoly 2021',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 26, // 26 is the layer index for 2021
+					mapserver: 'arcgis'
+				},
+				'2022': {
+					id: 'ppt-time-series-2022',
+					name: 'Precipitation Anamoly 2022',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 27, // 27 is the layer index for 2022
+					mapserver: 'arcgis'
+				},
+				'2023': {
+					id: 'ppt-time-series-2023',
+					name: 'Precipitation Anamoly 2023',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 28, // 28 is the layer index for 2023
+					mapserver: 'arcgis'
+				},
+				'2024': {
+					id: 'ppt-time-series-2024',
+					name: 'Precipitation Anamoly 2024',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Anomaly/MapServer',
+					layerIndex: 29, // 29 is the layer index for 2024
+					mapserver: 'arcgis'
+				}
+			}
 		}
 	];
 
@@ -2236,6 +2587,21 @@
 			id: 'map-indicator-3',
 			title: 'Annual Temperature Anomaly',
 			dataset_id: 'annual-temp-anamoly-series'
+		},
+		{
+			id: 'map-indicator-4',
+			title: 'Overall Precipitation Trend',
+			dataset_id: 'ppt-trend-10y'
+		},
+		{
+			id: 'map-indicator-5',
+			title: 'Seasonal Precipitation Trend',
+			dataset_id: 'seasonal-ppt-trend'
+		},
+		{
+			id: 'map-indicator-6',
+			title: 'Annual Precipitation Anomaly',
+			dataset_id: 'annual-ppt-anamoly-series'
 		}
 	];
 	// Track selected question - default to first question
@@ -3660,7 +4026,7 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												subtitle={chart.subtitle }
+												subtitle={chart.subtitle}
 												chart_type={chart.chart_type}
 												yAxisTitle={(chart as any).yAxisTitle || 'Value'}
 												plotOptions={(chart.chart_data as any).plotOptions || {}}
@@ -3669,7 +4035,7 @@
 										</div>
 									{/each}
 								</div>
-							<!-- {:else}
+								<!-- {:else}
 								<div class="flex h-80 items-center justify-center">
 									<div class="text-center text-slate-500">
 										<p class="text-sm">
