@@ -3035,11 +3035,17 @@
 							const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
 
 							if (layerLegend) {
-								// For time slider, use a generic name without the year
-								const legendName =
-									currentDataset.control_type === 'time_slider'
-										? 'Temperature Anomaly'
-										: layer.name;
+								// For time slider, use a generic name without the year based on dataset type
+								let legendName = layer.name;
+								if (currentDataset.control_type === 'time_slider') {
+									if (currentDataset.id.includes('temp')) {
+										legendName = 'Temperature Anomaly';
+									} else if (currentDataset.id.includes('ppt')) {
+										legendName = 'Precipitation Anomaly';
+									} else {
+										legendName = 'Climate Anomaly';
+									}
+								}
 
 								legendData[uniqueKey] = {
 									name: legendName,
@@ -3056,9 +3062,17 @@
 						// Handle WMS/GeoServer layers
 						const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
 
-						// For time slider, use a generic name without the year
-						const legendName =
-							currentDataset.control_type === 'time_slider' ? 'Temperature Anomaly' : layer.name;
+						// For time slider, use a generic name without the year based on dataset type
+						let legendName = layer.name;
+						if (currentDataset.control_type === 'time_slider') {
+							if (currentDataset.id.includes('temp')) {
+								legendName = 'Temperature Anomaly';
+							} else if (currentDataset.id.includes('ppt')) {
+								legendName = 'Precipitation Anomaly';
+							} else {
+								legendName = 'Climate Anomaly';
+							}
+						}
 
 						legendData[uniqueKey] = {
 							name: legendName,
@@ -4026,11 +4040,11 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												subtitle={chart.subtitle}
+												subtitle={(chart as any).subtitle}
 												chart_type={chart.chart_type}
 												yAxisTitle={(chart as any).yAxisTitle || 'Value'}
 												plotOptions={(chart.chart_data as any).plotOptions || {}}
-												showLegend={chart.showLegend}
+												showLegend={(chart as any).showLegend}
 											/>
 										</div>
 									{/each}
