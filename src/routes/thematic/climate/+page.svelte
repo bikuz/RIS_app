@@ -3124,7 +3124,7 @@
 		},
 		{
 			id: 'map-indicator-4',
-			title: 'Overall Precipitation Trend',
+			title: 'Annual Precipitation Trend',
 			dataset_id: 'ppt-trend-10y'
 		},
 		{
