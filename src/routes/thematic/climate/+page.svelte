@@ -3117,32 +3117,38 @@
 		{
 			id: 'map-indicator-1',
 			title: 'Annual Temperature Trend',
-			dataset_id: 'temp-trend-10y'
+			dataset_id: 'temp-trend-10y',
+			info: 'The annual temperature trend is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The annual temperature trend is expressed in degrees Celsius per decade.'
 		},
 		{
 			id: 'map-indicator-2',
 			title: 'Seasonal Temperature Trend',
-			dataset_id: 'seasonal-temp-trend'
+			dataset_id: 'seasonal-temp-trend',
+			info: 'The seasonal temperature trend is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The seasonal temperature trend is expressed in degrees Celsius per decade.'
 		},
 		{
 			id: 'map-indicator-3',
 			title: 'Annual Temperature Anomaly',
-			dataset_id: 'annual-temp-anamoly-series'
+			dataset_id: 'annual-temp-anamoly-series',
+			info: 'The annual temperature anomaly is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The annual temperature anomaly is expressed in degrees Celsius per decade.'
 		},
 		{
 			id: 'map-indicator-4',
 			title: 'Annual Precipitation Trend',
-			dataset_id: 'ppt-trend-10y'
+			dataset_id: 'ppt-trend-10y',
+			info: 'The annual precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation trend is expressed in millimeters per decade.'
 		},
 		{
 			id: 'map-indicator-5',
 			title: 'Seasonal Precipitation Trend',
-			dataset_id: 'seasonal-ppt-trend'
+			dataset_id: 'seasonal-ppt-trend',
+			info: 'The seasonal precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The seasonal precipitation trend is expressed in millimeters per decade.'
 		},
 		{
 			id: 'map-indicator-6',
 			title: 'Annual Precipitation Anomaly',
-			dataset_id: 'annual-ppt-anamoly-series'
+			dataset_id: 'annual-ppt-anamoly-series',
+			info: 'The annual precipitation anomaly is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation anomaly is expressed in millimeters per decade.'
 		}
 	];
 	// Track selected question - default to first question
@@ -3150,6 +3156,9 @@
 
 	// Track selected information layer (single selection)
 	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
+
+	// Track expanded layer for accordion - default to first layer
+	let expandedLayer = $state<string | null>('Annual Temperature Trend');
 
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
@@ -3827,16 +3836,28 @@
 	}
 
 	// Function to select information layer
+	// Function to toggle layer expansion
+	function toggleLayerExpansion(layerId: string) {
+		if (expandedLayer === layerId) {
+			expandedLayer = null;
+		} else {
+			expandedLayer = layerId;
+		}
+	}
+
 	function selectInformationLayer(layerId: string) {
 		// Stop playback if currently playing
 		if (isPlaying) {
 			stopPlayback();
 		}
 
-		// If clicking the same layer, deselect it
+		// Toggle expansion when clicking
+		toggleLayerExpansion(layerId);
+
+		// If clicking the same layer that's already selected, keep it selected
+		// (don't deselect, just toggle expansion)
 		if (selectedInformationLayer === layerId) {
-			selectedInformationLayer = null;
-			isTimeSliderVisible = false; // Hide controls when deselecting
+			// Layer is already selected, just toggled expansion above
 			return;
 		}
 
@@ -4183,7 +4204,7 @@
 								}}
 								title="Reset to Home View"
 							>
-								<House class="h-4 w-4 text-slate-600" />
+								<House class="h-4 w-4 text-slate-800" />
 							</button>
 
 							<!-- Basemap Switcher Button -->
@@ -4193,7 +4214,7 @@
 								title="Change Basemap"
 								aria-label="Change Basemap"
 							>
-								<MapIcon class="h-4 w-4 text-slate-600" />
+								<MapIcon class="h-4 w-4 text-slate-800" />
 							</button>
 
 							<!-- Basemap Switcher Panel -->
@@ -4743,25 +4764,42 @@
 							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
-										<button
-											onclick={() => selectInformationLayer(layer.title)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+										<div
+											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
 											layer.title
 												? 'border-blue-300 bg-gradient-to-r from-blue-50/90 to-cyan-50/90 shadow-md'
-												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
 										>
-											<div class="flex items-start space-x-3 text-left">
-												<div class="flex-1">
-													<h4
-														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'text-blue-800'
-															: 'text-slate-800'} mb-1"
-													>
-														{layer.title}
-													</h4>
+											<button
+												onclick={() => selectInformationLayer(layer.title)}
+												class="flex w-full items-start space-x-2 p-4 text-left transition-all duration-200 hover:opacity-80"
+											>
+												<h4
+													class="flex-1 text-sm font-medium {selectedInformationLayer ===
+													layer.title
+														? 'text-blue-800'
+														: 'text-slate-800'}"
+												>
+													{layer.title}
+												</h4>
+												<span class="flex-shrink-0">
+													{#if expandedLayer === layer.title}
+														<ChevronUp class="h-4 w-4 text-slate-600" />
+													{:else}
+														<ChevronDown class="h-4 w-4 text-slate-600" />
+													{/if}
+												</span>
+											</button>
+
+											<!-- Expandable content -->
+											{#if expandedLayer === layer.title}
+												<div
+													class="border-t border-slate-200/50 px-4 py-3 text-xs leading-relaxed text-slate-600"
+												>
+													{layer.info}
 												</div>
-											</div>
-										</button>
+											{/if}
+										</div>
 									{/each}
 								</div>
 							{:else}
@@ -4875,6 +4913,14 @@
 	/* Ensure flex children don't overflow */
 	:global(.flex > *) {
 		min-width: 0;
+	}
+
+	/* Move OpenLayers attribution to left side */
+	:global(.ol-attribution) {
+		right: auto !important;
+		left: 0.5em !important;
+		text-align: left !important;
+		flex-flow: row !important;
 	}
 
 	/* Fullscreen mode adjustments */
