@@ -2,24 +2,24 @@ import { goto } from '$app/navigation';
 import { Cloud, Users, Leaf, Snowflake, Sun, Mountain, Wind } from '@lucide/svelte';
 import { base } from '$app/paths';
 
-export const topicDetail ={
+export const topicDetail = {
 	climate: 'Temperature trends, precipitation patterns, and climate change indicators',
 	'human-dimensions': 'Population dynamics, migration patterns, and socio-economic indicators',
 	ecosystem: 'Biodiversity, forest cover, and ecosystem health monitoring',
 	cryosphere: 'Glacial dynamics, snow cover, and ice mass balance studies',
 	weather: 'Real-time weather data, forecasting, and meteorological analysis',
 	physiography: 'Topography, landforms, and geomorphological characteristics',
-	'air-quality':'Air pollution monitoring, atmospheric composition, and quality indices',
-}
+	'air-quality': 'Air pollution monitoring, atmospheric composition, and quality indices'
+};
 
 export const topicIcons = {
 	climate: Cloud,
 	'human-dimensions': Users,
 	ecosystem: Leaf,
 	cryosphere: Snowflake,
-	weather: Sun,
-	physiography: Mountain,
-	'air-quality': Wind
+	// weather: Sun,
+	physiography: Mountain
+	// 'air-quality': Wind
 };
 export const topicColors = {
 	climate: 'from-blue-500 to-cyan-500',
@@ -61,10 +61,10 @@ export function selectTopic(topic: string) {
 
 export function getTopicName(topic: string) {
 	return topic
-	  .split('-')
-	  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-	  .join(' ');
-  }
+		.split('-')
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ');
+}
 
 export function getTopicIcon(topic: string) {
 	return topicIcons[topic as keyof typeof topicIcons] || Cloud;

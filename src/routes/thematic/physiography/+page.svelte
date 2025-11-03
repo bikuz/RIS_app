@@ -10,6 +10,11 @@
 	import { defaults as defaultInteractions } from 'ol/interaction';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
+	import lightMap from '$lib/assets/images/basemaps/light-map.png';
+	import darkMap from '$lib/assets/images/basemaps/dark-map.png';
+	import osmMap from '$lib/assets/images/basemaps/osm-map.png';
+	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
+	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
 	import {
 		Mountain,
 		CheckCircle,
@@ -24,11 +29,16 @@
 		ChevronsLeft,
 		ChevronsRight,
 		HelpCircle,
-		List
+		List,
+		MapIcon,
+		House
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
+	import ImageLayer from 'ol/layer/Image';
+	import ImageWMS from 'ol/source/ImageWMS';
+	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
 
 	let { currentTopic = 'physiography', width = '100%', height = '400px' } = $props();
 
@@ -52,49 +62,297 @@
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
 
-	// Sample ecosystem datasets structure
-	const ecosystemDataset = [
+	// Add new state variables for layers panel
+	let layersPanelOpen = $state(false);
+	let activeBaseLayers = $state({});
+
+	// Basemap switcher state
+	let basemapPanelOpen = $state(false);
+	let selectedBasemap = $state('dark-gray');
+	let baseMapLayer: TileLayer<any> | null = null;
+
+	// Define available basemaps
+	const basemaps = [
 		{
-			id: 'forest-cover',
-			title: 'Forest Cover Analysis',
-			description: 'Forest cover distribution and changes in the HKH region',
-			control_type: 'simple',
-			charts: [
-				{
-					title: 'Forest Cover by Region',
-					chart_type: 'column',
-					chart_data: {
-						categories: ['Nepal', 'Bhutan', 'India', 'Pakistan', 'Afghanistan', 'Myanmar'],
-						series: [
-							{
-								name: 'Forest Cover (%)',
-								data: [44.7, 71.0, 24.4, 5.1, 2.1, 42.9]
-							}
-						]
-					}
-				}
-			]
+			id: 'light',
+			name: 'Light',
+			url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors, © CARTO',
+			image: lightMap
 		},
 		{
-			id: 'biodiversity-hotspots',
-			title: 'Biodiversity Hotspots',
-			description: 'Key biodiversity areas and endemic species distribution',
-			control_type: 'simple',
-			charts: [
-				{
-					title: 'Endemic Species Count',
-					chart_type: 'line',
-					chart_data: {
-						categories: ['2000', '2005', '2010', '2015', '2020', '2024'],
-						series: [
+			id: 'dark-gray',
+			name: 'Dark',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+			attribution: '© OpenStreetMap contributors, © CARTO',
+			image: darkMap
+		},
+		{
+			id: 'osm',
+			name: 'OSM',
+			url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors',
+			image: osmMap
+		},
+		{
+			id: 'satellite',
+			name: 'Satellite',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+			attribution: 'Esri, DigitalGlobe, GeoEye, Earthstar Geographics',
+			image: satelliteMap
+		},
+		{
+			id: 'terrain',
+			name: 'Terrain',
+			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors, SRTM',
+			image: terrainMap
+		}
+	];
+
+	// Function to switch basemap
+	function switchBasemap(basemapId: string) {
+		if (!map) return;
+
+		selectedBasemap = basemapId;
+		const basemapConfig = basemaps.find((b) => b.id === basemapId);
+		if (!basemapConfig) return;
+
+		// Create new basemap layer
+		const newBaseMapLayer = new TileLayer({
+			source: new XYZ({
+				url: basemapConfig.url,
+				attributions: basemapConfig.attribution
+			}),
+			zIndex: 0
+		});
+
+		// Remove old basemap layer
+		if (baseMapLayer) {
+			map.removeLayer(baseMapLayer);
+		}
+
+		// Add new basemap layer as the first layer (bottom)
+		const layers = map.getLayers();
+		layers.insertAt(0, newBaseMapLayer);
+
+		// Store reference to current basemap layer
+		baseMapLayer = newBaseMapLayer;
+	}
+
+	// Define base layers from HKH/Outline service
+	const baseLayers = [
+		{
+			id: 0,
+			name: 'Outline',
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
+		}
+		// {
+		// 	id: 1,
+		// 	name: 'Soil',
+		// 	url: BASELAYERS_URL
+		// },
+		// {
+		// 	id: 3,
+		// 	name: 'River',
+		// 	url: BASELAYERS_URL
+		// }
+	];
+
+	// Function to toggle base layers
+	async function toggleBaseLayer(layerId: number, checked: boolean) {
+		if (!map) return;
+		activeBaseLayers = { ...activeBaseLayers, [layerId]: checked };
+
+		if (checked) {
+			const layerInfo = baseLayers.find((l) => l.id === layerId);
+			if (!layerInfo) return;
+
+			let layer;
+
+			if (layerId === 0) {
+				// Apply special styling or configuration for layerId 0
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 2,
+					// Example styling: reduce opacity or add custom properties
+					opacity: 0.5
+				});
+			} else {
+				// Default configuration for other layers
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 2
+				});
+			}
+
+			layer.set('baseLayerId', layerId);
+			map.addLayer(layer);
+		} else {
+			const layers = map.getLayers().getArray();
+			for (const layer of layers) {
+				if (layer.get('baseLayerId') === layerId) {
+					map.removeLayer(layer);
+					break;
+				}
+			}
+		}
+	}
+
+	// Legend state management
+	let legendData = $state<
+		Record<
+			string,
+			{ name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }
+		>
+	>({});
+	let legendCollapsed = $state(false);
+
+	// Debounce timer for legend fetching
+	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	// Fetch legend data for current layers
+	async function fetchLegendData() {
+		// Clear any existing timeout
+		if (legendFetchTimeout) {
+			clearTimeout(legendFetchTimeout);
+		}
+
+		// Debounce the legend fetch to prevent rapid requests
+		legendFetchTimeout = setTimeout(async () => {
+			// Clear legend data first
+			legendData = {};
+
+			if (!currentDataset || !currentDataset.map_layers) {
+				return;
+			}
+
+			console.log('Fetching legend data for dataset:', currentDataset.id);
+
+			// Get current layers based on control type
+			let layersToFetch: any[] = [];
+
+			if (currentDataset.control_type === 'simple' || currentDataset.control_type === 'none') {
+				const layers = currentDataset.map_layers.default;
+				layersToFetch = Array.isArray(layers) ? layers : [layers];
+			}
+
+			// Fetch legend for each layer
+			for (const layer of layersToFetch) {
+				if (!layer) continue;
+
+				const uniqueKey = `${layer.url}_${layer.layerIndex}`;
+
+				if (layer.mapserver === 'arcgis') {
+					try {
+						const legendUrl = `${layer.url}/legend?f=json`;
+						const response = await fetch(legendUrl);
+						const data = await response.json();
+
+						const targetLayerId = parseInt(layer.layerIndex);
+						const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
+
+						if (layerLegend) {
+							legendData[uniqueKey] = {
+								name: layer.name,
+								items: layerLegend.legend.map((item: any) => ({
+									label: item.label,
+									imageData: `data:image/png;base64,${item.imageData}`
+								}))
+							};
+						}
+					} catch (error) {
+						console.error('Error fetching ArcGIS legend:', error);
+					}
+				} else {
+					// Handle WMS/GeoServer layers
+					const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
+
+					legendData[uniqueKey] = {
+						name: layer.name,
+						items: [
 							{
-								name: 'Documented Species',
-								data: [15420, 16200, 17100, 18300, 19500, 20800]
+								label: layer.name,
+								imageUrl: legendUrl
 							}
 						]
-					}
+					};
 				}
-			]
+			}
+
+			console.log('Legend data updated:', Object.keys(legendData));
+		}, 300); // 300ms debounce delay
+	}
+
+	// Sample physiography datasets structure
+	const physiographyDataset = [
+		{
+			id: 'elevation',
+			title: 'Elevation',
+			description: 'Elevation data for the HKH region',
+			control_type: 'simple',
+			map_layers: {
+				default: [
+					{
+						id: 'elevation-layer',
+						name: 'Elevation',
+						url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+						layerIndex: 'springs:elevation',
+						mapserver: 'geoserver'
+					}
+				]
+			},
+			charts: []
+		},
+		{
+			id: 'slope',
+			title: 'Slope',
+			description: 'Slope data for the HKH region',
+			control_type: 'simple',
+			map_layers: {
+				default: [
+					{
+						id: 'slope-layer',
+						name: 'Slope',
+						url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+						layerIndex: 'springs:Slope',
+						mapserver: 'geoserver'
+					}
+				]
+			},
+			charts: []
+		},
+		{
+			id: 'aspect',
+			title: 'Aspect',
+			description: 'Aspect data for the HKH region',
+			control_type: 'simple',
+			map_layers: {
+				default: [
+					{
+						id: 'aspect-layer',
+						name: 'Aspect',
+						url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+						layerIndex: 'springs:Aspect',
+						mapserver: 'geoserver'
+					}
+				]
+			},
+			charts: []
 		}
 	];
 
@@ -117,28 +375,28 @@
 	];
 
 	const information_layers: any = [
-		// {
-		// 	id: 'map-indicator-1',
-		// 	title: 'Forest Cover Distribution',
-		// 	dataset_id: 'forest-cover'
-		// },
-		// {
-		// 	id: 'map-indicator-2',
-		// 	title: 'Biodiversity Hotspots',
-		// 	dataset_id: 'biodiversity-hotspots'
-		// },
-		// {
-		// 	id: 'map-indicator-3',
-		// 	title: 'Protected Areas',
-		// 	dataset_id: 'forest-cover'
-		// }
+		{
+			id: 'map-indicator-1',
+			title: 'Elevation',
+			dataset_id: 'elevation'
+		},
+		{
+			id: 'map-indicator-2',
+			title: 'Slope',
+			dataset_id: 'slope'
+		},
+		{
+			id: 'map-indicator-3',
+			title: 'Aspect',
+			dataset_id: 'aspect'
+		}
 	];
 
 	// Track selected question - default to first question
 	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection)
-	let selectedInformationLayer = $state<string | null>('Forest Cover Distribution');
+	let selectedInformationLayer = $state<string | null>('Elevation');
 
 	// Get current dataset based on selected question or information layer
 	let currentDataset = $derived.by(() => {
@@ -146,7 +404,7 @@
 		if (selectedQuestionId) {
 			const selectedQuestion = questions.find((q) => q.id === selectedQuestionId);
 			if (selectedQuestion?.dataset_id) {
-				return ecosystemDataset.find((item) => item.id === selectedQuestion.dataset_id);
+				return physiographyDataset.find((item) => item.id === selectedQuestion.dataset_id);
 			}
 		}
 
@@ -156,7 +414,7 @@
 				(layer) => layer.title === selectedInformationLayer
 			);
 			if (selectedLayer?.dataset_id) {
-				return ecosystemDataset.find((item) => item.id === selectedLayer.dataset_id);
+				return physiographyDataset.find((item) => item.id === selectedLayer.dataset_id);
 			}
 		}
 
@@ -177,22 +435,29 @@
 				source: mapContainer.parentElement || mapContainer
 			});
 
+			// Get initial basemap configuration
+			const initialBasemap = basemaps.find((b) => b.id === selectedBasemap);
+			if (!initialBasemap) return;
+
+			// Create initial basemap layer
+			baseMapLayer = new TileLayer({
+				source: new XYZ({
+					url: initialBasemap.url,
+					attributions: initialBasemap.attribution
+				}),
+				zIndex: 0
+			});
+
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
-					fullScreenControl,
-					new ScaleLine({ units: 'metric', bar: true })
+					fullScreenControl
+					// new ScaleLine({ units: 'metric', bar: true })
 				]),
 				// interactions: defaultInteractions({
 				// 	mouseWheelZoom: false
 				// }),
-				layers: [
-					new TileLayer({
-						source: new XYZ({
-							url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-						})
-					})
-				],
+				layers: [baseMapLayer],
 				view: new View({
 					center: fromLonLat(HKH_CENTER),
 					zoom: HKH_ZOOM
@@ -231,6 +496,13 @@
 			// Ensure map renders properly
 			if (map) {
 				map.updateSize();
+				// Load default layers after map is initialized only if a dataset is selected
+				setTimeout(() => {
+					if (currentDataset) {
+						console.log('Initial map layer update after map initialization');
+						updateMapLayers();
+					}
+				}, 200);
 			}
 		}, 100);
 	}
@@ -261,6 +533,10 @@
 
 	// Cleanup on destroy
 	onDestroy(() => {
+		if (legendFetchTimeout) {
+			clearTimeout(legendFetchTimeout);
+		}
+
 		// Remove fullscreen event listeners
 		if (fullscreenHandler) {
 			document.removeEventListener('fullscreenchange', fullscreenHandler);
@@ -384,6 +660,166 @@
 			forceMapResize();
 		});
 	}
+
+	// Add layer to map based on layer configuration
+	function addWMSLayer(layerConfig: any) {
+		if (!map || !layerConfig) return;
+
+		let layer;
+
+		if (layerConfig.mapserver === 'arcgis') {
+			// Create ArcGIS layer
+			layer = new ImageLayer({
+				visible: true,
+				zIndex: 10,
+				opacity: 0.7,
+				source: new ImageArcGISRest({
+					url: layerConfig.url,
+					crossOrigin: 'anonymous',
+					params: {
+						LAYERS: `show:${layerConfig.layerIndex}`,
+						FORMAT: 'PNG32',
+						TRANSPARENT: true
+					}
+				})
+			});
+		} else {
+			// Create WMS layer (GeoServer)
+			layer = new ImageLayer({
+				visible: true,
+				zIndex: 10,
+				opacity: 0.8,
+				source: new ImageWMS({
+					url: layerConfig.url,
+					crossOrigin: 'anonymous',
+					params: {
+						LAYERS: layerConfig.layerIndex,
+						FORMAT: 'image/png',
+						VERSION: '1.1.1',
+						TRANSPARENT: true
+					},
+					serverType: 'geoserver'
+				})
+			});
+		}
+
+		// Set layer ID for identification
+		layer.set('id', layerConfig.id);
+		layer.set('layerName', layerConfig.name);
+
+		// Add to map
+		if (map) {
+			map.addLayer(layer);
+			console.log('Added layer:', layerConfig.name, 'ID:', layerConfig.id);
+		}
+	}
+
+	// Add multiple layers (for datasets with multiple layers)
+	function addMultipleLayers(layerConfigs: any[]) {
+		if (!layerConfigs || !Array.isArray(layerConfigs)) return;
+
+		layerConfigs.forEach((layerConfig) => {
+			addWMSLayer(layerConfig);
+		});
+	}
+
+	// Remove layer from map
+	function removeLayer(layerId: string) {
+		if (!map) return;
+
+		const layers = map.getLayers().getArray().slice();
+		layers.forEach((layer) => {
+			if (layer.get('id') === layerId && map) {
+				map.removeLayer(layer);
+				console.log('Removed layer:', layerId);
+			}
+		});
+	}
+
+	// Clear all physiography data layers (keep base map)
+	function clearPhysiographyLayers() {
+		if (!map) return;
+
+		const layers = map.getLayers().getArray().slice();
+		console.log('Clearing physiography layers. Total layers found:', layers.length);
+
+		layers.forEach((layer) => {
+			const layerId = layer.get('id');
+			// Remove layers that have an ID (our custom layers), keep base layer
+			if (layerId && map) {
+				console.log('Removing layer with ID:', layerId);
+				map.removeLayer(layer);
+			}
+		});
+
+		console.log(
+			'Physiography layers cleared. Remaining layers:',
+			map.getLayers().getArray().length
+		);
+	}
+
+	// Update layers based on current dataset
+	function updateMapLayers() {
+		if (!map) return;
+
+		console.log('=== Starting updateMapLayers ===');
+		console.log('Current dataset:', currentDataset?.id);
+		console.log('Layers before clearing:', map.getLayers().getArray().length);
+
+		// Always clear existing physiography layers first
+		clearPhysiographyLayers();
+
+		// If no dataset is selected, stop here (layers are cleared)
+		if (!currentDataset || !currentDataset.map_layers) {
+			console.log('No dataset selected - layers cleared');
+			return;
+		}
+
+		console.log(
+			'Updating map layers for dataset:',
+			currentDataset.id,
+			'control_type:',
+			currentDataset.control_type
+		);
+
+		// For 'simple' or 'none' control type, show layers immediately
+		if (currentDataset.control_type === 'simple' || currentDataset.control_type === 'none') {
+			const layers = currentDataset.map_layers.default;
+			if (layers) {
+				if (Array.isArray(layers)) {
+					console.log('Adding multiple layers:', layers.length);
+					addMultipleLayers(layers);
+				} else {
+					console.log('Adding single layer:', layers.name);
+					addWMSLayer(layers);
+				}
+			}
+		}
+
+		console.log('Layers after adding:', map.getLayers().getArray().length);
+		console.log('=== Finished updateMapLayers ===');
+
+		// Fetch legend data after updating layers
+		fetchLegendData();
+	}
+
+	// Single consolidated effect for all map layer updates
+	$effect(() => {
+		// This will trigger when currentDataset changes
+		const dataset = currentDataset;
+
+		console.log(
+			'Main effect triggered - Dataset:',
+			dataset?.id || 'null',
+			'Control type:',
+			dataset?.control_type
+		);
+
+		// Only update map layers if we have a dataset
+		if (dataset && map) {
+			updateMapLayers();
+		}
+	});
 </script>
 
 <!-- 3-Column Layout with Dynamic States -->
@@ -391,7 +827,7 @@
 	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
 	{#if layoutState === 'hide-left'}
 		<button
-			on:click={() => setLayoutState('default')}
+			onclick={() => setLayoutState('default')}
 			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
 			title="Show Story Panel"
 		>
@@ -424,7 +860,7 @@
 					{#if layoutState !== 'left-full'}
 						<!-- Hide Left Panel Button -->
 						<button
-							on:click={() => setLayoutState('hide-left')}
+							onclick={() => setLayoutState('hide-left')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Hide Story Panel"
 						>
@@ -432,7 +868,7 @@
 						</button>
 						<!-- Expand Story Button -->
 						<button
-							on:click={() => setLayoutState('left-full')}
+							onclick={() => setLayoutState('left-full')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Expand Story"
 						>
@@ -441,7 +877,7 @@
 					{:else}
 						<!-- Back to Default Button -->
 						<button
-							on:click={() => setLayoutState('default')}
+							onclick={() => setLayoutState('default')}
 							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
 							title="Back to Default"
 						>
@@ -532,6 +968,159 @@
 								bind:this={mapContainer}
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
+
+							<!-- Home Reset Button -->
+							<button
+								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								onclick={() => {
+									if (map) {
+										map.getView().setCenter(fromLonLat(HKH_CENTER));
+										map.getView().setZoom(HKH_ZOOM);
+									}
+								}}
+								title="Reset to Home View"
+							>
+								<House class="h-4 w-4 text-slate-600" />
+							</button>
+
+							<!-- Basemap Switcher Button -->
+							<button
+								class="absolute top-10 right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
+								title="Change Basemap"
+								aria-label="Change Basemap"
+							>
+								<MapIcon class="h-4 w-4 text-slate-600" />
+							</button>
+
+							<!-- Basemap Switcher Panel -->
+							<div
+								class="absolute top-[4rem] right-10 z-20 w-48 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {basemapPanelOpen
+									? 'max-h-96 opacity-100'
+									: 'max-h-0 opacity-0'}"
+							>
+								<div class="p-3">
+									<h3 class="mb-2 text-sm font-semibold">Basemap</h3>
+									<div class="space-y-1">
+										{#each basemaps as basemap}
+											<button
+												class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
+												basemap.id
+													? 'bg-indigo-100 font-medium text-indigo-700'
+													: 'text-slate-700 hover:bg-gray-100'}"
+												onclick={() => {
+													switchBasemap(basemap.id);
+													basemapPanelOpen = false;
+												}}
+											>
+												<span class="flex-1">{basemap.name}</span>
+												<img
+													src={basemap.image}
+													alt={basemap.name}
+													class="h-8 w-12 rounded border border-slate-200 object-cover"
+												/>
+											</button>
+										{/each}
+									</div>
+								</div>
+							</div>
+
+							<!-- Layer Toggler Button -->
+							<button
+								class="absolute top-[4.5rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
+								onclick={() => (layersPanelOpen = !layersPanelOpen)}
+							>
+								{#if layersPanelOpen}
+									<ChevronsRight class="h-4 w-4" />
+								{:else}
+									<Layers class="h-4 w-4" />
+								{/if}
+							</button>
+
+							<!-- Layer Toggler Panel -->
+							<div
+								class="absolute top-[6rem] right-10 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+									? 'max-h-96 opacity-100'
+									: 'max-h-0 opacity-0'}"
+							>
+								<div class="p-3">
+									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
+									<div class="space-y-2">
+										{#each baseLayers as layerInfo}
+											<label class="flex items-center space-x-2 text-sm">
+												<input
+													type="checkbox"
+													checked={!!activeBaseLayers[
+														layerInfo.id as keyof typeof activeBaseLayers
+													]}
+													onchange={(e) => {
+														const target = e.target as HTMLInputElement;
+														toggleBaseLayer(layerInfo.id, target.checked);
+														target.blur(); // Removes focus from the checkbox
+													}}
+													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+												/>
+												<span>{layerInfo.name}</span>
+											</label>
+										{/each}
+									</div>
+								</div>
+							</div>
+
+							<!-- Legend Panel - Bottom Right INSIDE the map container -->
+							{#if currentDataset && Object.keys(legendData).length > 0}
+								<div class="absolute right-4 bottom-4 {isFullscreen ? 'z-[9999]' : 'z-10'}">
+									<!-- Legend Toggle Button -->
+									<button
+										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										onclick={() => (legendCollapsed = !legendCollapsed)}
+									>
+										<div class="flex items-center space-x-2">
+											<List class="h-4 w-4 text-amber-600" />
+											{#if !legendCollapsed}
+												<span class="font-medium text-slate-700">Legend</span>
+											{/if}
+										</div>
+									</button>
+
+									<!-- Legend Content -->
+									{#if !legendCollapsed}
+										<div
+											class="max-w-sm rounded-lg border border-white/30 bg-white/95 p-4 shadow-xl backdrop-blur-sm"
+										>
+											<div class="max-h-[200px] space-y-4 overflow-y-auto">
+												{#each Object.keys(legendData) as uniqueKey}
+													<div class="space-y-3">
+														<h4 class="text-sm font-semibold text-slate-800">
+															{legendData[uniqueKey].name}
+														</h4>
+														<div class="space-y-2">
+															{#each legendData[uniqueKey].items as item}
+																<div class="flex items-center space-x-3">
+																	{#if item.imageData}
+																		<img
+																			src={item.imageData}
+																			alt={item.label}
+																			class="flex-shrink-0 object-contain"
+																		/>
+																	{:else if item.imageUrl}
+																		<img
+																			src={item.imageUrl}
+																			alt={item.label}
+																			class="flex-shrink-0 object-contain"
+																		/>
+																	{/if}
+																	<!-- <span class="text-sm text-slate-700">{item.label}</span> -->
+																</div>
+															{/each}
+														</div>
+													</div>
+												{/each}
+											</div>
+										</div>
+									{/if}
+								</div>
+							{/if}
 						</div>
 					</div>
 
@@ -583,7 +1172,7 @@
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
 										<button
-											on:click={() => selectInformationLayer(layer.title)}
+											onclick={() => selectInformationLayer(layer.title)}
 											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
 											layer.title
 												? 'border-stone-300 bg-gradient-to-r from-stone-50/90 to-amber-50/90 shadow-md'
@@ -626,55 +1215,52 @@
 <!-- Fixed Floating Questions Button and Panel -->
 {#if layoutState !== 'left-full'}
 	<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
-		<div
-			class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
-			class:scale-0={!isQuestionsPanelOpen}
-			class:scale-100={isQuestionsPanelOpen}
-			class:opacity-0={!isQuestionsPanelOpen}
-			class:opacity-100={isQuestionsPanelOpen}
-			class:pointer-events-none={!isQuestionsPanelOpen}
-		>
-			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-				<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-2">
-					<Info class="h-4 w-4 text-white" />
+		{#if isQuestionsPanelOpen}
+			<div
+				class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right scale-100 transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 opacity-100 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+			>
+				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+					<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-2">
+						<Info class="h-4 w-4 text-white" />
+					</div>
+					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
 				</div>
-				<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
-			</div>
 
-			<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
-				{#each questions as questionItem, index}
-					<button
-						class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
-						questionItem.id
-							? 'border-stone-500 bg-stone-50 shadow-md'
-							: 'border-slate-200/50 bg-white/50 hover:border-stone-300 hover:bg-stone-50/70 hover:shadow-sm'}"
-						on:click={() => selectQuestion(questionItem.id)}
-					>
-						<div class="flex items-start space-x-2">
-							<div class="mt-1 flex-shrink-0">
-								{#if selectedQuestionId === questionItem.id}
-									<CheckCircle class="h-4 w-4 text-green-600" />
-								{:else}
-									<div
-										class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-stone-400"
-									></div>
-								{/if}
+				<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
+					{#each questions as questionItem, index}
+						<button
+							class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
+							questionItem.id
+								? 'border-stone-500 bg-stone-50 shadow-md'
+								: 'border-slate-200/50 bg-white/50 hover:border-stone-300 hover:bg-stone-50/70 hover:shadow-sm'}"
+							onclick={() => selectQuestion(questionItem.id)}
+						>
+							<div class="flex items-start space-x-2">
+								<div class="mt-1 flex-shrink-0">
+									{#if selectedQuestionId === questionItem.id}
+										<CheckCircle class="h-4 w-4 text-green-600" />
+									{:else}
+										<div
+											class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-stone-400"
+										></div>
+									{/if}
+								</div>
+								<p
+									class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+										? 'font-medium text-stone-700'
+										: 'text-slate-600 group-hover:text-slate-800'}"
+								>
+									{questionItem.question}
+								</p>
 							</div>
-							<p
-								class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-									? 'font-medium text-stone-700'
-									: 'text-slate-600 group-hover:text-slate-800'}"
-							>
-								{questionItem.question}
-							</p>
-						</div>
-					</button>
-				{/each}
+						</button>
+					{/each}
+				</div>
 			</div>
-		</div>
+		{/if}
 
 		<button
-			on:click={toggleQuestionsPanel}
+			onclick={toggleQuestionsPanel}
 			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-stone-500 to-amber-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
 			aria-label="Toggle questions panel"
 		>

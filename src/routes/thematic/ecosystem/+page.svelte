@@ -64,6 +64,10 @@
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
 
+	// Add new state variables for layers panel
+	let layersPanelOpen = $state(false);
+	let activeBaseLayers = $state({});
+
 	// Basemap switcher state
 	let basemapPanelOpen = $state(false);
 	let selectedBasemap = $state('dark-gray');
@@ -136,6 +140,79 @@
 
 		// Store reference to current basemap layer
 		baseMapLayer = newBaseMapLayer;
+	}
+
+	// Define base layers from HKH/Outline service
+	const baseLayers = [
+		{
+			id: 0,
+			name: 'Outline',
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
+		}
+		// {
+		// 	id: 1,
+		// 	name: 'Soil',
+		// 	url: BASELAYERS_URL
+		// },
+		// {
+		// 	id: 3,
+		// 	name: 'River',
+		// 	url: BASELAYERS_URL
+		// }
+	];
+
+	// Function to toggle base layers
+	async function toggleBaseLayer(layerId: number, checked: boolean) {
+		if (!map) return;
+		activeBaseLayers = { ...activeBaseLayers, [layerId]: checked };
+
+		if (checked) {
+			const layerInfo = baseLayers.find((l) => l.id === layerId);
+			if (!layerInfo) return;
+
+			let layer;
+
+			if (layerId === 0) {
+				// Apply special styling or configuration for layerId 0
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 2,
+					// Example styling: reduce opacity or add custom properties
+					opacity: 0.5
+				});
+			} else {
+				// Default configuration for other layers
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 2
+				});
+			}
+
+			layer.set('baseLayerId', layerId);
+			map.addLayer(layer);
+		} else {
+			const layers = map.getLayers().getArray();
+			for (const layer of layers) {
+				if (layer.get('baseLayerId') === layerId) {
+					map.removeLayer(layer);
+					break;
+				}
+			}
+		}
 	}
 
 	// Legend state management
@@ -1105,6 +1182,48 @@
 													class="h-8 w-12 rounded border border-slate-200 object-cover"
 												/>
 											</button>
+										{/each}
+									</div>
+								</div>
+							</div>
+
+							<!-- Layer Toggler Button -->
+							<button
+								class="absolute top-[4.5rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
+								onclick={() => (layersPanelOpen = !layersPanelOpen)}
+							>
+								{#if layersPanelOpen}
+									<ChevronsRight class="h-4 w-4" />
+								{:else}
+									<Layers class="h-4 w-4" />
+								{/if}
+							</button>
+
+							<!-- Layer Toggler Panel -->
+							<div
+								class="absolute top-[6rem] right-10 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+									? 'max-h-96 opacity-100'
+									: 'max-h-0 opacity-0'}"
+							>
+								<div class="p-3">
+									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
+									<div class="space-y-2">
+										{#each baseLayers as layerInfo}
+											<label class="flex items-center space-x-2 text-sm">
+												<input
+													type="checkbox"
+													checked={!!activeBaseLayers[
+														layerInfo.id as keyof typeof activeBaseLayers
+													]}
+													onchange={(e) => {
+														const target = e.target as HTMLInputElement;
+														toggleBaseLayer(layerInfo.id, target.checked);
+														target.blur(); // Removes focus from the checkbox
+													}}
+													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+												/>
+												<span>{layerInfo.name}</span>
+											</label>
 										{/each}
 									</div>
 								</div>
