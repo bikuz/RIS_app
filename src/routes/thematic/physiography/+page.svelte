@@ -183,9 +183,9 @@
 					fullScreenControl,
 					new ScaleLine({ units: 'metric', bar: true })
 				]),
-				interactions: defaultInteractions({
-					mouseWheelZoom: false
-				}),
+				// interactions: defaultInteractions({
+				// 	mouseWheelZoom: false
+				// }),
 				layers: [
 					new TileLayer({
 						source: new XYZ({
