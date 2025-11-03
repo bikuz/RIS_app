@@ -18,7 +18,7 @@
 		</div>
 
 		<!-- Removed cards, using flat design with hover effects -->
-		<div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5 xl:grid-cols-7">
+		<div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
 			<!-- {#each thematicAreas as area}
 				<a 
 					href={area.href}
