@@ -16,6 +16,11 @@
 	import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
+	import lightMap from '$lib/assets/images/basemaps/light-map.png';
+	import darkMap from '$lib/assets/images/basemaps/dark-map.png';
+	import osmMap from '$lib/assets/images/basemaps/osm-map.png';
+	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
+	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
 	import {
 		Cloud,
 		CheckCircle,
@@ -36,7 +41,8 @@
 		SkipForward,
 		Calendar,
 		List,
-		House
+		House,
+		MapIcon
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
@@ -189,28 +195,29 @@
 				source: mapContainer.parentElement || mapContainer // Use the parent container that includes our custom controls, fallback to mapContainer
 			});
 
+			// Get initial basemap configuration
+			const initialBasemap = basemaps.find((b) => b.id === selectedBasemap);
+			if (!initialBasemap) return;
+
+			// Create initial basemap layer
+			baseMapLayer = new TileLayer({
+				source: new XYZ({
+					url: initialBasemap.url,
+					attributions: initialBasemap.attribution
+				}),
+				zIndex: 0
+			});
+
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
 					fullScreenControl
 					// new ScaleLine({ units: 'metric', bar: true })
 				]),
-				interactions: defaultInteractions({
-					mouseWheelZoom: false
-				}),
-				layers: [
-					new TileLayer({
-						// source: new OSM()
-						// source: new XYZ({
-						// 	url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-						// })
-
-						source: new XYZ({
-							url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-							// attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
-						})
-					})
-				],
+				// interactions: defaultInteractions({
+				// 	mouseWheelZoom: false
+				// }),
+				layers: [baseMapLayer],
 				view: new View({
 					center: fromLonLat(HKH_CENTER),
 					zoom: HKH_ZOOM
@@ -3110,32 +3117,38 @@
 		{
 			id: 'map-indicator-1',
 			title: 'Annual Temperature Trend',
-			dataset_id: 'temp-trend-10y'
+			dataset_id: 'temp-trend-10y',
+			info: 'The annual temperature trend is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The annual temperature trend is expressed in degrees Celsius per decade.'
 		},
 		{
 			id: 'map-indicator-2',
 			title: 'Seasonal Temperature Trend',
-			dataset_id: 'seasonal-temp-trend'
+			dataset_id: 'seasonal-temp-trend',
+			info: 'The seasonal temperature trend is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The seasonal temperature trend is expressed in degrees Celsius per decade.'
 		},
 		{
 			id: 'map-indicator-3',
 			title: 'Annual Temperature Anomaly',
-			dataset_id: 'annual-temp-anamoly-series'
+			dataset_id: 'annual-temp-anamoly-series',
+			info: 'The annual temperature anomaly is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The annual temperature anomaly is expressed in degrees Celsius per decade.'
 		},
 		{
 			id: 'map-indicator-4',
-			title: 'Overall Precipitation Trend',
-			dataset_id: 'ppt-trend-10y'
+			title: 'Annual Precipitation Trend',
+			dataset_id: 'ppt-trend-10y',
+			info: 'The annual precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation trend is expressed in millimeters per decade.'
 		},
 		{
 			id: 'map-indicator-5',
 			title: 'Seasonal Precipitation Trend',
-			dataset_id: 'seasonal-ppt-trend'
+			dataset_id: 'seasonal-ppt-trend',
+			info: 'The seasonal precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The seasonal precipitation trend is expressed in millimeters per decade.'
 		},
 		{
 			id: 'map-indicator-6',
 			title: 'Annual Precipitation Anomaly',
-			dataset_id: 'annual-ppt-anamoly-series'
+			dataset_id: 'annual-ppt-anamoly-series',
+			info: 'The annual precipitation anomaly is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation anomaly is expressed in millimeters per decade.'
 		}
 	];
 	// Track selected question - default to first question
@@ -3143,6 +3156,9 @@
 
 	// Track selected information layer (single selection)
 	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
+
+	// Track expanded layer for accordion - default to first layer
+	let expandedLayer = $state<string | null>('Annual Temperature Trend');
 
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
@@ -3175,6 +3191,11 @@
 	let layersPanelOpen = $state(false);
 	let activeBaseLayers = $state<Record<number, boolean>>({});
 
+	// Basemap switcher state
+	let basemapPanelOpen = $state(false);
+	let selectedBasemap = $state('dark-gray');
+	let baseMapLayer: TileLayer<any> | null = null;
+
 	// Define base layers from HKH/Outline service
 	const baseLayers = [
 		{
@@ -3182,6 +3203,51 @@
 			name: 'Outline',
 			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
 		}
+	];
+
+	// Define available basemaps
+	const basemaps = [
+		{
+			id: 'light',
+			name: 'Light',
+			url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors, © CARTO',
+			image: lightMap
+		},
+		{
+			id: 'dark-gray',
+			name: 'Dark',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+			attribution: '© OpenStreetMap contributors, © CARTO',
+			image: darkMap
+		},
+		{
+			id: 'osm',
+			name: 'OSM',
+			url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors',
+			image: osmMap
+		},
+		{
+			id: 'satellite',
+			name: 'Satellite',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+			attribution: 'Esri, DigitalGlobe, GeoEye, Earthstar Geographics',
+			image: satelliteMap
+		},
+		{
+			id: 'terrain',
+			name: 'Terrain',
+			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors, SRTM',
+			image: terrainMap
+		}
+		// {
+		// 	id: 'voyager',
+		// 	name: 'Voyager',
+		// 	url: 'https://{a-c}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+		// 	attribution: '© OpenStreetMap contributors, © CARTO'
+		// }
 	];
 
 	// Function to toggle base layers
@@ -3238,6 +3304,36 @@
 
 		// Update legend after changing layers
 		fetchLegendData();
+	}
+
+	// Function to switch basemap
+	function switchBasemap(basemapId: string) {
+		if (!map) return;
+
+		selectedBasemap = basemapId;
+		const basemapConfig = basemaps.find((b) => b.id === basemapId);
+		if (!basemapConfig) return;
+
+		// Create new basemap layer
+		const newBaseMapLayer = new TileLayer({
+			source: new XYZ({
+				url: basemapConfig.url,
+				attributions: basemapConfig.attribution
+			}),
+			zIndex: 0
+		});
+
+		// Remove old basemap layer
+		if (baseMapLayer) {
+			map.removeLayer(baseMapLayer);
+		}
+
+		// Add new basemap layer as the first layer (bottom)
+		const layers = map.getLayers();
+		layers.insertAt(0, newBaseMapLayer);
+
+		// Store reference to current basemap layer
+		baseMapLayer = newBaseMapLayer;
 	}
 
 	// Get current dataset based on selected question or information layer
@@ -3740,16 +3836,28 @@
 	}
 
 	// Function to select information layer
+	// Function to toggle layer expansion
+	function toggleLayerExpansion(layerId: string) {
+		if (expandedLayer === layerId) {
+			expandedLayer = null;
+		} else {
+			expandedLayer = layerId;
+		}
+	}
+
 	function selectInformationLayer(layerId: string) {
 		// Stop playback if currently playing
 		if (isPlaying) {
 			stopPlayback();
 		}
 
-		// If clicking the same layer, deselect it
+		// Toggle expansion when clicking
+		toggleLayerExpansion(layerId);
+
+		// If clicking the same layer that's already selected, keep it selected
+		// (don't deselect, just toggle expansion)
 		if (selectedInformationLayer === layerId) {
-			selectedInformationLayer = null;
-			isTimeSliderVisible = false; // Hide controls when deselecting
+			// Layer is already selected, just toggled expansion above
 			return;
 		}
 
@@ -4096,12 +4204,54 @@
 								}}
 								title="Reset to Home View"
 							>
-								<House class="h-4 w-4 text-slate-600" />
+								<House class="h-4 w-4 text-slate-800" />
 							</button>
+
+							<!-- Basemap Switcher Button -->
+							<button
+								class="absolute top-10 right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
+								title="Change Basemap"
+								aria-label="Change Basemap"
+							>
+								<MapIcon class="h-4 w-4 text-slate-800" />
+							</button>
+
+							<!-- Basemap Switcher Panel -->
+							<div
+								class="absolute top-[4rem] right-10 z-20 w-48 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {basemapPanelOpen
+									? 'max-h-96 opacity-100'
+									: 'max-h-0 opacity-0'}"
+							>
+								<div class="p-3">
+									<h3 class="mb-2 text-sm font-semibold">Basemap</h3>
+									<div class="space-y-1">
+										{#each basemaps as basemap}
+											<button
+												class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
+												basemap.id
+													? 'bg-indigo-100 font-medium text-indigo-700'
+													: 'text-slate-700 hover:bg-gray-100'}"
+												onclick={() => {
+													switchBasemap(basemap.id);
+													basemapPanelOpen = false;
+												}}
+											>
+												<span class="flex-1">{basemap.name}</span>
+												<img
+													src={basemap.image}
+													alt={basemap.name}
+													class="h-8 w-12 rounded border border-slate-200 object-cover"
+												/>
+											</button>
+										{/each}
+									</div>
+								</div>
+							</div>
 
 							<!-- Layer Toggler Button -->
 							<button
-								class="absolute top-[3.75rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
+								class="absolute top-[4.5rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
 								onclick={() => (layersPanelOpen = !layersPanelOpen)}
 							>
 								{#if layersPanelOpen}
@@ -4113,7 +4263,7 @@
 
 							<!-- Layer Toggler Panel -->
 							<div
-								class="absolute top-[5.5rem] right-2 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+								class="absolute top-[6rem] right-10 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
 									? 'max-h-96 opacity-100'
 									: 'max-h-0 opacity-0'}"
 							>
@@ -4614,25 +4764,42 @@
 							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
-										<button
-											onclick={() => selectInformationLayer(layer.title)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+										<div
+											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
 											layer.title
 												? 'border-blue-300 bg-gradient-to-r from-blue-50/90 to-cyan-50/90 shadow-md'
-												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
 										>
-											<div class="flex items-start space-x-3 text-left">
-												<div class="flex-1">
-													<h4
-														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'text-blue-800'
-															: 'text-slate-800'} mb-1"
-													>
-														{layer.title}
-													</h4>
+											<button
+												onclick={() => selectInformationLayer(layer.title)}
+												class="flex w-full items-start space-x-2 p-4 text-left transition-all duration-200 hover:opacity-80"
+											>
+												<h4
+													class="flex-1 text-sm font-medium {selectedInformationLayer ===
+													layer.title
+														? 'text-blue-800'
+														: 'text-slate-800'}"
+												>
+													{layer.title}
+												</h4>
+												<span class="flex-shrink-0">
+													{#if expandedLayer === layer.title}
+														<ChevronUp class="h-4 w-4 text-slate-600" />
+													{:else}
+														<ChevronDown class="h-4 w-4 text-slate-600" />
+													{/if}
+												</span>
+											</button>
+
+											<!-- Expandable content -->
+											{#if expandedLayer === layer.title}
+												<div
+													class="border-t border-slate-200/50 px-4 py-3 text-xs leading-relaxed text-slate-600"
+												>
+													{layer.info}
 												</div>
-											</div>
-										</button>
+											{/if}
+										</div>
 									{/each}
 								</div>
 							{:else}
@@ -4746,6 +4913,14 @@
 	/* Ensure flex children don't overflow */
 	:global(.flex > *) {
 		min-width: 0;
+	}
+
+	/* Move OpenLayers attribution to left side */
+	:global(.ol-attribution) {
+		right: auto !important;
+		left: 0.5em !important;
+		text-align: left !important;
+		flex-flow: row !important;
 	}
 
 	/* Fullscreen mode adjustments */

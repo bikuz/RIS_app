@@ -12,6 +12,11 @@
 	import { defaults as defaultInteractions } from 'ol/interaction';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
+	import lightMap from '$lib/assets/images/basemaps/light-map.png';
+	import darkMap from '$lib/assets/images/basemaps/dark-map.png';
+	import osmMap from '$lib/assets/images/basemaps/osm-map.png';
+	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
+	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
 	import {
 		Leaf,
 		CheckCircle,
@@ -26,7 +31,9 @@
 		ChevronsLeft,
 		ChevronsRight,
 		HelpCircle,
-		List
+		List,
+		MapIcon,
+		House
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
@@ -55,6 +62,157 @@
 	let isQuestionsPanelOpen = $state(false);
 	function toggleQuestionsPanel() {
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
+	}
+
+	// Add new state variables for layers panel
+	let layersPanelOpen = $state(false);
+	let activeBaseLayers = $state({});
+
+	// Basemap switcher state
+	let basemapPanelOpen = $state(false);
+	let selectedBasemap = $state('dark-gray');
+	let baseMapLayer: TileLayer<any> | null = null;
+
+	// Define available basemaps
+	const basemaps = [
+		{
+			id: 'light',
+			name: 'Light',
+			url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors, © CARTO',
+			image: lightMap
+		},
+		{
+			id: 'dark-gray',
+			name: 'Dark',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+			attribution: '© OpenStreetMap contributors, © CARTO',
+			image: darkMap
+		},
+		{
+			id: 'osm',
+			name: 'OSM',
+			url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors',
+			image: osmMap
+		},
+		{
+			id: 'satellite',
+			name: 'Satellite',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+			attribution: 'Esri, DigitalGlobe, GeoEye, Earthstar Geographics',
+			image: satelliteMap
+		},
+		{
+			id: 'terrain',
+			name: 'Terrain',
+			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors, SRTM',
+			image: terrainMap
+		}
+	];
+
+	// Function to switch basemap
+	function switchBasemap(basemapId: string) {
+		if (!map) return;
+
+		selectedBasemap = basemapId;
+		const basemapConfig = basemaps.find((b) => b.id === basemapId);
+		if (!basemapConfig) return;
+
+		// Create new basemap layer
+		const newBaseMapLayer = new TileLayer({
+			source: new XYZ({
+				url: basemapConfig.url,
+				attributions: basemapConfig.attribution
+			}),
+			zIndex: 0
+		});
+
+		// Remove old basemap layer
+		if (baseMapLayer) {
+			map.removeLayer(baseMapLayer);
+		}
+
+		// Add new basemap layer as the first layer (bottom)
+		const layers = map.getLayers();
+		layers.insertAt(0, newBaseMapLayer);
+
+		// Store reference to current basemap layer
+		baseMapLayer = newBaseMapLayer;
+	}
+
+	// Define base layers from HKH/Outline service
+	const baseLayers = [
+		{
+			id: 0,
+			name: 'Outline',
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
+		}
+		// {
+		// 	id: 1,
+		// 	name: 'Soil',
+		// 	url: BASELAYERS_URL
+		// },
+		// {
+		// 	id: 3,
+		// 	name: 'River',
+		// 	url: BASELAYERS_URL
+		// }
+	];
+
+	// Function to toggle base layers
+	async function toggleBaseLayer(layerId: number, checked: boolean) {
+		if (!map) return;
+		activeBaseLayers = { ...activeBaseLayers, [layerId]: checked };
+
+		if (checked) {
+			const layerInfo = baseLayers.find((l) => l.id === layerId);
+			if (!layerInfo) return;
+
+			let layer;
+
+			if (layerId === 0) {
+				// Apply special styling or configuration for layerId 0
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 2,
+					// Example styling: reduce opacity or add custom properties
+					opacity: 0.5
+				});
+			} else {
+				// Default configuration for other layers
+				layer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerInfo.url,
+						params: {
+							LAYERS: `show:${layerId}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 2
+				});
+			}
+
+			layer.set('baseLayerId', layerId);
+			map.addLayer(layer);
+		} else {
+			const layers = map.getLayers().getArray();
+			for (const layer of layers) {
+				if (layer.get('baseLayerId') === layerId) {
+					map.removeLayer(layer);
+					break;
+				}
+			}
+		}
 	}
 
 	// Legend state management
@@ -319,26 +477,29 @@
 				source: mapContainer.parentElement || mapContainer
 			});
 
+			// Get initial basemap configuration
+			const initialBasemap = basemaps.find((b) => b.id === selectedBasemap);
+			if (!initialBasemap) return;
+
+			// Create initial basemap layer
+			baseMapLayer = new TileLayer({
+				source: new XYZ({
+					url: initialBasemap.url,
+					attributions: initialBasemap.attribution
+				}),
+				zIndex: 0
+			});
+
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
-					fullScreenControl,
+					fullScreenControl
 					// new ScaleLine({ units: 'metric', bar: true })
 				]),
-				interactions: defaultInteractions({
-					mouseWheelZoom: false
-				}),
-				layers: [
-					new TileLayer({
-						// source: new XYZ({
-						// 	url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-						// })
-						source: new XYZ({
-							url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-							// attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
-						})
-					})
-				],
+				// interactions: defaultInteractions({
+				// 	mouseWheelZoom: false
+				// }),
+				layers: [baseMapLayer],
 				view: new View({
 					center: fromLonLat(HKH_CENTER),
 					zoom: HKH_ZOOM
@@ -970,6 +1131,104 @@
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
 
+							<!-- Home Reset Button -->
+							<button
+								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								onclick={() => {
+									if (map) {
+										map.getView().setCenter(fromLonLat(HKH_CENTER));
+										map.getView().setZoom(HKH_ZOOM);
+									}
+								}}
+								title="Reset to Home View"
+							>
+								<House class="h-4 w-4 text-slate-600" />
+							</button>
+
+							<!-- Basemap Switcher Button -->
+							<button
+								class="absolute top-10 right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
+								title="Change Basemap"
+								aria-label="Change Basemap"
+							>
+								<MapIcon class="h-4 w-4 text-slate-600" />
+							</button>
+
+							<!-- Basemap Switcher Panel -->
+							<div
+								class="absolute top-[4rem] right-10 z-20 w-48 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {basemapPanelOpen
+									? 'max-h-96 opacity-100'
+									: 'max-h-0 opacity-0'}"
+							>
+								<div class="p-3">
+									<h3 class="mb-2 text-sm font-semibold">Basemap</h3>
+									<div class="space-y-1">
+										{#each basemaps as basemap}
+											<button
+												class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
+												basemap.id
+													? 'bg-indigo-100 font-medium text-indigo-700'
+													: 'text-slate-700 hover:bg-gray-100'}"
+												onclick={() => {
+													switchBasemap(basemap.id);
+													basemapPanelOpen = false;
+												}}
+											>
+												<span class="flex-1">{basemap.name}</span>
+												<img
+													src={basemap.image}
+													alt={basemap.name}
+													class="h-8 w-12 rounded border border-slate-200 object-cover"
+												/>
+											</button>
+										{/each}
+									</div>
+								</div>
+							</div>
+
+							<!-- Layer Toggler Button -->
+							<button
+								class="absolute top-[4.5rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
+								onclick={() => (layersPanelOpen = !layersPanelOpen)}
+							>
+								{#if layersPanelOpen}
+									<ChevronsRight class="h-4 w-4" />
+								{:else}
+									<Layers class="h-4 w-4" />
+								{/if}
+							</button>
+
+							<!-- Layer Toggler Panel -->
+							<div
+								class="absolute top-[6rem] right-10 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+									? 'max-h-96 opacity-100'
+									: 'max-h-0 opacity-0'}"
+							>
+								<div class="p-3">
+									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
+									<div class="space-y-2">
+										{#each baseLayers as layerInfo}
+											<label class="flex items-center space-x-2 text-sm">
+												<input
+													type="checkbox"
+													checked={!!activeBaseLayers[
+														layerInfo.id as keyof typeof activeBaseLayers
+													]}
+													onchange={(e) => {
+														const target = e.target as HTMLInputElement;
+														toggleBaseLayer(layerInfo.id, target.checked);
+														target.blur(); // Removes focus from the checkbox
+													}}
+													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+												/>
+												<span>{layerInfo.name}</span>
+											</label>
+										{/each}
+									</div>
+								</div>
+							</div>
+
 							<!-- Legend Panel - Bottom Right INSIDE the map container -->
 							{#if currentDataset && Object.keys(legendData).length > 0}
 								<div class="absolute right-4 bottom-4 {isFullscreen ? 'z-[9999]' : 'z-10'}">
@@ -1045,7 +1304,7 @@
 										</div>
 									{/each}
 								</div>
-							<!-- {:else}
+								<!-- {:else}
 								<div class="flex h-80 items-center justify-center">
 									<div class="text-center text-slate-500">
 										<p class="text-sm">
@@ -1120,52 +1379,49 @@
 <!-- Fixed Floating Questions Button and Panel -->
 {#if layoutState !== 'left-full'}
 	<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
-		<div
-			class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
-			class:scale-0={!isQuestionsPanelOpen}
-			class:scale-100={isQuestionsPanelOpen}
-			class:opacity-0={!isQuestionsPanelOpen}
-			class:opacity-100={isQuestionsPanelOpen}
-			class:pointer-events-none={!isQuestionsPanelOpen}
-		>
-			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-				<div class="rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 p-2">
-					<Info class="h-4 w-4 text-white" />
+		{#if isQuestionsPanelOpen}
+			<div
+				class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right scale-100 transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 opacity-100 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+			>
+				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+					<div class="rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 p-2">
+						<Info class="h-4 w-4 text-white" />
+					</div>
+					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
 				</div>
-				<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
-			</div>
 
-			<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
-				{#each questions as questionItem, index}
-					<button
-						class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
-						questionItem.id
-							? 'border-green-500 bg-green-50 shadow-md'
-							: 'border-slate-200/50 bg-white/50 hover:border-green-300 hover:bg-green-50/70 hover:shadow-sm'}"
-						onclick={() => selectQuestion(questionItem.id)}
-					>
-						<div class="flex items-start space-x-2">
-							<div class="mt-1 flex-shrink-0">
-								{#if selectedQuestionId === questionItem.id}
-									<CheckCircle class="h-4 w-4 text-green-600" />
-								{:else}
-									<div
-										class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-green-400"
-									></div>
-								{/if}
+				<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
+					{#each questions as questionItem, index}
+						<button
+							class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
+							questionItem.id
+								? 'border-green-500 bg-green-50 shadow-md'
+								: 'border-slate-200/50 bg-white/50 hover:border-green-300 hover:bg-green-50/70 hover:shadow-sm'}"
+							onclick={() => selectQuestion(questionItem.id)}
+						>
+							<div class="flex items-start space-x-2">
+								<div class="mt-1 flex-shrink-0">
+									{#if selectedQuestionId === questionItem.id}
+										<CheckCircle class="h-4 w-4 text-green-600" />
+									{:else}
+										<div
+											class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-green-400"
+										></div>
+									{/if}
+								</div>
+								<p
+									class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+										? 'font-medium text-green-700'
+										: 'text-slate-600 group-hover:text-slate-800'}"
+								>
+									{questionItem.question}
+								</p>
 							</div>
-							<p
-								class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-									? 'font-medium text-green-700'
-									: 'text-slate-600 group-hover:text-slate-800'}"
-							>
-								{questionItem.question}
-							</p>
-						</div>
-					</button>
-				{/each}
+						</button>
+					{/each}
+				</div>
 			</div>
-		</div>
+		{/if}
 
 		<button
 			onclick={toggleQuestionsPanel}

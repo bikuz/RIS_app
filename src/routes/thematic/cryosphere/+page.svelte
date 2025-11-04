@@ -16,6 +16,11 @@
 	import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
+	import lightMap from '$lib/assets/images/basemaps/light-map.png';
+	import darkMap from '$lib/assets/images/basemaps/dark-map.png';
+	import osmMap from '$lib/assets/images/basemaps/osm-map.png';
+	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
+	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
 	import {
 		House,
 		Cloud,
@@ -39,7 +44,8 @@
 		SkipBack,
 		SkipForward,
 		Calendar,
-		List
+		List,
+		MapIcon
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
@@ -223,33 +229,29 @@
 				source: mapContainer.parentElement || mapContainer // Use the parent container that includes our custom controls, fallback to mapContainer
 			});
 
+			// Get initial basemap configuration
+			const initialBasemap = basemaps.find((b) => b.id === selectedBasemap);
+			if (!initialBasemap) return;
+
+			// Create initial basemap layer
+			baseMapLayer = new TileLayer({
+				source: new XYZ({
+					url: initialBasemap.url,
+					attributions: initialBasemap.attribution
+				}),
+				zIndex: 0
+			});
+
 			map = new Map({
 				target: mapContainer,
 				controls: defaultControls().extend([
 					fullScreenControl
 					// new ScaleLine({ units: 'metric', bar: true })
 				]),
-				interactions: defaultInteractions({
-					mouseWheelZoom: false
-				}),
-				layers: [
-					new TileLayer({
-						// source: new XYZ({
-						// 	url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
-						// 	attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
-						// })
-
-						// source: new XYZ({
-						// 	url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-						// 	attributions: '© OpenStreetMap contributors © CARTO'
-						// })
-
-						source: new XYZ({
-							url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-							// attributions: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ'
-						})
-					})
-				],
+				// interactions: defaultInteractions({
+				// 	mouseWheelZoom: false
+				// }),
+				layers: [baseMapLayer],
 				view: new View({
 					center: fromLonLat(HKH_CENTER),
 					zoom: HKH_ZOOM
@@ -530,6 +532,50 @@
 	let layersPanelOpen = $state(false);
 	let activeBaseLayers = $state({});
 
+	// Basemap switcher state
+	let basemapPanelOpen = $state(false);
+	let selectedBasemap = $state('dark-gray');
+	let baseMapLayer: TileLayer<any> | null = null;
+
+	// Define available basemaps
+	const basemaps = [
+		{
+			id: 'light',
+			name: 'Light',
+			url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors, © CARTO',
+			image: lightMap
+		},
+		{
+			id: 'dark-gray',
+			name: 'Dark',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+			attribution: '© OpenStreetMap contributors, © CARTO',
+			image: darkMap
+		},
+		{
+			id: 'osm',
+			name: 'OSM',
+			url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors',
+			image: osmMap
+		},
+		{
+			id: 'satellite',
+			name: 'Satellite',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+			attribution: 'Esri, DigitalGlobe, GeoEye, Earthstar Geographics',
+			image: satelliteMap
+		},
+		{
+			id: 'terrain',
+			name: 'Terrain',
+			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors, SRTM',
+			image: terrainMap
+		}
+	];
+
 	// Define base layers from HKH/Outline service
 	const baseLayers = [
 		{
@@ -582,6 +628,36 @@
 		}
 
 		updateLegend();
+	}
+
+	// Function to switch basemap
+	function switchBasemap(basemapId: string) {
+		if (!map) return;
+
+		selectedBasemap = basemapId;
+		const basemapConfig = basemaps.find((b) => b.id === basemapId);
+		if (!basemapConfig) return;
+
+		// Create new basemap layer
+		const newBaseMapLayer = new TileLayer({
+			source: new XYZ({
+				url: basemapConfig.url,
+				attributions: basemapConfig.attribution
+			}),
+			zIndex: 0
+		});
+
+		// Remove old basemap layer
+		if (baseMapLayer) {
+			map.removeLayer(baseMapLayer);
+		}
+
+		// Add new basemap layer as the first layer (bottom)
+		const layers = map.getLayers();
+		layers.insertAt(0, newBaseMapLayer);
+
+		// Store reference to current basemap layer
+		baseMapLayer = newBaseMapLayer;
 	}
 
 	// Get current dataset based on selected question or information layer
@@ -979,11 +1055,7 @@
 							<div
 								class="w-full overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto"
 							>
-								<img
-									src={cryo1}
-									alt="Glacial Lake in HMA"
-									class="mx-auto h-80 object-contain"
-								/>
+								<img src={cryo1} alt="Glacial Lake in HMA" class="mx-auto h-80 object-contain" />
 							</div>
 
 							<!-- <div
@@ -1084,9 +1156,51 @@
 								<House class="h-4 w-4 text-slate-600" />
 							</button>
 
+							<!-- Basemap Switcher Button -->
+							<button
+								class="absolute top-10 right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
+								title="Change Basemap"
+								aria-label="Change Basemap"
+							>
+								<MapIcon class="h-4 w-4 text-slate-600" />
+							</button>
+
+							<!-- Basemap Switcher Panel -->
+							<div
+								class="absolute top-[4rem] right-10 z-20 w-48 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {basemapPanelOpen
+									? 'max-h-96 opacity-100'
+									: 'max-h-0 opacity-0'}"
+							>
+								<div class="p-3">
+									<h3 class="mb-2 text-sm font-semibold">Basemap</h3>
+									<div class="space-y-1">
+										{#each basemaps as basemap}
+											<button
+												class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
+												basemap.id
+													? 'bg-indigo-100 font-medium text-indigo-700'
+													: 'text-slate-700 hover:bg-gray-100'}"
+												onclick={() => {
+													switchBasemap(basemap.id);
+													basemapPanelOpen = false;
+												}}
+											>
+												<span class="flex-1">{basemap.name}</span>
+												<img
+													src={basemap.image}
+													alt={basemap.name}
+													class="h-8 w-12 rounded border border-slate-200 object-cover"
+												/>
+											</button>
+										{/each}
+									</div>
+								</div>
+							</div>
+
 							<!-- Layer Toggler Button -->
 							<button
-								class="absolute top-[3.75rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
+								class="absolute top-[4.5rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
 								onclick={() => (layersPanelOpen = !layersPanelOpen)}
 							>
 								{#if layersPanelOpen}
@@ -1098,7 +1212,7 @@
 
 							<!-- Layer Toggler Panel -->
 							<div
-								class="absolute top-[5.5rem] right-2 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+								class="absolute top-[6rem] right-10 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
 									? 'max-h-96 opacity-100'
 									: 'max-h-0 opacity-0'}"
 							>
@@ -1285,52 +1399,49 @@
 <div>
 	{#if layoutState !== 'left-full'}
 		<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
-			<div
-				class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
-				class:scale-0={!isQuestionsPanelOpen}
-				class:scale-100={isQuestionsPanelOpen}
-				class:opacity-0={!isQuestionsPanelOpen}
-				class:opacity-100={isQuestionsPanelOpen}
-				class:pointer-events-none={!isQuestionsPanelOpen}
-			>
-				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
-						<Info class="h-4 w-4 text-white" />
+			{#if isQuestionsPanelOpen}
+				<div
+					class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right scale-100 transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 opacity-100 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+				>
+					<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+						<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
+							<Info class="h-4 w-4 text-white" />
+						</div>
+						<h3 class="text-lg font-bold text-slate-800">Explore Questions</h3>
 					</div>
-					<h3 class="text-lg font-bold text-slate-800">Explore Questions</h3>
-				</div>
 
-				<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
-					{#each questions as questionItem, index}
-						<button
-							class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
-							questionItem.id
-								? 'border-blue-500 bg-blue-50 shadow-md'
-								: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-							onclick={() => selectQuestion(questionItem.id)}
-						>
-							<div class="flex items-start space-x-2">
-								<div class="mt-1 flex-shrink-0">
-									{#if selectedQuestionId === questionItem.id}
-										<CheckCircle class="h-4 w-4 text-blue-600" />
-									{:else}
-										<div
-											class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
-										></div>
-									{/if}
+					<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
+						{#each questions as questionItem, index}
+							<button
+								class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
+								questionItem.id
+									? 'border-blue-500 bg-blue-50 shadow-md'
+									: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+								onclick={() => selectQuestion(questionItem.id)}
+							>
+								<div class="flex items-start space-x-2">
+									<div class="mt-1 flex-shrink-0">
+										{#if selectedQuestionId === questionItem.id}
+											<CheckCircle class="h-4 w-4 text-blue-600" />
+										{:else}
+											<div
+												class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
+											></div>
+										{/if}
+									</div>
+									<p
+										class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+											? 'font-medium text-blue-700'
+											: 'text-slate-600 group-hover:text-slate-800'}"
+									>
+										{questionItem.question}
+									</p>
 								</div>
-								<p
-									class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-										? 'font-medium text-blue-700'
-										: 'text-slate-600 group-hover:text-slate-800'}"
-								>
-									{questionItem.question}
-								</p>
-							</div>
-						</button>
-					{/each}
+							</button>
+						{/each}
+					</div>
 				</div>
-			</div>
+			{/if}
 
 			<button
 				onclick={toggleQuestionsPanel}
