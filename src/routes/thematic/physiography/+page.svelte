@@ -343,43 +343,43 @@
 				]
 			},
 			charts: []
-		},
-		{
-			id: 'slope',
-			title: 'Slope',
-			description: 'Slope data for the HKH region',
-			control_type: 'simple',
-			map_layers: {
-				default: [
-					{
-						id: 'slope-layer',
-						name: 'Slope',
-						url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-						layerIndex: 'springs:Slope',
-						mapserver: 'geoserver'
-					}
-				]
-			},
-			charts: []
-		},
-		{
-			id: 'aspect',
-			title: 'Aspect',
-			description: 'Aspect data for the HKH region',
-			control_type: 'simple',
-			map_layers: {
-				default: [
-					{
-						id: 'aspect-layer',
-						name: 'Aspect',
-						url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-						layerIndex: 'springs:Aspect',
-						mapserver: 'geoserver'
-					}
-				]
-			},
-			charts: []
 		}
+		// {
+		// 	id: 'slope',
+		// 	title: 'Slope',
+		// 	description: 'Slope data for the HKH region',
+		// 	control_type: 'simple',
+		// 	map_layers: {
+		// 		default: [
+		// 			{
+		// 				id: 'slope-layer',
+		// 				name: 'Slope',
+		// 				url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+		// 				layerIndex: 'springs:Slope',
+		// 				mapserver: 'geoserver'
+		// 			}
+		// 		]
+		// 	},
+		// 	charts: []
+		// },
+		// {
+		// 	id: 'aspect',
+		// 	title: 'Aspect',
+		// 	description: 'Aspect data for the HKH region',
+		// 	control_type: 'simple',
+		// 	map_layers: {
+		// 		default: [
+		// 			{
+		// 				id: 'aspect-layer',
+		// 				name: 'Aspect',
+		// 				url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+		// 				layerIndex: 'springs:Aspect',
+		// 				mapserver: 'geoserver'
+		// 			}
+		// 		]
+		// 	},
+		// 	charts: []
+		// }
 	];
 
 	const questions: any = [
@@ -410,17 +410,17 @@
 			id: 'map-indicator-2',
 			title: 'Mountain Region',
 			dataset_id: 'mountain-region'
-		},
-		{
-			id: 'map-indicator-3',
-			title: 'Slope',
-			dataset_id: 'slope'
-		},
-		{
-			id: 'map-indicator-4',
-			title: 'Aspect',
-			dataset_id: 'aspect'
 		}
+		// {
+		// 	id: 'map-indicator-3',
+		// 	title: 'Slope',
+		// 	dataset_id: 'slope'
+		// },
+		// {
+		// 	id: 'map-indicator-4',
+		// 	title: 'Aspect',
+		// 	dataset_id: 'aspect'
+		// }
 	];
 
 	// Track selected question - default to first question
@@ -1117,31 +1117,31 @@
 									<!-- Legend Content -->
 									{#if !legendCollapsed}
 										<div
-											class="max-w-sm rounded-lg border border-white/30 bg-white/95 p-4 shadow-xl backdrop-blur-sm"
+											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
 										>
-											<div class="max-h-[200px] space-y-4 overflow-y-auto">
+											<div class="max-h-[320px] space-y-4 overflow-y-auto">
 												{#each Object.keys(legendData) as uniqueKey}
-													<div class="space-y-3">
+													<div class="space-y-2">
 														<h4 class="text-sm font-semibold text-slate-800">
 															{legendData[uniqueKey].name}
 														</h4>
-														<div class="space-y-2">
+														<div class="space-y-1">
 															{#each legendData[uniqueKey].items as item}
-																<div class="flex items-center space-x-3">
+																<div class="flex items-center space-x-2">
 																	{#if item.imageData}
 																		<img
 																			src={item.imageData}
 																			alt={item.label}
-																			class="flex-shrink-0 object-contain"
+																			class="h-4 w-5 flex-shrink-0"
 																		/>
 																	{:else if item.imageUrl}
 																		<img
 																			src={item.imageUrl}
 																			alt={item.label}
-																			class="flex-shrink-0 object-contain"
+																			class="h-4 w-5 flex-shrink-0"
 																		/>
 																	{/if}
-																	<!-- <span class="text-sm text-slate-700">{item.label}</span> -->
+																	<span class="text-xs text-slate-700">{item.label}</span>
 																</div>
 															{/each}
 														</div>

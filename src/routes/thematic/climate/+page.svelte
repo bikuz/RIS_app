@@ -3118,7 +3118,7 @@
 			id: 'map-indicator-1',
 			title: 'Annual Temperature Trend',
 			dataset_id: 'temp-trend-10y',
-			info: 'The annual temperature trend is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The annual temperature trend is expressed in degrees Celsius per decade.'
+			info: 'Annual Mean Temperature Trend represents  the spatial pattern of the annual mean temperature trend over the past 30 years (1995-2024). Each pixel represents the rate of temperature change per decade.Method:Sen-Median trend analysis and Mann-Kendall (MK) test.Output:Overall represent trend for every pixel across HKH region.Significant represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)'
 		},
 		{
 			id: 'map-indicator-2',
@@ -3157,8 +3157,8 @@
 	// Track selected information layer (single selection)
 	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
 
-	// Track expanded layer for accordion - default to first layer
-	let expandedLayer = $state<string | null>('Annual Temperature Trend');
+	// Track expanded layer for accordion - default closed
+	let expandedLayer = $state<string | null>(null);
 
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
@@ -3860,13 +3860,9 @@
 			stopPlayback();
 		}
 
-		// Toggle expansion when clicking
-		toggleLayerExpansion(layerId);
-
 		// If clicking the same layer that's already selected, keep it selected
-		// (don't deselect, just toggle expansion)
 		if (selectedInformationLayer === layerId) {
-			// Layer is already selected, just toggled expansion above
+			// Layer is already selected
 			return;
 		}
 
@@ -4791,7 +4787,22 @@
 												>
 													{layer.title}
 												</h4>
-												<span class="flex-shrink-0">
+												<span
+													class="flex-shrink-0 cursor-pointer"
+													role="button"
+													tabindex="0"
+													onclick={(e) => {
+														e.stopPropagation();
+														toggleLayerExpansion(layer.title);
+													}}
+													onkeydown={(e) => {
+														if (e.key === 'Enter' || e.key === ' ') {
+															e.preventDefault();
+															e.stopPropagation();
+															toggleLayerExpansion(layer.title);
+														}
+													}}
+												>
 													{#if expandedLayer === layer.title}
 														<ChevronUp class="h-4 w-4 text-slate-600" />
 													{:else}
