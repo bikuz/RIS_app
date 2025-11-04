@@ -101,11 +101,19 @@
 			attribution: 'Esri, DigitalGlobe, GeoEye, Earthstar Geographics',
 			image: satelliteMap
 		},
+		// {
+		// 	id: 'terrain',
+		// 	name: 'Terrain',
+		// 	url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+		// 	attribution: '© OpenStreetMap contributors, SRTM',
+		// 	image: terrainMap
+		// }
 		{
-			id: 'terrain',
-			name: 'Terrain',
-			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
-			attribution: '© OpenStreetMap contributors, SRTM',
+			id: 'topographic',
+			name: 'Topographic',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+			attribution:
+				'Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, CNES/Airbus DS, InterMap, NASA/METI, NASA/NGS and the GIS User Community',
 			image: terrainMap
 		}
 	];
@@ -309,10 +317,28 @@
 				default: [
 					{
 						id: 'elevation-layer',
-						name: 'Elevation',
-						url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-						layerIndex: 'springs:elevation',
-						mapserver: 'geoserver'
+						name: 'Elevation(DEM 90m)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer',
+						layerIndex: '5',
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
+		},
+		{
+			id: 'mountain-region',
+			title: 'Mountain Region',
+			description: 'Mountain region data for the HKH region',
+			control_type: 'simple',
+			map_layers: {
+				default: [
+					{
+						id: 'mountain-region-layer',
+						name: 'Mountain Region',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer',
+						layerIndex: '4',
+						mapserver: 'arcgis'
 					}
 				]
 			},
@@ -382,11 +408,16 @@
 		},
 		{
 			id: 'map-indicator-2',
+			title: 'Mountain Region',
+			dataset_id: 'mountain-region'
+		},
+		{
+			id: 'map-indicator-3',
 			title: 'Slope',
 			dataset_id: 'slope'
 		},
 		{
-			id: 'map-indicator-3',
+			id: 'map-indicator-4',
 			title: 'Aspect',
 			dataset_id: 'aspect'
 		}
