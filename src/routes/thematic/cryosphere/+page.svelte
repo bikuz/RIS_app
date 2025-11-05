@@ -970,7 +970,7 @@
 </script>
 
 <!-- 3-Column Layout with Dynamic States -->
-<div class="relative grid grid-cols-12 items-stretch gap-6">
+<div class="relative grid grid-cols-1 items-stretch gap-4 md:gap-6 lg:grid-cols-12">
 	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
 	{#if layoutState === 'hide-left'}
 		<button
@@ -984,26 +984,27 @@
 	<!-- Left Sidebar - Story + Questions -->
 
 	<div
-		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto"
+		class="h-fit max-h-none space-y-4 md:space-y-6 lg:sticky lg:top-6 lg:col-span-4 lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto xl:col-span-3"
 		class:hidden={layoutState === 'hide-left'}
 		class:col-span-12={layoutState === 'left-full'}
+		class:lg:col-span-12={layoutState === 'left-full'}
 	>
 		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
-			<div class="mb-6 flex items-center justify-between">
-				<div class="flex items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
-						<TopicIcon class="h-5 w-5 text-white" />
+		<div class="rounded-2xl border border-white/20 bg-white/70 p-4 md:p-6">
+			<div class="mb-4 flex items-center justify-between md:mb-6">
+				<div class="flex items-center space-x-2 md:space-x-3">
+					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-1.5 md:p-2">
+						<TopicIcon class="h-4 w-4 text-white md:h-5 md:w-5" />
 					</div>
 					<h3
 						class="{layoutState === 'left-full'
-							? 'text-2xl'
-							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+							? 'text-xl md:text-2xl'
+							: 'text-base md:text-lg'} font-bold text-slate-800 transition-all duration-300"
 					>
 						Cryosphere Status in HKH
 					</h3>
 				</div>
-				<div class="flex items-center space-x-2">
+				<div class="hidden items-center space-x-2 lg:flex">
 					{#if layoutState !== 'left-full'}
 						<!-- Hide Left Panel Button -->
 						<button
@@ -1130,19 +1131,17 @@
 
 	<!-- Main Content Area - Unified container with common white background -->
 	<div
-		class="sticky col-span-9"
-		class:col-span-12={layoutState === 'hide-left'}
+		class="col-span-1 lg:sticky lg:col-span-8 xl:col-span-9"
+		class:lg:col-span-12={layoutState === 'hide-left'}
 		class:hidden={layoutState === 'left-full'}
 	>
-		<div class="rounded-2xl border border-white/20 bg-white p-6 shadow-xl backdrop-blur-sm">
-			<div class="flex gap-6">
+		<div class="rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm md:p-6">
+			<div class="flex flex-col gap-4 md:gap-6 lg:flex-row">
 				<!-- Left part: Map and Charts -->
-				<div
-					class="flex min-w-0 flex-col gap-6 {layoutState === 'hide-left' ? 'flex-1' : 'flex-1'}"
-				>
+				<div class="order-2 flex min-w-0 flex-1 flex-col gap-4 md:gap-6 lg:order-1">
 					<!-- Map Section -->
 					<div
-						class="relative h-[60vh] max-h-[800px] min-h-[500px] overflow-hidden rounded-xl border border-slate-200/30"
+						class="relative h-[50vh] min-h-[400px] overflow-hidden rounded-xl border border-slate-200/30 md:h-[55vh] md:min-h-[450px] lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 					>
 						<div class="map-container flex h-full flex-col">
 							<div
@@ -1152,7 +1151,7 @@
 
 							<!-- Home Reset Button -->
 							<button
-								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								class="absolute top-12 left-1 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black md:top-15 md:left-2 md:p-1.5"
 								onclick={() => {
 									if (map) {
 										map.getView().setCenter(fromLonLat(HKH_CENTER));
@@ -1161,31 +1160,31 @@
 								}}
 								title="Reset to Home View"
 							>
-								<House class="h-4 w-4 text-slate-600" />
+								<House class="h-3.5 w-3.5 text-slate-600 md:h-4 md:w-4" />
 							</button>
 
 							<!-- Basemap Switcher Button -->
 							<button
-								class="absolute top-10 right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
+								class="absolute top-8 right-1 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black md:top-10 md:right-2 md:p-1.5"
 								onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
 								title="Change Basemap"
 								aria-label="Change Basemap"
 							>
-								<MapIcon class="h-4 w-4 text-slate-600" />
+								<MapIcon class="h-3.5 w-3.5 text-slate-600 md:h-4 md:w-4" />
 							</button>
 
 							<!-- Basemap Switcher Panel -->
 							<div
-								class="absolute top-[4rem] right-10 z-20 w-48 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {basemapPanelOpen
+								class="absolute top-[3.5rem] right-8 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out md:top-[4rem] md:right-10 md:w-48 {basemapPanelOpen
 									? 'max-h-96 opacity-100'
 									: 'max-h-0 opacity-0'}"
 							>
-								<div class="p-3">
-									<h3 class="mb-2 text-sm font-semibold">Basemap</h3>
-									<div class="space-y-1">
+								<div class="p-2 md:p-3">
+									<h3 class="mb-1.5 text-xs font-semibold md:mb-2 md:text-sm">Basemap</h3>
+									<div class="space-y-0.5 md:space-y-1">
 										{#each basemaps as basemap}
 											<button
-												class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
+												class="flex w-full items-center justify-between gap-1.5 rounded px-1.5 py-1 text-left text-xs transition-colors md:gap-2 md:px-2 md:py-1.5 md:text-sm {selectedBasemap ===
 												basemap.id
 													? 'bg-indigo-100 font-medium text-indigo-700'
 													: 'text-slate-700 hover:bg-gray-100'}"
@@ -1198,7 +1197,7 @@
 												<img
 													src={basemap.image}
 													alt={basemap.name}
-													class="h-8 w-12 rounded border border-slate-200 object-cover"
+													class="h-6 w-9 rounded border border-slate-200 object-cover md:h-8 md:w-12"
 												/>
 											</button>
 										{/each}
@@ -1208,27 +1207,27 @@
 
 							<!-- Layer Toggler Button -->
 							<button
-								class="absolute top-[4.5rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
+								class="absolute top-[4rem] right-1 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 md:top-[4.5rem] md:right-2 md:p-1.5"
 								onclick={() => (layersPanelOpen = !layersPanelOpen)}
 							>
 								{#if layersPanelOpen}
-									<ChevronsRight class="h-4 w-4" />
+									<ChevronsRight class="h-3.5 w-3.5 md:h-4 md:w-4" />
 								{:else}
-									<Layers class="h-4 w-4" />
+									<Layers class="h-3.5 w-3.5 md:h-4 md:w-4" />
 								{/if}
 							</button>
 
 							<!-- Layer Toggler Panel -->
 							<div
-								class="absolute top-[6rem] right-10 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
+								class="absolute top-[5rem] right-8 z-20 w-32 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out md:top-[6rem] md:right-10 md:w-40 {layersPanelOpen
 									? 'max-h-96 opacity-100'
 									: 'max-h-0 opacity-0'}"
 							>
-								<div class="p-3">
-									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
-									<div class="space-y-2">
+								<div class="p-2 md:p-3">
+									<h3 class="mb-1.5 text-xs font-semibold md:mb-2 md:text-sm">Base Layers</h3>
+									<div class="space-y-1.5 md:space-y-2">
 										{#each baseLayers as layerInfo}
-											<label class="flex items-center space-x-2 text-sm">
+											<label class="flex items-center space-x-1.5 text-xs md:space-x-2 md:text-sm">
 												<input
 													type="checkbox"
 													checked={!!activeBaseLayers[layerInfo.key]}
@@ -1236,7 +1235,7 @@
 														toggleBaseLayer(layerInfo.key, e.target.checked);
 														e.target.blur();
 													}}
-													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+													class="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 md:h-4 md:w-4"
 												/>
 												<span>{layerInfo.name}</span>
 											</label>
@@ -1247,14 +1246,14 @@
 
 							<!-- Legend Panel - Bottom Right -->
 							{#if currentDataset && Object.keys(legendData).length > 0}
-								<div class="absolute right-2 bottom-2">
+								<div class="absolute right-1 bottom-1 md:right-2 md:bottom-2">
 									<!-- Legend Toggle Button -->
 									<button
-										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
+										class="mb-1 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-1.5 text-xs shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl md:mb-2 md:p-2 md:text-sm"
 										onclick={() => (legendCollapsed = !legendCollapsed)}
 									>
-										<div class="flex items-center space-x-2">
-											<List class="h-4 w-4 text-blue-600" />
+										<div class="flex items-center space-x-1 md:space-x-2">
+											<List class="h-3 w-3 text-blue-600 md:h-4 md:w-4" />
 											{#if !legendCollapsed}
 												<span class="font-medium text-slate-700">Legend</span>
 											{/if}
@@ -1279,31 +1278,33 @@
 									<!-- Legend Content -->
 									{#if !legendCollapsed}
 										<div
-											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
+											class="max-w-[16rem] rounded-lg border border-white/30 bg-white/95 p-2 shadow-xl backdrop-blur-sm md:max-w-xs md:p-3"
 										>
-											<div class="max-h-[300px] w-35 space-y-4">
+											<div class="max-h-[200px] w-auto space-y-2 md:max-h-[300px] md:space-y-4">
 												{#each Object.keys(legendData) as uniqueKey}
-													<div class="space-y-2">
-														<h4 class="text-sm font-semibold text-slate-800">
+													<div class="space-y-1 md:space-y-2">
+														<h4 class="text-xs font-semibold text-slate-800 md:text-sm">
 															{legendData[uniqueKey].name}
 														</h4>
-														<div class="space-y-1">
+														<div class="space-y-0.5 md:space-y-1">
 															{#each legendData[uniqueKey].items as item}
-																<div class="flex items-center space-x-2">
+																<div class="flex items-center space-x-1.5 md:space-x-2">
 																	{#if item.imageData}
 																		<img
 																			src={item.imageData}
 																			alt={item.label}
-																			class="h-4 w-5 flex-shrink-0"
+																			class="h-3 w-4 flex-shrink-0 md:h-4 md:w-5"
 																		/>
 																	{:else if item.imageUrl}
 																		<img
 																			src={item.imageUrl}
 																			alt={item.label}
-																			class="h-4 w-5 flex-shrink-0"
+																			class="h-3 w-4 flex-shrink-0 md:h-4 md:w-5"
 																		/>
 																	{/if}
-																	<span class="text-xs text-slate-700">{item.label}</span>
+																	<span class="text-[10px] text-slate-700 md:text-xs"
+																		>{item.label}</span
+																	>
 																</div>
 															{/each}
 														</div>
@@ -1318,7 +1319,7 @@
 					</div>
 
 					<!-- Chart Section -->
-					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
+					<div class="flex-1 rounded-xl bg-slate-50/30 p-4 md:p-6">
 						<!-- <h3 class="mb-4 text-lg font-semibold text-slate-700">Demographic Analytics</h3> -->
 						<div class="rounded-lg bg-slate-50/50">
 							{#if currentCharts && currentCharts.length > 0}
@@ -1345,34 +1346,35 @@
 				</div>
 
 				<!-- Right part: Information Layer and Questions -->
-				<div class="w-80 flex-shrink-0">
+				<div class="order-1 w-full flex-shrink-0 lg:order-2 lg:w-72 xl:w-80">
 					<div
-						class="top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
+						class="flex flex-col rounded-2xl border border-white/20 bg-white/70 p-4 lg:min-h-[calc(100vh-16rem)]"
 					>
 						<!-- Information Layer Header -->
-						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-							<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
-								<Layers class="h-5 w-5 text-white" />
+						<div class="mb-3 flex flex-shrink-0 items-center space-x-2 md:mb-4 md:space-x-3">
+							<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-1.5 md:p-2">
+								<Layers class="h-4 w-4 text-white md:h-5 md:w-5" />
 							</div>
-							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
+							<h3 class="text-base font-bold text-slate-800 md:text-lg">Information Layer</h3>
 						</div>
 
 						<!-- Information Layer Content -->
 						<div class="flex-1 overflow-y-auto">
 							{#if information_layers && information_layers.length > 0}
-								<div class="space-y-3">
+								<div class="grid grid-cols-1 gap-2 md:space-y-3 lg:grid-cols-1">
 									{#each information_layers as layer, index}
 										<button
 											onclick={() => selectInformationLayer(layer.title)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+											class="w-full rounded-lg border p-3 backdrop-blur-sm transition-all duration-200 hover:shadow-md md:p-4 {selectedInformationLayer ===
 											layer.title
 												? 'border-blue-500 bg-blue-50 shadow-md'
 												: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
 										>
-											<div class="flex items-start space-x-3 text-left">
+											<div class="flex items-start space-x-2 text-left md:space-x-3">
 												<div class="flex-1">
 													<h4
-														class="text-sm font-medium {selectedInformationLayer === layer.title
+														class="text-xs font-medium md:text-sm {selectedInformationLayer ===
+														layer.title
 															? 'font-medium text-blue-700'
 															: 'text-slate-600 group-hover:text-slate-800'}"
 													>
@@ -1406,16 +1408,18 @@
 <!-- Conditionally render floating questions button -->
 <div>
 	{#if layoutState !== 'left-full'}
-		<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
+		<div
+			class="fixed right-4 bottom-4 z-50 flex flex-col items-end md:right-8 md:bottom-6 lg:right-12"
+		>
 			{#if isQuestionsPanelOpen}
 				<div
-					class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right scale-100 transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 opacity-100 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+					class="questions-panel mb-3 flex h-72 w-72 origin-bottom-right scale-100 transform flex-col rounded-2xl border border-white/20 bg-white/95 px-3 py-3 opacity-100 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out md:mb-4 md:h-80 md:w-80 md:px-4 md:py-4"
 				>
-					<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-						<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
-							<Info class="h-4 w-4 text-white" />
+					<div class="mb-3 flex flex-shrink-0 items-center space-x-2 md:mb-4 md:space-x-3">
+						<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-1.5 md:p-2">
+							<Info class="h-3 w-3 text-white md:h-4 md:w-4" />
 						</div>
-						<h3 class="text-lg font-bold text-slate-800">Explore Questions</h3>
+						<h3 class="text-base font-bold text-slate-800 md:text-lg">Explore Questions</h3>
 					</div>
 
 					<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
@@ -1453,12 +1457,12 @@
 
 			<button
 				onclick={toggleQuestionsPanel}
-				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r {getTopicColor(
+				class="custom-shadow flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r {getTopicColor(
 					topic
-				)} text-white"
+				)} text-white md:h-12 md:w-12"
 				aria-label="Toggle questions panel"
 			>
-				<HelpCircle class="h-6 w-6" />
+				<HelpCircle class="h-5 w-5 md:h-6 md:w-6" />
 			</button>
 		</div>
 	{/if}

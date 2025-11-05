@@ -4814,7 +4814,7 @@
 											<!-- Expandable content -->
 											{#if expandedLayer === layer.title}
 												<div
-													class="border-t border-slate-200/50 px-4 py-3 text-xs leading-relaxed text-slate-600"
+													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
 												>
 													{layer.info}
 												</div>
