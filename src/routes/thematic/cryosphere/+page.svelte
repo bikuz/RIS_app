@@ -1004,48 +1004,48 @@
 	{#if layoutState === 'hide-left'}
 		<button
 			onclick={() => setLayoutState('default')}
-			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/90 p-2 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl active:bg-slate-100 lg:p-1.5"
 			title="Show Story Panel"
 		>
-			<ChevronsRight class="h-4 w-4" />
+			<ChevronsRight class="h-5 w-5 lg:h-4 lg:w-4" />
 		</button>
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
 
 	<div
-		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto"
+		class="sticky top-6 col-span-12 h-fit max-h-[calc(100vh-8rem)] flex-1 space-y-4 overflow-y-auto lg:col-span-3 lg:max-h-[calc(100vh-12rem)] lg:space-y-6"
 		class:hidden={layoutState === 'hide-left'}
-		class:col-span-12={layoutState === 'left-full'}
+		class:lg:col-span-12={layoutState === 'left-full'}
 	>
 		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
-			<div class="mb-6 flex items-center justify-between">
-				<div class="flex items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
-						<TopicIcon class="h-5 w-5 text-white" />
+		<div class="rounded-2xl border border-white/20 bg-white/70 p-4 lg:p-6">
+			<div class="mb-4 flex items-center justify-between lg:mb-6">
+				<div class="flex items-center space-x-2 lg:space-x-3">
+					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-1.5 lg:p-2">
+						<TopicIcon class="h-4 w-4 text-white lg:h-5 lg:w-5" />
 					</div>
 					<h3
 						class="{layoutState === 'left-full'
-							? 'text-2xl'
-							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+							? 'text-xl lg:text-2xl'
+							: 'text-base lg:text-lg'} font-bold text-slate-800 transition-all duration-300"
 					>
 						Cryosphere Status in HKH
 					</h3>
 				</div>
-				<div class="flex items-center space-x-2">
+				<div class="flex items-center space-x-1 lg:space-x-2">
 					{#if layoutState !== 'left-full'}
-						<!-- Hide Left Panel Button -->
+						<!-- Hide Left Panel Button - Show Map -->
 						<button
 							onclick={() => setLayoutState('hide-left')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
-							title="Hide Story Panel"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+							title="Show Map"
 						>
 							<ChevronsLeft class="h-4 w-4" />
 						</button>
-						<!-- Expand Story Button -->
+						<!-- Expand Story Button - Desktop only -->
 						<button
 							onclick={() => setLayoutState('left-full')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="hidden rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
 							title="Expand Story"
 						>
 							<ChevronsRight class="h-4 w-4" />
@@ -1054,7 +1054,7 @@
 						<!-- Back to Default Button -->
 						<button
 							onclick={() => setLayoutState('default')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
 							title="Back to Default"
 						>
 							<ChevronsLeft class="h-4 w-4" />
@@ -1065,13 +1065,13 @@
 
 			<div
 				class="{layoutState === 'left-full'
-					? 'space-y-6'
-					: 'space-y-4'} transition-all duration-300"
+					? 'space-y-4 lg:space-y-6'
+					: 'space-y-3 lg:space-y-4'} transition-all duration-300"
 			>
 				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+					class="text-justify text-sm {layoutState === 'left-full'
+						? 'lg:text-base lg:leading-loose'
+						: 'lg:leading-relaxed'} leading-relaxed text-slate-600 transition-all duration-300"
 				>
 					The Hindu Kush Himalaya (HKH) contains the world’s greatest areal extent and volume of
 					permanent ice and permafrost outside the polar regions. Consequently, glaciers, snow, and
@@ -1085,14 +1085,22 @@
 				</p>
 
 				<!-- Images Section - Responsive Layout -->
-				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
+				<div
+					class="mt-4 lg:mt-6 {layoutState === 'left-full'
+						? 'space-y-4 lg:space-y-6'
+						: 'space-y-2 lg:space-y-3'}"
+				>
 					{#if layoutState === 'left-full'}
 						<!-- Full Width Layout -->
-						<div class="flex flex-wrap justify-center gap-6">
+						<div class="flex flex-wrap justify-center gap-4 lg:gap-6">
 							<div
-								class="w-full overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto"
+								class="w-full overflow-hidden rounded-lg border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto lg:rounded-xl"
 							>
-								<img src={cryo1} alt="Glacial Lake in HMA" class="mx-auto h-80 object-contain" />
+								<img
+									src={cryo1}
+									alt="Glacial Lake in HMA"
+									class="mx-auto h-48 object-contain lg:h-80"
+								/>
 							</div>
 
 							<!-- <div
@@ -1101,22 +1109,22 @@
 								<img src={cryo1} alt="Population centers" class="mx-auto h-80 object-contain" />
 							</div> -->
 
-							<div class="mt-4 w-full text-center">
-								<p class="text-sm leading-relaxed text-slate-700">
+							<div class="mt-2 w-full text-center lg:mt-4">
+								<p class="text-xs leading-relaxed text-slate-700 lg:text-sm">
 									<span class="font-semibold text-slate-800">Glacial Lake in High Mountain</span>
 								</p>
 							</div>
 						</div>
 					{:else}
 						<!-- Default Layout - Stacked Images -->
-						<div class="space-y-3">
+						<div class="space-y-2 lg:space-y-3">
 							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
 								<img
 									src={cryo1}
 									alt="Glacial Lake in High Mountain Asia"
-									class="h-50 w-full object-contain"
+									class="h-40 w-full object-contain lg:h-50"
 								/>
-								<div class="p-2">
+								<div class="p-1.5 lg:p-2">
 									<p class="text-center text-xs text-slate-600">
 										<!-- <span
 											><span class="font-semibold">Mountain communities</span>
@@ -1140,9 +1148,9 @@
 				</div>
 
 				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+					class="text-justify text-sm {layoutState === 'left-full'
+						? 'lg:text-base lg:leading-loose'
+						: 'lg:leading-relaxed'} leading-relaxed text-slate-600 transition-all duration-300"
 				>
 					The HKH is characterized by the widespread presence of such glacial lakes and many of them
 					are potential sources of flood. The HKH has experienced numerous GLOF events, some of them
@@ -1159,15 +1167,18 @@
 
 	<!-- Main Content Area - Unified container with common white background -->
 	<div
-		class="sticky col-span-9"
-		class:col-span-12={layoutState === 'hide-left'}
-		class:hidden={layoutState === 'left-full'}
+		class="sticky col-span-12 lg:col-span-9"
+		class:lg:col-span-12={layoutState === 'hide-left'}
+		class:hidden={layoutState !== 'hide-left'}
+		class:lg:block={layoutState === 'default'}
+		class:lg:hidden={layoutState === 'left-full'}
 	>
-		<div class="rounded-2xl border border-white/20 bg-white p-6 shadow-xl backdrop-blur-sm">
-			<div class="flex flex-col gap-6 lg:flex-row">
+		<div class="rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
+			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
 				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
 				<div
-					class="order-2 flex min-w-0 flex-col gap-6 lg:order-1 {layoutState === 'hide-left'
+					class="order-2 flex min-w-0 flex-col gap-4 lg:order-1 lg:gap-6 {layoutState ===
+					'hide-left'
 						? 'flex-1'
 						: 'flex-1'}"
 				>
