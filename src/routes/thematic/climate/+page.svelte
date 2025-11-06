@@ -3128,37 +3128,43 @@
 			id: 'map-indicator-1',
 			title: 'Annual Temperature Trend',
 			dataset_id: 'temp-trend-10y',
-			info: 'Annual Mean Temperature Trend represents  the spatial pattern of the annual mean temperature trend over the past 30 years (1995-2024). Each pixel represents the rate of temperature change per decade.Method:Sen-Median trend analysis and Mann-Kendall (MK) test.Output:Overall represent trend for every pixel across HKH region.Significant represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)'
+			info: 'Annual Mean Temperature Trend represents  the spatial pattern of the annual mean temperature trend over the past 30 years (1995-2024). Each pixel represents the rate of temperature change per decade.Method:Sen-Median trend analysis and Mann-Kendall (MK) test.Output:Overall represent trend for every pixel across HKH region.Significant represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-2',
 			title: 'Seasonal Temperature Trend',
 			dataset_id: 'seasonal-temp-trend',
-			info: 'The seasonal temperature trend is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The seasonal temperature trend is expressed in degrees Celsius per decade.'
+			info: 'The seasonal temperature trend is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The seasonal temperature trend is expressed in degrees Celsius per decade.',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-3',
 			title: 'Annual Temperature Anomaly',
 			dataset_id: 'annual-temp-anamoly-series',
-			info: 'The annual temperature anomaly is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The annual temperature anomaly is expressed in degrees Celsius per decade.'
+			info: 'The annual temperature anomaly is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The annual temperature anomaly is expressed in degrees Celsius per decade.',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-4',
 			title: 'Annual Precipitation Trend',
 			dataset_id: 'ppt-trend-10y',
-			info: 'The annual precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation trend is expressed in millimeters per decade.'
+			info: 'The annual precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation trend is expressed in millimeters per decade.',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-5',
 			title: 'Seasonal Precipitation Trend',
 			dataset_id: 'seasonal-ppt-trend',
-			info: 'The seasonal precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The seasonal precipitation trend is expressed in millimeters per decade.'
+			info: 'The seasonal precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The seasonal precipitation trend is expressed in millimeters per decade.',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-6',
 			title: 'Annual Precipitation Anomaly',
 			dataset_id: 'annual-ppt-anamoly-series',
-			info: 'The annual precipitation anomaly is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation anomaly is expressed in millimeters per decade.'
+			info: 'The annual precipitation anomaly is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation anomaly is expressed in millimeters per decade.',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		}
 	];
 	// Track selected question - default to first question
@@ -4845,7 +4851,11 @@
 												<div
 													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
 												>
-													{layer.info}
+													<p>{layer.info}</p>
+													<p class="pt-1 text-left text-xs text-slate-600">
+														<span class="font-bold"> Data Source: </span>
+														{layer.source}
+													</p>
 												</div>
 											{/if}
 										</div>

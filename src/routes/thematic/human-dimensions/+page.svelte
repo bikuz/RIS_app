@@ -590,47 +590,65 @@
 		{
 			id: 'info-layer-1',
 			title: 'Population 2025',
-			dataset_id: 'population-2025'
+			dataset_id: 'population-2025',
+			info: 'The map represents the spatial distribution of population across the HKH region.The dataset is obtained from WorldPop Global Project Population Data, providing population counts per 1km × 1km grid square.',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-2',
 			title: 'Sex Ratio',
-			dataset_id: 'sex-ratio-2025'
+			dataset_id: 'sex-ratio-2025',
+			info: 'The map represents the spatial distribution of the sex ratio across HKH region.The ratio is calculated using the formula (Total Male Count / Total Female Count) × 100, with each pixel representing the number of males per 100 females.',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-3',
 			title: 'Proportion of Population Age >=75',
-			dataset_id: 'aged-75-proportion'
+			dataset_id: 'aged-75-proportion',
+			info: 'The map represents spatial distribution of the elderly population as a percentage of the total population across the region.The proportion is calculated using the formula (Population Aged >=75 Years / Total Population of All Ages) × 100.',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-4',
 			title: 'Child-Woman Ratio',
-			dataset_id: 'child-woman-ratio-2025'
+			dataset_id: 'child-woman-ratio-2025',
+			info: 'The map represents spatial distribution of Child-Woman Ratio across HKH region.The ratio is calculated using the formula (Children Aged 0-4 Years / Women Aged 15-49) × 1000 with each pixel representing the number of young children per 1,000 women of childbearing age.',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-5',
 			title: 'Child-Dependency Ratio',
-			dataset_id: 'child-dependency-ratio-2025'
+			dataset_id: 'child-dependency-ratio-2025',
+			info: 'The map represents the number of young dependents per 100 working-age individuals in 1 km² area. . The ratio is calculated  using the formula (Population Aged 0-14 Years / Working-Age Population (15-64)) × 100.',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-6',
 			title: 'Age Dependency Ratio',
-			dataset_id: 'age-dependency-ratio-2025'
+			dataset_id: 'age-dependency-ratio-2025',
+			info: 'The map represents the number of elderly dependents per 100 working-age individuals in 1 km² area.  .The ratio is calculated using gridded population data with the formula (Population Aged ≥60 Years / Working-Age Population (15-64)) × 100. ',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-7',
 			title: 'Total Dependency Ratio',
-			dataset_id: 'total-dependency-ratio-2025'
+			dataset_id: 'total-dependency-ratio-2025',
+			info: 'The map represents the total number of young and elderly dependents per 100 working-age individuals in 1 km² area. The ratio is calculated using the formula: [(Population Aged 0-14 + Population Aged ≥60) / Working-Age Population (15-64)] × 100. ',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-8',
 			title: 'Impervious Surface',
-			dataset_id: 'impervious_surface'
+			dataset_id: 'impervious_surface',
+			info: 'Impervious Surface',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-9',
 			title: 'Night Light',
-			dataset_id: 'night-light'
+			dataset_id: 'night-light',
+			info: 'Night Light Data',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		}
 	];
 
@@ -639,6 +657,9 @@
 
 	// Track selected information layer (single selection) - default to Population 2025
 	let selectedInformationLayer = $state<string | null>('Population 2025');
+
+	// Track expanded layer for accordion - default closed
+	let expandedLayer = $state<string | null>(null);
 
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
@@ -1074,6 +1095,15 @@
 		}
 
 		console.log('Information layer selected:', layerId);
+	}
+
+	// Function to toggle layer expansion
+	function toggleLayerExpansion(layerId: string) {
+		if (expandedLayer === layerId) {
+			expandedLayer = null;
+		} else {
+			expandedLayer = layerId;
+		}
 	}
 
 	// Function to cycle through layout states
@@ -1550,25 +1580,61 @@
 							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
-										<button
-											onclick={() => selectInformationLayer(layer.title)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+										<div
+											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
 											layer.title
-												? 'border-blue-500 bg-blue-50 shadow-md'
-												: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+												? 'border-blue-300 bg-gradient-to-r from-blue-50/90 to-cyan-50/90 shadow-md'
+												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
 										>
-											<div class="flex items-start space-x-3 text-left">
-												<div class="flex-1">
-													<h4
-														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'font-medium text-blue-700'
-															: 'text-slate-600 group-hover:text-slate-800'}"
-													>
-														{layer.title}
-													</h4>
+											<button
+												onclick={() => selectInformationLayer(layer.title)}
+												class="flex w-full items-start space-x-2 p-4 text-left transition-all duration-200 hover:opacity-80"
+											>
+												<h4
+													class="flex-1 text-sm font-medium {selectedInformationLayer ===
+													layer.title
+														? 'text-blue-800'
+														: 'text-slate-800'}"
+												>
+													{layer.title}
+												</h4>
+												<span
+													class="flex-shrink-0 cursor-pointer"
+													role="button"
+													tabindex="0"
+													onclick={(e) => {
+														e.stopPropagation();
+														toggleLayerExpansion(layer.title);
+													}}
+													onkeydown={(e) => {
+														if (e.key === 'Enter' || e.key === ' ') {
+															e.preventDefault();
+															e.stopPropagation();
+															toggleLayerExpansion(layer.title);
+														}
+													}}
+												>
+													{#if expandedLayer === layer.title}
+														<ChevronUp class="h-4 w-4 text-slate-600" />
+													{:else}
+														<ChevronDown class="h-4 w-4 text-slate-600" />
+													{/if}
+												</span>
+											</button>
+
+											<!-- Expandable content -->
+											{#if expandedLayer === layer.title}
+												<div
+													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
+												>
+													<p>{layer.info}</p>
+													<p class="pt-1 text-left text-xs text-slate-600">
+														<span class="font-bold"> Data Source: </span>
+														{layer.source}
+													</p>
 												</div>
-											</div>
-										</button>
+											{/if}
+										</div>
 									{/each}
 								</div>
 							{:else}

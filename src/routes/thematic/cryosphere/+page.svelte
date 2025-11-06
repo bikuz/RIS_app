@@ -499,17 +499,23 @@
 		{
 			id: 'info-layer-1',
 			title: 'Glacier',
-			dataset_id: 'glacier'
+			dataset_id: 'glacier',
+			info: 'The glacier map presented here is sourced from from the Regional DataBase System of ICIMOD. There are an estimated 54,000 glaciers in the HKH region which cover about 60,000 square kilometers of the total area.',
+			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
 			id: 'info-layer-2',
 			title: 'Glacial Lake',
-			dataset_id: 'glacial_lake'
+			dataset_id: 'glacial_lake',
+			info: 'The glacial lake data obtained from the Regional DataBase System of ICIMOD represent the glacial lakes across the HKH region. The dataset is generated through semi-automated analysis of Landsat 5 TM and Landsat 7 ETM+ satellite images from the 2005 period (±2 years).',
+			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
 			id: 'info-layer-3',
 			title: 'Glacial Lake Outburst Flood (GLOF)',
-			dataset_id: 'glof'
+			dataset_id: 'glof',
+			info: 'The map represents the Glacier Lake Outburst Floods (GLOFs) events across High Mountain Asia (HMA). The dataset is sourced from the ICIMODs Regional DataBase System  which have documented 697 individual GLOFs that occurred between 1833 and 2022.',
+			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		}
 	];
 
@@ -518,6 +524,9 @@
 
 	// Track selected information layer (single selection) - default to Population 2025
 	let selectedInformationLayer = $state<string | null>('Glacier');
+
+	// Track expanded layer for accordion - default closed
+	let expandedLayer = $state<string | null>(null);
 
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
@@ -931,6 +940,15 @@
 		}
 
 		console.log('Information layer selected:', layerId);
+	}
+
+	// Function to toggle layer expansion
+	function toggleLayerExpansion(layerId: string) {
+		if (expandedLayer === layerId) {
+			expandedLayer = null;
+		} else {
+			expandedLayer = layerId;
+		}
 	}
 
 	// Function to cycle through layout states
@@ -1404,25 +1422,61 @@
 							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
-										<button
-											onclick={() => selectInformationLayer(layer.title)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+										<div
+											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
 											layer.title
-												? 'border-blue-500 bg-blue-50 shadow-md'
-												: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+												? 'border-blue-300 bg-gradient-to-r from-blue-50/90 to-cyan-50/90 shadow-md'
+												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
 										>
-											<div class="flex items-start space-x-3 text-left">
-												<div class="flex-1">
-													<h4
-														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'font-medium text-blue-700'
-															: 'text-slate-600 group-hover:text-slate-800'}"
-													>
-														{layer.title}
-													</h4>
+											<button
+												onclick={() => selectInformationLayer(layer.title)}
+												class="flex w-full items-start space-x-2 p-4 text-left transition-all duration-200 hover:opacity-80"
+											>
+												<h4
+													class="flex-1 text-sm font-medium {selectedInformationLayer ===
+													layer.title
+														? 'text-blue-800'
+														: 'text-slate-800'}"
+												>
+													{layer.title}
+												</h4>
+												<span
+													class="flex-shrink-0 cursor-pointer"
+													role="button"
+													tabindex="0"
+													onclick={(e) => {
+														e.stopPropagation();
+														toggleLayerExpansion(layer.title);
+													}}
+													onkeydown={(e) => {
+														if (e.key === 'Enter' || e.key === ' ') {
+															e.preventDefault();
+															e.stopPropagation();
+															toggleLayerExpansion(layer.title);
+														}
+													}}
+												>
+													{#if expandedLayer === layer.title}
+														<ChevronUp class="h-4 w-4 text-slate-600" />
+													{:else}
+														<ChevronDown class="h-4 w-4 text-slate-600" />
+													{/if}
+												</span>
+											</button>
+
+											<!-- Expandable content -->
+											{#if expandedLayer === layer.title}
+												<div
+													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
+												>
+													<p>{layer.info}</p>
+													<p class="pt-1 text-left text-xs text-slate-600">
+														<span class="font-bold"> Data Source: </span>
+														{layer.source}
+													</p>
 												</div>
-											</div>
-										</button>
+											{/if}
+										</div>
 									{/each}
 								</div>
 							{:else}
