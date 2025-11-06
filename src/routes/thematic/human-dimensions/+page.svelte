@@ -362,20 +362,56 @@
 		{
 			id: 'population-2025',
 			charts: [
-				// {
-				// 	title: 'Population Distribution',
-				// 	chart_type: 'column',
-				// 	chart_data: {
-				// 		categories: ['2015', '2020', '2025', '2030'],
-				// 		series: [
-				// 			{
-				// 				name: 'Population (millions)',
-				// 				data: [207.357006, 221.147189, 233.29593, 246.467761],
-				// 				color: '#5f87c1'
-				// 			}
-				// 		]
-				// 	}
-				// }
+				{
+					title: 'Population Pyramid for HKH Region, 2025',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				}
 			],
 			map_data: {
 				name: 'Population Trends across HKH',
@@ -1546,7 +1582,9 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
+												subtitle={chart.subtitle || ''}
 												chart_type={chart.chart_type}
+												isPyramid={chart.isPyramid || false}
 											/>
 										</div>
 									{/each}
