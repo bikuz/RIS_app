@@ -147,11 +147,14 @@
 						categories: chartData.categories,
 						reversed: false,
 						labels: {
-							step: 1,
-							style: {
-								color: '#64748b',
-								fontSize: '12px'
-							}
+							step: 1
+							// rotation: -45,
+							// style: {
+							// 	color: '#64748b',
+							// 	fontSize: '11px'
+							// },
+							// y: 20,
+							// reserveSpace: true
 						},
 						gridLineWidth: 1,
 						gridLineColor: '#e2e8f0',
@@ -165,11 +168,14 @@
 						categories: chartData.categories,
 						linkedTo: 0,
 						labels: {
-							step: 1,
-							style: {
-								color: '#64748b',
-								fontSize: '12px'
-							}
+							step: 1
+							// rotation: 45,
+							// style: {
+							// 	color: '#64748b',
+							// 	fontSize: '11px'
+							// },
+							// y: 20,
+							// reserveSpace: true
 						}
 					}
 				];
@@ -298,8 +304,10 @@
 						grouping: false
 					}
 				};
-				// Increase height for pyramid charts
-				chartConfig.chart.height = 500;
+				// Increase height for pyramid charts and add bottom margin for x-axis labels
+				// chartConfig.chart.height = 600;
+				// chartConfig.chart.marginBottom = 80;
+				// chartConfig.chart.spacingBottom = 20;
 			} else {
 				chartConfig.plotOptions = {
 					...plotOptions,
@@ -389,7 +397,11 @@
 	});
 </script>
 
-<div bind:this={chartContainer} class="h-96 min-h-[400px] w-full" style="min-height: 400px;">
+<div
+	bind:this={chartContainer}
+	class="w-full {isPyramid ? 'min-h-[600px]' : 'h-96 min-h-[400px]'}"
+	style={isPyramid ? 'min-height: 600px;' : 'min-height: 400px;'}
+>
 	{#if !Highcharts}
 		<div class="flex h-full items-center justify-center">
 			<div class="text-center">
