@@ -3333,7 +3333,7 @@
 	let legendCollapsed = $state(false);
 
 	// Track questions panel state
-	let isQuestionsPanelOpen = $state(true);
+	let isQuestionsPanelOpen = $state(false);
 	function toggleQuestionsPanel() {
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}

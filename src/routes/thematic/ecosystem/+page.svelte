@@ -374,7 +374,7 @@
 				'0': [
 					{
 						id: 'soil-carbon-content-0',
-						name: 'Soil Organic Carbon Content at 0cm depth(g/kg)',
+						name: 'At 0cm depth',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
 						layerIndex: 0,
 						mapserver: 'arcgis'
@@ -384,7 +384,7 @@
 				'30': [
 					{
 						id: 'soil-carbon-content-30',
-						name: 'Soil Organic Carbon Content at 30cm depth(g/kg)',
+						name: 'At 30cm depth',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
 						layerIndex: 1,
 						mapserver: 'arcgis'
@@ -393,7 +393,7 @@
 				'60': [
 					{
 						id: 'soil-carbon-content-60',
-						name: 'Soil Organic Carbon Content at 60cm depth(g/kg)',
+						name: 'At 60cm depth',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
 						layerIndex: 2,
 						mapserver: 'arcgis'
@@ -402,7 +402,7 @@
 				'200': [
 					{
 						id: 'soil-carbon-content-200',
-						name: 'Soil Organic Carbon Content at 200cm depth(g/kg)',
+						name: 'At 200cm depth',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
 						layerIndex: 3,
 						mapserver: 'arcgis'
