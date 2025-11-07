@@ -22,7 +22,7 @@
 						>
 							RIS
 						</div> -->
-						<div class="text-3xl font-bold text-[#036CB6]">HiRIS (HKH Regional Information System)</div>
+						<div class="text-3xl font-bold text-[#036CB6]">Hi-RIS: HKH Regional Information System</div>
 					</div>
 				</div>
 
