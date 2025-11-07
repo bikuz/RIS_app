@@ -3283,7 +3283,7 @@
 			id: 'map-indicator-7',
 			title: 'Snowfall Trend',
 			dataset_id: 'seasonal-snowfall-trend-10y',
-			info: 'The seasonal snowfall trend is the average snowfall change over a period of time. It is calculated by taking the average of the snowfall data for the period and subtracting the average of the snowfall data for the previous period. The seasonal snowfall trend is expressed in millimeters per decade.',
+			info: 'The seasonal snowfall trend Represents  the spatial pattern of snowfall trend for each climatic season: Spring (March-April-May), Summer (June-July-August), Autumn (September-October-November), and Winter (December-January-February)over the years(1995-2024).Each pixel on the map represents the rate of snowfall change per decade, derived using Sen-Median trend analysis and Mann-Kendall (MK) test.The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		}
 	];
