@@ -15,6 +15,10 @@
 	import osmMap from '$lib/assets/images/basemaps/osm-map.png';
 	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
 	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
+	import physio_1 from '$lib/assets/images/physio-1.jpg';
+
+	import physio_2 from '$lib/assets/images/physio-2.jpg';
+	import physio_3 from '$lib/assets/images/physio-3.jpg';
 	import {
 		Mountain,
 		CheckCircle,
@@ -922,7 +926,7 @@
 			<div class="mb-4 flex items-center justify-between lg:mb-6">
 				<div class="flex items-center space-x-2 lg:space-x-3">
 					<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-1.5 lg:p-2">
-						<Mountain class="h-4 w-4 text-white lg:h-5 lg:w-5" />
+						<Mountain class="h-3.5 w-3.5 text-white lg:h-5 lg:w-5" />
 					</div>
 					<h3
 						class="{layoutState === 'left-full'
@@ -940,7 +944,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
 							title="Show Map"
 						>
-							<ChevronsLeft class="h-4 w-4" />
+							<ChevronsLeft class="h-3.5 w-3.5" />
 						</button>
 						<!-- Expand Story Button - Desktop only -->
 						<button
@@ -948,7 +952,7 @@
 							class="hidden rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
 							title="Expand Story"
 						>
-							<ChevronsRight class="h-4 w-4" />
+							<ChevronsRight class="h-3.5 w-3.5" />
 						</button>
 					{:else}
 						<!-- Back to Default Button -->
@@ -957,7 +961,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
 							title="Back to Default"
 						>
-							<ChevronsLeft class="h-4 w-4" />
+							<ChevronsLeft class="h-3.5 w-3.5" />
 						</button>
 					{/if}
 				</div>
@@ -968,18 +972,14 @@
 					? 'space-y-6'
 					: 'space-y-4'} transition-all duration-300"
 			>
-				<!-- <p
+				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-700 transition-all duration-300"
 				>
-					The Hindu Kush Himalaya (HKH) region is recognized as one of the world's most biodiverse
-					mountain systems, harboring an extraordinary array of ecosystems from tropical forests to
-					alpine meadows. This vast region spans across eight countries and encompasses 35
-					biodiversity hotspots, making it a critical repository of global biological heritage. The
-					HKH supports over 25,000 plant species, including numerous endemic varieties, and provides
-					habitat for iconic wildlife such as snow leopards, Bengal tigers, one-horned rhinoceros,
-					and countless bird species.
+					The Hindu Kush Himalaya (HKH) region is one of the most complex and diverse mountain
+					systems on Earth. Its physiography reflects the interaction of tectonic uplift,
+					glaciation, and climatic processes over millions of years.
 				</p>
 
 				<p
@@ -987,38 +987,164 @@
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					However, these precious ecosystems face unprecedented threats from climate change, habitat
-					fragmentation, and human encroachment. Rising temperatures are pushing species to higher
-					altitudes, disrupting established ecological relationships and threatening the survival of
-					cold-adapted species. Deforestation and land-use changes have fragmented critical wildlife
-					corridors, isolating populations and reducing genetic diversity.
+					Geologically, the HKH is the result of the ongoing collision between the Indian and
+					Eurasian plates, which began around 50 million years ago. The region remains tectonically
+					active, experiencing frequent earthquakes, crustal uplift, and slope instability. The
+					interplay between tectonics and climate continues to shape its dramatic landscapes.
 				</p>
-
+				<!-- First Image - After first paragraph -->
+				{#if layoutState === 'left-full'}
+					<div class="flex justify-center">
+						<div
+							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+						>
+							<img src={physio_1} alt="Himalayan glacial retreat" class="h-80 object-contain" />
+							<div class="p-4">
+								<p class="text-center text-sm leading-relaxed text-slate-700">
+									<span
+										>Majestic
+										<span class="font-semibold text-slate-800"> landscape </span> of the Hindu Kush Himalayan
+										(HKH) region
+									</span>
+								</p>
+							</div>
+						</div>
+					</div>
+				{:else}
+					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+						<img
+							src={physio_1}
+							alt="Himalayan glacial retreat"
+							class="h-50 w-full object-contain"
+						/>
+						<div class="p-2">
+							<p class="text-center text-xs text-slate-600">
+								<span
+									>Majestic <span class="font-semibold text-slate-800"> landscape </span> of the Hindu
+									Kush Himalayan (HKH) region
+								</span>
+							</p>
+						</div>
+					</div>
+				{/if}
 				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					The region's forests, which act as crucial carbon sinks and regulate water cycles, are
-					under severe pressure from agricultural expansion, infrastructure development, and
-					unsustainable harvesting practices. Wetlands and grasslands, equally important for
-					biodiversity and ecosystem services, are being converted for agriculture and urban
-					development at alarming rates.
+					Physiographically, the HKH can be divided into several east–west trending zones, each with
+					distinct geomorphic and geological characteristics. The Outer Foothills, also known as the
+					Siwalik or Sub-Himalaya, rise from about 300 to 1,500 meters. These hills are composed
+					mainly of unconsolidated sediments such as sandstone, conglomerate, and clay, and they
+					represent the youngest part of the Himalayan system. The area is characterized by steep
+					slopes, narrow valleys, and frequent landslides. North of the foothills lies the Lesser
+					Himalaya, which rises between 1,500 and 3,000 meters. This zone is made up of metamorphic
+					and sedimentary rocks like phyllite, schist, and limestone, and it is marked by rugged
+					terrain with deep river gorges and ridges. Well-known hill regions such as the Mahabharat
+					Range, Garhwal, and Kumaon fall in this category. The Greater Himalaya, located further
+					north, is the most prominent physiographic division, with elevations ranging from 3,000 to
+					over 6,000 meters. It contains the highest peaks in the world—such as Everest,
+					Kanchenjunga, and Annapurna—and vast glaciers that serve as the primary water sources for
+					many Asian rivers. The zone is made up of high-grade metamorphic rocks and granites, and
+					is often referred to as the “water tower of Asia.” Beyond the Greater Himalaya lies the
+					Trans-Himalaya, which includes ranges such as the Karakoram, Ladakh, and Kailash. With
+					elevations ranging between 4,000 and 5,500 meters, this region consists of older mountain
+					ranges and broad plateau surfaces extending into the Tibetan Plateau. The landscape is
+					arid to semi-arid, with sparse vegetation and cold desert conditions.
 				</p>
-
+				<!-- Second Image - After first paragraph -->
+				{#if layoutState === 'left-full'}
+					<div class="flex justify-center">
+						<div
+							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+						>
+							<img src={physio_3} alt="Himalayan glacial retreat" class="h-80 object-contain" />
+							<div class="p-4">
+								<p class="text-center text-sm leading-relaxed text-slate-700">
+									<span>
+										<span class="font-semibold text-slate-800">High-altitude mountains </span> of the
+										Hindu Kush Himalayan (HKH) region
+									</span>
+								</p>
+							</div>
+						</div>
+					</div>
+				{:else}
+					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+						<img
+							src={physio_3}
+							alt="Himalayan glacial retreat"
+							class="h-50 w-full object-contain"
+						/>
+						<div class="p-2">
+							<p class="text-center text-xs text-slate-600">
+								<span>
+									<span class="font-semibold text-slate-800">High-altitude mountains </span> of the Hindu
+									Kush Himalayan (HKH) region
+								</span>
+							</p>
+						</div>
+					</div>
+				{/if}
 				<p
 					class="text-justify {layoutState === 'left-full'
 						? 'text-base leading-loose'
 						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
 				>
-					Conservation efforts in the HKH require urgent, coordinated action across borders.
-					Establishing and maintaining protected areas, creating wildlife corridors, and
-					implementing sustainable land management practices are essential. Community-based
-					conservation approaches that engage local populations as stewards of biodiversity have
-					shown promising results. Additionally, scientific research and monitoring programs are
-					crucial for understanding ecosystem dynamics and developing effective conservation
-					strategies that can adapt to changing environmental conditions.
-				</p> -->
+					The HKH gives rise to ten major river systems, including the Indus, Ganges, and
+					Brahmaputra in South Asia, and the Yangtze, Mekong, Salween, and Yellow rivers in East and
+					Southeast Asia. These rivers have carved deep gorges and valleys, shaping the rugged
+					topography of the region. The area also hosts over 54,000 glaciers, making it the largest
+					repository of ice outside the polar regions.
+				</p>
+				<p
+					class="text-justify {layoutState === 'left-full'
+						? 'text-base leading-loose'
+						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+				>
+					Physiographic variation across the HKH is substantial. The western part, dominated by the
+					Hindu Kush and Karakoram ranges, is arid and glaciated, while the central Himalaya of
+					Nepal presents sharp altitudinal gradients and deep valleys. In contrast, the eastern
+					Himalaya and Hengduan ranges are wetter, with dense forests and heavy rainfall.
+					Altitudinal differences also create distinct ecological zones—from tropical foothills
+					through temperate mid-hills to alpine meadows and nival zones—supporting extraordinary
+					biodiversity. These gradients make the HKH a global biodiversity hotspot and a critical
+					life-support system for much of Asia.
+				</p>
+				<!-- Third Image - After first paragraph -->
+				{#if layoutState === 'left-full'}
+					<div class="flex justify-center">
+						<div
+							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
+						>
+							<img src={physio_2} alt="Himalayan glacial retreat" class="h-80 object-contain" />
+							<div class="p-4">
+								<p class="text-center text-sm leading-relaxed text-slate-700">
+									<span>
+										Mountain valley settlements within the
+										<span class="font-semibold text-slate-800">mid-hills </span> of the of the HKH region.
+									</span>
+								</p>
+							</div>
+						</div>
+					</div>
+				{:else}
+					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
+						<img
+							src={physio_2}
+							alt="Himalayan glacial retreat"
+							class="h-50 w-full object-contain"
+						/>
+						<div class="p-2">
+							<p class="text-center text-sm leading-relaxed text-slate-700">
+								<span>
+									Mountain valley settlements within the
+									<span class="font-semibold text-slate-800">mid-hills </span> of the of the HKH region.
+								</span>
+							</p>
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
@@ -1061,7 +1187,7 @@
 								}}
 								title="Reset to Home View"
 							>
-								<House class="h-4 w-4 text-slate-600" />
+								<House class="h-3.5 w-3.5 text-slate-600" />
 							</button>
 
 							<!-- Basemap Switcher Button -->
@@ -1071,7 +1197,7 @@
 								title="Change Basemap"
 								aria-label="Change Basemap"
 							>
-								<MapIcon class="h-4 w-4 text-slate-600" />
+								<MapIcon class="h-3.5 w-3.5 text-slate-600" />
 							</button>
 
 							<!-- Basemap Switcher Panel -->
@@ -1112,9 +1238,9 @@
 								onclick={() => (layersPanelOpen = !layersPanelOpen)}
 							>
 								{#if layersPanelOpen}
-									<ChevronsRight class="h-4 w-4" />
+									<ChevronsRight class="h-3.5 w-3.5" />
 								{:else}
-									<Layers class="h-4 w-4" />
+									<Layers class="h-3.5 w-3.5" />
 								{/if}
 							</button>
 
@@ -1157,7 +1283,7 @@
 										onclick={() => (legendCollapsed = !legendCollapsed)}
 									>
 										<div class="flex items-center space-x-2">
-											<List class="h-4 w-4 text-amber-600" />
+											<List class="h-3.5 w-3.5 text-amber-600" />
 											{#if !legendCollapsed}
 												<span class="font-medium text-slate-700">Legend</span>
 											{/if}
@@ -1287,9 +1413,9 @@
 													}}
 												>
 													{#if expandedLayer === layer.title}
-														<ChevronUp class="h-4 w-4 text-slate-600" />
+														<ChevronUp class="h-3.5 w-3.5 text-slate-600" />
 													{:else}
-														<ChevronDown class="h-4 w-4 text-slate-600" />
+														<ChevronDown class="h-3.5 w-3.5 text-slate-600" />
 													{/if}
 												</span>
 											</button>
@@ -1338,7 +1464,7 @@
 			>
 				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
 					<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-2">
-						<Info class="h-4 w-4 text-white" />
+						<Info class="h-3.5 w-3.5 text-white" />
 					</div>
 					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
 				</div>
@@ -1355,10 +1481,10 @@
 							<div class="flex items-start space-x-2">
 								<div class="mt-1 flex-shrink-0">
 									{#if selectedQuestionId === questionItem.id}
-										<CheckCircle class="h-4 w-4 text-green-600" />
+										<CheckCircle class="h-3.5 w-3.5 text-green-600" />
 									{:else}
 										<div
-											class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-stone-400"
+											class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 group-hover:border-stone-400"
 										></div>
 									{/if}
 								</div>

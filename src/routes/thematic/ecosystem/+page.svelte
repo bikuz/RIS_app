@@ -365,7 +365,7 @@
 
 		{
 			id: 'soil-carbon-content',
-			title: 'Soil Carbon Content',
+			title: 'Soil Organic Carbon Content',
 			control_type: 'threshold-control',
 			control_options: ['0', '30', '60', '200'],
 			default_option: '30',
@@ -461,7 +461,7 @@
 		},
 		{
 			id: 'map-indicator-5',
-			title: 'Soil Carbon Content',
+			title: 'Soil Organic Carbon Content',
 			dataset_id: 'soil-carbon-content',
 			info: 'The map represents the spaial distribution of soil organic carbon content across HKH at 4 different depths(0cm, 30cm, 60cm and 200cm).The data is sourced from the OpenLandMap global soil database.Values are expressed in g/kg, indicating the mass of soil organic carbon present per kilogram of soil at spatial resolution of 250m.',
 			source: 'OpenLandMap Soil Organic Carbon Content (https://stac.openlandmap.org/)'
@@ -1053,7 +1053,7 @@
 			<div class="mb-4 flex items-center justify-between lg:mb-6">
 				<div class="flex items-center space-x-2 lg:space-x-3">
 					<div class="rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 p-1.5 lg:p-2">
-						<Leaf class="h-4 w-4 text-white lg:h-5 lg:w-5" />
+						<Leaf class="h-3.5 w-3.5 text-white lg:h-5 lg:w-5" />
 					</div>
 					<h3
 						class="{layoutState === 'left-full'
@@ -1071,7 +1071,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
 							title="Show Map"
 						>
-							<ChevronsLeft class="h-4 w-4" />
+							<ChevronsLeft class="h-3.5 w-3.5" />
 						</button>
 						<!-- Expand Story Button - Desktop only -->
 						<button
@@ -1079,7 +1079,7 @@
 							class="hidden rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
 							title="Expand Story"
 						>
-							<ChevronsRight class="h-4 w-4" />
+							<ChevronsRight class="h-3.5 w-3.5" />
 						</button>
 					{:else}
 						<!-- Back to Default Button -->
@@ -1088,7 +1088,7 @@
 							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
 							title="Back to Default"
 						>
-							<ChevronsLeft class="h-4 w-4" />
+							<ChevronsLeft class="h-3.5 w-3.5" />
 						</button>
 					{/if}
 				</div>
@@ -1315,7 +1315,7 @@
 								}}
 								title="Reset to Home View"
 							>
-								<House class="h-4 w-4 text-slate-600" />
+								<House class="h-3.5 w-3.5 text-slate-600" />
 							</button>
 
 							<!-- Basemap Switcher Button -->
@@ -1325,7 +1325,7 @@
 								title="Change Basemap"
 								aria-label="Change Basemap"
 							>
-								<MapIcon class="h-4 w-4 text-slate-600" />
+								<MapIcon class="h-3.5 w-3.5 text-slate-600" />
 							</button>
 
 							<!-- Basemap Switcher Panel -->
@@ -1366,9 +1366,9 @@
 								onclick={() => (layersPanelOpen = !layersPanelOpen)}
 							>
 								{#if layersPanelOpen}
-									<ChevronsRight class="h-4 w-4" />
+									<ChevronsRight class="h-3.5 w-3.5" />
 								{:else}
-									<Layers class="h-4 w-4" />
+									<Layers class="h-3.5 w-3.5" />
 								{/if}
 							</button>
 
@@ -1456,7 +1456,7 @@
 										onclick={() => (legendCollapsed = !legendCollapsed)}
 									>
 										<div class="flex items-center space-x-2">
-											<List class="h-4 w-4 text-green-600" />
+											<List class="h-3.5 w-3.5 text-green-600" />
 											{#if !legendCollapsed}
 												<span class="font-medium text-slate-700">Legend</span>
 											{/if}
@@ -1588,9 +1588,9 @@
 													}}
 												>
 													{#if expandedLayer === layer.title}
-														<ChevronUp class="h-4 w-4 text-slate-600" />
+														<ChevronUp class="h-3.5 w-3.5 text-slate-600" />
 													{:else}
-														<ChevronDown class="h-4 w-4 text-slate-600" />
+														<ChevronDown class="h-3.5 w-3.5 text-slate-600" />
 													{/if}
 												</span>
 											</button>
@@ -1639,7 +1639,7 @@
 			>
 				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
 					<div class="rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 p-2">
-						<Info class="h-4 w-4 text-white" />
+						<Info class="h-3.5 w-3.5 text-white" />
 					</div>
 					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
 				</div>
@@ -1656,10 +1656,10 @@
 							<div class="flex items-start space-x-2">
 								<div class="mt-1 flex-shrink-0">
 									{#if selectedQuestionId === questionItem.id}
-										<CheckCircle class="h-4 w-4 text-green-600" />
+										<CheckCircle class="h-3.5 w-3.5 text-green-600" />
 									{:else}
 										<div
-											class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-green-400"
+											class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 group-hover:border-green-400"
 										></div>
 									{/if}
 								</div>

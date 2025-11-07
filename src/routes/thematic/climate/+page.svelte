@@ -4411,7 +4411,7 @@
 								}}
 								title="Reset to Home View"
 							>
-								<House class="h-4 w-4 text-slate-800" />
+								<House class="h-3.5 w-3.5 text-slate-800" />
 							</button>
 
 							<!-- Basemap Switcher Button -->
@@ -4421,7 +4421,7 @@
 								title="Change Basemap"
 								aria-label="Change Basemap"
 							>
-								<MapIcon class="h-4 w-4 text-slate-800" />
+								<MapIcon class="h-3.5 w-3.5 text-slate-800" />
 							</button>
 
 							<!-- Basemap Switcher Panel -->
@@ -4462,9 +4462,9 @@
 								onclick={() => (layersPanelOpen = !layersPanelOpen)}
 							>
 								{#if layersPanelOpen}
-									<ChevronsRight class="h-4 w-4" />
+									<ChevronsRight class="h-3.5 w-3.5" />
 								{:else}
-									<Layers class="h-4 w-4" />
+									<Layers class="h-3.5 w-3.5" />
 								{/if}
 							</button>
 
@@ -4507,7 +4507,7 @@
 											: 'z-10'}"
 										title="Show Time Controls"
 									>
-										<Calendar class="h-4 w-4" />
+										<Calendar class="h-3.5 w-3.5" />
 										<span>Time</span>
 									</button>
 								{:else}
@@ -4519,7 +4519,7 @@
 									>
 										<!-- Time Label -->
 										<!-- <div class="flex items-center space-x-2">
-											<Calendar class="h-4 w-4 text-blue-600" />
+											<Calendar class="h-3.5 w-3.5 text-blue-600" />
 											<span class="text-sm font-medium text-slate-700">Time</span>
 										</div> -->
 
@@ -4593,7 +4593,7 @@
 								>
 									<!-- Analysis Label -->
 									<!-- <div class="flex items-center space-x-2">
-										<Layers class="h-4 w-4 text-blue-600" />
+										<Layers class="h-3.5 w-3.5 text-blue-600" />
 										<span class="text-sm font-medium text-slate-700">Trend</span>
 									</div> -->
 
@@ -4606,7 +4606,7 @@
 											type="radio"
 											bind:group={trendAnalysisMode}
 											value="overall"
-											class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+											class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
 										/>
 										<span class="text-sm font-medium text-slate-700">Overall</span>
 									</label>
@@ -4617,7 +4617,7 @@
 											type="radio"
 											bind:group={trendAnalysisMode}
 											value="significant"
-											class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+											class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
 										/>
 										<span class="text-sm font-medium text-slate-700">Significant</span>
 									</label>
@@ -4799,13 +4799,13 @@
 										onclick={() => (legendCollapsed = !legendCollapsed)}
 									>
 										<div class="flex items-center space-x-2">
-											<List class="h-4 w-4 text-blue-600" />
+											<List class="h-3.5 w-3.5 text-blue-600" />
 											{#if !legendCollapsed}
 												<span class="font-medium text-slate-700">Legend</span>
 											{/if}
 										</div>
 										<!-- <svg
-											class="h-4 w-4 transform text-slate-600 transition-transform duration-300 {legendCollapsed
+											class="h-3.5 w-3.5 transform text-slate-600 transition-transform duration-300 {legendCollapsed
 												? 'rotate-180'
 												: ''}"
 											fill="none"
@@ -4948,9 +4948,9 @@
 													}}
 												>
 													{#if expandedLayer === layer.title}
-														<ChevronUp class="h-4 w-4 text-slate-600" />
+														<ChevronUp class="h-3.5 w-3.5 text-slate-600" />
 													{:else}
-														<ChevronDown class="h-4 w-4 text-slate-600" />
+														<ChevronDown class="h-3.5 w-3.5 text-slate-600" />
 													{/if}
 												</span>
 											</button>
@@ -4999,7 +4999,7 @@
 			>
 				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
 					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
-						<Info class="h-4 w-4 text-white" />
+						<Info class="h-3.5 w-3.5 text-white" />
 					</div>
 					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
 				</div>
@@ -5016,10 +5016,10 @@
 							<div class="flex items-start space-x-2">
 								<div class="mt-1 flex-shrink-0">
 									{#if selectedQuestionId === questionItem.id}
-										<CheckCircle class="h-4 w-4 text-blue-600" />
+										<CheckCircle class="h-3.5 w-3.5 text-blue-600" />
 									{:else}
 										<div
-											class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
+											class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
 										></div>
 									{/if}
 								</div>
