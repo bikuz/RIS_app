@@ -3102,7 +3102,7 @@
 			control_type: 'nested_radio', // New control type for nested selections
 			control_options: {
 				trend_analysis: ['overall', 'significant'],
-				seasons: ['spring', 'summer', 'autumn', 'winter']
+				seasons: ['annual', 'spring', 'summer', 'autumn', 'winter']
 			},
 			default_option: {
 				trend_analysis: 'overall',
@@ -3297,13 +3297,14 @@
 	let expandedLayer = $state<string | null>(null);
 
 	// Track radio button selection for trend analysis
-	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
+	// Trend analysis mode - dynamic based on dataset control_options
+	let trendAnalysisMode = $state<string>('overall');
 
 	// Track temperature rise threshold selection
 	let temperatureRiseThreshold = $state<'0.5' | '1' | '1.5' | '2' | '2.5'>('1.5');
 
-	// Track seasonal selection for nested radio controls
-	let selectedSeason = $state<'spring' | 'summer' | 'autumn' | 'winter'>('spring');
+	// Track seasonal selection for nested radio controls - dynamic based on dataset control_options
+	let selectedSeason = $state<string>('spring');
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
@@ -3783,7 +3784,7 @@
 				let layersToFetch: any[] = [];
 
 				if (currentDataset.control_type === 'radio') {
-					const selectedLayers = currentMapLayers[trendAnalysisMode];
+					const selectedLayers = (currentMapLayers as any)[trendAnalysisMode];
 					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
 				} else if (currentDataset.control_type === 'threshold-control') {
 					const selectedLayers = currentMapLayers[temperatureRiseThreshold];
@@ -3904,7 +3905,7 @@
 		if (currentDataset.control_type === 'radio') {
 			// For radio controls, show layer based on selected mode
 			console.log('Radio control - trendAnalysisMode:', trendAnalysisMode);
-			const selectedLayers = currentMapLayers[trendAnalysisMode];
+			const selectedLayers = (currentMapLayers as any)[trendAnalysisMode];
 			console.log('Selected layers for', trendAnalysisMode, ':', selectedLayers);
 			if (selectedLayers) {
 				if (Array.isArray(selectedLayers)) {
@@ -3970,18 +3971,41 @@
 
 			// Set default control values based on dataset
 			if (dataset?.control_type === 'radio' && dataset.default_option) {
-				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
+				trendAnalysisMode = dataset.default_option as string;
 			} else if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
 				temperatureRiseThreshold = dataset.default_option as '0.5' | '1' | '1.5' | '2' | '2.5';
-			} else if (dataset?.control_type === 'nested_radio' && dataset.default_option) {
-				trendAnalysisMode = (dataset.default_option as any).trend_analysis as
-					| 'overall'
-					| 'significant';
-				selectedSeason = (dataset.default_option as any).season as
-					| 'spring'
-					| 'summer'
-					| 'autumn'
-					| 'winter';
+			} else if (dataset?.control_type === 'nested_radio') {
+				// Use default_option if provided, otherwise use first available option from control_options
+				const controlOpts = dataset.control_options as any;
+				if (controlOpts && typeof controlOpts === 'object' && 'trend_analysis' in controlOpts) {
+					if (dataset.default_option) {
+						const defaultOpt = dataset.default_option as any;
+						if (defaultOpt.trend_analysis) {
+							trendAnalysisMode = defaultOpt.trend_analysis;
+						} else if (
+							Array.isArray(controlOpts.trend_analysis) &&
+							controlOpts.trend_analysis.length > 0
+						) {
+							trendAnalysisMode = controlOpts.trend_analysis[0];
+						}
+						if (defaultOpt.season) {
+							selectedSeason = defaultOpt.season;
+						} else if (Array.isArray(controlOpts.seasons) && controlOpts.seasons.length > 0) {
+							selectedSeason = controlOpts.seasons[0];
+						}
+					} else {
+						// Use first available option from control_options
+						if (
+							Array.isArray(controlOpts.trend_analysis) &&
+							controlOpts.trend_analysis.length > 0
+						) {
+							trendAnalysisMode = controlOpts.trend_analysis[0];
+						}
+						if (Array.isArray(controlOpts.seasons) && controlOpts.seasons.length > 0) {
+							selectedSeason = controlOpts.seasons[0];
+						}
+					}
+				}
 			} else if (dataset?.control_type === 'time_slider' && dataset.time_dimension?.default_year) {
 				// Set time index to match default year - this will be handled by the effect watcher
 				console.log(
@@ -4035,18 +4059,41 @@
 
 			// Set default control values based on dataset
 			if (dataset?.control_type === 'radio' && dataset.default_option) {
-				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
+				trendAnalysisMode = dataset.default_option as string;
 			} else if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
 				temperatureRiseThreshold = dataset.default_option as '0.5' | '1.5' | '2.5';
-			} else if (dataset?.control_type === 'nested_radio' && dataset.default_option) {
-				trendAnalysisMode = (dataset.default_option as any).trend_analysis as
-					| 'overall'
-					| 'significant';
-				selectedSeason = (dataset.default_option as any).season as
-					| 'spring'
-					| 'summer'
-					| 'autumn'
-					| 'winter';
+			} else if (dataset?.control_type === 'nested_radio') {
+				// Use default_option if provided, otherwise use first available option from control_options
+				const controlOpts = dataset.control_options as any;
+				if (controlOpts && typeof controlOpts === 'object' && 'trend_analysis' in controlOpts) {
+					if (dataset.default_option) {
+						const defaultOpt = dataset.default_option as any;
+						if (defaultOpt.trend_analysis) {
+							trendAnalysisMode = defaultOpt.trend_analysis;
+						} else if (
+							Array.isArray(controlOpts.trend_analysis) &&
+							controlOpts.trend_analysis.length > 0
+						) {
+							trendAnalysisMode = controlOpts.trend_analysis[0];
+						}
+						if (defaultOpt.season) {
+							selectedSeason = defaultOpt.season;
+						} else if (Array.isArray(controlOpts.seasons) && controlOpts.seasons.length > 0) {
+							selectedSeason = controlOpts.seasons[0];
+						}
+					} else {
+						// Use first available option from control_options
+						if (
+							Array.isArray(controlOpts.trend_analysis) &&
+							controlOpts.trend_analysis.length > 0
+						) {
+							trendAnalysisMode = controlOpts.trend_analysis[0];
+						}
+						if (Array.isArray(controlOpts.seasons) && controlOpts.seasons.length > 0) {
+							selectedSeason = controlOpts.seasons[0];
+						}
+					}
+				}
 			} else if (dataset?.control_type === 'time_slider' && dataset.time_dimension?.default_year) {
 				// Set time index to match default year - this will be handled by the effect watcher
 				console.log(
@@ -4584,27 +4631,20 @@
 								>
 									<!-- Trend Analysis Section -->
 									<div class="flex items-center space-x-2">
-										<!-- Overall Option -->
-										<label class="flex cursor-pointer items-center space-x-1">
-											<input
-												type="radio"
-												bind:group={trendAnalysisMode}
-												value="overall"
-												class="h-3 w-3 border-gray-300 text-blue-600 focus:ring-blue-500"
-											/>
-											<span class="text-xs font-medium text-slate-700">Overall</span>
-										</label>
-
-										<!-- Significant Option -->
-										<label class="flex cursor-pointer items-center space-x-1">
-											<input
-												type="radio"
-												bind:group={trendAnalysisMode}
-												value="significant"
-												class="h-3 w-3 border-gray-300 text-blue-600 focus:ring-blue-500"
-											/>
-											<span class="text-xs font-medium text-slate-700">Significant</span>
-										</label>
+										{#if currentDataset.control_options && typeof currentDataset.control_options === 'object' && 'trend_analysis' in currentDataset.control_options}
+											{#each (currentDataset.control_options as any).trend_analysis as option}
+												<label class="flex cursor-pointer items-center space-x-1">
+													<input
+														type="radio"
+														bind:group={trendAnalysisMode}
+														value={option}
+														class="h-3 w-3 border-gray-300 text-blue-600 focus:ring-blue-500"
+													/>
+													<span class="text-xs font-medium text-slate-700 capitalize">{option}</span
+													>
+												</label>
+											{/each}
+										{/if}
 									</div>
 
 									<!-- Separator -->
@@ -4613,79 +4653,28 @@
 									<!-- Seasonal Selection Section -->
 									<div class="flex items-center space-x-2">
 										<!-- Season Options as Toggle Buttons -->
-										<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-0.5">
-											<!-- Spring Option -->
-											<label class="relative cursor-pointer">
-												<input
-													type="radio"
-													bind:group={selectedSeason}
-													value="spring"
-													class="peer sr-only"
-												/>
-												<div
-													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
-													'spring'
-														? 'text-white'
-														: 'text-slate-600'}"
-												>
-													Spring
-												</div>
-											</label>
-
-											<!-- Summer Option -->
-											<label class="relative cursor-pointer">
-												<input
-													type="radio"
-													bind:group={selectedSeason}
-													value="summer"
-													class="peer sr-only"
-												/>
-												<div
-													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
-													'summer'
-														? 'text-white'
-														: 'text-slate-600'}"
-												>
-													Summer
-												</div>
-											</label>
-
-											<!-- Autumn Option -->
-											<label class="relative cursor-pointer">
-												<input
-													type="radio"
-													bind:group={selectedSeason}
-													value="autumn"
-													class="peer sr-only"
-												/>
-												<div
-													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
-													'autumn'
-														? 'text-white'
-														: 'text-slate-600'}"
-												>
-													Autumn
-												</div>
-											</label>
-
-											<!-- Winter Option -->
-											<label class="relative cursor-pointer">
-												<input
-													type="radio"
-													bind:group={selectedSeason}
-													value="winter"
-													class="peer sr-only"
-												/>
-												<div
-													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
-													'winter'
-														? 'text-white'
-														: 'text-slate-600'}"
-												>
-													Winter
-												</div>
-											</label>
-										</div>
+										{#if currentDataset.control_options && typeof currentDataset.control_options === 'object' && 'seasons' in currentDataset.control_options}
+											<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-0.5">
+												{#each (currentDataset.control_options as any).seasons as seasonOption}
+													<label class="relative cursor-pointer">
+														<input
+															type="radio"
+															bind:group={selectedSeason}
+															value={seasonOption}
+															class="peer sr-only"
+														/>
+														<div
+															class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+															seasonOption
+																? 'text-white'
+																: 'text-slate-600'}"
+														>
+															{seasonOption.charAt(0).toUpperCase() + seasonOption.slice(1)}
+														</div>
+													</label>
+												{/each}
+											</div>
+										{/if}
 									</div>
 								</div>
 							{:else if currentDataset && currentDataset.control_type === 'threshold-control'}
