@@ -3,7 +3,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-	base: process.env.NODE_ENV === 'production' ? '/ris' : '',
+	base: process.env.NODE_ENV === 'production' ? '/ris/' : '',
 	plugins: [tailwindcss(), sveltekit()],
 	// optimizeDeps: {
 	// 	exclude: ['@arcgis/core']

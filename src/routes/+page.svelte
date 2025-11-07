@@ -21,7 +21,7 @@
 </svelte:head>
  
 	<!-- <Hero /> -->
-	<Banner />
+	<!-- <Banner /> -->
 	
 	<!-- Added detailed RIS introduction section -->
 	 <Intro/>

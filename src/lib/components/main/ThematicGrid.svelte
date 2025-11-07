@@ -8,7 +8,7 @@
 	} from '$lib/data/themeData';
 </script>
 
-<section class="bg-white py-16">
+<section class="bg-white py-10">
 	<div class=" px-4 sm:px-6 lg:px-8">
 		<div class="mb-16 text-center">
 			<h2 class="mb-4 text-4xl font-bold text-gray-900">Thematic Categories</h2>
