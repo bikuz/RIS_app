@@ -3093,6 +3093,119 @@
 					mapserver: 'arcgis'
 				}
 			}
+		},
+		{
+			id: 'seasonal-snowfall-trend-10y',
+			title: 'Seasonal Snowfall Trend Analysis of 10 Years',
+			description:
+				'Seasonal snowfall trend analysis with overall vs significant trend options across different seasons',
+			control_type: 'nested_radio', // New control type for nested selections
+			control_options: {
+				trend_analysis: ['overall', 'significant'],
+				seasons: ['spring', 'summer', 'autumn', 'winter']
+			},
+			default_option: {
+				trend_analysis: 'overall',
+				season: 'spring'
+			},
+			charts: [],
+			map_layers: {
+				// Nested structure: trend_analysis -> season -> layer_config
+				overall: {
+					annual: [
+						{
+							id: 'seasonal-overall-annual',
+							name: 'Annual Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 0,
+							mapserver: 'arcgis'
+						}
+					],
+					spring: [
+						{
+							id: 'seasonal-overall-spring',
+							name: 'Spring Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 1,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'seasonal-overall-summer',
+							name: 'Summer Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 3,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'seasonal-overall-autumn',
+							name: 'Autumn Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 2,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'seasonal-overall-winter',
+							name: 'Winter Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 4,
+							mapserver: 'arcgis'
+						}
+					]
+				},
+				significant: {
+					annual: [
+						{
+							id: 'seasonal-significant-annual',
+							name: 'Annual Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 5,
+							mapserver: 'arcgis'
+						}
+					],
+					spring: [
+						{
+							id: 'seasonal-significant-spring',
+							name: 'Spring Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 6,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'seasonal-significant-summer',
+							name: 'Summer Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 7,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'seasonal-significant-autumn',
+							name: 'Autumn Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 8,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'seasonal-significant-winter',
+							name: 'Winter Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 9,
+							mapserver: 'arcgis'
+						}
+					]
+				}
+			}
 		}
 	];
 
@@ -3164,6 +3277,13 @@
 			title: 'Annual Precipitation Anomaly',
 			dataset_id: 'annual-ppt-anamoly-series',
 			info: 'The annual precipitation anomaly is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation anomaly is expressed in millimeters per decade.',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
+		},
+		{
+			id: 'map-indicator-7',
+			title: 'Snowfall Trend',
+			dataset_id: 'seasonal-snowfall-trend-10y',
+			info: 'The seasonal snowfall trend is the average snowfall change over a period of time. It is calculated by taking the average of the snowfall data for the period and subtracting the average of the snowfall data for the previous period. The seasonal snowfall trend is expressed in millimeters per decade.',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		}
 	];
