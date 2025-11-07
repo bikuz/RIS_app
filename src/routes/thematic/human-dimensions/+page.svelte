@@ -363,7 +363,7 @@
 			id: 'population-2025',
 			charts: [
 				{
-					title: 'Population Pyramid for HKH Region, 2025',
+					title: 'Population Distribution by Age aand Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -444,7 +444,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Pyramid for HKH Region, 2025',
+					title: 'Population Distribution by Age aand Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -520,7 +520,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Pyramid for HKH Region, 2025',
+					title: 'Population Distribution by Age aand Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -596,7 +596,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Pyramid for HKH Region, 2025',
+					title: 'Population Distribution by Age aand Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -672,7 +672,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Pyramid for HKH Region, 2025',
+					title: 'Population Distribution by Age aand Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -748,7 +748,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Pyramid for HKH Region, 2025',
+					title: 'Population Distribution by Age aand Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -824,7 +824,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Pyramid for HKH Region, 2025',
+					title: 'Population Distribution by Age aand Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -887,7 +887,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Pyramid for HKH Region, 2025',
+					title: 'Population Distribution by Age aand Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -964,7 +964,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Pyramid for HKH Region, 2025',
+					title: 'Population Distribution by Age aand Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -1026,7 +1026,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Pyramid for HKH Region, 2025',
+					title: 'Population Distribution by Age aand Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,

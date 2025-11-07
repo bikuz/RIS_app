@@ -400,7 +400,7 @@
 <div
 	bind:this={chartContainer}
 	class="w-full {isPyramid ? 'min-h-[600px]' : 'h-96 min-h-[400px]'}"
-	style={isPyramid ? 'min-height: 600px;' : 'min-height: 400px;'}
+	style={isPyramid ? 'min-height: 450px;' : 'min-height: 400px;'}
 >
 	{#if !Highcharts}
 		<div class="flex h-full items-center justify-center">

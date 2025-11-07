@@ -3128,7 +3128,7 @@
 			id: 'map-indicator-1',
 			title: 'Annual Temperature Trend',
 			dataset_id: 'temp-trend-10y',
-			info: 'Annual Mean Temperature Trend represents  the spatial pattern of the annual mean temperature trend over the past 30 years (1995-2024). Each pixel represents the rate of temperature change per decade.Method:Sen-Median trend analysis and Mann-Kendall (MK) test.Output:Overall represent trend for every pixel across HKH region.Significant represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
+			info: 'The Annual Mean Temperature Trend shows the spatial pattern of temperature change across the HKH region from 1995 to 2024. Each pixel indicates the rate of change in annual mean temperature per decade, derived using Sen-Median trend analysis and tested for significance with the Mann-Kendall (MK) test. The “Overall” layer shows trends for all pixels, while the “Significant” layer includes only those significant at the 95% confidence level (p < 0.05).',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
