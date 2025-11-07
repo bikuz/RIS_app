@@ -398,17 +398,17 @@
 						layerIndex: 2,
 						mapserver: 'arcgis'
 					}
+				],
+				'200': [
+					{
+						id: 'soil-carbon-content-200',
+						name: 'Soil Organic Carbon Content at 200cm depth(g/kg)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
+						layerIndex: 3,
+						mapserver: 'arcgis'
+					}
 				]
-			},
-			'200': [
-				{
-					id: 'soil-carbon-content-200',
-					name: 'Soil Organic Carbon Content at 200cm depth(g/kg)',
-					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
-					layerIndex: 3,
-					mapserver: 'arcgis'
-				}
-			]
+			}
 		}
 	];
 
@@ -463,8 +463,8 @@
 			id: 'map-indicator-5',
 			title: 'Soil Carbon Content',
 			dataset_id: 'soil-carbon-content',
-			info: 'Soil Carbon Content',
-			source: ''
+			info: 'The map represents the spaial distribution of soil organic carbon content across HKH at 4 different depths(0cm, 30cm, 60cm and 200cm).The data is sourced from the OpenLandMap global soil database.Values are expressed in g/kg, indicating the mass of soil organic carbon present per kilogram of soil at spatial resolution of 250m.',
+			source: 'OpenLandMap Soil Organic Carbon Content (https://stac.openlandmap.org/)'
 		}
 	];
 
@@ -476,6 +476,9 @@
 
 	// Track expanded layer for accordion - default closed
 	let expandedLayer = $state<string | null>(null);
+
+	// Control state variables
+	let soilCarbonDepth = $state<'0' | '30' | '60' | '200'>('30');
 
 	// Get current dataset based on selected question or information layer
 	let currentDataset = $derived.by(() => {
@@ -504,6 +507,9 @@
 	// Extract current data from dataset
 	let currentCharts = $derived(currentDataset?.charts || []);
 
+	// Get current map layers based on dataset
+	let currentMapLayers = $derived(currentDataset?.map_layers || null);
+
 	// Debounce timer for legend fetching
 	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -531,6 +537,9 @@
 			if (currentDataset.control_type === 'none') {
 				const layers = currentDataset.map_layers.default;
 				layersToFetch = Array.isArray(layers) ? layers : [layers];
+			} else if (currentDataset.control_type === 'threshold-control') {
+				const selectedLayers = currentMapLayers && (currentMapLayers as any)[soilCarbonDepth];
+				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
 			}
 
 			// Fetch legend for each layer
@@ -775,6 +784,17 @@
 		// Clear question selection when selecting an information layer
 		selectedQuestionId = '';
 
+		// Find the dataset and set default control values
+		const selectedLayer = information_layers.find((layer) => layer.title === layerId);
+		if (selectedLayer?.dataset_id) {
+			const dataset = ecosystemDataset.find((item) => item.id === selectedLayer.dataset_id);
+
+			// Set default control values based on dataset
+			if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
+				soilCarbonDepth = dataset.default_option as '0' | '30' | '60' | '200';
+			}
+		}
+
 		console.log('Information layer selected:', layerId);
 	}
 
@@ -966,8 +986,18 @@
 					console.log('Adding multiple layers:', layers.length);
 					addMultipleLayers(layers);
 				} else {
-					console.log('Adding single layer:', layers.name);
+					console.log('Adding single layer:', (layers as any).name);
 					addWMSLayer(layers);
+				}
+			}
+		} else if (currentDataset.control_type === 'threshold-control') {
+			// For threshold control, show layer based on selected depth
+			const selectedLayers = currentMapLayers && (currentMapLayers as any)[soilCarbonDepth];
+			if (selectedLayers) {
+				if (Array.isArray(selectedLayers)) {
+					addMultipleLayers(selectedLayers);
+				} else {
+					addWMSLayer(selectedLayers);
 				}
 			}
 		}
@@ -981,8 +1011,9 @@
 
 	// Single consolidated effect for all map layer updates
 	$effect(() => {
-		// This will trigger when currentDataset changes
+		// This will trigger when any of these state variables change
 		const dataset = currentDataset;
+		const depth = soilCarbonDepth;
 
 		console.log(
 			'Main effect triggered - Dataset:',
@@ -1370,6 +1401,51 @@
 									</div>
 								</div>
 							</div>
+
+							<!-- Dynamic Control Panel at Bottom -->
+							{#if currentDataset && currentDataset.control_type === 'threshold-control'}
+								<!-- Always show expanded Soil Carbon Depth Panel -->
+								<div
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+										? 'z-[9999]'
+										: 'z-10'}"
+								>
+									<!-- Depth Label -->
+									<div class="flex items-center space-x-2">
+										<div class="rounded-full bg-gradient-to-r from-green-500 to-emerald-500 p-1">
+											<div class="h-2 w-2 rounded-full bg-white"></div>
+										</div>
+										<span class="text-sm font-medium text-slate-700">Depth (g/kg)</span>
+									</div>
+
+									<!-- Separator -->
+									<div class="h-4 w-px bg-slate-300"></div>
+
+									<!-- Depth Options as Slider-like Radio Buttons -->
+									<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
+										{#if currentDataset.control_options}
+											{#each currentDataset.control_options as option}
+												<label class="relative cursor-pointer">
+													<input
+														type="radio"
+														bind:group={soilCarbonDepth}
+														value={option}
+														class="peer sr-only"
+													/>
+													<div
+														class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-emerald-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-green-600 peer-checked:hover:to-emerald-600 {soilCarbonDepth ===
+														option
+															? 'text-white'
+															: 'text-slate-600'}"
+													>
+														{option}cm
+													</div>
+												</label>
+											{/each}
+										{/if}
+									</div>
+								</div>
+							{/if}
 
 							<!-- Legend Panel - Bottom Right INSIDE the map container -->
 							{#if currentDataset && Object.keys(legendData).length > 0}
