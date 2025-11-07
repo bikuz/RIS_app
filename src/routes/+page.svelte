@@ -20,8 +20,8 @@
 	<!-- <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css"> -->
 </svelte:head>
  
-	<!-- <Hero /> -->
-	<Banner />
+	<Hero />
+	<!-- <Banner /> -->
 	
 	<!-- Added detailed RIS introduction section -->
 	 <Intro/>

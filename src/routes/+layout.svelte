@@ -23,7 +23,7 @@
 						>
 							RIS
 						</div> -->
-						<div class="text-3xl font-bold text-[#036CB6]">Regional Information System</div>
+						<div class="text-3xl font-bold text-[#036CB6]">HiRIS (HKH Regional Information System)</div>
 					</div>
 				</div>
 
@@ -46,8 +46,8 @@
 								<Database class="w-5 h-5 text-white" />
 							</div> -->
 						<div>
-							<h3 class="text-3xl font-bold">RIS</h3>
-							<p class="text-sm  ">Regional Information Services</p>
+							<h3 class="text-3xl font-bold">Hi-RIS</h3>
+							<p class="text-sm  ">HKH Regional Information Services</p>
 						</div>
 					</div>
 					<p class=" ">
