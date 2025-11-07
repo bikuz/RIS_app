@@ -300,6 +300,15 @@
 	}
 
 	onMount(() => {
+		// Initialize layout state based on screen size
+		initializeLayoutState();
+
+		// Add window resize listener for responsive layout
+		const handleResize = () => {
+			initializeLayoutState();
+		};
+		window.addEventListener('resize', handleResize);
+
 		initializeMap();
 
 		// Add resize observer to handle container size changes
@@ -318,9 +327,15 @@
 
 			// Cleanup on destroy
 			return () => {
+				window.removeEventListener('resize', handleResize);
 				resizeObserver.disconnect();
 			};
 		}
+
+		// Cleanup resize listener even if ResizeObserver is not available
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
 	});
 
 	// Cleanup on destroy
@@ -347,20 +362,56 @@
 		{
 			id: 'population-2025',
 			charts: [
-				// {
-				// 	title: 'Population Distribution',
-				// 	chart_type: 'column',
-				// 	chart_data: {
-				// 		categories: ['2015', '2020', '2025', '2030'],
-				// 		series: [
-				// 			{
-				// 				name: 'Population (millions)',
-				// 				data: [207.357006, 221.147189, 233.29593, 246.467761],
-				// 				color: '#5f87c1'
-				// 			}
-				// 		]
-				// 	}
-				// }
+				{
+					title: 'Population Distribution by Age aand Sex',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				}
 			],
 			map_data: {
 				name: 'Population Trends across HKH',
@@ -391,6 +442,58 @@
 				layer_id: 1,
 				description: 'Sex ratio (males per 100 females) across HKH region for 2025'
 			},
+			charts: [
+				{
+					title: 'Population Distribution by Age aand Sex',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				}
+			],
 			control_type: 'none'
 		},
 		{
@@ -415,6 +518,58 @@
 				layer_id: 2,
 				description: 'Proportion of population aged 75 years and above'
 			},
+			charts: [
+				{
+					title: 'Population Distribution by Age aand Sex',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				}
+			],
 			control_type: 'none'
 		},
 		{
@@ -439,6 +594,58 @@
 				layer_id: 3,
 				description: 'Number of children (0-4) per 1000 women (15-49 years)'
 			},
+			charts: [
+				{
+					title: 'Population Distribution by Age aand Sex',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				}
+			],
 			control_type: 'none'
 		},
 		{
@@ -463,6 +670,58 @@
 				layer_id: 4,
 				description: 'Ratio of children (0-14) to working age population (15-64)'
 			},
+			charts: [
+				{
+					title: 'Population Distribution by Age aand Sex',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				}
+			],
 			control_type: 'none'
 		},
 		{
@@ -487,6 +746,58 @@
 				layer_id: 5,
 				description: 'Ratio of dependents (0-14 and 65+) to working age population (15-64)'
 			},
+			charts: [
+				{
+					title: 'Population Distribution by Age aand Sex',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				}
+			],
 			control_type: 'none'
 		},
 		{
@@ -511,6 +822,58 @@
 				layer_id: 6,
 				description: 'Ratio of total dependent population'
 			},
+			charts: [
+				{
+					title: 'Population Distribution by Age aand Sex',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				}
+			],
 			control_type: 'none'
 		},
 		{
@@ -522,6 +885,58 @@
 				layer_id: 0,
 				description: 'Impervious Surface'
 			},
+			charts: [
+				{
+					title: 'Population Distribution by Age aand Sex',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				}
+			],
 			control_type: 'none'
 		},
 
@@ -547,6 +962,58 @@
 				layer_id: 8,
 				description: 'Location of Urban Center'
 			},
+			charts: [
+				{
+					title: 'Population Distribution by Age aand Sex',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				}
+			],
 			control_type: 'none'
 		},
 		{
@@ -557,6 +1024,58 @@
 				layer_id: 7,
 				description: 'Night Light Data'
 			},
+			charts: [
+				{
+					title: 'Population Distribution by Age aand Sex',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				}
+			],
 			control_type: 'none'
 		}
 	];
@@ -575,47 +1094,65 @@
 		{
 			id: 'info-layer-1',
 			title: 'Population 2025',
-			dataset_id: 'population-2025'
+			dataset_id: 'population-2025',
+			info: 'The map represents the spatial distribution of population across the HKH region.The dataset is obtained from WorldPop Global Project Population Data, providing population counts per 1km × 1km grid square.',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-2',
 			title: 'Sex Ratio',
-			dataset_id: 'sex-ratio-2025'
+			dataset_id: 'sex-ratio-2025',
+			info: 'The map represents the spatial distribution of the sex ratio across HKH region.The ratio is calculated using the formula (Total Male Count / Total Female Count) × 100, with each pixel representing the number of males per 100 females.',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-3',
 			title: 'Proportion of Population Age >=75',
-			dataset_id: 'aged-75-proportion'
+			dataset_id: 'aged-75-proportion',
+			info: 'The map represents spatial distribution of the elderly population as a percentage of the total population across the region.The proportion is calculated using the formula (Population Aged >=75 Years / Total Population of All Ages) × 100.',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-4',
 			title: 'Child-Woman Ratio',
-			dataset_id: 'child-woman-ratio-2025'
+			dataset_id: 'child-woman-ratio-2025',
+			info: 'The map represents spatial distribution of Child-Woman Ratio across HKH region.The ratio is calculated using the formula (Children Aged 0-4 Years / Women Aged 15-49) × 1000 with each pixel representing the number of young children per 1,000 women of childbearing age.',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-5',
 			title: 'Child-Dependency Ratio',
-			dataset_id: 'child-dependency-ratio-2025'
+			dataset_id: 'child-dependency-ratio-2025',
+			info: 'The map represents the number of young dependents per 100 working-age individuals in 1 km² area. . The ratio is calculated  using the formula (Population Aged 0-14 Years / Working-Age Population (15-64)) × 100.',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-6',
 			title: 'Age Dependency Ratio',
-			dataset_id: 'age-dependency-ratio-2025'
+			dataset_id: 'age-dependency-ratio-2025',
+			info: 'The map represents the number of elderly dependents per 100 working-age individuals in 1 km² area.  .The ratio is calculated using gridded population data with the formula (Population Aged ≥60 Years / Working-Age Population (15-64)) × 100. ',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-7',
 			title: 'Total Dependency Ratio',
-			dataset_id: 'total-dependency-ratio-2025'
+			dataset_id: 'total-dependency-ratio-2025',
+			info: 'The map represents the total number of young and elderly dependents per 100 working-age individuals in 1 km² area. The ratio is calculated using the formula: [(Population Aged 0-14 + Population Aged ≥60) / Working-Age Population (15-64)] × 100. ',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-8',
 			title: 'Impervious Surface',
-			dataset_id: 'impervious_surface'
+			dataset_id: 'impervious_surface',
+			info: 'Impervious Surface',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-9',
 			title: 'Night Light',
-			dataset_id: 'night-light'
+			dataset_id: 'night-light',
+			info: 'Night Light Data',
+			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		}
 	];
 
@@ -625,6 +1162,9 @@
 	// Track selected information layer (single selection) - default to Population 2025
 	let selectedInformationLayer = $state<string | null>('Population 2025');
 
+	// Track expanded layer for accordion - default closed
+	let expandedLayer = $state<string | null>(null);
+
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
 
@@ -633,6 +1173,20 @@
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
+
+	// Function to check if screen is small (laptop, tablet, or mobile)
+	function isSmallScreen() {
+		return typeof window !== 'undefined' && window.innerWidth < 1280; // lg breakpoint
+	}
+
+	// Initialize layout based on screen size
+	function initializeLayoutState() {
+		if (isSmallScreen()) {
+			layoutState = 'hide-left';
+		} else {
+			layoutState = 'default';
+		}
+	}
 
 	// Legend state management
 	let legendData = $state<
@@ -708,12 +1262,20 @@
 			image: satelliteMap
 		},
 		{
-			id: 'terrain',
-			name: 'Terrain',
-			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
-			attribution: '© OpenStreetMap contributors, SRTM',
+			id: 'topographic',
+			name: 'Topographic',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+			attribution:
+				'Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, CNES/Airbus DS, InterMap, NASA/METI, NASA/NGS and the GIS User Community',
 			image: terrainMap
 		}
+		// {
+		// 	id: 'terrain',
+		// 	name: 'Terrain',
+		// 	url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+		// 	attribution: '© OpenStreetMap contributors, SRTM',
+		// 	image: terrainMap
+		// }
 	];
 
 	// Function to toggle base layers
@@ -1039,6 +1601,15 @@
 		console.log('Information layer selected:', layerId);
 	}
 
+	// Function to toggle layer expansion
+	function toggleLayerExpansion(layerId: string) {
+		if (expandedLayer === layerId) {
+			expandedLayer = null;
+		} else {
+			expandedLayer = layerId;
+		}
+	}
+
 	// Function to cycle through layout states
 	function toggleLayoutState() {
 		if (layoutState === 'default') {
@@ -1110,48 +1681,48 @@
 	{#if layoutState === 'hide-left'}
 		<button
 			onclick={() => setLayoutState('default')}
-			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/90 p-2 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl active:bg-slate-100 lg:p-1.5"
 			title="Show Story Panel"
 		>
-			<ChevronsRight class="h-4 w-4" />
+			<ChevronsRight class="h-5 w-5 lg:h-4 lg:w-4" />
 		</button>
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
 
 	<div
-		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto"
+		class="sticky top-6 col-span-12 h-fit max-h-[calc(100vh-8rem)] flex-1 space-y-4 overflow-y-auto lg:col-span-3 lg:max-h-[calc(100vh-12rem)] lg:space-y-6"
 		class:hidden={layoutState === 'hide-left'}
-		class:col-span-12={layoutState === 'left-full'}
+		class:lg:col-span-12={layoutState === 'left-full'}
 	>
 		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
-			<div class="mb-6 flex items-center justify-between">
-				<div class="flex items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
-						<TopicIcon class="h-5 w-5 text-white" />
+		<div class="rounded-2xl border border-white/20 bg-white/70 p-4 lg:p-6">
+			<div class="mb-4 flex items-center justify-between lg:mb-6">
+				<div class="flex items-center space-x-2 lg:space-x-3">
+					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-1.5 lg:p-2">
+						<TopicIcon class="h-4 w-4 text-white lg:h-5 lg:w-5" />
 					</div>
 					<h3
 						class="{layoutState === 'left-full'
-							? 'text-2xl'
-							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+							? 'text-xl lg:text-2xl'
+							: 'text-base lg:text-lg'} font-bold text-slate-800 transition-all duration-300"
 					>
 						Human Dimensions Status in HKH
 					</h3>
 				</div>
-				<div class="flex items-center space-x-2">
+				<div class="flex items-center space-x-1 lg:space-x-2">
 					{#if layoutState !== 'left-full'}
-						<!-- Hide Left Panel Button -->
+						<!-- Hide Left Panel Button - Show Map -->
 						<button
 							onclick={() => setLayoutState('hide-left')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
-							title="Hide Story Panel"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+							title="Show Map"
 						>
 							<ChevronsLeft class="h-4 w-4" />
 						</button>
-						<!-- Expand Story Button -->
+						<!-- Expand Story Button - Desktop only -->
 						<button
 							onclick={() => setLayoutState('left-full')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="hidden rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
 							title="Expand Story"
 						>
 							<ChevronsRight class="h-4 w-4" />
@@ -1160,7 +1731,7 @@
 						<!-- Back to Default Button -->
 						<button
 							onclick={() => setLayoutState('default')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
 							title="Back to Default"
 						>
 							<ChevronsLeft class="h-4 w-4" />
@@ -1276,19 +1847,24 @@
 
 	<!-- Main Content Area - Unified container with common white background -->
 	<div
-		class="sticky col-span-9"
-		class:col-span-12={layoutState === 'hide-left'}
-		class:hidden={layoutState === 'left-full'}
+		class="sticky col-span-12 lg:col-span-9"
+		class:lg:col-span-12={layoutState === 'hide-left'}
+		class:hidden={layoutState !== 'hide-left'}
+		class:lg:block={layoutState === 'default'}
+		class:lg:hidden={layoutState === 'left-full'}
 	>
-		<div class="rounded-2xl border border-white/20 bg-white p-6 shadow-xl backdrop-blur-sm">
-			<div class="flex gap-6">
-				<!-- Left part: Map and Charts -->
+		<div class="rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
+			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
+				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
 				<div
-					class="flex min-w-0 flex-col gap-6 {layoutState === 'hide-left' ? 'flex-1' : 'flex-1'}"
+					class="order-2 flex min-w-0 flex-col gap-4 lg:order-1 lg:gap-6 {layoutState ===
+					'hide-left'
+						? 'flex-1'
+						: 'flex-1'}"
 				>
 					<!-- Map Section -->
 					<div
-						class="relative h-[60vh] max-h-[800px] min-h-[500px] overflow-hidden rounded-xl border border-slate-200/30"
+						class="relative h-[50vh] min-h-[400px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 					>
 						<div class="map-container flex h-full flex-col">
 							<div
@@ -1474,7 +2050,9 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
+												subtitle={chart.subtitle || ''}
 												chart_type={chart.chart_type}
+												isPyramid={chart.isPyramid || false}
 											/>
 										</div>
 									{/each}
@@ -1490,10 +2068,10 @@
 					</div>
 				</div>
 
-				<!-- Right part: Information Layer and Questions -->
-				<div class="w-80 flex-shrink-0">
+				<!-- Right part: Information Layer and Questions - Shows first on mobile/tablet -->
+				<div class="order-1 w-full flex-shrink-0 lg:order-2 lg:w-75">
 					<div
-						class="top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
+						class="top-6 flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 p-4 lg:min-h-[calc(100vh-16rem)]"
 					>
 						<!-- Information Layer Header -->
 						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
@@ -1508,25 +2086,61 @@
 							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
-										<button
-											onclick={() => selectInformationLayer(layer.title)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+										<div
+											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
 											layer.title
-												? 'border-blue-500 bg-blue-50 shadow-md'
-												: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+												? 'border-blue-300 bg-gradient-to-r from-blue-50/90 to-cyan-50/90 shadow-md'
+												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
 										>
-											<div class="flex items-start space-x-3 text-left">
-												<div class="flex-1">
-													<h4
-														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'font-medium text-blue-700'
-															: 'text-slate-600 group-hover:text-slate-800'}"
-													>
-														{layer.title}
-													</h4>
+											<button
+												onclick={() => selectInformationLayer(layer.title)}
+												class="flex w-full items-start space-x-2 p-4 text-left transition-all duration-200 hover:opacity-80"
+											>
+												<h4
+													class="flex-1 text-sm font-medium {selectedInformationLayer ===
+													layer.title
+														? 'text-blue-800'
+														: 'text-slate-800'}"
+												>
+													{layer.title}
+												</h4>
+												<span
+													class="flex-shrink-0 cursor-pointer"
+													role="button"
+													tabindex="0"
+													onclick={(e) => {
+														e.stopPropagation();
+														toggleLayerExpansion(layer.title);
+													}}
+													onkeydown={(e) => {
+														if (e.key === 'Enter' || e.key === ' ') {
+															e.preventDefault();
+															e.stopPropagation();
+															toggleLayerExpansion(layer.title);
+														}
+													}}
+												>
+													{#if expandedLayer === layer.title}
+														<ChevronUp class="h-4 w-4 text-slate-600" />
+													{:else}
+														<ChevronDown class="h-4 w-4 text-slate-600" />
+													{/if}
+												</span>
+											</button>
+
+											<!-- Expandable content -->
+											{#if expandedLayer === layer.title}
+												<div
+													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
+												>
+													<p>{layer.info}</p>
+													<p class="pt-1 text-left text-xs text-slate-600">
+														<span class="font-bold"> Data Source: </span>
+														{layer.source}
+													</p>
 												</div>
-											</div>
-										</button>
+											{/if}
+										</div>
 									{/each}
 								</div>
 							{:else}

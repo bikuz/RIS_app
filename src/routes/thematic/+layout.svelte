@@ -94,11 +94,13 @@
 
 <div class="min-h-screen bg-gray-50 p-3 sm:p-6">
 	<!-- Top Navigation -->
-	<nav class="mb-4 flex flex-wrap gap-2 sm:mb-6 sm:gap-4 md:gap-6">
+	<nav
+		class="mb-4 flex flex-wrap gap-2 sm:mb-6 sm:gap-4 md:grid md:grid-cols-2 md:gap-4 lg:flex lg:flex-wrap"
+	>
 		<button
 			onclick={() => goto(`${base}/`)}
 			class="group w-full transform rounded-lg border border-slate-200/50 bg-white/50 p-3 text-left text-slate-700 transition-all duration-300 hover:scale-[1.02]
-			hover:bg-white/80 hover:shadow-md sm:min-w-fit sm:flex-1 sm:rounded-xl sm:p-4"
+			hover:bg-white/80 hover:shadow-md sm:min-w-fit sm:flex-1 sm:rounded-xl sm:p-4 md:flex-none lg:flex-1"
 		>
 			<div class="flex items-center space-x-2 sm:space-x-3">
 				<div class="rounded-lg bg-slate-100 p-1.5 group-hover:bg-slate-200 sm:p-2">
@@ -111,7 +113,7 @@
 		{#each Object.entries(topicIcons) as [topic, IconComponent]}
 			<button
 				onclick={() => selectTopic(topic)}
-				class="group w-full transform rounded-lg p-3 text-left transition-all duration-300 hover:scale-[1.02] sm:min-w-fit sm:flex-1 sm:rounded-xl sm:p-4 {currentTopic ===
+				class="group w-full transform rounded-lg p-3 text-left transition-all duration-300 hover:scale-[1.02] sm:min-w-fit sm:flex-1 sm:rounded-xl sm:p-4 md:flex-none lg:flex-1 {currentTopic ===
 				topic
 					? 'bg-gradient-to-r ' + getTopicColor(topic) + ' text-white shadow-lg shadow-blue-500/25'
 					: 'border border-slate-200/50 bg-white/50 text-slate-700 hover:bg-white/80 hover:shadow-md'}"
@@ -138,7 +140,10 @@
 		{/each}
 
 		<!-- Useful Links Dropdown -->
-		<div bind:this={dropdownRef} class="relative w-full sm:min-w-fit sm:flex-1">
+		<div
+			bind:this={dropdownRef}
+			class="relative w-full sm:min-w-fit sm:flex-1 md:flex-none lg:flex-1"
+		>
 			<button
 				onclick={() => (isLinksDropdownOpen = !isLinksDropdownOpen)}
 				class="group flex h-full w-full transform items-center rounded-lg border border-slate-200/50 bg-white/50 p-3 text-left text-slate-700 transition-all duration-300 hover:scale-[1.02] hover:bg-white/80 hover:shadow-md sm:rounded-xl sm:p-4"
@@ -148,7 +153,7 @@
 						<div class="rounded-lg bg-slate-100 p-1.5 group-hover:bg-slate-200 sm:p-2">
 							<ExternalLink class="h-4 w-4 text-slate-600 sm:h-5 sm:w-5" />
 						</div>
-						<span class="text-sm font-semibold sm:text-base">Useful Links</span>
+						<span class="text-sm font-semibold sm:text-base">Regional Science App</span>
 					</div>
 					<ChevronDown
 						class="ml-2 h-3.5 w-3.5 transition-transform duration-200 sm:ml-auto sm:h-4 sm:w-4 {isLinksDropdownOpen

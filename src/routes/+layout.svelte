@@ -16,7 +16,6 @@
 				<!-- Left side - RDS Logo and Title -->
 				<div class="flex items-center space-x-6">
 					<div class="flex flex-col">
-						
 						<!-- <div
 							class="ml-1 scale-x-110 bg-gradient-to-r from-blue-500 to-green-500
 						bg-clip-text text-6xl leading-none font-bold tracking-[0.1em] text-transparent"
@@ -51,7 +50,8 @@
 						</div>
 					</div>
 					<p class=" ">
-						Providing access to comprehensive geospatial information from the Hindu Kush Himalaya region.
+						Providing access to comprehensive geospatial information from the Hindu Kush Himalaya
+						region.
 					</p>
 				</div>
 				<div>
@@ -74,11 +74,11 @@
 				</div>
 				<div>
 					<h4 class="mb-4 text-lg font-semibold">Connect</h4>
-					<p class="mb-2  ">info@icimod.org</p>
+					<p class="mb-2">info@icimod.org</p>
 					<p class=" ">ICIMOD, Nepal</p>
 				</div>
 			</div>
-			<div class="mt-8 border-t border-white-800 pt-8 text-center ">
+			<div class="border-white-800 mt-8 border-t pt-8 text-center">
 				<p>&copy; 2024 ICIMOD. All rights reserved.</p>
 			</div>
 		</div>

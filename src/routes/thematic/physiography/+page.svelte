@@ -56,6 +56,20 @@
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
 
+	// Function to check if screen is small (laptop, tablet, or mobile)
+	function isSmallScreen() {
+		return typeof window !== 'undefined' && window.innerWidth < 1280; // lg breakpoint
+	}
+
+	// Initialize layout based on screen size
+	function initializeLayoutState() {
+		if (isSmallScreen()) {
+			layoutState = 'hide-left';
+		} else {
+			layoutState = 'default';
+		}
+	}
+
 	// Track questions panel state
 	let isQuestionsPanelOpen = $state(false);
 	function toggleQuestionsPanel() {
@@ -101,11 +115,19 @@
 			attribution: 'Esri, DigitalGlobe, GeoEye, Earthstar Geographics',
 			image: satelliteMap
 		},
+		// {
+		// 	id: 'terrain',
+		// 	name: 'Terrain',
+		// 	url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+		// 	attribution: '© OpenStreetMap contributors, SRTM',
+		// 	image: terrainMap
+		// }
 		{
-			id: 'terrain',
-			name: 'Terrain',
-			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
-			attribution: '© OpenStreetMap contributors, SRTM',
+			id: 'topographic',
+			name: 'Topographic',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+			attribution:
+				'Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, CNES/Airbus DS, InterMap, NASA/METI, NASA/NGS and the GIS User Community',
 			image: terrainMap
 		}
 	];
@@ -309,51 +331,69 @@
 				default: [
 					{
 						id: 'elevation-layer',
-						name: 'Elevation',
-						url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-						layerIndex: 'springs:elevation',
-						mapserver: 'geoserver'
+						name: 'Elevation(DEM 90m)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer',
+						layerIndex: '5',
+						mapserver: 'arcgis'
 					}
 				]
 			},
 			charts: []
 		},
 		{
-			id: 'slope',
-			title: 'Slope',
-			description: 'Slope data for the HKH region',
+			id: 'mountain-region',
+			title: 'Mountain Region',
+			description: 'Mountain region data for the HKH region',
 			control_type: 'simple',
 			map_layers: {
 				default: [
 					{
-						id: 'slope-layer',
-						name: 'Slope',
-						url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-						layerIndex: 'springs:Slope',
-						mapserver: 'geoserver'
-					}
-				]
-			},
-			charts: []
-		},
-		{
-			id: 'aspect',
-			title: 'Aspect',
-			description: 'Aspect data for the HKH region',
-			control_type: 'simple',
-			map_layers: {
-				default: [
-					{
-						id: 'aspect-layer',
-						name: 'Aspect',
-						url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-						layerIndex: 'springs:Aspect',
-						mapserver: 'geoserver'
+						id: 'mountain-region-layer',
+						name: 'Mountain Region',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer',
+						layerIndex: '4',
+						mapserver: 'arcgis'
 					}
 				]
 			},
 			charts: []
 		}
+		// {
+		// 	id: 'slope',
+		// 	title: 'Slope',
+		// 	description: 'Slope data for the HKH region',
+		// 	control_type: 'simple',
+		// 	map_layers: {
+		// 		default: [
+		// 			{
+		// 				id: 'slope-layer',
+		// 				name: 'Slope',
+		// 				url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+		// 				layerIndex: 'springs:Slope',
+		// 				mapserver: 'geoserver'
+		// 			}
+		// 		]
+		// 	},
+		// 	charts: []
+		// },
+		// {
+		// 	id: 'aspect',
+		// 	title: 'Aspect',
+		// 	description: 'Aspect data for the HKH region',
+		// 	control_type: 'simple',
+		// 	map_layers: {
+		// 		default: [
+		// 			{
+		// 				id: 'aspect-layer',
+		// 				name: 'Aspect',
+		// 				url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+		// 				layerIndex: 'springs:Aspect',
+		// 				mapserver: 'geoserver'
+		// 			}
+		// 		]
+		// 	},
+		// 	charts: []
+		// }
 	];
 
 	const questions: any = [
@@ -378,18 +418,27 @@
 		{
 			id: 'map-indicator-1',
 			title: 'Elevation',
-			dataset_id: 'elevation'
+			dataset_id: 'elevation',
+			info: 'The map illustrates the elevation variation across the HKH region, highlighting topographical gradients from low-lying valleys to high mountain ranges. This dataset is compiled from global SRTM DEM of 90 m resolution for HKH region and was prepared by ICIMOD.',
+			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
 			id: 'map-indicator-2',
-			title: 'Slope',
-			dataset_id: 'slope'
-		},
-		{
-			id: 'map-indicator-3',
-			title: 'Aspect',
-			dataset_id: 'aspect'
+			title: 'Mountain Region',
+			dataset_id: 'mountain-region',
+			info: 'Mountain Region',
+			source: ''
 		}
+		// {
+		// 	id: 'map-indicator-3',
+		// 	title: 'Slope',
+		// 	dataset_id: 'slope'
+		// },
+		// {
+		// 	id: 'map-indicator-4',
+		// 	title: 'Aspect',
+		// 	dataset_id: 'aspect'
+		// }
 	];
 
 	// Track selected question - default to first question
@@ -397,6 +446,9 @@
 
 	// Track selected information layer (single selection)
 	let selectedInformationLayer = $state<string | null>('Elevation');
+
+	// Track expanded layer for accordion - default closed
+	let expandedLayer = $state<string | null>(null);
 
 	// Get current dataset based on selected question or information layer
 	let currentDataset = $derived.by(() => {
@@ -508,6 +560,15 @@
 	}
 
 	onMount(() => {
+		// Initialize layout state based on screen size
+		initializeLayoutState();
+
+		// Add window resize listener for responsive layout
+		const handleResize = () => {
+			initializeLayoutState();
+		};
+		window.addEventListener('resize', handleResize);
+
 		initializeMap();
 
 		// Add resize observer to handle container size changes
@@ -526,9 +587,15 @@
 
 			// Cleanup on destroy
 			return () => {
+				window.removeEventListener('resize', handleResize);
 				resizeObserver.disconnect();
 			};
 		}
+
+		// Cleanup resize listener even if ResizeObserver is not available
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
 	});
 
 	// Cleanup on destroy
@@ -606,6 +673,15 @@
 		selectedQuestionId = '';
 
 		console.log('Information layer selected:', layerId);
+	}
+
+	// Function to toggle layer expansion
+	function toggleLayerExpansion(layerId: string) {
+		if (expandedLayer === layerId) {
+			expandedLayer = null;
+		} else {
+			expandedLayer = layerId;
+		}
 	}
 
 	// Function to set specific layout state
@@ -828,48 +904,48 @@
 	{#if layoutState === 'hide-left'}
 		<button
 			onclick={() => setLayoutState('default')}
-			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/90 p-2 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl active:bg-slate-100 lg:p-1.5"
 			title="Show Story Panel"
 		>
-			<ChevronsRight class="h-4 w-4" />
+			<ChevronsRight class="h-5 w-5 lg:h-4 lg:w-4" />
 		</button>
 	{/if}
 
 	<!-- Left Sidebar - Story + Information -->
 	<div
-		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-16rem)] flex-1 space-y-6 overflow-y-auto"
+		class="sticky top-6 col-span-12 h-fit max-h-[calc(100vh-8rem)] flex-1 space-y-4 overflow-y-auto lg:col-span-3 lg:max-h-[calc(100vh-16rem)] lg:space-y-6"
 		class:hidden={layoutState === 'hide-left'}
-		class:col-span-12={layoutState === 'left-full'}
+		class:lg:col-span-12={layoutState === 'left-full'}
 	>
 		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/100 p-6">
-			<div class="mb-6 flex items-center justify-between">
-				<div class="flex items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-2">
-						<Mountain class="h-5 w-5 text-white" />
+		<div class="rounded-2xl border border-white/20 bg-white/100 p-4 lg:p-6">
+			<div class="mb-4 flex items-center justify-between lg:mb-6">
+				<div class="flex items-center space-x-2 lg:space-x-3">
+					<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-1.5 lg:p-2">
+						<Mountain class="h-4 w-4 text-white lg:h-5 lg:w-5" />
 					</div>
 					<h3
 						class="{layoutState === 'left-full'
-							? 'text-2xl'
-							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+							? 'text-xl lg:text-2xl'
+							: 'text-base lg:text-lg'} font-bold text-slate-800 transition-all duration-300"
 					>
 						Physiography of HKH
 					</h3>
 				</div>
-				<div class="flex items-center space-x-2">
+				<div class="flex items-center space-x-1 lg:space-x-2">
 					{#if layoutState !== 'left-full'}
-						<!-- Hide Left Panel Button -->
+						<!-- Hide Left Panel Button - Show Map -->
 						<button
 							onclick={() => setLayoutState('hide-left')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
-							title="Hide Story Panel"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+							title="Show Map"
 						>
 							<ChevronsLeft class="h-4 w-4" />
 						</button>
-						<!-- Expand Story Button -->
+						<!-- Expand Story Button - Desktop only -->
 						<button
 							onclick={() => setLayoutState('left-full')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="hidden rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
 							title="Expand Story"
 						>
 							<ChevronsRight class="h-4 w-4" />
@@ -878,7 +954,7 @@
 						<!-- Back to Default Button -->
 						<button
 							onclick={() => setLayoutState('default')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
 							title="Back to Default"
 						>
 							<ChevronsLeft class="h-4 w-4" />
@@ -949,19 +1025,24 @@
 
 	<!-- Main Content Area - Unified container with common white background -->
 	<div
-		class="sticky col-span-9"
-		class:col-span-12={layoutState === 'hide-left'}
-		class:hidden={layoutState === 'left-full'}
+		class="sticky col-span-12 lg:col-span-9"
+		class:lg:col-span-12={layoutState === 'hide-left'}
+		class:hidden={layoutState !== 'hide-left'}
+		class:lg:block={layoutState === 'default'}
+		class:lg:hidden={layoutState === 'left-full'}
 	>
-		<div class="rounded-2xl border border-white/20 bg-white p-6 shadow-xl backdrop-blur-sm">
-			<div class="flex gap-6">
-				<!-- Left part: Map and Charts -->
+		<div class="rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
+			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
+				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
 				<div
-					class="flex min-w-0 flex-col gap-6 {layoutState === 'hide-left' ? 'flex-1' : 'flex-1'}"
+					class="order-2 flex min-w-0 flex-col gap-4 lg:order-1 lg:gap-6 {layoutState ===
+					'hide-left'
+						? 'flex-1'
+						: 'flex-1'}"
 				>
 					<!-- Map Section -->
 					<div
-						class="relative h-[60vh] max-h-[800px] min-h-[500px] overflow-hidden rounded-xl border border-slate-200/30"
+						class="relative h-[50vh] min-h-[400px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 					>
 						<div class="map-container flex h-full flex-col">
 							<div
@@ -1086,31 +1167,31 @@
 									<!-- Legend Content -->
 									{#if !legendCollapsed}
 										<div
-											class="max-w-sm rounded-lg border border-white/30 bg-white/95 p-4 shadow-xl backdrop-blur-sm"
+											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
 										>
-											<div class="max-h-[200px] space-y-4 overflow-y-auto">
+											<div class="max-h-[320px] space-y-4 overflow-y-auto">
 												{#each Object.keys(legendData) as uniqueKey}
-													<div class="space-y-3">
+													<div class="space-y-2">
 														<h4 class="text-sm font-semibold text-slate-800">
 															{legendData[uniqueKey].name}
 														</h4>
-														<div class="space-y-2">
+														<div class="space-y-1">
 															{#each legendData[uniqueKey].items as item}
-																<div class="flex items-center space-x-3">
+																<div class="flex items-center space-x-2">
 																	{#if item.imageData}
 																		<img
 																			src={item.imageData}
 																			alt={item.label}
-																			class="flex-shrink-0 object-contain"
+																			class="h-4 w-5 flex-shrink-0"
 																		/>
 																	{:else if item.imageUrl}
 																		<img
 																			src={item.imageUrl}
 																			alt={item.label}
-																			class="flex-shrink-0 object-contain"
+																			class="h-4 w-5 flex-shrink-0"
 																		/>
 																	{/if}
-																	<!-- <span class="text-sm text-slate-700">{item.label}</span> -->
+																	<span class="text-xs text-slate-700">{item.label}</span>
 																</div>
 															{/each}
 														</div>
@@ -1153,10 +1234,10 @@
 					</div>
 				</div>
 
-				<!-- Right part: Information Layer -->
-				<div class="w-80 flex-shrink-0">
+				<!-- Right part: Information Layer - Shows first on mobile/tablet -->
+				<div class="order-1 w-full flex-shrink-0 lg:order-2 lg:w-75">
 					<div
-						class=" top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
+						class="top-6 flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 p-4 lg:min-h-[calc(100vh-16rem)]"
 					>
 						<!-- Information Layer Header -->
 						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
@@ -1171,25 +1252,61 @@
 							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
-										<button
-											onclick={() => selectInformationLayer(layer.title)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+										<div
+											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
 											layer.title
 												? 'border-stone-300 bg-gradient-to-r from-stone-50/90 to-amber-50/90 shadow-md'
-												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
 										>
-											<div class="flex items-start space-x-3 text-left">
-												<div class="flex-1">
-													<h4
-														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'text-stone-800'
-															: 'text-slate-800'} mb-1"
-													>
-														{layer.title}
-													</h4>
+											<button
+												onclick={() => selectInformationLayer(layer.title)}
+												class="flex w-full items-start space-x-2 p-4 text-left transition-all duration-200 hover:opacity-80"
+											>
+												<h4
+													class="flex-1 text-sm font-medium {selectedInformationLayer ===
+													layer.title
+														? 'text-stone-800'
+														: 'text-slate-800'}"
+												>
+													{layer.title}
+												</h4>
+												<span
+													class="flex-shrink-0 cursor-pointer"
+													role="button"
+													tabindex="0"
+													onclick={(e) => {
+														e.stopPropagation();
+														toggleLayerExpansion(layer.title);
+													}}
+													onkeydown={(e) => {
+														if (e.key === 'Enter' || e.key === ' ') {
+															e.preventDefault();
+															e.stopPropagation();
+															toggleLayerExpansion(layer.title);
+														}
+													}}
+												>
+													{#if expandedLayer === layer.title}
+														<ChevronUp class="h-4 w-4 text-slate-600" />
+													{:else}
+														<ChevronDown class="h-4 w-4 text-slate-600" />
+													{/if}
+												</span>
+											</button>
+
+											<!-- Expandable content -->
+											{#if expandedLayer === layer.title}
+												<div
+													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
+												>
+													<p>{layer.info}</p>
+													<p class="pt-1 text-left text-xs text-slate-600">
+														<span class="font-bold"> Data Source: </span>
+														{layer.source}
+													</p>
 												</div>
-											</div>
-										</button>
+											{/if}
+										</div>
 									{/each}
 								</div>
 							{:else}

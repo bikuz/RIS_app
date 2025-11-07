@@ -302,6 +302,15 @@
 	}
 
 	onMount(() => {
+		// Initialize layout state based on screen size
+		initializeLayoutState();
+
+		// Add window resize listener for responsive layout
+		const handleResize = () => {
+			initializeLayoutState();
+		};
+		window.addEventListener('resize', handleResize);
+
 		initializeMap();
 
 		// Add resize observer to handle container size changes
@@ -320,9 +329,15 @@
 
 			// Cleanup on destroy
 			return () => {
+				window.removeEventListener('resize', handleResize);
 				resizeObserver.disconnect();
 			};
 		}
+
+		// Cleanup resize listener even if ResizeObserver is not available
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
 	});
 
 	// Cleanup on destroy
@@ -484,17 +499,23 @@
 		{
 			id: 'info-layer-1',
 			title: 'Glacier',
-			dataset_id: 'glacier'
+			dataset_id: 'glacier',
+			info: 'The glacier map presented here is sourced from from the Regional DataBase System of ICIMOD. There are an estimated 54,000 glaciers in the HKH region which cover about 60,000 square kilometers of the total area.',
+			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
 			id: 'info-layer-2',
 			title: 'Glacial Lake',
-			dataset_id: 'glacial_lake'
+			dataset_id: 'glacial_lake',
+			info: 'The glacial lake data obtained from the Regional DataBase System of ICIMOD represent the glacial lakes across the HKH region. The dataset is generated through semi-automated analysis of Landsat 5 TM and Landsat 7 ETM+ satellite images from the 2005 period (±2 years).',
+			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
 			id: 'info-layer-3',
 			title: 'Glacial Lake Outburst Flood (GLOF)',
-			dataset_id: 'glof'
+			dataset_id: 'glof',
+			info: 'The map represents the Glacier Lake Outburst Floods (GLOFs) events across High Mountain Asia (HMA). The dataset is sourced from the ICIMODs Regional DataBase System  which have documented 697 individual GLOFs that occurred between 1833 and 2022.',
+			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		}
 	];
 
@@ -504,6 +525,9 @@
 	// Track selected information layer (single selection) - default to Population 2025
 	let selectedInformationLayer = $state<string | null>('Glacier');
 
+	// Track expanded layer for accordion - default closed
+	let expandedLayer = $state<string | null>(null);
+
 	// Track radio button selection for trend analysis
 	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
 
@@ -512,6 +536,20 @@
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
+
+	// Function to check if screen is small (laptop, tablet, or mobile)
+	function isSmallScreen() {
+		return typeof window !== 'undefined' && window.innerWidth < 1280; // lg breakpoint
+	}
+
+	// Initialize layout based on screen size
+	function initializeLayoutState() {
+		if (isSmallScreen()) {
+			layoutState = 'hide-left';
+		} else {
+			layoutState = 'default';
+		}
+	}
 
 	// Legend state management
 	let legendData = $state<
@@ -568,12 +606,20 @@
 			image: satelliteMap
 		},
 		{
-			id: 'terrain',
-			name: 'Terrain',
-			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
-			attribution: '© OpenStreetMap contributors, SRTM',
+			id: 'topographic',
+			name: 'Topographic',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+			attribution:
+				'Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, CNES/Airbus DS, InterMap, NASA/METI, NASA/NGS and the GIS User Community',
 			image: terrainMap
 		}
+		// {
+		// 	id: 'terrain',
+		// 	name: 'Terrain',
+		// 	url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+		// 	attribution: '© OpenStreetMap contributors, SRTM',
+		// 	image: terrainMap
+		// }
 	];
 
 	// Define base layers from HKH/Outline service
@@ -896,6 +942,15 @@
 		console.log('Information layer selected:', layerId);
 	}
 
+	// Function to toggle layer expansion
+	function toggleLayerExpansion(layerId: string) {
+		if (expandedLayer === layerId) {
+			expandedLayer = null;
+		} else {
+			expandedLayer = layerId;
+		}
+	}
+
 	// Function to cycle through layout states
 	function toggleLayoutState() {
 		if (layoutState === 'default') {
@@ -967,48 +1022,48 @@
 	{#if layoutState === 'hide-left'}
 		<button
 			onclick={() => setLayoutState('default')}
-			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/90 p-2 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl active:bg-slate-100 lg:p-1.5"
 			title="Show Story Panel"
 		>
-			<ChevronsRight class="h-4 w-4" />
+			<ChevronsRight class="h-5 w-5 lg:h-4 lg:w-4" />
 		</button>
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
 
 	<div
-		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-12rem)] flex-1 space-y-6 overflow-y-auto"
+		class="sticky top-6 col-span-12 h-fit max-h-[calc(100vh-8rem)] flex-1 space-y-4 overflow-y-auto lg:col-span-3 lg:max-h-[calc(100vh-12rem)] lg:space-y-6"
 		class:hidden={layoutState === 'hide-left'}
-		class:col-span-12={layoutState === 'left-full'}
+		class:lg:col-span-12={layoutState === 'left-full'}
 	>
 		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/70 p-6">
-			<div class="mb-6 flex items-center justify-between">
-				<div class="flex items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
-						<TopicIcon class="h-5 w-5 text-white" />
+		<div class="rounded-2xl border border-white/20 bg-white/70 p-4 lg:p-6">
+			<div class="mb-4 flex items-center justify-between lg:mb-6">
+				<div class="flex items-center space-x-2 lg:space-x-3">
+					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-1.5 lg:p-2">
+						<TopicIcon class="h-4 w-4 text-white lg:h-5 lg:w-5" />
 					</div>
 					<h3
 						class="{layoutState === 'left-full'
-							? 'text-2xl'
-							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+							? 'text-xl lg:text-2xl'
+							: 'text-base lg:text-lg'} font-bold text-slate-800 transition-all duration-300"
 					>
 						Cryosphere Status in HKH
 					</h3>
 				</div>
-				<div class="flex items-center space-x-2">
+				<div class="flex items-center space-x-1 lg:space-x-2">
 					{#if layoutState !== 'left-full'}
-						<!-- Hide Left Panel Button -->
+						<!-- Hide Left Panel Button - Show Map -->
 						<button
 							onclick={() => setLayoutState('hide-left')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
-							title="Hide Story Panel"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+							title="Show Map"
 						>
 							<ChevronsLeft class="h-4 w-4" />
 						</button>
-						<!-- Expand Story Button -->
+						<!-- Expand Story Button - Desktop only -->
 						<button
 							onclick={() => setLayoutState('left-full')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="hidden rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
 							title="Expand Story"
 						>
 							<ChevronsRight class="h-4 w-4" />
@@ -1017,7 +1072,7 @@
 						<!-- Back to Default Button -->
 						<button
 							onclick={() => setLayoutState('default')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
 							title="Back to Default"
 						>
 							<ChevronsLeft class="h-4 w-4" />
@@ -1028,13 +1083,13 @@
 
 			<div
 				class="{layoutState === 'left-full'
-					? 'space-y-6'
-					: 'space-y-4'} transition-all duration-300"
+					? 'space-y-4 lg:space-y-6'
+					: 'space-y-3 lg:space-y-4'} transition-all duration-300"
 			>
 				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+					class="text-justify text-sm {layoutState === 'left-full'
+						? 'lg:text-base lg:leading-loose'
+						: 'lg:leading-relaxed'} leading-relaxed text-slate-600 transition-all duration-300"
 				>
 					The Hindu Kush Himalaya (HKH) contains the world’s greatest areal extent and volume of
 					permanent ice and permafrost outside the polar regions. Consequently, glaciers, snow, and
@@ -1048,14 +1103,22 @@
 				</p>
 
 				<!-- Images Section - Responsive Layout -->
-				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
+				<div
+					class="mt-4 lg:mt-6 {layoutState === 'left-full'
+						? 'space-y-4 lg:space-y-6'
+						: 'space-y-2 lg:space-y-3'}"
+				>
 					{#if layoutState === 'left-full'}
 						<!-- Full Width Layout -->
-						<div class="flex flex-wrap justify-center gap-6">
+						<div class="flex flex-wrap justify-center gap-4 lg:gap-6">
 							<div
-								class="w-full overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto"
+								class="w-full overflow-hidden rounded-lg border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto lg:rounded-xl"
 							>
-								<img src={cryo1} alt="Glacial Lake in HMA" class="mx-auto h-80 object-contain" />
+								<img
+									src={cryo1}
+									alt="Glacial Lake in HMA"
+									class="mx-auto h-48 object-contain lg:h-80"
+								/>
 							</div>
 
 							<!-- <div
@@ -1064,22 +1127,22 @@
 								<img src={cryo1} alt="Population centers" class="mx-auto h-80 object-contain" />
 							</div> -->
 
-							<div class="mt-4 w-full text-center">
-								<p class="text-sm leading-relaxed text-slate-700">
+							<div class="mt-2 w-full text-center lg:mt-4">
+								<p class="text-xs leading-relaxed text-slate-700 lg:text-sm">
 									<span class="font-semibold text-slate-800">Glacial Lake in High Mountain</span>
 								</p>
 							</div>
 						</div>
 					{:else}
 						<!-- Default Layout - Stacked Images -->
-						<div class="space-y-3">
+						<div class="space-y-2 lg:space-y-3">
 							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
 								<img
 									src={cryo1}
 									alt="Glacial Lake in High Mountain Asia"
-									class="h-50 w-full object-contain"
+									class="h-40 w-full object-contain lg:h-50"
 								/>
-								<div class="p-2">
+								<div class="p-1.5 lg:p-2">
 									<p class="text-center text-xs text-slate-600">
 										<!-- <span
 											><span class="font-semibold">Mountain communities</span>
@@ -1103,9 +1166,9 @@
 				</div>
 
 				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
+					class="text-justify text-sm {layoutState === 'left-full'
+						? 'lg:text-base lg:leading-loose'
+						: 'lg:leading-relaxed'} leading-relaxed text-slate-600 transition-all duration-300"
 				>
 					The HKH is characterized by the widespread presence of such glacial lakes and many of them
 					are potential sources of flood. The HKH has experienced numerous GLOF events, some of them
@@ -1122,19 +1185,24 @@
 
 	<!-- Main Content Area - Unified container with common white background -->
 	<div
-		class="sticky col-span-9"
-		class:col-span-12={layoutState === 'hide-left'}
-		class:hidden={layoutState === 'left-full'}
+		class="sticky col-span-12 lg:col-span-9"
+		class:lg:col-span-12={layoutState === 'hide-left'}
+		class:hidden={layoutState !== 'hide-left'}
+		class:lg:block={layoutState === 'default'}
+		class:lg:hidden={layoutState === 'left-full'}
 	>
-		<div class="rounded-2xl border border-white/20 bg-white p-6 shadow-xl backdrop-blur-sm">
-			<div class="flex gap-6">
-				<!-- Left part: Map and Charts -->
+		<div class="rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
+			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
+				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
 				<div
-					class="flex min-w-0 flex-col gap-6 {layoutState === 'hide-left' ? 'flex-1' : 'flex-1'}"
+					class="order-2 flex min-w-0 flex-col gap-4 lg:order-1 lg:gap-6 {layoutState ===
+					'hide-left'
+						? 'flex-1'
+						: 'flex-1'}"
 				>
 					<!-- Map Section -->
 					<div
-						class="relative h-[60vh] max-h-[800px] min-h-[500px] overflow-hidden rounded-xl border border-slate-200/30"
+						class="relative h-[50vh] min-h-[400px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 					>
 						<div class="map-container flex h-full flex-col">
 							<div
@@ -1336,13 +1404,13 @@
 					</div>
 				</div>
 
-				<!-- Right part: Information Layer and Questions -->
-				<div class="w-80 flex-shrink-0">
+				<!-- Right part: Information Layer and Questions - Shows first on mobile/tablet -->
+				<div class="order-1 w-full flex-shrink-0 lg:order-2 lg:w-75">
 					<div
-						class="top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
+						class="top-6 flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 p-4 lg:min-h-[calc(100vh-16rem)]"
 					>
 						<!-- Information Layer Header -->
-						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+						<div class="mb-4 flex flex-shrink-0 items-center space-x-3 pt-0">
 							<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
 								<Layers class="h-5 w-5 text-white" />
 							</div>
@@ -1354,25 +1422,61 @@
 							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
-										<button
-											onclick={() => selectInformationLayer(layer.title)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+										<div
+											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
 											layer.title
-												? 'border-blue-500 bg-blue-50 shadow-md'
-												: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
+												? 'border-blue-300 bg-gradient-to-r from-blue-50/90 to-cyan-50/90 shadow-md'
+												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
 										>
-											<div class="flex items-start space-x-3 text-left">
-												<div class="flex-1">
-													<h4
-														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'font-medium text-blue-700'
-															: 'text-slate-600 group-hover:text-slate-800'}"
-													>
-														{layer.title}
-													</h4>
+											<button
+												onclick={() => selectInformationLayer(layer.title)}
+												class="flex w-full items-start space-x-2 p-4 text-left transition-all duration-200 hover:opacity-80"
+											>
+												<h4
+													class="flex-1 text-sm font-medium {selectedInformationLayer ===
+													layer.title
+														? 'text-blue-800'
+														: 'text-slate-800'}"
+												>
+													{layer.title}
+												</h4>
+												<span
+													class="flex-shrink-0 cursor-pointer"
+													role="button"
+													tabindex="0"
+													onclick={(e) => {
+														e.stopPropagation();
+														toggleLayerExpansion(layer.title);
+													}}
+													onkeydown={(e) => {
+														if (e.key === 'Enter' || e.key === ' ') {
+															e.preventDefault();
+															e.stopPropagation();
+															toggleLayerExpansion(layer.title);
+														}
+													}}
+												>
+													{#if expandedLayer === layer.title}
+														<ChevronUp class="h-4 w-4 text-slate-600" />
+													{:else}
+														<ChevronDown class="h-4 w-4 text-slate-600" />
+													{/if}
+												</span>
+											</button>
+
+											<!-- Expandable content -->
+											{#if expandedLayer === layer.title}
+												<div
+													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
+												>
+													<p>{layer.info}</p>
+													<p class="pt-1 text-left text-xs text-slate-600">
+														<span class="font-bold"> Data Source: </span>
+														{layer.source}
+													</p>
 												</div>
-											</div>
-										</button>
+											{/if}
+										</div>
 									{/each}
 								</div>
 							{:else}

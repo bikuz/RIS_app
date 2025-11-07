@@ -10,7 +10,8 @@
 		yAxisTitle = 'Value',
 		plotLines = [],
 		xAxisConfig = null,
-		showLegend = true
+		showLegend = true,
+		isPyramid = false
 	} = $props<{
 		chartData: {
 			categories: (string | number)[];
@@ -62,6 +63,7 @@
 			}>;
 		};
 		showLegend?: boolean;
+		isPyramid?: boolean;
 	}>();
 
 	let chartContainer: HTMLDivElement;
@@ -104,7 +106,8 @@
 		}
 
 		try {
-			chart = Highcharts.chart(chartContainer, {
+			// Configure chart for population pyramid
+			let chartConfig: any = {
 				chart: {
 					type: chart_type,
 					backgroundColor: 'transparent',
@@ -128,7 +131,56 @@
 						color: '#64748b'
 					}
 				},
-				xAxis: xAxisConfig
+				exporting: {
+					enabled: true
+				},
+				credits: {
+					enabled: false
+				}
+			};
+
+			// Configure xAxis for pyramid or regular chart
+			if (isPyramid) {
+				// Population pyramid uses dual xAxis (mirror axis)
+				chartConfig.xAxis = [
+					{
+						categories: chartData.categories,
+						reversed: false,
+						labels: {
+							step: 1
+							// rotation: -45,
+							// style: {
+							// 	color: '#64748b',
+							// 	fontSize: '11px'
+							// },
+							// y: 20,
+							// reserveSpace: true
+						},
+						gridLineWidth: 1,
+						gridLineColor: '#e2e8f0',
+						lineColor: '#cbd5e1',
+						tickColor: '#cbd5e1'
+					},
+					{
+						// Mirror axis on right side
+						opposite: true,
+						reversed: false,
+						categories: chartData.categories,
+						linkedTo: 0,
+						labels: {
+							step: 1
+							// rotation: 45,
+							// style: {
+							// 	color: '#64748b',
+							// 	fontSize: '11px'
+							// },
+							// y: 20,
+							// reserveSpace: true
+						}
+					}
+				];
+			} else {
+				chartConfig.xAxis = xAxisConfig
 					? {
 							type: xAxisConfig.type || 'linear',
 							min: xAxisConfig.min,
@@ -161,8 +213,30 @@
 									fontSize: '12px'
 								}
 							}
+						};
+			}
+
+			// Configure yAxis for pyramid or regular chart
+			if (isPyramid) {
+				chartConfig.yAxis = {
+					title: {
+						text: null
+					},
+					labels: {
+						formatter: function (this: any) {
+							return Math.abs(this.value);
 						},
-				yAxis: {
+						style: {
+							color: '#64748b',
+							fontSize: '12px'
+						}
+					},
+					gridLineColor: '#e2e8f0',
+					lineColor: '#cbd5e1',
+					tickColor: '#cbd5e1'
+				};
+			} else {
+				chartConfig.yAxis = {
 					title: {
 						text: yAxisTitle,
 						style: {
@@ -181,8 +255,28 @@
 							fontSize: '12px'
 						}
 					}
-				},
-				tooltip: {
+				};
+			}
+
+			// Configure tooltip for pyramid or regular chart
+			if (isPyramid) {
+				chartConfig.tooltip = {
+					backgroundColor: 'rgba(255, 255, 255, 0.95)',
+					borderColor: '#e2e8f0',
+					borderRadius: 8,
+					shadow: true,
+					style: {
+						fontSize: '12px'
+					},
+					formatter: function (this: any) {
+						return (
+							`<b>${this.series.name}, age ${this.point.category}</b><br/>` +
+							`Population: <b>${Math.abs(this.point.y).toFixed(2)}</b>`
+						);
+					}
+				};
+			} else {
+				chartConfig.tooltip = {
 					backgroundColor: 'rgba(255, 255, 255, 0.95)',
 					borderColor: '#e2e8f0',
 					borderRadius: 8,
@@ -194,8 +288,28 @@
 						return `<b>${this.series.name}</b><br/>
                                 ${this.x}: <b>${this.y}</b>`;
 					}
-				},
-				plotOptions: {
+				};
+			}
+
+			// Configure plotOptions
+			if (isPyramid) {
+				chartConfig.plotOptions = {
+					...plotOptions,
+					...(chartData.plotOptions || {}),
+					series: {
+						stacking: 'normal'
+					},
+					bar: {
+						borderRadius: '50%',
+						grouping: false
+					}
+				};
+				// Increase height for pyramid charts and add bottom margin for x-axis labels
+				// chartConfig.chart.height = 600;
+				// chartConfig.chart.marginBottom = 80;
+				// chartConfig.chart.spacingBottom = 20;
+			} else {
+				chartConfig.plotOptions = {
 					...plotOptions,
 					...(chartData.plotOptions || {}),
 					line: {
@@ -209,8 +323,17 @@
 							lineColor: '#ffffff'
 						}
 					}
-				},
-				series: chartData.series.map((serie: any, index: number) => ({
+				};
+			}
+
+			// Configure series
+			if (isPyramid) {
+				chartConfig.series = chartData.series.map((serie: any, index: number) => ({
+					...serie,
+					color: serie.color || (index === 0 ? '#3b82f6' : '#ef4444')
+				}));
+			} else {
+				chartConfig.series = chartData.series.map((serie: any, index: number) => ({
 					...serie,
 					color: serie.color || (index === 0 ? '#3b82f6' : '#10b981'),
 					marker: {
@@ -220,31 +343,29 @@
 						lineWidth: 2,
 						radius: 4
 					}
-				})),
-				exporting: {
-					enabled: true
-				},
-				legend: showLegend
-					? {
-							align: 'center',
-							verticalAlign: 'bottom',
-							borderWidth: 0,
-							itemStyle: {
-								color: '#64748b',
-								fontSize: '12px',
-								fontWeight: '500'
-							},
-							itemHoverStyle: {
-								color: '#1e293b'
-							}
-						}
-					: {
-							enabled: false
+				}));
+			}
+
+			// Configure legend
+			chartConfig.legend = showLegend
+				? {
+						align: 'center',
+						verticalAlign: 'bottom',
+						borderWidth: 0,
+						itemStyle: {
+							color: '#64748b',
+							fontSize: '12px',
+							fontWeight: '500'
 						},
-				credits: {
-					enabled: false
-				}
-			});
+						itemHoverStyle: {
+							color: '#1e293b'
+						}
+					}
+				: {
+						enabled: false
+					};
+
+			chart = Highcharts.chart(chartContainer, chartConfig);
 
 			console.log('Chart created successfully');
 		} catch (error) {
@@ -276,7 +397,11 @@
 	});
 </script>
 
-<div bind:this={chartContainer} class="h-96 min-h-[400px] w-full" style="min-height: 400px;">
+<div
+	bind:this={chartContainer}
+	class="w-full {isPyramid ? 'min-h-[600px]' : 'h-96 min-h-[400px]'}"
+	style={isPyramid ? 'min-height: 450px;' : 'min-height: 400px;'}
+>
 	{#if !Highcharts}
 		<div class="flex h-full items-center justify-center">
 			<div class="text-center">

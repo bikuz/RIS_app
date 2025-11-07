@@ -268,6 +268,15 @@
 	}
 
 	onMount(() => {
+		// Initialize layout state based on screen size
+		initializeLayoutState();
+
+		// Add window resize listener for responsive layout
+		const handleResize = () => {
+			initializeLayoutState();
+		};
+		window.addEventListener('resize', handleResize);
+
 		initializeMap();
 
 		// Add resize observer to handle container size changes
@@ -286,6 +295,7 @@
 
 			// Cleanup on destroy
 			return () => {
+				window.removeEventListener('resize', handleResize);
 				resizeObserver.disconnect();
 			};
 		}
@@ -500,7 +510,7 @@
 			id: 'temp-trend-30y',
 			title: 'Annual Temperature Trend Analysis',
 			description: 'Temperature trend analysis with overall vs significant trend options',
-			control_type: 'temperature_threshold',
+			control_type: 'threshold-control',
 			control_options: ['0.5', '1.5', '2.0', '2.5'],
 			default_option: '1.5',
 			charts: [],
@@ -556,7 +566,7 @@
 			id: 'temp-rise-decade',
 			title: 'Regional Temperature Rise Analysis',
 			description: 'Temperature rise analysis with different threshold options',
-			control_type: 'temperature_threshold',
+			control_type: 'threshold-control',
 			control_options: ['0.5', '1.5', '2.0', '2.5'],
 			default_option: '1.5',
 			charts: [
@@ -3083,6 +3093,119 @@
 					mapserver: 'arcgis'
 				}
 			}
+		},
+		{
+			id: 'seasonal-snowfall-trend-10y',
+			title: 'Seasonal Snowfall Trend Analysis of 10 Years',
+			description:
+				'Seasonal snowfall trend analysis with overall vs significant trend options across different seasons',
+			control_type: 'nested_radio', // New control type for nested selections
+			control_options: {
+				trend_analysis: ['overall', 'significant'],
+				seasons: ['annual', 'spring', 'summer', 'autumn', 'winter']
+			},
+			default_option: {
+				trend_analysis: 'overall',
+				season: 'spring'
+			},
+			charts: [],
+			map_layers: {
+				// Nested structure: trend_analysis -> season -> layer_config
+				overall: {
+					annual: [
+						{
+							id: 'seasonal-overall-annual',
+							name: 'Annual Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 0,
+							mapserver: 'arcgis'
+						}
+					],
+					spring: [
+						{
+							id: 'seasonal-overall-spring',
+							name: 'Spring Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 1,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'seasonal-overall-summer',
+							name: 'Summer Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 3,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'seasonal-overall-autumn',
+							name: 'Autumn Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 2,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'seasonal-overall-winter',
+							name: 'Winter Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 4,
+							mapserver: 'arcgis'
+						}
+					]
+				},
+				significant: {
+					annual: [
+						{
+							id: 'seasonal-significant-annual',
+							name: 'Annual Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 5,
+							mapserver: 'arcgis'
+						}
+					],
+					spring: [
+						{
+							id: 'seasonal-significant-spring',
+							name: 'Spring Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 6,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'seasonal-significant-summer',
+							name: 'Summer Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 7,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'seasonal-significant-autumn',
+							name: 'Autumn Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 8,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'seasonal-significant-winter',
+							name: 'Winter Snowfall Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Snowfall/MapServer',
+							layerIndex: 9,
+							mapserver: 'arcgis'
+						}
+					]
+				}
+			}
 		}
 	];
 
@@ -3118,37 +3241,50 @@
 			id: 'map-indicator-1',
 			title: 'Annual Temperature Trend',
 			dataset_id: 'temp-trend-10y',
-			info: 'The annual temperature trend is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The annual temperature trend is expressed in degrees Celsius per decade.'
+			info: 'The Annual Mean Temperature Trend shows the spatial pattern of temperature change across the HKH region from 1995 to 2024. Each pixel indicates the rate of change in annual mean temperature per decade, derived using Sen-Median trend analysis and tested for significance with the Mann-Kendall (MK) test. The “Overall” layer shows trends for all pixels, while the “Significant” layer includes only those significant at the 95% confidence level (p < 0.05).',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-2',
 			title: 'Seasonal Temperature Trend',
 			dataset_id: 'seasonal-temp-trend',
-			info: 'The seasonal temperature trend is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The seasonal temperature trend is expressed in degrees Celsius per decade.'
+			info: 'The seasonal temperature trend is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The seasonal temperature trend is expressed in degrees Celsius per decade.',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-3',
 			title: 'Annual Temperature Anomaly',
 			dataset_id: 'annual-temp-anamoly-series',
-			info: 'The annual temperature anomaly is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The annual temperature anomaly is expressed in degrees Celsius per decade.'
+			info: 'The annual temperature anomaly is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The annual temperature anomaly is expressed in degrees Celsius per decade.',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-4',
 			title: 'Annual Precipitation Trend',
 			dataset_id: 'ppt-trend-10y',
-			info: 'The annual precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation trend is expressed in millimeters per decade.'
+			info: 'The annual precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation trend is expressed in millimeters per decade.',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-5',
 			title: 'Seasonal Precipitation Trend',
 			dataset_id: 'seasonal-ppt-trend',
-			info: 'The seasonal precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The seasonal precipitation trend is expressed in millimeters per decade.'
+			info: 'The seasonal precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The seasonal precipitation trend is expressed in millimeters per decade.',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-6',
 			title: 'Annual Precipitation Anomaly',
 			dataset_id: 'annual-ppt-anamoly-series',
-			info: 'The annual precipitation anomaly is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation anomaly is expressed in millimeters per decade.'
+			info: 'The annual precipitation anomaly is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation anomaly is expressed in millimeters per decade.',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
+		},
+		{
+			id: 'map-indicator-7',
+			title: 'Snowfall Trend',
+			dataset_id: 'seasonal-snowfall-trend-10y',
+			info: 'The seasonal snowfall trend Represents  the spatial pattern of snowfall trend for each climatic season: Spring (March-April-May), Summer (June-July-August), Autumn (September-October-November), and Winter (December-January-February)over the years(1995-2024).Each pixel on the map represents the rate of snowfall change per decade, derived using Sen-Median trend analysis and Mann-Kendall (MK) test.The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		}
 	];
 	// Track selected question - default to first question
@@ -3157,20 +3293,35 @@
 	// Track selected information layer (single selection)
 	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
 
-	// Track expanded layer for accordion - default to first layer
-	let expandedLayer = $state<string | null>('Annual Temperature Trend');
+	// Track expanded layer for accordion - default closed
+	let expandedLayer = $state<string | null>(null);
 
 	// Track radio button selection for trend analysis
-	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
+	// Trend analysis mode - dynamic based on dataset control_options
+	let trendAnalysisMode = $state<string>('overall');
 
 	// Track temperature rise threshold selection
 	let temperatureRiseThreshold = $state<'0.5' | '1' | '1.5' | '2' | '2.5'>('1.5');
 
-	// Track seasonal selection for nested radio controls
-	let selectedSeason = $state<'spring' | 'summer' | 'autumn' | 'winter'>('spring');
+	// Track seasonal selection for nested radio controls - dynamic based on dataset control_options
+	let selectedSeason = $state<string>('spring');
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
+
+	// Function to check if screen is small (laptop, tablet, or mobile)
+	function isSmallScreen() {
+		return typeof window !== 'undefined' && window.innerWidth < 1280; // lg breakpoint
+	}
+
+	// Initialize layout based on screen size
+	function initializeLayoutState() {
+		if (isSmallScreen()) {
+			layoutState = 'hide-left';
+		} else {
+			layoutState = 'default';
+		}
+	}
 
 	// Legend state management
 	let legendData = $state<
@@ -3236,12 +3387,21 @@
 			image: satelliteMap
 		},
 		{
-			id: 'terrain',
-			name: 'Terrain',
-			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
-			attribution: '© OpenStreetMap contributors, SRTM',
+			id: 'topographic',
+			name: 'Topographic',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+			attribution:
+				'Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, CNES/Airbus DS, InterMap, NASA/METI, NASA/NGS and the GIS User Community',
 			image: terrainMap
 		}
+
+		// {
+		// 	id: 'terrain',
+		// 	name: 'Terrain',
+		// 	url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+		// 	attribution: '© OpenStreetMap contributors, SRTM',
+		// 	image: terrainMap
+		// }
 		// {
 		// 	id: 'voyager',
 		// 	name: 'Voyager',
@@ -3624,9 +3784,9 @@
 				let layersToFetch: any[] = [];
 
 				if (currentDataset.control_type === 'radio') {
-					const selectedLayers = currentMapLayers[trendAnalysisMode];
+					const selectedLayers = (currentMapLayers as any)[trendAnalysisMode];
 					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-				} else if (currentDataset.control_type === 'temperature_threshold') {
+				} else if (currentDataset.control_type === 'threshold-control') {
 					const selectedLayers = currentMapLayers[temperatureRiseThreshold];
 					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
 				} else if (currentDataset.control_type === 'time_slider') {
@@ -3745,7 +3905,7 @@
 		if (currentDataset.control_type === 'radio') {
 			// For radio controls, show layer based on selected mode
 			console.log('Radio control - trendAnalysisMode:', trendAnalysisMode);
-			const selectedLayers = currentMapLayers[trendAnalysisMode];
+			const selectedLayers = (currentMapLayers as any)[trendAnalysisMode];
 			console.log('Selected layers for', trendAnalysisMode, ':', selectedLayers);
 			if (selectedLayers) {
 				if (Array.isArray(selectedLayers)) {
@@ -3754,7 +3914,7 @@
 					addWMSLayer(selectedLayers);
 				}
 			}
-		} else if (currentDataset.control_type === 'temperature_threshold') {
+		} else if (currentDataset.control_type === 'threshold-control') {
 			// For temperature threshold, show layer based on selected threshold
 			const selectedLayers = currentMapLayers[temperatureRiseThreshold];
 			if (selectedLayers) {
@@ -3811,18 +3971,41 @@
 
 			// Set default control values based on dataset
 			if (dataset?.control_type === 'radio' && dataset.default_option) {
-				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
-			} else if (dataset?.control_type === 'temperature_threshold' && dataset.default_option) {
+				trendAnalysisMode = dataset.default_option as string;
+			} else if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
 				temperatureRiseThreshold = dataset.default_option as '0.5' | '1' | '1.5' | '2' | '2.5';
-			} else if (dataset?.control_type === 'nested_radio' && dataset.default_option) {
-				trendAnalysisMode = (dataset.default_option as any).trend_analysis as
-					| 'overall'
-					| 'significant';
-				selectedSeason = (dataset.default_option as any).season as
-					| 'spring'
-					| 'summer'
-					| 'autumn'
-					| 'winter';
+			} else if (dataset?.control_type === 'nested_radio') {
+				// Use default_option if provided, otherwise use first available option from control_options
+				const controlOpts = dataset.control_options as any;
+				if (controlOpts && typeof controlOpts === 'object' && 'trend_analysis' in controlOpts) {
+					if (dataset.default_option) {
+						const defaultOpt = dataset.default_option as any;
+						if (defaultOpt.trend_analysis) {
+							trendAnalysisMode = defaultOpt.trend_analysis;
+						} else if (
+							Array.isArray(controlOpts.trend_analysis) &&
+							controlOpts.trend_analysis.length > 0
+						) {
+							trendAnalysisMode = controlOpts.trend_analysis[0];
+						}
+						if (defaultOpt.season) {
+							selectedSeason = defaultOpt.season;
+						} else if (Array.isArray(controlOpts.seasons) && controlOpts.seasons.length > 0) {
+							selectedSeason = controlOpts.seasons[0];
+						}
+					} else {
+						// Use first available option from control_options
+						if (
+							Array.isArray(controlOpts.trend_analysis) &&
+							controlOpts.trend_analysis.length > 0
+						) {
+							trendAnalysisMode = controlOpts.trend_analysis[0];
+						}
+						if (Array.isArray(controlOpts.seasons) && controlOpts.seasons.length > 0) {
+							selectedSeason = controlOpts.seasons[0];
+						}
+					}
+				}
 			} else if (dataset?.control_type === 'time_slider' && dataset.time_dimension?.default_year) {
 				// Set time index to match default year - this will be handled by the effect watcher
 				console.log(
@@ -3851,13 +4034,9 @@
 			stopPlayback();
 		}
 
-		// Toggle expansion when clicking
-		toggleLayerExpansion(layerId);
-
 		// If clicking the same layer that's already selected, keep it selected
-		// (don't deselect, just toggle expansion)
 		if (selectedInformationLayer === layerId) {
-			// Layer is already selected, just toggled expansion above
+			// Layer is already selected
 			return;
 		}
 
@@ -3880,18 +4059,41 @@
 
 			// Set default control values based on dataset
 			if (dataset?.control_type === 'radio' && dataset.default_option) {
-				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
-			} else if (dataset?.control_type === 'temperature_threshold' && dataset.default_option) {
+				trendAnalysisMode = dataset.default_option as string;
+			} else if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
 				temperatureRiseThreshold = dataset.default_option as '0.5' | '1.5' | '2.5';
-			} else if (dataset?.control_type === 'nested_radio' && dataset.default_option) {
-				trendAnalysisMode = (dataset.default_option as any).trend_analysis as
-					| 'overall'
-					| 'significant';
-				selectedSeason = (dataset.default_option as any).season as
-					| 'spring'
-					| 'summer'
-					| 'autumn'
-					| 'winter';
+			} else if (dataset?.control_type === 'nested_radio') {
+				// Use default_option if provided, otherwise use first available option from control_options
+				const controlOpts = dataset.control_options as any;
+				if (controlOpts && typeof controlOpts === 'object' && 'trend_analysis' in controlOpts) {
+					if (dataset.default_option) {
+						const defaultOpt = dataset.default_option as any;
+						if (defaultOpt.trend_analysis) {
+							trendAnalysisMode = defaultOpt.trend_analysis;
+						} else if (
+							Array.isArray(controlOpts.trend_analysis) &&
+							controlOpts.trend_analysis.length > 0
+						) {
+							trendAnalysisMode = controlOpts.trend_analysis[0];
+						}
+						if (defaultOpt.season) {
+							selectedSeason = defaultOpt.season;
+						} else if (Array.isArray(controlOpts.seasons) && controlOpts.seasons.length > 0) {
+							selectedSeason = controlOpts.seasons[0];
+						}
+					} else {
+						// Use first available option from control_options
+						if (
+							Array.isArray(controlOpts.trend_analysis) &&
+							controlOpts.trend_analysis.length > 0
+						) {
+							trendAnalysisMode = controlOpts.trend_analysis[0];
+						}
+						if (Array.isArray(controlOpts.seasons) && controlOpts.seasons.length > 0) {
+							selectedSeason = controlOpts.seasons[0];
+						}
+					}
+				}
 			} else if (dataset?.control_type === 'time_slider' && dataset.time_dimension?.default_year) {
 				// Set time index to match default year - this will be handled by the effect watcher
 				console.log(
@@ -3959,25 +4161,25 @@
 </script>
 
 <!-- 3-Column Layout with Dynamic States -->
-<div class="relative grid grid-cols-12 items-stretch gap-6">
+<div class="relative grid grid-cols-12 items-stretch gap-4 lg:gap-6">
 	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
 	{#if layoutState === 'hide-left'}
 		<button
 			onclick={() => setLayoutState('default')}
-			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-2 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl active:bg-slate-100 lg:p-1.5"
 			title="Show Story Panel"
 		>
-			<ChevronsRight class="h-4 w-4" />
+			<ChevronsRight class="h-5 w-5 lg:h-4 lg:w-4" />
 		</button>
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
 	<div
-		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-16rem)] flex-1 space-y-6 overflow-y-auto"
+		class="sticky top-6 col-span-12 h-fit max-h-[calc(100vh-8rem)] flex-1 space-y-4 overflow-y-auto lg:col-span-3 lg:max-h-[calc(100vh-16rem)] lg:space-y-6"
 		class:hidden={layoutState === 'hide-left'}
-		class:col-span-12={layoutState === 'left-full'}
+		class:lg:col-span-12={layoutState === 'left-full'}
 	>
 		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/100 p-6">
+		<div class="rounded-2xl border border-white/20 bg-white/100 p-4 lg:p-6">
 			<div class="mb-6 flex items-center justify-between">
 				<div class="flex items-center space-x-3">
 					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
@@ -3996,27 +4198,27 @@
 						<!-- Hide Left Panel Button -->
 						<button
 							onclick={() => setLayoutState('hide-left')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
 							title="Hide Story Panel"
 						>
-							<ChevronsLeft class="h-4 w-4" />
+							<ChevronsLeft class="h-5 w-5 lg:h-4 lg:w-4" />
 						</button>
-						<!-- Expand Story Button -->
+						<!-- Expand Story Button (Hidden on mobile) -->
 						<button
 							onclick={() => setLayoutState('left-full')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="hidden rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:block lg:p-1.5"
 							title="Expand Story"
 						>
-							<ChevronsRight class="h-4 w-4" />
+							<ChevronsRight class="h-5 w-5 lg:h-4 lg:w-4" />
 						</button>
 					{:else}
 						<!-- Back to Default Button -->
 						<button
 							onclick={() => setLayoutState('default')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
 							title="Back to Default"
 						>
-							<ChevronsLeft class="h-4 w-4" />
+							<ChevronsLeft class="h-5 w-5 lg:h-4 lg:w-4" />
 						</button>
 					{/if}
 				</div>
@@ -4173,19 +4375,24 @@
 
 	<!-- Main Content Area - Unified container with common white background -->
 	<div
-		class="sticky col-span-9"
-		class:col-span-12={layoutState === 'hide-left'}
-		class:hidden={layoutState === 'left-full'}
+		class="sticky col-span-12 lg:col-span-9"
+		class:lg:col-span-12={layoutState === 'hide-left'}
+		class:hidden={layoutState !== 'hide-left'}
+		class:lg:block={layoutState === 'default'}
+		class:lg:hidden={layoutState === 'left-full'}
 	>
-		<div class="rounded-2xl border border-white/20 bg-white p-6 shadow-xl backdrop-blur-sm">
-			<div class="flex gap-6">
-				<!-- Left part: Map and Charts -->
+		<div class="rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
+			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
+				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
 				<div
-					class="flex min-w-0 flex-col gap-6 {layoutState === 'hide-left' ? 'flex-1' : 'flex-1'}"
+					class="order-2 flex min-w-0 flex-col gap-4 lg:order-1 lg:gap-6 {layoutState ===
+					'hide-left'
+						? 'flex-1'
+						: 'flex-1'}"
 				>
 					<!-- Map Section -->
 					<div
-						class="relative h-[60vh] max-h-[800px] min-h-[500px] overflow-hidden rounded-xl border border-slate-200/30"
+						class="relative h-[50vh] min-h-[400px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 					>
 						<div class="map-container flex h-full flex-col">
 							<div
@@ -4424,27 +4631,20 @@
 								>
 									<!-- Trend Analysis Section -->
 									<div class="flex items-center space-x-2">
-										<!-- Overall Option -->
-										<label class="flex cursor-pointer items-center space-x-1">
-											<input
-												type="radio"
-												bind:group={trendAnalysisMode}
-												value="overall"
-												class="h-3 w-3 border-gray-300 text-blue-600 focus:ring-blue-500"
-											/>
-											<span class="text-xs font-medium text-slate-700">Overall</span>
-										</label>
-
-										<!-- Significant Option -->
-										<label class="flex cursor-pointer items-center space-x-1">
-											<input
-												type="radio"
-												bind:group={trendAnalysisMode}
-												value="significant"
-												class="h-3 w-3 border-gray-300 text-blue-600 focus:ring-blue-500"
-											/>
-											<span class="text-xs font-medium text-slate-700">Significant</span>
-										</label>
+										{#if currentDataset.control_options && typeof currentDataset.control_options === 'object' && 'trend_analysis' in currentDataset.control_options}
+											{#each (currentDataset.control_options as any).trend_analysis as option}
+												<label class="flex cursor-pointer items-center space-x-1">
+													<input
+														type="radio"
+														bind:group={trendAnalysisMode}
+														value={option}
+														class="h-3 w-3 border-gray-300 text-blue-600 focus:ring-blue-500"
+													/>
+													<span class="text-xs font-medium text-slate-700 capitalize">{option}</span
+													>
+												</label>
+											{/each}
+										{/if}
 									</div>
 
 									<!-- Separator -->
@@ -4453,82 +4653,31 @@
 									<!-- Seasonal Selection Section -->
 									<div class="flex items-center space-x-2">
 										<!-- Season Options as Toggle Buttons -->
-										<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-0.5">
-											<!-- Spring Option -->
-											<label class="relative cursor-pointer">
-												<input
-													type="radio"
-													bind:group={selectedSeason}
-													value="spring"
-													class="peer sr-only"
-												/>
-												<div
-													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
-													'spring'
-														? 'text-white'
-														: 'text-slate-600'}"
-												>
-													Spring
-												</div>
-											</label>
-
-											<!-- Summer Option -->
-											<label class="relative cursor-pointer">
-												<input
-													type="radio"
-													bind:group={selectedSeason}
-													value="summer"
-													class="peer sr-only"
-												/>
-												<div
-													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
-													'summer'
-														? 'text-white'
-														: 'text-slate-600'}"
-												>
-													Summer
-												</div>
-											</label>
-
-											<!-- Autumn Option -->
-											<label class="relative cursor-pointer">
-												<input
-													type="radio"
-													bind:group={selectedSeason}
-													value="autumn"
-													class="peer sr-only"
-												/>
-												<div
-													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
-													'autumn'
-														? 'text-white'
-														: 'text-slate-600'}"
-												>
-													Autumn
-												</div>
-											</label>
-
-											<!-- Winter Option -->
-											<label class="relative cursor-pointer">
-												<input
-													type="radio"
-													bind:group={selectedSeason}
-													value="winter"
-													class="peer sr-only"
-												/>
-												<div
-													class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
-													'winter'
-														? 'text-white'
-														: 'text-slate-600'}"
-												>
-													Winter
-												</div>
-											</label>
-										</div>
+										{#if currentDataset.control_options && typeof currentDataset.control_options === 'object' && 'seasons' in currentDataset.control_options}
+											<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-0.5">
+												{#each (currentDataset.control_options as any).seasons as seasonOption}
+													<label class="relative cursor-pointer">
+														<input
+															type="radio"
+															bind:group={selectedSeason}
+															value={seasonOption}
+															class="peer sr-only"
+														/>
+														<div
+															class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
+															seasonOption
+																? 'text-white'
+																: 'text-slate-600'}"
+														>
+															{seasonOption.charAt(0).toUpperCase() + seasonOption.slice(1)}
+														</div>
+													</label>
+												{/each}
+											</div>
+										{/if}
 									</div>
 								</div>
-							{:else if currentDataset && currentDataset.control_type === 'temperature_threshold'}
+							{:else if currentDataset && currentDataset.control_type === 'threshold-control'}
 								<!-- Always show expanded Temperature Rise Threshold Panel -->
 								<div
 									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
@@ -4746,8 +4895,8 @@
 					</div>
 				</div>
 
-				<!-- Right part: Information Layer and Questions -->
-				<div class="w-80 flex-shrink-0">
+				<!-- Right part: Information Layer and Questions - Shows first on mobile/tablet -->
+				<div class="order-1 w-full flex-shrink-0 lg:order-2 lg:w-75">
 					<div
 						class=" top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
 					>
@@ -4782,7 +4931,22 @@
 												>
 													{layer.title}
 												</h4>
-												<span class="flex-shrink-0">
+												<span
+													class="flex-shrink-0 cursor-pointer"
+													role="button"
+													tabindex="0"
+													onclick={(e) => {
+														e.stopPropagation();
+														toggleLayerExpansion(layer.title);
+													}}
+													onkeydown={(e) => {
+														if (e.key === 'Enter' || e.key === ' ') {
+															e.preventDefault();
+															e.stopPropagation();
+															toggleLayerExpansion(layer.title);
+														}
+													}}
+												>
 													{#if expandedLayer === layer.title}
 														<ChevronUp class="h-4 w-4 text-slate-600" />
 													{:else}
@@ -4794,9 +4958,13 @@
 											<!-- Expandable content -->
 											{#if expandedLayer === layer.title}
 												<div
-													class="border-t border-slate-200/50 px-4 py-3 text-xs leading-relaxed text-slate-600"
+													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
 												>
-													{layer.info}
+													<p>{layer.info}</p>
+													<p class="pt-1 text-left text-xs text-slate-600">
+														<span class="font-bold"> Data Source: </span>
+														{layer.source}
+													</p>
 												</div>
 											{/if}
 										</div>

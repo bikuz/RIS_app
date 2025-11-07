@@ -58,6 +58,20 @@
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
 
+	// Function to check if screen is small (laptop, tablet, or mobile)
+	function isSmallScreen() {
+		return typeof window !== 'undefined' && window.innerWidth < 1280; // lg breakpoint
+	}
+
+	// Initialize layout based on screen size
+	function initializeLayoutState() {
+		if (isSmallScreen()) {
+			layoutState = 'hide-left';
+		} else {
+			layoutState = 'default';
+		}
+	}
+
 	// Track questions panel state
 	let isQuestionsPanelOpen = $state(false);
 	function toggleQuestionsPanel() {
@@ -103,11 +117,19 @@
 			attribution: 'Esri, DigitalGlobe, GeoEye, Earthstar Geographics',
 			image: satelliteMap
 		},
+		// {
+		// 	id: 'terrain',
+		// 	name: 'Terrain',
+		// 	url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+		// 	attribution: '© OpenStreetMap contributors, SRTM',
+		// 	image: terrainMap
+		// }
 		{
-			id: 'terrain',
-			name: 'Terrain',
-			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
-			attribution: '© OpenStreetMap contributors, SRTM',
+			id: 'topographic',
+			name: 'Topographic',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+			attribution:
+				'Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, CNES/Airbus DS, InterMap, NASA/METI, NASA/NGS and the GIS User Community',
 			image: terrainMap
 		}
 	];
@@ -292,7 +314,7 @@
 					{
 						id: 'browning-greening-layer',
 						name: 'Vegetation Health',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_NDVI/MapServer',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_NDVI_EVI/MapServer',
 						layerIndex: 0,
 						mapserver: 'arcgis'
 					}
@@ -312,13 +334,81 @@
 					{
 						id: 'ndvi-trend-layer',
 						name: 'NDVI Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_NDVI/MapServer',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_NDVI_EVI/MapServer',
 						layerIndex: 1,
 						mapserver: 'arcgis'
 					}
 				]
 			},
 			charts: []
+		},
+		{
+			id: 'evi-trend',
+			title: 'EVI Trend (2000-2023)',
+			description: 'EVI Trend in the HKH region',
+			control_type: 'none',
+			map_layers: {
+				// For 'none' control type, you can use a simple structure
+				// or just provide the layers directly
+				default: [
+					{
+						id: 'evi-trend-layer',
+						name: 'EVI Trend',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_NDVI_EVI/MapServer',
+						layerIndex: 2,
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
+		},
+
+		{
+			id: 'soil-carbon-content',
+			title: 'Soil Carbon Content',
+			control_type: 'threshold-control',
+			control_options: ['0', '30', '60', '200'],
+			default_option: '30',
+			charts: [],
+			map_layers: {
+				'0': [
+					{
+						id: 'soil-carbon-content-0',
+						name: 'Soil Organic Carbon Content at 0cm depth(g/kg)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
+					}
+				],
+
+				'30': [
+					{
+						id: 'soil-carbon-content-30',
+						name: 'Soil Organic Carbon Content at 30cm depth(g/kg)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
+						layerIndex: 1,
+						mapserver: 'arcgis'
+					}
+				],
+				'60': [
+					{
+						id: 'soil-carbon-content-60',
+						name: 'Soil Organic Carbon Content at 60cm depth(g/kg)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
+						layerIndex: 2,
+						mapserver: 'arcgis'
+					}
+				],
+				'200': [
+					{
+						id: 'soil-carbon-content-200',
+						name: 'Soil Organic Carbon Content at 200cm depth(g/kg)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
+						layerIndex: 3,
+						mapserver: 'arcgis'
+					}
+				]
+			}
 		}
 	];
 
@@ -344,17 +434,37 @@
 		{
 			id: 'map-indicator-1',
 			title: 'Land Cover Distribution 2022',
-			dataset_id: 'land-cover-2022'
+			dataset_id: 'land-cover-2022',
+			info: 'The landcover distribution map shows the physical or biophysical characteristics of the HKH region. This dataset is developed by ICIMOD under its SERVIR–HKH Initiative, using remote-sensing and Google Earth Engine, and collaborating with  partner organizations.',
+			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
 			id: 'map-indicator-3',
 			title: 'NDVI Trend (2000-2023)',
-			dataset_id: 'ndvi-trend'
+			dataset_id: 'ndvi-trend',
+			info: 'NDVI Trend (2000-2023) represents the spatial pattern of vegetation greenness change over the past 24 years (2000–2023). Each pixel indicates the rate of NDVI change per year, derived using the Sen-Median trend analysis and Mann-Kendall (MK) test.',
+			source: 'MODIS'
 		},
 		{
 			id: 'map-indicator-2',
 			title: 'Vegetation Health',
-			dataset_id: 'browning-greening'
+			dataset_id: 'browning-greening',
+			info: 'Vegetation Health',
+			source: ''
+		},
+		{
+			id: 'map-indicator-4',
+			title: 'EVI Trend (2000-2023)',
+			dataset_id: 'evi-trend',
+			info: 'EVI Trend (2000-2023) represents the spatial pattern of vegetation greenness change over the past 24 years (2000–2023). Each pixel indicates the rate of EVI change per year, derived using using the Sen-Median trend analysis and Mann-Kendall (MK) test.',
+			source: 'MODIS'
+		},
+		{
+			id: 'map-indicator-5',
+			title: 'Soil Carbon Content',
+			dataset_id: 'soil-carbon-content',
+			info: 'The map represents the spaial distribution of soil organic carbon content across HKH at 4 different depths(0cm, 30cm, 60cm and 200cm).The data is sourced from the OpenLandMap global soil database.Values are expressed in g/kg, indicating the mass of soil organic carbon present per kilogram of soil at spatial resolution of 250m.',
+			source: 'OpenLandMap Soil Organic Carbon Content (https://stac.openlandmap.org/)'
 		}
 	];
 
@@ -363,6 +473,12 @@
 
 	// Track selected information layer (single selection)
 	let selectedInformationLayer = $state<string | null>('Land Cover Distribution 2022');
+
+	// Track expanded layer for accordion - default closed
+	let expandedLayer = $state<string | null>(null);
+
+	// Control state variables
+	let soilCarbonDepth = $state<'0' | '30' | '60' | '200'>('30');
 
 	// Get current dataset based on selected question or information layer
 	let currentDataset = $derived.by(() => {
@@ -391,6 +507,9 @@
 	// Extract current data from dataset
 	let currentCharts = $derived(currentDataset?.charts || []);
 
+	// Get current map layers based on dataset
+	let currentMapLayers = $derived(currentDataset?.map_layers || null);
+
 	// Debounce timer for legend fetching
 	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -418,6 +537,9 @@
 			if (currentDataset.control_type === 'none') {
 				const layers = currentDataset.map_layers.default;
 				layersToFetch = Array.isArray(layers) ? layers : [layers];
+			} else if (currentDataset.control_type === 'threshold-control') {
+				const selectedLayers = currentMapLayers && (currentMapLayers as any)[soilCarbonDepth];
+				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
 			}
 
 			// Fetch legend for each layer
@@ -550,6 +672,15 @@
 	}
 
 	onMount(() => {
+		// Initialize layout state based on screen size
+		initializeLayoutState();
+
+		// Add window resize listener for responsive layout
+		const handleResize = () => {
+			initializeLayoutState();
+		};
+		window.addEventListener('resize', handleResize);
+
 		initializeMap();
 
 		// Add resize observer to handle container size changes
@@ -568,9 +699,15 @@
 
 			// Cleanup on destroy
 			return () => {
+				window.removeEventListener('resize', handleResize);
 				resizeObserver.disconnect();
 			};
 		}
+
+		// Cleanup resize listener even if ResizeObserver is not available
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
 	});
 
 	// Cleanup on destroy
@@ -647,7 +784,27 @@
 		// Clear question selection when selecting an information layer
 		selectedQuestionId = '';
 
+		// Find the dataset and set default control values
+		const selectedLayer = information_layers.find((layer) => layer.title === layerId);
+		if (selectedLayer?.dataset_id) {
+			const dataset = ecosystemDataset.find((item) => item.id === selectedLayer.dataset_id);
+
+			// Set default control values based on dataset
+			if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
+				soilCarbonDepth = dataset.default_option as '0' | '30' | '60' | '200';
+			}
+		}
+
 		console.log('Information layer selected:', layerId);
+	}
+
+	// Function to toggle layer expansion
+	function toggleLayerExpansion(layerId: string) {
+		if (expandedLayer === layerId) {
+			expandedLayer = null;
+		} else {
+			expandedLayer = layerId;
+		}
 	}
 
 	// Function to set specific layout state
@@ -829,8 +986,18 @@
 					console.log('Adding multiple layers:', layers.length);
 					addMultipleLayers(layers);
 				} else {
-					console.log('Adding single layer:', layers.name);
+					console.log('Adding single layer:', (layers as any).name);
 					addWMSLayer(layers);
+				}
+			}
+		} else if (currentDataset.control_type === 'threshold-control') {
+			// For threshold control, show layer based on selected depth
+			const selectedLayers = currentMapLayers && (currentMapLayers as any)[soilCarbonDepth];
+			if (selectedLayers) {
+				if (Array.isArray(selectedLayers)) {
+					addMultipleLayers(selectedLayers);
+				} else {
+					addWMSLayer(selectedLayers);
 				}
 			}
 		}
@@ -844,8 +1011,9 @@
 
 	// Single consolidated effect for all map layer updates
 	$effect(() => {
-		// This will trigger when currentDataset changes
+		// This will trigger when any of these state variables change
 		const dataset = currentDataset;
+		const depth = soilCarbonDepth;
 
 		console.log(
 			'Main effect triggered - Dataset:',
@@ -867,48 +1035,48 @@
 	{#if layoutState === 'hide-left'}
 		<button
 			onclick={() => setLayoutState('default')}
-			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-1.5 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl"
+			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/90 p-2 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl active:bg-slate-100 lg:p-1.5"
 			title="Show Story Panel"
 		>
-			<ChevronsRight class="h-4 w-4" />
+			<ChevronsRight class="h-5 w-5 lg:h-4 lg:w-4" />
 		</button>
 	{/if}
 
 	<!-- Left Sidebar - Story + Information -->
 	<div
-		class="sticky top-6 col-span-3 h-fit max-h-[calc(100vh-16rem)] flex-1 space-y-6 overflow-y-auto"
+		class="sticky top-6 col-span-12 h-fit max-h-[calc(100vh-8rem)] flex-1 space-y-4 overflow-y-auto lg:col-span-3 lg:max-h-[calc(100vh-16rem)] lg:space-y-6"
 		class:hidden={layoutState === 'hide-left'}
-		class:col-span-12={layoutState === 'left-full'}
+		class:lg:col-span-12={layoutState === 'left-full'}
 	>
 		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/100 p-6">
-			<div class="mb-6 flex items-center justify-between">
-				<div class="flex items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 p-2">
-						<Leaf class="h-5 w-5 text-white" />
+		<div class="rounded-2xl border border-white/20 bg-white/100 p-4 lg:p-6">
+			<div class="mb-4 flex items-center justify-between lg:mb-6">
+				<div class="flex items-center space-x-2 lg:space-x-3">
+					<div class="rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 p-1.5 lg:p-2">
+						<Leaf class="h-4 w-4 text-white lg:h-5 lg:w-5" />
 					</div>
 					<h3
 						class="{layoutState === 'left-full'
-							? 'text-2xl'
-							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+							? 'text-xl lg:text-2xl'
+							: 'text-base lg:text-lg'} font-bold text-slate-800 transition-all duration-300"
 					>
 						Ecosystem Dynamics in HKH
 					</h3>
 				</div>
-				<div class="flex items-center space-x-2">
+				<div class="flex items-center space-x-1 lg:space-x-2">
 					{#if layoutState !== 'left-full'}
-						<!-- Hide Left Panel Button -->
+						<!-- Hide Left Panel Button - Show Map -->
 						<button
 							onclick={() => setLayoutState('hide-left')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
-							title="Hide Story Panel"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+							title="Show Map"
 						>
 							<ChevronsLeft class="h-4 w-4" />
 						</button>
-						<!-- Expand Story Button -->
+						<!-- Expand Story Button - Desktop only -->
 						<button
 							onclick={() => setLayoutState('left-full')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="hidden rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
 							title="Expand Story"
 						>
 							<ChevronsRight class="h-4 w-4" />
@@ -917,7 +1085,7 @@
 						<!-- Back to Default Button -->
 						<button
 							onclick={() => setLayoutState('default')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800"
+							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
 							title="Back to Default"
 						>
 							<ChevronsLeft class="h-4 w-4" />
@@ -1111,19 +1279,24 @@
 
 	<!-- Main Content Area - Unified container with common white background -->
 	<div
-		class="sticky col-span-9"
-		class:col-span-12={layoutState === 'hide-left'}
-		class:hidden={layoutState === 'left-full'}
+		class="sticky col-span-12 lg:col-span-9"
+		class:lg:col-span-12={layoutState === 'hide-left'}
+		class:hidden={layoutState !== 'hide-left'}
+		class:lg:block={layoutState === 'default'}
+		class:lg:hidden={layoutState === 'left-full'}
 	>
-		<div class="rounded-2xl border border-white/20 bg-white p-6 shadow-xl backdrop-blur-sm">
-			<div class="flex gap-6">
-				<!-- Left part: Map and Charts -->
+		<div class="rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
+			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
+				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
 				<div
-					class="flex min-w-0 flex-col gap-6 {layoutState === 'hide-left' ? 'flex-1' : 'flex-1'}"
+					class="order-2 flex min-w-0 flex-col gap-4 lg:order-1 lg:gap-6 {layoutState ===
+					'hide-left'
+						? 'flex-1'
+						: 'flex-1'}"
 				>
 					<!-- Map Section -->
 					<div
-						class="relative h-[60vh] max-h-[800px] min-h-[500px] overflow-hidden rounded-xl border border-slate-200/30"
+						class="relative h-[50vh] min-h-[400px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 					>
 						<div class="map-container flex h-full flex-col">
 							<div
@@ -1229,6 +1402,51 @@
 								</div>
 							</div>
 
+							<!-- Dynamic Control Panel at Bottom -->
+							{#if currentDataset && currentDataset.control_type === 'threshold-control'}
+								<!-- Always show expanded Soil Carbon Depth Panel -->
+								<div
+									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+										? 'z-[9999]'
+										: 'z-10'}"
+								>
+									<!-- Depth Label -->
+									<div class="flex items-center space-x-2">
+										<div class="rounded-full bg-gradient-to-r from-green-500 to-emerald-500 p-1">
+											<div class="h-2 w-2 rounded-full bg-white"></div>
+										</div>
+										<span class="text-sm font-medium text-slate-700">Depth (g/kg)</span>
+									</div>
+
+									<!-- Separator -->
+									<div class="h-4 w-px bg-slate-300"></div>
+
+									<!-- Depth Options as Slider-like Radio Buttons -->
+									<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
+										{#if currentDataset.control_options}
+											{#each currentDataset.control_options as option}
+												<label class="relative cursor-pointer">
+													<input
+														type="radio"
+														bind:group={soilCarbonDepth}
+														value={option}
+														class="peer sr-only"
+													/>
+													<div
+														class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-emerald-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-green-600 peer-checked:hover:to-emerald-600 {soilCarbonDepth ===
+														option
+															? 'text-white'
+															: 'text-slate-600'}"
+													>
+														{option}cm
+													</div>
+												</label>
+											{/each}
+										{/if}
+									</div>
+								</div>
+							{/if}
+
 							<!-- Legend Panel - Bottom Right INSIDE the map container -->
 							{#if currentDataset && Object.keys(legendData).length > 0}
 								<div class="absolute right-4 bottom-4 {isFullscreen ? 'z-[9999]' : 'z-10'}">
@@ -1317,10 +1535,10 @@
 					</div>
 				</div>
 
-				<!-- Right part: Information Layer -->
-				<div class="w-80 flex-shrink-0">
+				<!-- Right part: Information Layer - Shows first on mobile/tablet -->
+				<div class="order-1 w-full flex-shrink-0 lg:order-2 lg:w-75">
 					<div
-						class=" top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
+						class="top-6 flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 p-4 lg:min-h-[calc(100vh-16rem)]"
 					>
 						<!-- Information Layer Header -->
 						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
@@ -1335,25 +1553,61 @@
 							{#if information_layers && information_layers.length > 0}
 								<div class="space-y-3">
 									{#each information_layers as layer, index}
-										<button
-											onclick={() => selectInformationLayer(layer.title)}
-											class="w-full rounded-lg border p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-md {selectedInformationLayer ===
+										<div
+											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
 											layer.title
 												? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
-												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80 hover:border-slate-300/70 hover:bg-slate-100/90'}"
+												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
 										>
-											<div class="flex items-start space-x-3 text-left">
-												<div class="flex-1">
-													<h4
-														class="text-sm font-medium {selectedInformationLayer === layer.title
-															? 'text-green-800'
-															: 'text-slate-800'} mb-1"
-													>
-														{layer.title}
-													</h4>
+											<button
+												onclick={() => selectInformationLayer(layer.title)}
+												class="flex w-full items-start space-x-2 p-4 text-left transition-all duration-200 hover:opacity-80"
+											>
+												<h4
+													class="flex-1 text-sm font-medium {selectedInformationLayer ===
+													layer.title
+														? 'text-green-800'
+														: 'text-slate-800'}"
+												>
+													{layer.title}
+												</h4>
+												<span
+													class="flex-shrink-0 cursor-pointer"
+													role="button"
+													tabindex="0"
+													onclick={(e) => {
+														e.stopPropagation();
+														toggleLayerExpansion(layer.title);
+													}}
+													onkeydown={(e) => {
+														if (e.key === 'Enter' || e.key === ' ') {
+															e.preventDefault();
+															e.stopPropagation();
+															toggleLayerExpansion(layer.title);
+														}
+													}}
+												>
+													{#if expandedLayer === layer.title}
+														<ChevronUp class="h-4 w-4 text-slate-600" />
+													{:else}
+														<ChevronDown class="h-4 w-4 text-slate-600" />
+													{/if}
+												</span>
+											</button>
+
+											<!-- Expandable content -->
+											{#if expandedLayer === layer.title}
+												<div
+													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
+												>
+													<p>{layer.info}</p>
+													<p class="pt-1 text-left text-xs text-slate-600">
+														<span class="font-bold"> Data Source: </span>
+														{layer.source}
+													</p>
 												</div>
-											</div>
-										</button>
+											{/if}
+										</div>
 									{/each}
 								</div>
 							{:else}
