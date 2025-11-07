@@ -510,7 +510,7 @@
 			id: 'temp-trend-30y',
 			title: 'Annual Temperature Trend Analysis',
 			description: 'Temperature trend analysis with overall vs significant trend options',
-			control_type: 'temperature_threshold',
+			control_type: 'threshold-control',
 			control_options: ['0.5', '1.5', '2.0', '2.5'],
 			default_option: '1.5',
 			charts: [],
@@ -566,7 +566,7 @@
 			id: 'temp-rise-decade',
 			title: 'Regional Temperature Rise Analysis',
 			description: 'Temperature rise analysis with different threshold options',
-			control_type: 'temperature_threshold',
+			control_type: 'threshold-control',
 			control_options: ['0.5', '1.5', '2.0', '2.5'],
 			default_option: '1.5',
 			charts: [
@@ -3665,7 +3665,7 @@
 				if (currentDataset.control_type === 'radio') {
 					const selectedLayers = currentMapLayers[trendAnalysisMode];
 					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-				} else if (currentDataset.control_type === 'temperature_threshold') {
+				} else if (currentDataset.control_type === 'threshold-control') {
 					const selectedLayers = currentMapLayers[temperatureRiseThreshold];
 					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
 				} else if (currentDataset.control_type === 'time_slider') {
@@ -3793,7 +3793,7 @@
 					addWMSLayer(selectedLayers);
 				}
 			}
-		} else if (currentDataset.control_type === 'temperature_threshold') {
+		} else if (currentDataset.control_type === 'threshold-control') {
 			// For temperature threshold, show layer based on selected threshold
 			const selectedLayers = currentMapLayers[temperatureRiseThreshold];
 			if (selectedLayers) {
@@ -3851,7 +3851,7 @@
 			// Set default control values based on dataset
 			if (dataset?.control_type === 'radio' && dataset.default_option) {
 				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
-			} else if (dataset?.control_type === 'temperature_threshold' && dataset.default_option) {
+			} else if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
 				temperatureRiseThreshold = dataset.default_option as '0.5' | '1' | '1.5' | '2' | '2.5';
 			} else if (dataset?.control_type === 'nested_radio' && dataset.default_option) {
 				trendAnalysisMode = (dataset.default_option as any).trend_analysis as
@@ -3916,7 +3916,7 @@
 			// Set default control values based on dataset
 			if (dataset?.control_type === 'radio' && dataset.default_option) {
 				trendAnalysisMode = dataset.default_option as 'overall' | 'significant';
-			} else if (dataset?.control_type === 'temperature_threshold' && dataset.default_option) {
+			} else if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
 				temperatureRiseThreshold = dataset.default_option as '0.5' | '1.5' | '2.5';
 			} else if (dataset?.control_type === 'nested_radio' && dataset.default_option) {
 				trendAnalysisMode = (dataset.default_option as any).trend_analysis as
@@ -4568,7 +4568,7 @@
 										</div>
 									</div>
 								</div>
-							{:else if currentDataset && currentDataset.control_type === 'temperature_threshold'}
+							{:else if currentDataset && currentDataset.control_type === 'threshold-control'}
 								<!-- Always show expanded Temperature Rise Threshold Panel -->
 								<div
 									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen

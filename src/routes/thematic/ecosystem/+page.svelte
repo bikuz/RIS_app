@@ -361,6 +361,54 @@
 				]
 			},
 			charts: []
+		},
+
+		{
+			id: 'soil-carbon-content',
+			title: 'Soil Carbon Content',
+			control_type: 'threshold-control',
+			control_options: ['0', '30', '60', '200'],
+			default_option: '30',
+			charts: [],
+			map_layers: {
+				'0': [
+					{
+						id: 'soil-carbon-content-0',
+						name: 'Soil Organic Carbon Content at 0cm depth(g/kg)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
+					}
+				],
+
+				'30': [
+					{
+						id: 'soil-carbon-content-30',
+						name: 'Soil Organic Carbon Content at 30cm depth(g/kg)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
+						layerIndex: 1,
+						mapserver: 'arcgis'
+					}
+				],
+				'60': [
+					{
+						id: 'soil-carbon-content-60',
+						name: 'Soil Organic Carbon Content at 60cm depth(g/kg)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
+						layerIndex: 2,
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			'200': [
+				{
+					id: 'soil-carbon-content-200',
+					name: 'Soil Organic Carbon Content at 200cm depth(g/kg)',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
+					layerIndex: 3,
+					mapserver: 'arcgis'
+				}
+			]
 		}
 	];
 
@@ -410,6 +458,13 @@
 			dataset_id: 'evi-trend',
 			info: 'EVI Trend (2000-2023) represents the spatial pattern of vegetation greenness change over the past 24 years (2000–2023). Each pixel indicates the rate of EVI change per year, derived using using the Sen-Median trend analysis and Mann-Kendall (MK) test.',
 			source: 'MODIS'
+		},
+		{
+			id: 'map-indicator-5',
+			title: 'Soil Carbon Content',
+			dataset_id: 'soil-carbon-content',
+			info: 'Soil Carbon Content',
+			source: ''
 		}
 	];
 
