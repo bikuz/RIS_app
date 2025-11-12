@@ -363,7 +363,42 @@
 			id: 'population-2025',
 			charts: [
 				{
-					title: 'Population Distribution by Age aand Sex',
+					title: 'Distribution of Population Across HKH',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
+					chart_data: {
+						categories: [
+							'Afghanistan',
+							'Bangladesh',
+							'Bhutan',
+							'China',
+							'India',
+							'Myanmar',
+							'Nepal',
+							'Pakistan'
+						],
+
+						// plotOptions: {
+						// 	column: {
+						// 		pointPadding: 0,
+						// 		groupPadding: 0,
+						// 		borderWidth: 0,
+						// 		grouping: false,
+						// 		pointPlacement: 0
+						// 	}
+						// },
+						series: [
+							{
+								name: 'Population',
+								data: [35232483, 5213882, 812757, 35031698, 54605239, 13635199, 29711569, 59072668],
+								color: '#5F87C1', // Modern blue
+								zIndex: 1
+							}
+						]
+					}
+				},
+				{
+					title: 'Population Distribution by Age and Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -444,7 +479,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age aand Sex',
+					title: 'Population Distribution by Age and Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -520,7 +555,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age aand Sex',
+					title: 'Population Distribution by Age and Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -596,7 +631,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age aand Sex',
+					title: 'Population Distribution by Age and Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -672,7 +707,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age aand Sex',
+					title: 'Population Distribution by Age and Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -748,7 +783,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age aand Sex',
+					title: 'Population Distribution by Age and Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -824,7 +859,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age aand Sex',
+					title: 'Population Distribution by Age and Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -887,51 +922,35 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age aand Sex',
-					// subtitle: 'Source: WorldPop Global Population Data',
-					chart_type: 'bar',
-					isPyramid: true,
+					title: 'Impervious Surface Distribution by Type',
+					// subtitle: 'Distribution across HKH region',
+					chart_type: 'pie',
 					chart_data: {
-						categories: [
-							'0-1',
-							'1-4',
-							'5-9',
-							'10-14',
-							'15-19',
-							'20-24',
-							'25-29',
-							'30-34',
-							'35-39',
-							'40-44',
-							'45-49',
-							'50-54',
-							'55-59',
-							'60-64',
-							'65-69',
-							'70-74',
-							'75-79',
-							'80-84',
-							'85-89',
-							'90+'
-						],
 						series: [
 							{
-								name: 'Male',
+								name: 'Impervious Surface',
 								data: [
-									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
-									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
-								],
-								color: '#3b82f6'
-							},
-							{
-								name: 'Female',
-								data: [
-									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
-									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
-									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
-								],
-								color: '#ef4444'
+									{
+										name: 'Upto 1990',
+										y: 3785,
+										color: '#147218' // Blue
+									},
+									{
+										name: '1990-2000',
+										y: 1227,
+										color: '#A4CF22' // Red
+									},
+									{
+										name: '2000-2010',
+										y: 2648,
+										color: '#FDC820' // Green
+									},
+									{
+										name: '2010-2020',
+										y: 2644,
+										color: '#FE3C19' // Amber
+									}
+								]
 							}
 						]
 					}
@@ -964,7 +983,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age aand Sex',
+					title: 'Population Distribution by Age and Sex',
 					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
@@ -1095,14 +1114,14 @@
 			id: 'info-layer-1',
 			title: 'Population 2025',
 			dataset_id: 'population-2025',
-			info: 'The map represents the spatial distribution of population across the HKH region.The dataset is obtained from WorldPop Global Project Population Data, providing population counts per 1km × 1km grid square.',
+			info: 'The map represents the spatial distribution of population across the HKH region. The dataset is obtained from WorldPop Global Project Population Data, providing population counts per 1km × 1km grid square.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-2',
 			title: 'Sex Ratio',
 			dataset_id: 'sex-ratio-2025',
-			info: 'The map represents the spatial distribution of the sex ratio across HKH region.The ratio is calculated using the formula (Total Male Count / Total Female Count) × 100, with each pixel representing the number of males per 100 females.',
+			info: 'The map represents the spatial distribution of the sex ratio across HKH region. The ratio is calculated using the formula (Total Male Count / Total Female Count) × 100, with each pixel representing the number of males per 100 females.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
@@ -1123,21 +1142,21 @@
 			id: 'info-layer-5',
 			title: 'Child-Dependency Ratio',
 			dataset_id: 'child-dependency-ratio-2025',
-			info: 'The map represents the number of young dependents per 100 working-age individuals in 1 km² area. . The ratio is calculated  using the formula (Population Aged 0-14 Years / Working-Age Population (15-64)) × 100.',
+			info: 'The map represents the number of young dependents per 100 working-age individuals. The ratio is calculated  using the formula (Population Aged 0-14 Years / Working-Age Population (15-64)) × 100.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-6',
 			title: 'Age Dependency Ratio',
 			dataset_id: 'age-dependency-ratio-2025',
-			info: 'The map represents the number of elderly dependents per 100 working-age individuals in 1 km² area.  .The ratio is calculated using gridded population data with the formula (Population Aged ≥60 Years / Working-Age Population (15-64)) × 100. ',
+			info: 'The map represents the number of elderly dependents per 100 working-age individuals.The ratio is calculated using gridded population data with the formula (Population Aged ≥60 Years / Working-Age Population (15-64)) × 100. ',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-7',
 			title: 'Total Dependency Ratio',
 			dataset_id: 'total-dependency-ratio-2025',
-			info: 'The map represents the total number of young and elderly dependents per 100 working-age individuals in 1 km² area. The ratio is calculated using the formula: [(Population Aged 0-14 + Population Aged ≥60) / Working-Age Population (15-64)] × 100. ',
+			info: 'The map represents the total number of young and elderly dependents per 100 working-age individuals. The ratio is calculated using the formula: [(Population Aged 0-14 + Population Aged ≥60) / Working-Age Population (15-64)] × 100. ',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
@@ -2050,9 +2069,9 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												subtitle={chart.subtitle || ''}
+												subtitle={'subtitle' in chart ? chart.subtitle : ''}
 												chart_type={chart.chart_type}
-												isPyramid={chart.isPyramid || false}
+												isPyramid={'isPyramid' in chart ? chart.isPyramid : false}
 											/>
 										</div>
 									{/each}

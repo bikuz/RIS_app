@@ -360,148 +360,7 @@
 					}
 				]
 			},
-			charts: [
-				{
-					title: 'Countrywise Mountain Areas in the HKH Region',
-					// subtitle: 'Distribution across HKH region',
-					chart_type: 'pie',
-					units: 'Sq Km',
-					chart_data: {
-						series: [
-							{
-								name: 'Impervious Surface',
-								data: [
-									{
-										name: 'non-mountain region',
-										y: 441681,
-										color: '#A8A800' // Blue
-									},
-									{
-										name: 'elevation > 4500 m',
-										y: 1439526,
-										color: '#D3FFBE' // Red
-									},
-									{
-										name: 'elevation 3500 – 4500 m',
-										y: 734456,
-										color: '#55FF00' // Green
-									},
-									{
-										name: 'elevation 2500 – 3500 m',
-										y: 558920,
-										color: '#4CE600' // Amber
-									},
-									{
-										name: 'elevation 1500 – 2500 m and slope >= 20',
-										y: 410214,
-										color: '#38A800' // Amber
-									},
-									{
-										name: 'elevation 1000 – 1500 m and slope >= 50',
-										y: 272447,
-										color: '#267300' // Amber
-									},
-									{
-										name: 'elevation 300 – 1000 m and local elevation range (7 km radius) > 300 m',
-										y: 334595,
-										color: '#4C7300' // Amber
-									}
-								]
-							}
-						]
-					}
-				},
-				{
-					title: 'Countrywise Mountain Areas in the HKH Region',
-					// subtitle: 'Distribution across HKH region',
-					chart_type: 'pie',
-					units: 'Sq Km',
-					chart_data: {
-						series: [
-							{
-								name: 'Impervious Surface',
-								data: [
-									{
-										name: 'Afghanistan',
-										y: 311604
-										// color: '#147218' // Blue
-									},
-									{
-										name: 'Bangladesh',
-										y: 1254
-										// color: '#A4CF22' // Red
-									},
-									{
-										name: 'Bhutan',
-										y: 39283
-										// color: 'China' // Green
-									},
-									{
-										name: 'China',
-										y: 2381708
-										// color: '#FE3C19' // Amber
-									},
-									{
-										name: 'India',
-										y: 347768
-										// color: '#FE3C19' // Amber
-									},
-									{
-										name: 'Myanmar',
-										y: 234838
-										// color: '#FE3C19' // Amber
-									},
-									{
-										name: 'Nepal',
-										y: 119045
-										// color: '#FE3C19' // Amber
-									},
-									{
-										name: 'Pakistan',
-										y: 314660,
-										color: '#083316' // Amber
-									}
-								]
-							}
-						]
-					}
-				}
-				// {
-				// 	title: 'Mountain areas by different mountain classes',
-				// 	chart_type: 'column',
-				// 	yAxisTitle: 'Pixel count',
-				// 	chart_data: {
-				// 		categories: [
-				// 			'Afghanistan',
-				// 			'Bangladesh',
-				// 			'Bhutan',
-				// 			'China',
-				// 			'India',
-				// 			'Myanmar',
-				// 			'Nepal',
-				// 			'Pakistan'
-				// 		],
-
-				// 		// plotOptions: {
-				// 		// 	column: {
-				// 		// 		pointPadding: 0,
-				// 		// 		groupPadding: 0,
-				// 		// 		borderWidth: 0,
-				// 		// 		grouping: false,
-				// 		// 		pointPlacement: 0
-				// 		// 	}
-				// 		// },
-				// 		series: [
-				// 			{
-				// 				name: 'Classes',
-				// 				data: [311604, 1254, 39283, 2381708, 347768, 234838, 119045, 314660],
-				// 				color: '#3B82F6', // Modern blue
-				// 				zIndex: 1
-				// 			}
-				// 		]
-				// 	}
-				// }
-			]
+			charts: []
 		}
 		// {
 		// 	id: 'slope',
@@ -590,7 +449,7 @@
 	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection)
-	let selectedInformationLayer = $state<string | null>('Mountain Region');
+	let selectedInformationLayer = $state<string | null>('Elevation');
 
 	// Track expanded layer for accordion - default closed
 	let expandedLayer = $state<string | null>(null);
@@ -621,7 +480,6 @@
 
 	// Extract current data from dataset
 	let currentCharts = $derived(currentDataset?.charts || []);
-
 	function initializeMap() {
 		if (!mapContainer) return;
 
@@ -1058,233 +916,51 @@
 
 	<!-- Left Sidebar - Story + Information -->
 	<div
-		class="sticky top-6 col-span-12 h-fit max-h-[calc(100vh-8rem)] flex-1 space-y-4 overflow-y-auto lg:col-span-3 lg:max-h-[calc(100vh-16rem)] lg:space-y-6"
+		class="sticky top-9 col-span-12 mt-4 h-[90vh] min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 		class:hidden={layoutState === 'hide-left'}
 		class:lg:col-span-12={layoutState === 'left-full'}
+		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
 	>
-		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/100 p-4 lg:p-6">
-			<div class="mb-4 flex items-center justify-between lg:mb-6">
-				<div class="flex items-center space-x-2 lg:space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-1.5 lg:p-2">
-						<Mountain class="h-3.5 w-3.5 text-white lg:h-5 lg:w-5" />
-					</div>
-					<h3
-						class="{layoutState === 'left-full'
-							? 'text-xl lg:text-2xl'
-							: 'text-base lg:text-lg'} font-bold text-slate-800 transition-all duration-300"
+		<!-- StoryMap Iframe Container -->
+		<div class="relative h-full w-full overflow-hidden">
+			<iframe
+				src="https://storymaps.arcgis.com/stories/f15cf3dee5b74a92bae05b5afe0b0c09"
+				width="100%"
+				height="100%"
+				style="border:none;"
+				allowfullscreen
+				class="h-full w-full"
+				title="ArcGIS StoryMap"
+			></iframe>
+
+			<!-- Overlay Control Buttons -->
+			<div class="absolute top-2 right-2 z-20 flex items-center space-x-1 lg:space-x-2">
+				{#if layoutState !== 'left-full'}
+					<!-- Hide Left Panel Button - Show Map -->
+					<button
+						onclick={() => setLayoutState('hide-left')}
+						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+						title="Show Map"
 					>
-						Physiography of HKH
-					</h3>
-				</div>
-				<div class="flex items-center space-x-1 lg:space-x-2">
-					{#if layoutState !== 'left-full'}
-						<!-- Hide Left Panel Button - Show Map -->
-						<button
-							onclick={() => setLayoutState('hide-left')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-							title="Show Map"
-						>
-							<ChevronsLeft class="h-3.5 w-3.5" />
-						</button>
-						<!-- Expand Story Button - Desktop only -->
-						<button
-							onclick={() => setLayoutState('left-full')}
-							class="hidden rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
-							title="Expand Story"
-						>
-							<ChevronsRight class="h-3.5 w-3.5" />
-						</button>
-					{:else}
-						<!-- Back to Default Button -->
-						<button
-							onclick={() => setLayoutState('default')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-							title="Back to Default"
-						>
-							<ChevronsLeft class="h-3.5 w-3.5" />
-						</button>
-					{/if}
-				</div>
-			</div>
-
-			<div
-				class="{layoutState === 'left-full'
-					? 'space-y-6'
-					: 'space-y-4'} transition-all duration-300"
-			>
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-700 transition-all duration-300"
-				>
-					The Hindu Kush Himalaya (HKH) region is one of the most complex and diverse mountain
-					systems on Earth. Its physiography reflects the interaction of tectonic uplift,
-					glaciation, and climatic processes over millions of years.
-				</p>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Geologically, the HKH is the result of the ongoing collision between the Indian and
-					Eurasian plates, which began around 50 million years ago. The region remains tectonically
-					active, experiencing frequent earthquakes, crustal uplift, and slope instability. The
-					interplay between tectonics and climate continues to shape its dramatic landscapes.
-				</p>
-				<!-- First Image - After first paragraph -->
-				{#if layoutState === 'left-full'}
-					<div class="flex justify-center">
-						<div
-							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-						>
-							<img src={physio_1} alt="Himalayan glacial retreat" class="h-80 object-contain" />
-							<div class="p-4">
-								<p class="text-center text-sm leading-relaxed text-slate-700">
-									<span
-										>Majestic
-										<span class="font-semibold text-slate-800"> landscape </span> of the Hindu Kush Himalayan
-										(HKH) region
-									</span>
-								</p>
-							</div>
-						</div>
-					</div>
+						<ChevronsLeft class="h-3.5 w-3.5" />
+					</button>
+					<!-- Expand Story Button - Desktop only -->
+					<button
+						onclick={() => setLayoutState('left-full')}
+						class="hidden rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
+						title="Expand Story"
+					>
+						<ChevronsRight class="h-3.5 w-3.5" />
+					</button>
 				{:else}
-					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-						<img
-							src={physio_1}
-							alt="Himalayan glacial retreat"
-							class="h-50 w-full object-contain"
-						/>
-						<div class="p-2">
-							<p class="text-center text-xs text-slate-600">
-								<span
-									>Majestic <span class="font-semibold text-slate-800"> landscape </span> of the Hindu
-									Kush Himalayan (HKH) region
-								</span>
-							</p>
-						</div>
-					</div>
-				{/if}
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Physiographically, the HKH can be divided into several east–west trending zones, each with
-					distinct geomorphic and geological characteristics. The Outer Foothills, also known as the
-					Siwalik or Sub-Himalaya, rise from about 300 to 1,500 meters. These hills are composed
-					mainly of unconsolidated sediments such as sandstone, conglomerate, and clay, and they
-					represent the youngest part of the Himalayan system. The area is characterized by steep
-					slopes, narrow valleys, and frequent landslides. North of the foothills lies the Lesser
-					Himalaya, which rises between 1,500 and 3,000 meters. This zone is made up of metamorphic
-					and sedimentary rocks like phyllite, schist, and limestone, and it is marked by rugged
-					terrain with deep river gorges and ridges. Well-known hill regions such as the Mahabharat
-					Range, Garhwal, and Kumaon fall in this category. The Greater Himalaya, located further
-					north, is the most prominent physiographic division, with elevations ranging from 3,000 to
-					over 6,000 meters. It contains the highest peaks in the world—such as Everest,
-					Kanchenjunga, and Annapurna—and vast glaciers that serve as the primary water sources for
-					many Asian rivers. The zone is made up of high-grade metamorphic rocks and granites, and
-					is often referred to as the “water tower of Asia.” Beyond the Greater Himalaya lies the
-					Trans-Himalaya, which includes ranges such as the Karakoram, Ladakh, and Kailash. With
-					elevations ranging between 4,000 and 5,500 meters, this region consists of older mountain
-					ranges and broad plateau surfaces extending into the Tibetan Plateau. The landscape is
-					arid to semi-arid, with sparse vegetation and cold desert conditions.
-				</p>
-				<!-- Second Image - After first paragraph -->
-				{#if layoutState === 'left-full'}
-					<div class="flex justify-center">
-						<div
-							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-						>
-							<img src={physio_3} alt="Himalayan glacial retreat" class="h-80 object-contain" />
-							<div class="p-4">
-								<p class="text-center text-sm leading-relaxed text-slate-700">
-									<span>
-										<span class="font-semibold text-slate-800">High-altitude mountains </span> of the
-										Hindu Kush Himalayan (HKH) region
-									</span>
-								</p>
-							</div>
-						</div>
-					</div>
-				{:else}
-					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-						<img
-							src={physio_3}
-							alt="Himalayan glacial retreat"
-							class="h-50 w-full object-contain"
-						/>
-						<div class="p-2">
-							<p class="text-center text-xs text-slate-600">
-								<span>
-									<span class="font-semibold text-slate-800">High-altitude mountains </span> of the Hindu
-									Kush Himalayan (HKH) region
-								</span>
-							</p>
-						</div>
-					</div>
-				{/if}
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The HKH gives rise to ten major river systems, including the Indus, Ganges, and
-					Brahmaputra in South Asia, and the Yangtze, Mekong, Salween, and Yellow rivers in East and
-					Southeast Asia. These rivers have carved deep gorges and valleys, shaping the rugged
-					topography of the region. The area also hosts over 54,000 glaciers, making it the largest
-					repository of ice outside the polar regions.
-				</p>
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Physiographic variation across the HKH is substantial. The western part, dominated by the
-					Hindu Kush and Karakoram ranges, is arid and glaciated, while the central Himalaya of
-					Nepal presents sharp altitudinal gradients and deep valleys. In contrast, the eastern
-					Himalaya and Hengduan ranges are wetter, with dense forests and heavy rainfall.
-					Altitudinal differences also create distinct ecological zones—from tropical foothills
-					through temperate mid-hills to alpine meadows and nival zones—supporting extraordinary
-					biodiversity. These gradients make the HKH a global biodiversity hotspot and a critical
-					life-support system for much of Asia.
-				</p>
-				<!-- Third Image - After first paragraph -->
-				{#if layoutState === 'left-full'}
-					<div class="flex justify-center">
-						<div
-							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-						>
-							<img src={physio_2} alt="Himalayan glacial retreat" class="h-80 object-contain" />
-							<div class="p-4">
-								<p class="text-center text-sm leading-relaxed text-slate-700">
-									<span>
-										Mountain valley settlements within the
-										<span class="font-semibold text-slate-800">mid-hills </span> of the of the HKH region.
-									</span>
-								</p>
-							</div>
-						</div>
-					</div>
-				{:else}
-					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-						<img
-							src={physio_2}
-							alt="Himalayan glacial retreat"
-							class="h-50 w-full object-contain"
-						/>
-						<div class="p-2">
-							<p class="text-center text-sm leading-relaxed text-slate-700">
-								<span>
-									Mountain valley settlements within the
-									<span class="font-semibold text-slate-800">mid-hills </span> of the of the HKH region.
-								</span>
-							</p>
-						</div>
-					</div>
+					<!-- Back to Default Button -->
+					<button
+						onclick={() => setLayoutState('default')}
+						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+						title="Back to Default"
+					>
+						<ChevronsLeft class="h-3.5 w-3.5" />
+					</button>
 				{/if}
 			</div>
 		</div>
@@ -1482,9 +1158,8 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												subtitle=""
+												subtitle="Hindu Kush Himalaya Region Ecosystem Data"
 												chart_type={chart.chart_type}
-												unit={chart.units}
 											/>
 										</div>
 									{/each}

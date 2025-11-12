@@ -326,186 +326,186 @@
 
 	// Improved climate dataset structure for better map layer management
 	const climateDataset = [
-		{
-			id: 'temp-trend-10y',
-			title: 'Overall Annual Temperature Trend Analysis of 10 Years',
+		// {
+		// 	id: 'temp-trend-10y',
+		// 	title: 'Overall Annual Temperature Trend Analysis of 10 Years',
 
-			description: 'Temperature trend analysis with overall vs significant trend options',
-			control_type: 'radio',
-			control_options: ['overall', 'significant'],
-			default_option: 'overall',
-			charts: [
-				{
-					title: 'Distribution of Annual Mean Temperature Trends (°C/decade)',
-					chart_type: 'column',
-					yAxisTitle: 'Pixel count',
-					chart_data: {
-						categories: [
-							// '-0.08 to -0.05',
-							// '-0.05 to -0.02',
-							// '-0.02 to 0.01',
-							// '0.01 to 0.03',
-							// '0.03 to 0.06',
-							// '0.06 to 0.09',
-							// '0.09 to 0.11',
-							// '0.11 to 0.14',
-							// '0.14 to 0.17',
-							// '0.17 to 0.19',
-							// '0.19 to 0.22',
-							// '0.22 to 0.25',
-							// '0.25 to 0.27',
-							// '0.27 to 0.30',
-							// '0.30 to 0.33',
-							// '0.33 to 0.35',
-							// '0.35 to 0.38',
-							// '0.38 to 0.41',
-							// '0.41 to 0.43',
-							// '0.43 to 0.46',
-							// '0.46 to 0.49',
-							// '0.49 to 0.52',
-							// '0.52 to 0.54',
-							// '0.54 to 0.57',
-							// '0.57 to 0.60',
-							// '0.60 to 0.62',
-							// '0.62 to 0.65',
-							// '0.65 to 0.68',
-							// '0.68 to 0.70',
-							// '0.70 to 0.73',
-							// '0.73 to 0.76',
-							// '0.76 to 0.78',
-							// '0.78 to 0.81',
-							// '0.81 to 0.84',
-							// '0.84 to 0.86',
-							// '0.86 to 0.89',
-							// '0.89 to 0.92',
-							// '0.92 to 0.95',
-							// '0.95 to 0.97',
-							// '0.97 to 1.00',
-							// '1.00 to 1.03',
-							// '1.03 to 1.05',
-							// '1.05 to 1.08',
-							// '1.08 to 1.11',
-							// '1.11 to 1.13',
-							// '1.13 to 1.16',
-							// '1.16 to 1.19',
-							// '1.19 to 1.21',
-							// '1.21 to 1.24',
-							// '1.24 to 1.27'
-							'-0.31 to -0.28',
-							'-0.28 to -0.25',
-							'-0.25 to -0.22',
-							'-0.22 to -0.19',
-							'-0.19 to -0.16',
-							'-0.16 to -0.13',
-							'-0.13 to -0.10',
-							'-0.10 to -0.07',
-							'-0.07 to -0.04',
-							'-0.04 to -0.02',
-							'-0.02 to 0.01',
-							'0.01 to 0.04',
-							'0.04 to 0.07',
-							'0.07 to 0.10',
-							'0.10 to 0.13',
-							'0.13 to 0.16',
-							'0.16 to 0.19',
-							'0.19 to 0.22',
-							'0.22 to 0.25',
-							'0.25 to 0.28',
-							'0.28 to 0.31',
-							'0.31 to 0.34',
-							'0.34 to 0.37',
-							'0.37 to 0.40',
-							'0.40 to 0.43',
-							'0.43 to 0.46',
-							'0.46 to 0.49',
-							'0.49 to 0.52',
-							'0.52 to 0.55',
-							'0.55 to 0.57',
-							'0.57 to 0.60',
-							'0.60 to 0.63',
-							'0.63 to 0.66',
-							'0.66 to 0.69',
-							'0.69 to 0.72',
-							'0.72 to 0.75',
-							'0.75 to 0.78',
-							'0.78 to 0.81',
-							'0.81 to 0.84',
-							'0.84 to 0.87',
-							'0.87 to 0.90',
-							'0.90 to 0.93',
-							'0.93 to 0.96',
-							'0.96 to 0.99',
-							'0.99 to 1.02',
-							'1.02 to 1.05',
-							'1.05 to 1.08',
-							'1.08 to 1.11',
-							'1.11 to 1.14',
-							'1.14 to 1.16'
-						],
+		// 	description: 'Temperature trend analysis with overall vs significant trend options',
+		// 	control_type: 'radio',
+		// 	control_options: ['overall', 'significant'],
+		// 	default_option: 'overall',
+		// 	charts: [
+		// 		{
+		// 			title: 'Distribution of Annual Mean Temperature Trends (°C/decade)',
+		// 			chart_type: 'column',
+		// 			yAxisTitle: 'Pixel count',
+		// 			chart_data: {
+		// 				categories: [
+		// 					// '-0.08 to -0.05',
+		// 					// '-0.05 to -0.02',
+		// 					// '-0.02 to 0.01',
+		// 					// '0.01 to 0.03',
+		// 					// '0.03 to 0.06',
+		// 					// '0.06 to 0.09',
+		// 					// '0.09 to 0.11',
+		// 					// '0.11 to 0.14',
+		// 					// '0.14 to 0.17',
+		// 					// '0.17 to 0.19',
+		// 					// '0.19 to 0.22',
+		// 					// '0.22 to 0.25',
+		// 					// '0.25 to 0.27',
+		// 					// '0.27 to 0.30',
+		// 					// '0.30 to 0.33',
+		// 					// '0.33 to 0.35',
+		// 					// '0.35 to 0.38',
+		// 					// '0.38 to 0.41',
+		// 					// '0.41 to 0.43',
+		// 					// '0.43 to 0.46',
+		// 					// '0.46 to 0.49',
+		// 					// '0.49 to 0.52',
+		// 					// '0.52 to 0.54',
+		// 					// '0.54 to 0.57',
+		// 					// '0.57 to 0.60',
+		// 					// '0.60 to 0.62',
+		// 					// '0.62 to 0.65',
+		// 					// '0.65 to 0.68',
+		// 					// '0.68 to 0.70',
+		// 					// '0.70 to 0.73',
+		// 					// '0.73 to 0.76',
+		// 					// '0.76 to 0.78',
+		// 					// '0.78 to 0.81',
+		// 					// '0.81 to 0.84',
+		// 					// '0.84 to 0.86',
+		// 					// '0.86 to 0.89',
+		// 					// '0.89 to 0.92',
+		// 					// '0.92 to 0.95',
+		// 					// '0.95 to 0.97',
+		// 					// '0.97 to 1.00',
+		// 					// '1.00 to 1.03',
+		// 					// '1.03 to 1.05',
+		// 					// '1.05 to 1.08',
+		// 					// '1.08 to 1.11',
+		// 					// '1.11 to 1.13',
+		// 					// '1.13 to 1.16',
+		// 					// '1.16 to 1.19',
+		// 					// '1.19 to 1.21',
+		// 					// '1.21 to 1.24',
+		// 					// '1.24 to 1.27'
+		// 					'-0.31 to -0.28',
+		// 					'-0.28 to -0.25',
+		// 					'-0.25 to -0.22',
+		// 					'-0.22 to -0.19',
+		// 					'-0.19 to -0.16',
+		// 					'-0.16 to -0.13',
+		// 					'-0.13 to -0.10',
+		// 					'-0.10 to -0.07',
+		// 					'-0.07 to -0.04',
+		// 					'-0.04 to -0.02',
+		// 					'-0.02 to 0.01',
+		// 					'0.01 to 0.04',
+		// 					'0.04 to 0.07',
+		// 					'0.07 to 0.10',
+		// 					'0.10 to 0.13',
+		// 					'0.13 to 0.16',
+		// 					'0.16 to 0.19',
+		// 					'0.19 to 0.22',
+		// 					'0.22 to 0.25',
+		// 					'0.25 to 0.28',
+		// 					'0.28 to 0.31',
+		// 					'0.31 to 0.34',
+		// 					'0.34 to 0.37',
+		// 					'0.37 to 0.40',
+		// 					'0.40 to 0.43',
+		// 					'0.43 to 0.46',
+		// 					'0.46 to 0.49',
+		// 					'0.49 to 0.52',
+		// 					'0.52 to 0.55',
+		// 					'0.55 to 0.57',
+		// 					'0.57 to 0.60',
+		// 					'0.60 to 0.63',
+		// 					'0.63 to 0.66',
+		// 					'0.66 to 0.69',
+		// 					'0.69 to 0.72',
+		// 					'0.72 to 0.75',
+		// 					'0.75 to 0.78',
+		// 					'0.78 to 0.81',
+		// 					'0.81 to 0.84',
+		// 					'0.84 to 0.87',
+		// 					'0.87 to 0.90',
+		// 					'0.90 to 0.93',
+		// 					'0.93 to 0.96',
+		// 					'0.96 to 0.99',
+		// 					'0.99 to 1.02',
+		// 					'1.02 to 1.05',
+		// 					'1.05 to 1.08',
+		// 					'1.08 to 1.11',
+		// 					'1.11 to 1.14',
+		// 					'1.14 to 1.16'
+		// 				],
 
-						plotOptions: {
-							column: {
-								pointPadding: 0,
-								groupPadding: 0,
-								borderWidth: 0,
-								grouping: false,
-								pointPlacement: 0
-							}
-						},
-						series: [
-							{
-								name: 'Overall trends',
-								data: [
-									// 1, 3, 4, 8, 13, 25, 15, 59, 170, 158, 272, 342, 288, 523, 475, 322, 464, 426, 296,
-									// 403, 389, 346, 216, 301, 255, 155, 197, 114, 82, 86, 61, 50, 55, 46, 22, 34, 25,
-									// 19, 8, 13, 6, 4, 3, 3, 1, 2, 2, 1, 2, 1
-									2,
-									1, 3, 1, 2, 9, 25, 57, 83, 113, 187, 298, 460, 638, 986, 1628, 2395, 2655, 2443,
-									2395, 2503, 2570, 2418, 2015, 1643, 1578, 1503, 1470, 1410, 1267, 1220, 979, 763,
-									679, 580, 498, 439, 383, 343, 276, 218, 172, 142, 115, 70, 42, 28, 14, 9, 10
-								],
-								color: '#3B82F6', // Modern blue
-								zIndex: 1
-							},
-							{
-								name: 'Significant trends',
-								data: [
-									// 0, 0, 0, 0, 0, 0, 0, 8, 73, 102, 174, 199, 201, 392, 384, 273, 421, 399, 284, 389,
-									// 378, 341, 211, 299, 251, 155, 195, 114, 82, 86, 61, 50, 55, 46, 22, 34, 25, 19, 8,
-									// 13, 6, 4, 3, 3, 1, 2, 2, 1, 2, 1
-									0,
-									0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 364, 916, 1188, 1207, 1467, 1843, 2109,
-									2113, 1803, 1514, 1472, 1433, 1422, 1371, 1248, 1201, 969, 754, 672, 575, 495,
-									434, 377, 339, 272, 215, 165, 134, 113, 68, 38, 28, 14, 9, 10
-								],
-								color: '#EF4444', // Modern red
-								zIndex: 2
-							}
-						]
-					}
-				}
-			],
-			map_layers: {
-				overall: [
-					{
-						id: 'temp-trend-overall',
-						name: 'Overall Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
-						layerIndex: 0,
-						mapserver: 'arcgis'
-					}
-				],
-				significant: [
-					{
-						id: 'temp-trend-significant',
-						name: 'Significant Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
-						layerIndex: 5,
-						mapserver: 'arcgis'
-					}
-				]
-			}
-		},
+		// 				plotOptions: {
+		// 					column: {
+		// 						pointPadding: 0,
+		// 						groupPadding: 0,
+		// 						borderWidth: 0,
+		// 						grouping: false,
+		// 						pointPlacement: 0
+		// 					}
+		// 				},
+		// 				series: [
+		// 					{
+		// 						name: 'Overall trends',
+		// 						data: [
+		// 							// 1, 3, 4, 8, 13, 25, 15, 59, 170, 158, 272, 342, 288, 523, 475, 322, 464, 426, 296,
+		// 							// 403, 389, 346, 216, 301, 255, 155, 197, 114, 82, 86, 61, 50, 55, 46, 22, 34, 25,
+		// 							// 19, 8, 13, 6, 4, 3, 3, 1, 2, 2, 1, 2, 1
+		// 							2,
+		// 							1, 3, 1, 2, 9, 25, 57, 83, 113, 187, 298, 460, 638, 986, 1628, 2395, 2655, 2443,
+		// 							2395, 2503, 2570, 2418, 2015, 1643, 1578, 1503, 1470, 1410, 1267, 1220, 979, 763,
+		// 							679, 580, 498, 439, 383, 343, 276, 218, 172, 142, 115, 70, 42, 28, 14, 9, 10
+		// 						],
+		// 						color: '#3B82F6', // Modern blue
+		// 						zIndex: 1
+		// 					},
+		// 					{
+		// 						name: 'Significant trends',
+		// 						data: [
+		// 							// 0, 0, 0, 0, 0, 0, 0, 8, 73, 102, 174, 199, 201, 392, 384, 273, 421, 399, 284, 389,
+		// 							// 378, 341, 211, 299, 251, 155, 195, 114, 82, 86, 61, 50, 55, 46, 22, 34, 25, 19, 8,
+		// 							// 13, 6, 4, 3, 3, 1, 2, 2, 1, 2, 1
+		// 							0,
+		// 							0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 364, 916, 1188, 1207, 1467, 1843, 2109,
+		// 							2113, 1803, 1514, 1472, 1433, 1422, 1371, 1248, 1201, 969, 754, 672, 575, 495,
+		// 							434, 377, 339, 272, 215, 165, 134, 113, 68, 38, 28, 14, 9, 10
+		// 						],
+		// 						color: '#EF4444', // Modern red
+		// 						zIndex: 2
+		// 					}
+		// 				]
+		// 			}
+		// 		}
+		// 	],
+		// 	map_layers: {
+		// 		overall: [
+		// 			{
+		// 				id: 'temp-trend-overall',
+		// 				name: 'Overall Temperature Trend',
+		// 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+		// 				layerIndex: 0,
+		// 				mapserver: 'arcgis'
+		// 			}
+		// 		],
+		// 		significant: [
+		// 			{
+		// 				id: 'temp-trend-significant',
+		// 				name: 'Significant Temperature Trend',
+		// 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+		// 				layerIndex: 5,
+		// 				mapserver: 'arcgis'
+		// 			}
+		// 		]
+		// 	}
+		// },
 		{
 			id: 'temp-trend-30y',
 			title: 'Annual Temperature Trend Analysis',
@@ -1051,7 +1051,7 @@
 			control_type: 'nested_radio', // New control type for nested selections
 			control_options: {
 				trend_analysis: ['overall', 'significant'],
-				seasons: ['spring', 'summer', 'autumn', 'winter']
+				seasons: ['annual', 'spring', 'summer', 'autumn', 'winter']
 			},
 			default_option: {
 				trend_analysis: 'overall',
@@ -1059,7 +1059,156 @@
 			},
 			charts: [
 				{
-					title: 'Distribution of Winter Temperature Trend',
+					title: 'Distribution of Annual Mean Temperature Trends (°C/decade)',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
+					chart_data: {
+						categories: [
+							// '-0.08 to -0.05',
+							// '-0.05 to -0.02',
+							// '-0.02 to 0.01',
+							// '0.01 to 0.03',
+							// '0.03 to 0.06',
+							// '0.06 to 0.09',
+							// '0.09 to 0.11',
+							// '0.11 to 0.14',
+							// '0.14 to 0.17',
+							// '0.17 to 0.19',
+							// '0.19 to 0.22',
+							// '0.22 to 0.25',
+							// '0.25 to 0.27',
+							// '0.27 to 0.30',
+							// '0.30 to 0.33',
+							// '0.33 to 0.35',
+							// '0.35 to 0.38',
+							// '0.38 to 0.41',
+							// '0.41 to 0.43',
+							// '0.43 to 0.46',
+							// '0.46 to 0.49',
+							// '0.49 to 0.52',
+							// '0.52 to 0.54',
+							// '0.54 to 0.57',
+							// '0.57 to 0.60',
+							// '0.60 to 0.62',
+							// '0.62 to 0.65',
+							// '0.65 to 0.68',
+							// '0.68 to 0.70',
+							// '0.70 to 0.73',
+							// '0.73 to 0.76',
+							// '0.76 to 0.78',
+							// '0.78 to 0.81',
+							// '0.81 to 0.84',
+							// '0.84 to 0.86',
+							// '0.86 to 0.89',
+							// '0.89 to 0.92',
+							// '0.92 to 0.95',
+							// '0.95 to 0.97',
+							// '0.97 to 1.00',
+							// '1.00 to 1.03',
+							// '1.03 to 1.05',
+							// '1.05 to 1.08',
+							// '1.08 to 1.11',
+							// '1.11 to 1.13',
+							// '1.13 to 1.16',
+							// '1.16 to 1.19',
+							// '1.19 to 1.21',
+							// '1.21 to 1.24',
+							// '1.24 to 1.27'
+							'-0.31 to -0.28',
+							'-0.28 to -0.25',
+							'-0.25 to -0.22',
+							'-0.22 to -0.19',
+							'-0.19 to -0.16',
+							'-0.16 to -0.13',
+							'-0.13 to -0.10',
+							'-0.10 to -0.07',
+							'-0.07 to -0.04',
+							'-0.04 to -0.02',
+							'-0.02 to 0.01',
+							'0.01 to 0.04',
+							'0.04 to 0.07',
+							'0.07 to 0.10',
+							'0.10 to 0.13',
+							'0.13 to 0.16',
+							'0.16 to 0.19',
+							'0.19 to 0.22',
+							'0.22 to 0.25',
+							'0.25 to 0.28',
+							'0.28 to 0.31',
+							'0.31 to 0.34',
+							'0.34 to 0.37',
+							'0.37 to 0.40',
+							'0.40 to 0.43',
+							'0.43 to 0.46',
+							'0.46 to 0.49',
+							'0.49 to 0.52',
+							'0.52 to 0.55',
+							'0.55 to 0.57',
+							'0.57 to 0.60',
+							'0.60 to 0.63',
+							'0.63 to 0.66',
+							'0.66 to 0.69',
+							'0.69 to 0.72',
+							'0.72 to 0.75',
+							'0.75 to 0.78',
+							'0.78 to 0.81',
+							'0.81 to 0.84',
+							'0.84 to 0.87',
+							'0.87 to 0.90',
+							'0.90 to 0.93',
+							'0.93 to 0.96',
+							'0.96 to 0.99',
+							'0.99 to 1.02',
+							'1.02 to 1.05',
+							'1.05 to 1.08',
+							'1.08 to 1.11',
+							'1.11 to 1.14',
+							'1.14 to 1.16'
+						],
+
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0,
+								grouping: false,
+								pointPlacement: 0
+							}
+						},
+						series: [
+							{
+								name: 'Overall trends',
+								data: [
+									// 1, 3, 4, 8, 13, 25, 15, 59, 170, 158, 272, 342, 288, 523, 475, 322, 464, 426, 296,
+									// 403, 389, 346, 216, 301, 255, 155, 197, 114, 82, 86, 61, 50, 55, 46, 22, 34, 25,
+									// 19, 8, 13, 6, 4, 3, 3, 1, 2, 2, 1, 2, 1
+									2,
+									1, 3, 1, 2, 9, 25, 57, 83, 113, 187, 298, 460, 638, 986, 1628, 2395, 2655, 2443,
+									2395, 2503, 2570, 2418, 2015, 1643, 1578, 1503, 1470, 1410, 1267, 1220, 979, 763,
+									679, 580, 498, 439, 383, 343, 276, 218, 172, 142, 115, 70, 42, 28, 14, 9, 10
+								],
+								color: '#3B82F6', // Modern blue
+								zIndex: 1
+							},
+							{
+								name: 'Significant trends',
+								data: [
+									// 0, 0, 0, 0, 0, 0, 0, 8, 73, 102, 174, 199, 201, 392, 384, 273, 421, 399, 284, 389,
+									// 378, 341, 211, 299, 251, 155, 195, 114, 82, 86, 61, 50, 55, 46, 22, 34, 25, 19, 8,
+									// 13, 6, 4, 3, 3, 1, 2, 2, 1, 2, 1
+									0,
+									0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 364, 916, 1188, 1207, 1467, 1843, 2109,
+									2113, 1803, 1514, 1472, 1433, 1422, 1371, 1248, 1201, 969, 754, 672, 575, 495,
+									434, 377, 339, 272, 215, 165, 134, 113, 68, 38, 28, 14, 9, 10
+								],
+								color: '#EF4444', // Modern red
+								zIndex: 2
+							}
+						]
+					}
+				},
+				{
+					title: 'Distribution of Spring Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Pixel count',
 					// xAxisConfig: {
@@ -1067,12 +1216,14 @@
 					// 	min: -0.5,
 					// 	max: 2.23,
 					// 	title: {
-					// 		text: 'Temperature Change (°C/decade)'
+					// 		text: 'Spring Temperature Trend (°C/decade)'
 					// 	},
 					// 	labels: {
 					// 		formatter: function () {
-					// 			// Format the temperature values
-					// 			return this.value.toFixed(2);
+					// 			return this.value.toFixed(1);
+					// 		},
+					// 		style: {
+					// 			fontSize: '12px'
 					// 		}
 					// 	},
 					// 	tickInterval: 0.5,
@@ -1080,65 +1231,66 @@
 					// 	plotLines: [
 					// 		{
 					// 			color: '#666',
-					// 			width: 1,
+					// 			width: 2,
 					// 			value: 0, // baseline at 0°C
-					// 			zIndex: 4
+					// 			zIndex: 4,
+					// 			dashStyle: 'Dash'
 					// 		}
 					// 	]
 					// },
 					chart_data: {
 						// Remove categories since we're using numeric x-axis
 						categories: [
-							'-0.47 to -0.41',
-							'-0.41 to -0.35',
-							'-0.35 to -0.29',
-							'-0.29 to -0.22',
-							'-0.22 to -0.16',
-							'-0.16 to -0.10',
-							'-0.10 to -0.04',
-							'-0.04 to 0.02',
-							'0.02 to 0.08',
-							'0.08 to 0.14',
-							'0.14 to 0.20',
-							'0.20 to 0.26',
-							'0.26 to 0.32',
-							'0.32 to 0.38',
-							'0.38 to 0.44',
-							'0.44 to 0.50',
-							'0.50 to 0.56',
-							'0.56 to 0.62',
-							'0.62 to 0.68',
-							'0.68 to 0.74',
-							'0.74 to 0.80',
-							'0.80 to 0.86',
-							'0.86 to 0.92',
-							'0.92 to 0.98',
-							'0.98 to 1.04',
-							'1.04 to 1.10',
-							'1.10 to 1.16',
-							'1.16 to 1.23',
-							'1.23 to 1.29',
-							'1.29 to 1.35',
-							'1.35 to 1.41',
-							'1.41 to 1.47',
-							'1.47 to 1.53',
-							'1.53 to 1.59',
-							'1.59 to 1.65',
-							'1.65 to 1.71',
-							'1.71 to 1.77',
-							'1.77 to 1.83',
-							'1.83 to 1.89',
-							'1.89 to 1.95',
-							'1.95 to 2.01',
-							'2.01 to 2.07',
-							'2.07 to 2.13',
-							'2.13 to 2.19',
-							'2.19 to 2.25',
-							'2.25 to 2.31',
-							'2.31 to 2.37',
-							'2.37 to 2.43',
-							'2.43 to 2.49',
-							'2.49 to 2.55'
+							'-0.57 to -0.53',
+							'-0.53 to -0.50',
+							'-0.50 to -0.46',
+							'-0.46 to -0.42',
+							'-0.42 to -0.38',
+							'-0.38 to -0.35',
+							'-0.35 to -0.31',
+							'-0.31 to -0.27',
+							'-0.27 to -0.23',
+							'-0.23 to -0.19',
+							'-0.19 to -0.16',
+							'-0.16 to -0.12',
+							'-0.12 to -0.08',
+							'-0.08 to -0.04',
+							'-0.04 to -0.01',
+							'-0.01 to 0.03',
+							'0.03 to 0.07',
+							'0.07 to 0.11',
+							'0.11 to 0.15',
+							'0.15 to 0.18',
+							'0.18 to 0.22',
+							'0.22 to 0.26',
+							'0.26 to 0.30',
+							'0.30 to 0.33',
+							'0.33 to 0.37',
+							'0.37 to 0.41',
+							'0.41 to 0.45',
+							'0.45 to 0.49',
+							'0.49 to 0.52',
+							'0.52 to 0.56',
+							'0.56 to 0.60',
+							'0.60 to 0.64',
+							'0.64 to 0.67',
+							'0.67 to 0.71',
+							'0.71 to 0.75',
+							'0.75 to 0.79',
+							'0.79 to 0.83',
+							'0.83 to 0.86',
+							'0.86 to 0.90',
+							'0.90 to 0.94',
+							'0.94 to 0.98',
+							'0.98 to 1.01',
+							'1.01 to 1.05',
+							'1.05 to 1.09',
+							'1.09 to 1.13',
+							'1.13 to 1.17',
+							'1.17 to 1.20',
+							'1.20 to 1.24',
+							'1.24 to 1.28',
+							'1.28 to 1.32'
 						],
 
 						plotLines: [
@@ -1160,14 +1312,11 @@
 						},
 						series: [
 							{
-								name: 'Overall winter trends',
+								name: 'Overall spring trends',
 								data: [
-									// 5, 2, 8, 11, 21, 56, 49, 100, 152, 229, 278, 396, 607, 477, 639, 518, 556, 420,
-									// 399, 240, 237, 184, 171, 135, 130, 137, 79, 84, 79, 73, 41, 44, 29, 38, 16, 24,
-									// 23, 8, 17, 3, 10, 10, 12, 6, 5, 2, 1, 1, 1, 2
-									3, 12, 23, 48, 113, 252, 402, 771, 1634, 3297, 3888, 3925, 3622, 3116, 2923, 2539,
-									1886, 1480, 1402, 1163, 1004, 776, 696, 581, 510, 469, 448, 412, 421, 352, 275,
-									237, 198, 163, 105, 88, 86, 76, 67, 56, 44, 36, 25, 30, 34, 18, 17, 9, 4, 2
+									2, 6, 6, 8, 19, 14, 50, 76, 140, 166, 259, 352, 473, 624, 909, 1224, 1670, 2166,
+									2706, 2809, 2795, 2892, 2890, 2788, 2596, 1885, 1660, 1356, 1053, 976, 759, 736,
+									621, 564, 536, 404, 279, 246, 201, 200, 149, 131, 98, 76, 32, 39, 46, 20, 15, 16
 								],
 								color: '#3B82F6', // Modern blue
 								zIndex: 1
@@ -1175,13 +1324,9 @@
 							{
 								name: 'Significant trends',
 								data: [
-									// 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 5, 27, 69, 81, 50, 32, 21, 33, 42, 50, 44,
-									// 48, 48, 40, 43, 43, 52, 27, 32, 20, 27, 11, 18, 13, 7, 10, 3, 5, 10, 10, 5, 3, 1,
-									// 1, 0, 1, 1
-									0,
-									0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 40, 19, 52, 164, 143, 188, 251, 257, 271, 288,
-									291, 239, 266, 257, 288, 314, 307, 278, 206, 182, 150, 129, 76, 70, 67, 59, 62,
-									49, 31, 28, 21, 24, 32, 17, 17, 9, 4, 2
+									0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 19, 79, 95, 204, 326,
+									397, 472, 627, 548, 466, 490, 331, 306, 293, 330, 363, 325, 222, 220, 185, 194,
+									144, 126, 95, 73, 32, 39, 46, 20, 15, 16
 								],
 								color: '#EF4444', // Modern red
 								zIndex: 2
@@ -1189,187 +1334,6 @@
 						]
 					}
 				},
-
-				// {
-				// 	title: 'Overall Winter Temperature Trend',
-				// 	chart_type: 'column',
-				// 	yAxisTitle: 'Count',
-				// 	xAxisConfig: {
-				// 		type: 'linear',
-				// 		min: -0.5,
-				// 		max: 2.23,
-				// 		title: {
-				// 			text: 'Temperature Change (°C/decade)'
-				// 		},
-				// 		labels: {
-				// 			formatter: function (this: { value: number }) {
-				// 				// Format the temperature values
-				// 				return this.value.toFixed(2);
-				// 			}
-				// 		},
-				// 		tickInterval: 0.5,
-				// 		gridLineWidth: 1,
-				// 		plotLines: [
-				// 			{
-				// 				color: '#666',
-				// 				width: 1,
-				// 				value: 0, // baseline at 0°C
-				// 				zIndex: 4
-				// 			}
-				// 		]
-				// 	},
-				// 	chart_data: {
-				// 		// Remove categories since we're using numeric x-axis
-				// 		// categories: [...],
-
-				// 		plotLines: [
-				// 			{
-				// 				color: '#666',
-				// 				width: 1,
-				// 				value: 0, // baseline at 0°C
-				// 				zIndex: 4
-				// 			}
-				// 		],
-				// 		plotOptions: {
-				// 			column: {
-				// 				pointPadding: 0,
-				// 				groupPadding: 0,
-				// 				borderWidth: 0
-				// 			}
-				// 		},
-				// 		series: [
-				// 			{
-				// 				name: 'Overall Winter Temperature Trend',
-				// 				data: [
-				// 					// Convert to [x, y] format where x is the temperature value
-				// 					[-0.46, 7],
-				// 					[-0.375, 11],
-				// 					[-0.285, 23],
-				// 					[-0.2, 68],
-				// 					[-0.115, 122],
-				// 					[-0.03, 239],
-				// 					[0.055, 420],
-				// 					[0.14, 730],
-				// 					[0.225, 861],
-				// 					[0.31, 859],
-				// 					[0.395, 844],
-				// 					[0.48, 628],
-				// 					[0.565, 435],
-				// 					[0.65, 311],
-				// 					[0.735, 251],
-				// 					[0.82, 225],
-				// 					[0.905, 172],
-				// 					[0.99, 126],
-				// 					[1.075, 117],
-				// 					[1.16, 75],
-				// 					[1.245, 55],
-				// 					[1.33, 51],
-				// 					[1.415, 36],
-				// 					[1.5, 26],
-				// 					[1.585, 22],
-				// 					[1.67, 5],
-				// 					[1.755, 20],
-				// 					[1.84, 13],
-				// 					[1.925, 8],
-				// 					[2.01, 2],
-				// 					[2.095, 2],
-				// 					[2.18, 2]
-				// 				],
-				// 				color: '#7cb5ec'
-				// 			}
-				// 		]
-				// 	}
-				// },
-				// {
-				// 	title: 'Significant Winter Temperature Trend',
-				// 	chart_type: 'column',
-				// 	yAxisTitle: 'Count',
-				// 	xAxisConfig: {
-				// 		type: 'linear',
-				// 		min: -0.5,
-				// 		max: 2.23,
-				// 		title: {
-				// 			text: 'Temperature Change (°C/decade)'
-				// 		},
-				// 		labels: {
-				// 			formatter: function () {
-				// 				// Format the temperature values
-				// 				return this.value.toFixed(2);
-				// 			}
-				// 		},
-				// 		tickInterval: 0.5,
-				// 		gridLineWidth: 1,
-				// 		plotLines: [
-				// 			{
-				// 				color: '#666',
-				// 				width: 1,
-				// 				value: 0, // baseline at 0°C
-				// 				zIndex: 4
-				// 			}
-				// 		]
-				// 	},
-				// 	chart_data: {
-				// 		// Remove categories since we're using numeric x-axis
-				// 		// categories: [...],
-
-				// 		plotLines: [
-				// 			{
-				// 				color: '#666',
-				// 				width: 1,
-				// 				value: 0, // baseline at 0°C
-				// 				zIndex: 4
-				// 			}
-				// 		],
-				// 		plotOptions: {
-				// 			column: {
-				// 				pointPadding: 0,
-				// 				groupPadding: 0,
-				// 				borderWidth: 0
-				// 			}
-				// 		},
-				// 		series: [
-				// 			{
-				// 				name: 'Significant Winter Temperature Trend',
-				// 				data: [
-				// 					// Convert to [x, y] format
-				// 					[-0.46, 1],
-				// 					[-0.375, 0],
-				// 					[-0.285, 0],
-				// 					[-0.2, 0],
-				// 					[-0.115, 0],
-				// 					[-0.03, 0],
-				// 					[0.055, 20],
-				// 					[0.14, 110],
-				// 					[0.225, 89],
-				// 					[0.31, 45],
-				// 					[0.395, 34],
-				// 					[0.48, 64],
-				// 					[0.565, 64],
-				// 					[0.65, 76],
-				// 					[0.735, 64],
-				// 					[0.82, 59],
-				// 					[0.905, 59],
-				// 					[0.99, 62],
-				// 					[1.075, 42],
-				// 					[1.16, 33],
-				// 					[1.245, 24],
-				// 					[1.33, 26],
-				// 					[1.415, 12],
-				// 					[1.5, 11],
-				// 					[1.585, 6],
-				// 					[1.67, 13],
-				// 					[1.755, 12],
-				// 					[1.84, 4],
-				// 					[1.925, 2],
-				// 					[2.01, 0],
-				// 					[2.095, 2]
-				// 				],
-				// 				color: '#7cb5ec'
-				// 			}
-				// 		]
-				// 	}
-				// },
-
 				{
 					title: 'Distribution of Summer Temperature Trend',
 					chart_type: 'column',
@@ -1507,134 +1471,6 @@
 				},
 
 				{
-					title: 'Distribution of Spring Temperature Trend',
-					chart_type: 'column',
-					yAxisTitle: 'Pixel count',
-					// xAxisConfig: {
-					// 	type: 'linear',
-					// 	min: -0.5,
-					// 	max: 2.23,
-					// 	title: {
-					// 		text: 'Spring Temperature Trend (°C/decade)'
-					// 	},
-					// 	labels: {
-					// 		formatter: function () {
-					// 			return this.value.toFixed(1);
-					// 		},
-					// 		style: {
-					// 			fontSize: '12px'
-					// 		}
-					// 	},
-					// 	tickInterval: 0.5,
-					// 	gridLineWidth: 1,
-					// 	plotLines: [
-					// 		{
-					// 			color: '#666',
-					// 			width: 2,
-					// 			value: 0, // baseline at 0°C
-					// 			zIndex: 4,
-					// 			dashStyle: 'Dash'
-					// 		}
-					// 	]
-					// },
-					chart_data: {
-						// Remove categories since we're using numeric x-axis
-						categories: [
-							'-0.57 to -0.53',
-							'-0.53 to -0.50',
-							'-0.50 to -0.46',
-							'-0.46 to -0.42',
-							'-0.42 to -0.38',
-							'-0.38 to -0.35',
-							'-0.35 to -0.31',
-							'-0.31 to -0.27',
-							'-0.27 to -0.23',
-							'-0.23 to -0.19',
-							'-0.19 to -0.16',
-							'-0.16 to -0.12',
-							'-0.12 to -0.08',
-							'-0.08 to -0.04',
-							'-0.04 to -0.01',
-							'-0.01 to 0.03',
-							'0.03 to 0.07',
-							'0.07 to 0.11',
-							'0.11 to 0.15',
-							'0.15 to 0.18',
-							'0.18 to 0.22',
-							'0.22 to 0.26',
-							'0.26 to 0.30',
-							'0.30 to 0.33',
-							'0.33 to 0.37',
-							'0.37 to 0.41',
-							'0.41 to 0.45',
-							'0.45 to 0.49',
-							'0.49 to 0.52',
-							'0.52 to 0.56',
-							'0.56 to 0.60',
-							'0.60 to 0.64',
-							'0.64 to 0.67',
-							'0.67 to 0.71',
-							'0.71 to 0.75',
-							'0.75 to 0.79',
-							'0.79 to 0.83',
-							'0.83 to 0.86',
-							'0.86 to 0.90',
-							'0.90 to 0.94',
-							'0.94 to 0.98',
-							'0.98 to 1.01',
-							'1.01 to 1.05',
-							'1.05 to 1.09',
-							'1.09 to 1.13',
-							'1.13 to 1.17',
-							'1.17 to 1.20',
-							'1.20 to 1.24',
-							'1.24 to 1.28',
-							'1.28 to 1.32'
-						],
-
-						plotLines: [
-							{
-								color: '#666',
-								width: 1,
-								value: 0, // baseline at 0°C
-								zIndex: 4
-							}
-						],
-						plotOptions: {
-							column: {
-								pointPadding: 0,
-								groupPadding: 0,
-								borderWidth: 0,
-								grouping: false,
-								pointPlacement: 0
-							}
-						},
-						series: [
-							{
-								name: 'Overall spring trends',
-								data: [
-									2, 6, 6, 8, 19, 14, 50, 76, 140, 166, 259, 352, 473, 624, 909, 1224, 1670, 2166,
-									2706, 2809, 2795, 2892, 2890, 2788, 2596, 1885, 1660, 1356, 1053, 976, 759, 736,
-									621, 564, 536, 404, 279, 246, 201, 200, 149, 131, 98, 76, 32, 39, 46, 20, 15, 16
-								],
-								color: '#3B82F6', // Modern blue
-								zIndex: 1
-							},
-							{
-								name: 'Significant trends',
-								data: [
-									0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 19, 79, 95, 204, 326,
-									397, 472, 627, 548, 466, 490, 331, 306, 293, 330, 363, 325, 222, 220, 185, 194,
-									144, 126, 95, 73, 32, 39, 46, 20, 15, 16
-								],
-								color: '#EF4444', // Modern red
-								zIndex: 2
-							}
-						]
-					}
-				},
-
-				{
 					title: 'Distribution of Autumn Temperature Trend',
 					chart_type: 'column',
 					yAxisTitle: 'Pixel count',
@@ -1755,6 +1591,137 @@
 									0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 26, 140, 417, 1146, 1680, 1960, 1929, 1222, 969,
 									743, 588, 494, 571, 614, 628, 683, 621, 510, 491, 427, 393, 364, 381, 367, 295,
 									205, 146, 107, 102, 63, 50, 37, 49, 19, 18, 13, 6, 6, 2
+								],
+								color: '#EF4444', // Modern red
+								zIndex: 2
+							}
+						]
+					}
+				},
+				{
+					title: 'Distribution of Winter Temperature Trend',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
+					// xAxisConfig: {
+					// 	type: 'linear',
+					// 	min: -0.5,
+					// 	max: 2.23,
+					// 	title: {
+					// 		text: 'Temperature Change (°C/decade)'
+					// 	},
+					// 	labels: {
+					// 		formatter: function () {
+					// 			// Format the temperature values
+					// 			return this.value.toFixed(2);
+					// 		}
+					// 	},
+					// 	tickInterval: 0.5,
+					// 	gridLineWidth: 1,
+					// 	plotLines: [
+					// 		{
+					// 			color: '#666',
+					// 			width: 1,
+					// 			value: 0, // baseline at 0°C
+					// 			zIndex: 4
+					// 		}
+					// 	]
+					// },
+					chart_data: {
+						// Remove categories since we're using numeric x-axis
+						categories: [
+							'-0.47 to -0.41',
+							'-0.41 to -0.35',
+							'-0.35 to -0.29',
+							'-0.29 to -0.22',
+							'-0.22 to -0.16',
+							'-0.16 to -0.10',
+							'-0.10 to -0.04',
+							'-0.04 to 0.02',
+							'0.02 to 0.08',
+							'0.08 to 0.14',
+							'0.14 to 0.20',
+							'0.20 to 0.26',
+							'0.26 to 0.32',
+							'0.32 to 0.38',
+							'0.38 to 0.44',
+							'0.44 to 0.50',
+							'0.50 to 0.56',
+							'0.56 to 0.62',
+							'0.62 to 0.68',
+							'0.68 to 0.74',
+							'0.74 to 0.80',
+							'0.80 to 0.86',
+							'0.86 to 0.92',
+							'0.92 to 0.98',
+							'0.98 to 1.04',
+							'1.04 to 1.10',
+							'1.10 to 1.16',
+							'1.16 to 1.23',
+							'1.23 to 1.29',
+							'1.29 to 1.35',
+							'1.35 to 1.41',
+							'1.41 to 1.47',
+							'1.47 to 1.53',
+							'1.53 to 1.59',
+							'1.59 to 1.65',
+							'1.65 to 1.71',
+							'1.71 to 1.77',
+							'1.77 to 1.83',
+							'1.83 to 1.89',
+							'1.89 to 1.95',
+							'1.95 to 2.01',
+							'2.01 to 2.07',
+							'2.07 to 2.13',
+							'2.13 to 2.19',
+							'2.19 to 2.25',
+							'2.25 to 2.31',
+							'2.31 to 2.37',
+							'2.37 to 2.43',
+							'2.43 to 2.49',
+							'2.49 to 2.55'
+						],
+
+						plotLines: [
+							{
+								color: '#666',
+								width: 1,
+								value: 0, // baseline at 0°C
+								zIndex: 4
+							}
+						],
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0,
+								grouping: false,
+								pointPlacement: 0
+							}
+						},
+						series: [
+							{
+								name: 'Overall winter trends',
+								data: [
+									// 5, 2, 8, 11, 21, 56, 49, 100, 152, 229, 278, 396, 607, 477, 639, 518, 556, 420,
+									// 399, 240, 237, 184, 171, 135, 130, 137, 79, 84, 79, 73, 41, 44, 29, 38, 16, 24,
+									// 23, 8, 17, 3, 10, 10, 12, 6, 5, 2, 1, 1, 1, 2
+									3, 12, 23, 48, 113, 252, 402, 771, 1634, 3297, 3888, 3925, 3622, 3116, 2923, 2539,
+									1886, 1480, 1402, 1163, 1004, 776, 696, 581, 510, 469, 448, 412, 421, 352, 275,
+									237, 198, 163, 105, 88, 86, 76, 67, 56, 44, 36, 25, 30, 34, 18, 17, 9, 4, 2
+								],
+								color: '#3B82F6', // Modern blue
+								zIndex: 1
+							},
+							{
+								name: 'Significant trends',
+								data: [
+									// 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 5, 27, 69, 81, 50, 32, 21, 33, 42, 50, 44,
+									// 48, 48, 40, 43, 43, 52, 27, 32, 20, 27, 11, 18, 13, 7, 10, 3, 5, 10, 10, 5, 3, 1,
+									// 1, 0, 1, 1
+									0,
+									0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 40, 19, 52, 164, 143, 188, 251, 257, 271, 288,
+									291, 239, 266, 257, 288, 314, 307, 278, 206, 182, 150, 129, 76, 70, 67, 59, 62,
+									49, 31, 28, 21, 24, 32, 17, 17, 9, 4, 2
 								],
 								color: '#EF4444', // Modern red
 								zIndex: 2
@@ -2128,12 +2095,21 @@
 			map_layers: {
 				// Nested structure: trend_analysis -> season -> layer_config
 				overall: {
+					annual: [
+						{
+							id: 'annual-overall-annual',
+							name: 'Annual Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 0,
+							mapserver: 'arcgis'
+						}
+					],
 					spring: [
 						{
 							id: 'seasonal-overall-spring',
 							name: 'Spring Temperature Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
-							layerIndex: 1,
+							layerIndex: 2,
 							mapserver: 'arcgis'
 						}
 					],
@@ -2142,7 +2118,7 @@
 							id: 'seasonal-overall-summer',
 							name: 'Summer Temperature Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
-							layerIndex: 2,
+							layerIndex: 4,
 							mapserver: 'arcgis'
 						}
 					],
@@ -2151,7 +2127,7 @@
 							id: 'seasonal-overall-autumn',
 							name: 'Autumn Temperature Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
-							layerIndex: 3,
+							layerIndex: 6,
 							mapserver: 'arcgis'
 						}
 					],
@@ -2160,18 +2136,27 @@
 							id: 'seasonal-overall-winter',
 							name: 'Winter Temperature Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
-							layerIndex: 4,
+							layerIndex: 8,
 							mapserver: 'arcgis'
 						}
 					]
 				},
 				significant: {
+					annual: [
+						{
+							id: 'annual-overall-annual',
+							name: 'Annual Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
+							layerIndex: 1,
+							mapserver: 'arcgis'
+						}
+					],
 					spring: [
 						{
 							id: 'seasonal-significant-spring',
 							name: 'Spring Temperature Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
-							layerIndex: 8,
+							layerIndex: 3,
 							mapserver: 'arcgis'
 						}
 					],
@@ -2180,7 +2165,7 @@
 							id: 'seasonal-significant-summer',
 							name: 'Summer Temperature Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
-							layerIndex: 7,
+							layerIndex: 5,
 							mapserver: 'arcgis'
 						}
 					],
@@ -2189,7 +2174,7 @@
 							id: 'seasonal-significant-autumn',
 							name: 'Autumn Temperature Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
-							layerIndex: 9,
+							layerIndex: 7,
 							mapserver: 'arcgis'
 						}
 					],
@@ -2198,21 +2183,149 @@
 							id: 'seasonal-significant-winter',
 							name: 'Winter Temperature Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
-							layerIndex: 6,
+							layerIndex: 9,
 							mapserver: 'arcgis'
 						}
 					]
 				}
 			}
 		},
-		{
-			id: 'ppt-trend-10y',
-			title: 'Overall Precipitation Trend Analysis of 10 Years',
+		// {
+		// 	id: 'ppt-trend-10y',
+		// 	title: 'Overall Precipitation Trend Analysis of 10 Years',
 
-			description: 'Precipitation trend analysis with overall vs significant trend options',
-			control_type: 'radio',
-			control_options: ['overall', 'significant'],
-			default_option: 'overall',
+		// 	description: 'Precipitation trend analysis with overall vs significant trend options',
+		// 	control_type: 'radio',
+		// 	control_options: ['overall', 'significant'],
+		// 	default_option: 'overall',
+		// 	charts: [
+		// 		{
+		// 			title: 'Distribution of Annual Mean Precipitation Trends (mm/decade)',
+		// 			chart_type: 'column',
+		// 			yAxisTitle: 'Pixel count',
+		// 			chart_data: {
+		// 				categories: [
+		// 					'-336.56 to -325.8',
+		// 					'-325.8 to -315.05',
+		// 					'-315.05 to -304.3',
+		// 					'-304.3 to -293.55',
+		// 					'-293.55 to -282.79',
+		// 					'-282.79 to -272.04',
+		// 					'-272.04 to -261.29',
+		// 					'-261.29 to -250.53',
+		// 					'-250.53 to -239.78',
+		// 					'-239.78 to -229.03',
+		// 					'-229.03 to -218.27',
+		// 					'-218.27 to -207.52',
+		// 					'-207.52 to -196.77',
+		// 					'-196.77 to -186.01',
+		// 					'-186.01 to -175.26',
+		// 					'-175.26 to -164.51',
+		// 					'-164.51 to -153.75',
+		// 					'-153.75 to -143.0',
+		// 					'-143.0 to -132.25',
+		// 					'-132.25 to -121.5',
+		// 					'-121.5 to -110.74',
+		// 					'-110.74 to -99.99',
+		// 					'-99.99 to -89.24',
+		// 					'-89.24 to -78.48',
+		// 					'-78.48 to -67.73',
+		// 					'-67.73 to -56.98',
+		// 					'-56.98 to -46.22',
+		// 					'-46.22 to -35.47',
+		// 					'-35.47 to -24.72',
+		// 					'-24.72 to -13.96',
+		// 					'-13.96 to -3.21',
+		// 					'-3.21 to 7.54',
+		// 					'7.54 to 18.29',
+		// 					'18.29 to 29.05',
+		// 					'29.05 to 39.8',
+		// 					'39.8 to 50.55',
+		// 					'50.55 to 61.31',
+		// 					'61.31 to 72.06',
+		// 					'72.06 to 82.81',
+		// 					'82.81 to 93.57',
+		// 					'93.57 to 104.32',
+		// 					'104.32 to 115.07',
+		// 					'115.07 to 125.83',
+		// 					'125.83 to 136.58',
+		// 					'136.58 to 147.33',
+		// 					'147.33 to 158.08',
+		// 					'158.08 to 168.84',
+		// 					'168.84 to 179.59',
+		// 					'179.59 to 190.34',
+		// 					'190.34 to 201.1'
+		// 				],
+
+		// 				plotOptions: {
+		// 					column: {
+		// 						pointPadding: 0,
+		// 						groupPadding: 0,
+		// 						borderWidth: 0,
+		// 						grouping: false,
+		// 						pointPlacement: 0
+		// 					}
+		// 				},
+		// 				series: [
+		// 					{
+		// 						name: 'Overall trends',
+		// 						data: [
+		// 							3, 0, 0, 0, 1, 1, 1, 5, 9, 12, 20, 27, 40, 39, 51, 60, 76, 94, 114, 141, 154, 179,
+		// 							255, 401, 549, 659, 899, 1259, 1380, 2014, 6787, 14960, 7537, 1203, 375, 180, 110,
+		// 							68, 76, 41, 17, 18, 12, 9, 11, 14, 14, 4, 2, 7
+		// 						],
+		// 						color: '#3B82F6', // Modern blue
+		// 						zIndex: 1
+		// 					},
+		// 					{
+		// 						name: 'Significant trends',
+		// 						data: [
+		// 							3, 0, 0, 0, 1, 1, 1, 5, 9, 12, 20, 27, 39, 37, 50, 57, 69, 87, 104, 118, 119, 145,
+		// 							207, 333, 445, 432, 514, 507, 352, 312, 31, 33, 1467, 355, 102, 69, 64, 38, 59,
+		// 							36, 15, 14, 11, 8, 9, 12, 9, 4, 2, 7
+		// 						],
+		// 						color: '#EF4444', // Modern red
+		// 						zIndex: 2
+		// 					}
+		// 				]
+		// 			}
+		// 		}
+		// 	],
+		// 	map_layers: {
+		// 		overall: [
+		// 			{
+		// 				id: 'ppt-trend-overall',
+		// 				name: 'Overall Precipitation Trend',
+		// 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+		// 				layerIndex: 0,
+		// 				mapserver: 'arcgis'
+		// 			}
+		// 		],
+		// 		significant: [
+		// 			{
+		// 				id: 'ppt-trend-significant',
+		// 				name: 'Significant Precipitation Trend',
+		// 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+		// 				layerIndex: 5,
+		// 				mapserver: 'arcgis'
+		// 			}
+		// 		]
+		// 	}
+		// },
+		{
+			id: 'seasonal-ppt-trend',
+			title: 'Seasonal Precipitation Trend Analysis',
+			description:
+				'Seasonal precipitation trend analysis with overall vs significant trend options across different seasons',
+			control_type: 'nested_radio', // New control type for nested selections
+			control_options: {
+				trend_analysis: ['overall', 'significant'],
+				seasons: ['annual', 'spring', 'summer', 'autumn', 'winter']
+			},
+			default_option: {
+				trend_analysis: 'overall',
+				season: 'spring'
+			},
 			charts: [
 				{
 					title: 'Distribution of Annual Mean Precipitation Trends (mm/decade)',
@@ -2304,44 +2417,7 @@
 							}
 						]
 					}
-				}
-			],
-			map_layers: {
-				overall: [
-					{
-						id: 'ppt-trend-overall',
-						name: 'Overall Precipitation Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
-						layerIndex: 0,
-						mapserver: 'arcgis'
-					}
-				],
-				significant: [
-					{
-						id: 'ppt-trend-significant',
-						name: 'Significant Precipitation Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
-						layerIndex: 5,
-						mapserver: 'arcgis'
-					}
-				]
-			}
-		},
-		{
-			id: 'seasonal-ppt-trend',
-			title: 'Seasonal Precipitation Trend Analysis',
-			description:
-				'Seasonal precipitation trend analysis with overall vs significant trend options across different seasons',
-			control_type: 'nested_radio', // New control type for nested selections
-			control_options: {
-				trend_analysis: ['overall', 'significant'],
-				seasons: ['spring', 'summer', 'autumn', 'winter']
-			},
-			default_option: {
-				trend_analysis: 'overall',
-				season: 'spring'
-			},
-			charts: [
+				},
 				{
 					title: 'Distribution of Winter Precipitation Trend',
 					chart_type: 'column',
@@ -2749,6 +2825,15 @@
 			map_layers: {
 				// Nested structure: trend_analysis -> season -> layer_config
 				overall: {
+					annual: [
+						{
+							id: 'ppt-trend-overall',
+							name: 'Overall Precipitation Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+							layerIndex: 0,
+							mapserver: 'arcgis'
+						}
+					],
 					spring: [
 						{
 							id: 'seasonal-ppt-overall-spring',
@@ -2787,6 +2872,15 @@
 					]
 				},
 				significant: {
+					annual: [
+						{
+							id: 'ppt-trend-significant',
+							name: 'Significant Precipitation Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Precipitation_Trend_Decadal/MapServer',
+							layerIndex: 5,
+							mapserver: 'arcgis'
+						}
+					],
 					spring: [
 						{
 							id: 'seasonal-ppt-significant-spring',
@@ -3108,7 +3202,500 @@
 				trend_analysis: 'overall',
 				season: 'spring'
 			},
-			charts: [],
+			charts: [
+				{
+					title: 'Distribution of Annual Mean Snowfall Trend',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
+					chart_data: {
+						categories: [
+							'-16.82 to -16.46',
+							'-16.46 to -16.11',
+							'-16.11 to -15.75',
+							'-15.75 to -15.39',
+							'-15.39 to -15.04',
+							'-15.04 to -14.68',
+							'-14.68 to -14.33',
+							'-14.33 to -13.97',
+							'-13.97 to -13.62',
+							'-13.62 to -13.26',
+							'-13.26 to -12.91',
+							'-12.91 to -12.55',
+							'-12.55 to -12.20',
+							'-12.20 to -11.84',
+							'-11.84 to -11.49',
+							'-11.49 to -11.13',
+							'-11.13 to -10.78',
+							'-10.78 to -10.42',
+							'-10.42 to -10.07',
+							'-10.07 to -9.71',
+							'-9.71 to -9.36',
+							'-9.36 to -9.00',
+							'-9.00 to -8.65',
+							'-8.65 to -8.29',
+							'-8.29 to -7.94',
+							'-7.94 to -7.58',
+							'-7.58 to -7.23',
+							'-7.23 to -6.87',
+							'-6.87 to -6.52',
+							'-6.52 to -6.16',
+							'-6.16 to -5.81',
+							'-5.81 to -5.45',
+							'-5.45 to -5.10',
+							'-5.10 to -4.74',
+							'-4.74 to -4.39',
+							'-4.39 to -4.03',
+							'-4.03 to -3.68',
+							'-3.68 to -3.32',
+							'-3.32 to -2.96',
+							'-2.96 to -2.61',
+							'-2.61 to -2.25',
+							'-2.25 to -1.90',
+							'-1.90 to -1.54',
+							'-1.54 to -1.19',
+							'-1.19 to -0.83',
+							'-0.83 to -0.48',
+							'-0.48 to -0.12',
+							'-0.12 to 0.23',
+							'0.23 to 0.59',
+							'0.59 to 0.94'
+						],
+
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0,
+								grouping: false,
+								pointPlacement: 0
+							}
+						},
+						series: [
+							{
+								name: 'Overall trends',
+								data: [
+									1, 0, 1, 2, 0, 1, 0, 0, 1, 0, 0, 1, 1, 2, 1, 3, 5, 8, 5, 4, 6, 10, 13, 17, 26, 33,
+									24, 38, 45, 59, 69, 110, 137, 148, 178, 217, 314, 297, 371, 428, 564, 857, 1869,
+									4321, 7256, 7319, 5025, 3053, 14, 4
+								],
+								color: '#3B82F6', // Modern blue
+								zIndex: 1
+							},
+							{
+								name: 'Significant trends',
+								data: [
+									1, 0, 1, 2, 0, 1, 0, 0, 1, 0, 0, 1, 1, 2, 1, 3, 5, 8, 5, 4, 6, 10, 11, 15, 22, 29,
+									21, 25, 32, 44, 44, 81, 96, 98, 125, 124, 195, 180, 195, 229, 299, 443, 1167,
+									2988, 3972, 2176, 1169, 619, 0, 0
+								],
+								color: '#EF4444', // Modern red
+								zIndex: 2
+							}
+						]
+					}
+				},
+				{
+					title: 'Distribution of Spring Snowfall Trend',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
+					chart_data: {
+						// Remove categories since we're using numeric x-axis
+						categories: [
+							'-6.49 to -6.33',
+							'-6.33 to -6.16',
+							'-6.16 to -6.00',
+							'-6.00 to -5.84',
+							'-5.84 to -5.68',
+							'-5.68 to -5.52',
+							'-5.52 to -5.36',
+							'-5.36 to -5.20',
+							'-5.20 to -5.04',
+							'-5.04 to -4.87',
+							'-4.87 to -4.71',
+							'-4.71 to -4.55',
+							'-4.55 to -4.39',
+							'-4.39 to -4.23',
+							'-4.23 to -4.07',
+							'-4.07 to -3.91',
+							'-3.91 to -3.75',
+							'-3.75 to -3.58',
+							'-3.58 to -3.42',
+							'-3.42 to -3.26',
+							'-3.26 to -3.10',
+							'-3.10 to -2.94',
+							'-2.94 to -2.78',
+							'-2.78 to -2.62',
+							'-2.62 to -2.46',
+							'-2.46 to -2.29',
+							'-2.29 to -2.13',
+							'-2.13 to -1.97',
+							'-1.97 to -1.81',
+							'-1.81 to -1.65',
+							'-1.65 to -1.49',
+							'-1.49 to -1.33',
+							'-1.33 to -1.17',
+							'-1.17 to -1.00',
+							'-1.00 to -0.84',
+							'-0.84 to -0.68',
+							'-0.68 to -0.52',
+							'-0.52 to -0.36',
+							'-0.36 to -0.20',
+							'-0.20 to -0.04',
+							'-0.04 to 0.12',
+							'0.12 to 0.29',
+							'0.29 to 0.45',
+							'0.45 to 0.61',
+							'0.61 to 0.77',
+							'0.77 to 0.93',
+							'0.93 to 1.09',
+							'1.09 to 1.25',
+							'1.25 to 1.41',
+							'1.41 to 1.58'
+						],
+
+						plotLines: [
+							{
+								color: '#666',
+								width: 1,
+								value: 0, // baseline at 0°C
+								zIndex: 4
+							}
+						],
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0,
+								grouping: false,
+								pointPlacement: 0
+							}
+						},
+						series: [
+							{
+								name: 'Overall spring trends',
+								data: [
+									2, 0, 3, 1, 2, 2, 2, 4, 2, 3, 4, 4, 5, 8, 7, 5, 6, 6, 14, 9, 14, 15, 21, 20, 18,
+									33, 60, 72, 102, 156, 199, 230, 309, 413, 492, 585, 881, 1222, 2819, 8853, 10381,
+									2572, 513, 187, 84, 35, 17, 6, 1, 4
+								],
+								color: '#3B82F6', // Modern blue
+								zIndex: 1
+							},
+							{
+								name: 'Significant trends',
+								data: [
+									1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 4, 3, 1, 2, 1, 2, 2, 2, 2, 2, 0, 0, 1, 14,
+									17, 27, 28, 34, 48, 62, 81, 59, 80, 136, 207, 219, 436, 280, 0, 1, 2, 8, 4, 4, 4,
+									0, 1
+								],
+								color: '#EF4444', // Modern red
+								zIndex: 2
+							}
+						]
+					}
+				},
+				{
+					title: 'Distribution of Summer Snowfall Trend',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
+					chart_data: {
+						// Remove categories since we're using numeric x-axis
+						categories: [
+							'-2.53 to -2.46',
+							'-2.46 to -2.39',
+							'-2.39 to -2.32',
+							'-2.32 to -2.24',
+							'-2.24 to -2.17',
+							'-2.17 to -2.10',
+							'-2.10 to -2.03',
+							'-2.03 to -1.96',
+							'-1.96 to -1.88',
+							'-1.88 to -1.81',
+							'-1.81 to -1.74',
+							'-1.74 to -1.67',
+							'-1.67 to -1.59',
+							'-1.59 to -1.52',
+							'-1.52 to -1.45',
+							'-1.45 to -1.38',
+							'-1.38 to -1.30',
+							'-1.30 to -1.23',
+							'-1.23 to -1.16',
+							'-1.16 to -1.09',
+							'-1.09 to -1.02',
+							'-1.02 to -0.94',
+							'-0.94 to -0.87',
+							'-0.87 to -0.80',
+							'-0.80 to -0.73',
+							'-0.73 to -0.65',
+							'-0.65 to -0.58',
+							'-0.58 to -0.51',
+							'-0.51 to -0.44',
+							'-0.44 to -0.36',
+							'-0.36 to -0.29',
+							'-0.29 to -0.22',
+							'-0.22 to -0.15',
+							'-0.15 to -0.07',
+							'-0.07 to 0.00',
+							'0.00 to 0.07',
+							'0.07 to 0.14',
+							'0.14 to 0.21',
+							'0.21 to 0.29',
+							'0.29 to 0.36',
+							'0.36 to 0.43',
+							'0.43 to 0.50',
+							'0.50 to 0.58',
+							'0.58 to 0.65',
+							'0.65 to 0.72',
+							'0.72 to 0.79',
+							'0.79 to 0.87',
+							'0.87 to 0.94',
+							'0.94 to 1.01',
+							'1.01 to 1.08'
+						],
+
+						plotLines: [
+							{
+								color: '#666',
+								width: 1,
+								value: 0, // baseline at 0°C
+								zIndex: 4
+							}
+						],
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0,
+								grouping: false,
+								pointPlacement: 0
+							}
+						},
+						series: [
+							{
+								name: 'Overall summer trends',
+								data: [
+									1, 0, 1, 2, 0, 0, 2, 0, 0, 4, 2, 2, 2, 4, 7, 13, 22, 28, 38, 73, 101, 152, 284,
+									399, 718, 863, 1186, 1335, 1407, 1410, 1265, 1360, 1438, 1949, 3419, 3620, 1025,
+									453, 277, 165, 114, 86, 80, 62, 51, 23, 20, 12, 9, 6
+								],
+								color: '#3B82F6', // Modern blue
+								zIndex: 1
+							},
+							{
+								name: 'Significant trends',
+								data: [
+									0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 3, 4, 11, 14, 20, 32, 54, 68, 111, 209,
+									306, 551, 626, 768, 743, 620, 454, 274, 189, 140, 117, 146, 112, 10, 13, 6, 0, 5,
+									13, 12, 19, 25, 13, 15, 10, 6, 6
+								],
+								color: '#EF4444', // Modern red
+								zIndex: 2
+							}
+						]
+					}
+				},
+
+				{
+					title: 'Distribution of Autumn Snowfall Trend',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
+					chart_data: {
+						// Remove categories since we're using numeric x-axis
+						categories: [
+							'-4.64 to -4.53',
+							'-4.53 to -4.43',
+							'-4.43 to -4.32',
+							'-4.32 to -4.21',
+							'-4.21 to -4.10',
+							'-4.10 to -4.00',
+							'-4.00 to -3.89',
+							'-3.89 to -3.78',
+							'-3.78 to -3.67',
+							'-3.67 to -3.57',
+							'-3.57 to -3.46',
+							'-3.46 to -3.35',
+							'-3.35 to -3.24',
+							'-3.24 to -3.13',
+							'-3.13 to -3.03',
+							'-3.03 to -2.92',
+							'-2.92 to -2.81',
+							'-2.81 to -2.70',
+							'-2.70 to -2.60',
+							'-2.60 to -2.49',
+							'-2.49 to -2.38',
+							'-2.38 to -2.27',
+							'-2.27 to -2.16',
+							'-2.16 to -2.06',
+							'-2.06 to -1.95',
+							'-1.95 to -1.84',
+							'-1.84 to -1.73',
+							'-1.73 to -1.63',
+							'-1.63 to -1.52',
+							'-1.52 to -1.41',
+							'-1.41 to -1.30',
+							'-1.30 to -1.20',
+							'-1.20 to -1.09',
+							'-1.09 to -0.98',
+							'-0.98 to -0.87',
+							'-0.87 to -0.76',
+							'-0.76 to -0.66',
+							'-0.66 to -0.55',
+							'-0.55 to -0.44',
+							'-0.44 to -0.33',
+							'-0.33 to -0.23',
+							'-0.23 to -0.12',
+							'-0.12 to -0.01',
+							'-0.01 to 0.10',
+							'0.10 to 0.21',
+							'0.21 to 0.31',
+							'0.31 to 0.42',
+							'0.42 to 0.53',
+							'0.53 to 0.64',
+							'0.64 to 0.74'
+						],
+
+						plotLines: [
+							{
+								color: '#666',
+								width: 1,
+								value: 0, // baseline at 0°C
+								zIndex: 4
+							}
+						],
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0,
+								grouping: false,
+								pointPlacement: 0
+							}
+						},
+						series: [
+							{
+								name: 'Overall autumn trends',
+								data: [
+									1, 0, 0, 0, 0, 0, 1, 1, 2, 0, 1, 2, 0, 0, 1, 0, 0, 1, 3, 1, 3, 5, 4, 12, 14, 12,
+									21, 16, 38, 43, 58, 78, 114, 248, 381, 505, 728, 1218, 2224, 3567, 5202, 4808,
+									5690, 3425, 509, 243, 91, 49, 18, 6
+								],
+								color: '#3B82F6', // Modern blue
+								zIndex: 1
+							},
+							{
+								name: 'Significant trends',
+								data: [
+									1, 0, 0, 0, 0, 0, 1, 1, 2, 0, 1, 1, 0, 0, 1, 0, 0, 1, 2, 1, 2, 4, 3, 10, 12, 11,
+									18, 14, 37, 38, 52, 64, 92, 214, 360, 412, 545, 685, 1088, 984, 613, 377, 359,
+									149, 4, 0, 0, 0, 0, 0
+								],
+								color: '#EF4444', // Modern red
+								zIndex: 2
+							}
+						]
+					}
+				},
+				{
+					title: 'Distribution of Winter Snowfall Trend',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
+					chart_data: {
+						// Remove categories since we're using numeric x-axis
+						categories: [
+							'-3.57 to -3.50',
+							'-3.50 to -3.42',
+							'-3.42 to -3.34',
+							'-3.34 to -3.26',
+							'-3.26 to -3.18',
+							'-3.18 to -3.10',
+							'-3.10 to -3.02',
+							'-3.02 to -2.94',
+							'-2.94 to -2.87',
+							'-2.87 to -2.79',
+							'-2.79 to -2.71',
+							'-2.71 to -2.63',
+							'-2.63 to -2.55',
+							'-2.55 to -2.47',
+							'-2.47 to -2.39',
+							'-2.39 to -2.31',
+							'-2.31 to -2.23',
+							'-2.23 to -2.16',
+							'-2.16 to -2.08',
+							'-2.08 to -2.00',
+							'-2.00 to -1.92',
+							'-1.92 to -1.84',
+							'-1.84 to -1.76',
+							'-1.76 to -1.68',
+							'-1.68 to -1.60',
+							'-1.60 to -1.53',
+							'-1.53 to -1.45',
+							'-1.45 to -1.37',
+							'-1.37 to -1.29',
+							'-1.29 to -1.21',
+							'-1.21 to -1.13',
+							'-1.13 to -1.05',
+							'-1.05 to -0.97',
+							'-0.97 to -0.90',
+							'-0.90 to -0.82',
+							'-0.82 to -0.74',
+							'-0.74 to -0.66',
+							'-0.66 to -0.58',
+							'-0.58 to -0.50',
+							'-0.50 to -0.42',
+							'-0.42 to -0.34',
+							'-0.34 to -0.27',
+							'-0.27 to -0.19',
+							'-0.19 to -0.11',
+							'-0.11 to -0.03',
+							'-0.03 to 0.05',
+							'0.05 to 0.13',
+							'0.13 to 0.21',
+							'0.21 to 0.29',
+							'0.29 to 0.36'
+						],
+
+						plotLines: [
+							{
+								color: '#666',
+								width: 1,
+								value: 0, // baseline at 0°C
+								zIndex: 4
+							}
+						],
+						plotOptions: {
+							column: {
+								pointPadding: 0,
+								groupPadding: 0,
+								borderWidth: 0,
+								grouping: false,
+								pointPlacement: 0
+							}
+						},
+						series: [
+							{
+								name: 'Overall winter trends',
+								data: [
+									1, 0, 0, 1, 1, 0, 2, 1, 0, 1, 1, 1, 2, 1, 2, 4, 6, 3, 4, 6, 8, 25, 27, 35, 50, 61,
+									58, 68, 121, 122, 136, 169, 194, 258, 260, 293, 292, 425, 569, 836, 1151, 1230,
+									1535, 2124, 10745, 11904, 68, 17, 15, 7
+								],
+								color: '#3B82F6', // Modern blue
+								zIndex: 1
+							},
+							{
+								name: 'Significant trends',
+								data: [
+									1, 0, 0, 1, 1, 0, 2, 1, 0, 1, 1, 1, 1, 0, 2, 4, 4, 3, 4, 6, 8, 25, 27, 33, 50, 57,
+									54, 65, 116, 111, 123, 145, 170, 213, 203, 199, 209, 310, 376, 522, 650, 634, 591,
+									531, 1423, 252, 0, 0, 0, 0
+								],
+								color: '#EF4444', // Modern red
+								zIndex: 2
+							}
+						]
+					}
+				}
+			],
 			map_layers: {
 				// Nested structure: trend_analysis -> season -> layer_config
 				overall: {
@@ -3206,6 +3793,228 @@
 					]
 				}
 			}
+		},
+		{
+			id: 'min-temp-trend-10y',
+			title: 'Annual Minimum Temperature Trend Analysis of 10 Years',
+			control_type: 'nested_radio', // New control type for nested selections
+			control_options: {
+				trend_analysis: ['overall', 'significant'],
+				seasons: ['annual', 'spring', 'summer', 'autumn', 'winter']
+			},
+			default_option: {
+				trend_analysis: 'overall',
+				season: 'spring'
+			},
+			charts: [],
+			map_layers: {
+				// Nested structure: trend_analysis -> season -> layer_config
+				overall: {
+					annual: [
+						{
+							id: 'min-temp-trend-overall',
+							name: 'Annual Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 0,
+							mapserver: 'arcgis'
+						}
+					],
+					spring: [
+						{
+							id: 'min-temp-trend-overall-spring',
+							name: 'Spring Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 2,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'min-temp-trend-overall-summer',
+							name: 'Summer Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 4,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'min-temp-trend-overall-autumn',
+							name: 'Autumn Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 6,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'min-temp-trend-overall-winter',
+							name: 'Winter Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 8,
+							mapserver: 'arcgis'
+						}
+					]
+				},
+				significant: {
+					annual: [
+						{
+							id: 'min-temp-trend-significant',
+							name: 'Annual Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 1,
+							mapserver: 'arcgis'
+						}
+					],
+					spring: [
+						{
+							id: 'min-temp-trend-significant-spring',
+							name: 'Spring Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 3,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'min-temp-trend-significant-summer',
+							name: 'Summer Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 5,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'min-temp-trend-significant-autumn',
+							name: 'Autumn Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 7,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'min-temp-trend-significant-winter',
+							name: 'Winter Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 9,
+							mapserver: 'arcgis'
+						}
+					]
+				}
+			}
+		},
+		{
+			id: 'max-temp-trend-10y',
+			title: 'Annual Maximum Temperature Trend Analysis of 10 Years',
+			control_type: 'nested_radio', // New control type for nested selections
+			control_options: {
+				trend_analysis: ['overall', 'significant'],
+				seasons: ['annual', 'spring', 'summer', 'autumn', 'winter']
+			},
+			default_option: {
+				trend_analysis: 'overall',
+				season: 'spring'
+			},
+			charts: [],
+			map_layers: {
+				// Nested structure: trend_analysis -> season -> layer_config
+				overall: {
+					annual: [
+						{
+							id: 'max-temp-trend-overall',
+							name: 'Annual Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 10,
+							mapserver: 'arcgis'
+						}
+					],
+					spring: [
+						{
+							id: 'max-temp-trend-overall-spring',
+							name: 'Spring Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 12,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'max-temp-trend-overall-summer',
+							name: 'Summer Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 14,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'max-temp-trend-overall-autumn',
+							name: 'Autumn Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 16,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'max-temp-trend-overall-winter',
+							name: 'Winter Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 18,
+							mapserver: 'arcgis'
+						}
+					]
+				},
+				significant: {
+					annual: [
+						{
+							id: 'max-temp-trend-significant',
+							name: 'Annual Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 11,
+							mapserver: 'arcgis'
+						}
+					],
+					spring: [
+						{
+							id: 'max-temp-trend-significant-spring',
+							name: 'Spring Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 13,
+							mapserver: 'arcgis'
+						}
+					],
+					summer: [
+						{
+							id: 'max-temp-trend-significant-summer',
+							name: 'Summer Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 15,
+							mapserver: 'arcgis'
+						}
+					],
+					autumn: [
+						{
+							id: 'max-temp-trend-significant-autumn',
+							name: 'Autumn Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 17,
+							mapserver: 'arcgis'
+						}
+					],
+					winter: [
+						{
+							id: 'max-temp-trend-significant-winter',
+							name: 'Winter Temperature Trend',
+							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_MinMax_Temp_Trend_Decadal/MapServer',
+							layerIndex: 19,
+							mapserver: 'arcgis'
+						}
+					]
+				}
+			}
 		}
 	];
 
@@ -3237,53 +4046,60 @@
 		// }
 	];
 	const information_layers = [
-		{
-			id: 'map-indicator-1',
-			title: 'Annual Temperature Trend',
-			dataset_id: 'temp-trend-10y',
-			info: 'The Annual Mean Temperature Trend shows the spatial pattern of temperature change across the HKH region from 1995 to 2024. Each pixel indicates the rate of change in annual mean temperature per decade, derived using Sen-Median trend analysis and tested for significance with the Mann-Kendall (MK) test. The “Overall” layer shows trends for all pixels, while the “Significant” layer includes only those significant at the 95% confidence level (p < 0.05).',
-			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
-		},
+		// {
+		// 	id: 'map-indicator-1',
+		// 	title: 'Annual Temperature Trend',
+		// 	dataset_id: 'temp-trend-10y',
+		// 	info: 'The Annual Mean Temperature Trend shows the spatial pattern of temperature change across the HKH region from 1995 to 2024. Each pixel indicates the rate of change in annual mean temperature per decade, derived using Sen-Median trend analysis and tested for significance with the Mann-Kendall (MK) test. The “Overall” layer shows trends for all pixels, while the “Significant” layer includes only those significant at the 95% confidence level (p < 0.05).',
+		// 	source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
+		// },
 		{
 			id: 'map-indicator-2',
 			title: 'Seasonal Temperature Trend',
 			dataset_id: 'seasonal-temp-trend',
-			info: 'The seasonal temperature trend is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The seasonal temperature trend is expressed in degrees Celsius per decade.',
+			info: 'It represents  the spatial pattern of mean temperature trend for each climatic season: Spring (March-April-May), Summer (June-July-August), Autumn (September-October-November), and Winter (December-January-February)over the years(1995-2024).Each pixel on the map represents the rate of seasonal temperature change per decade, derived using Sen-Median trend analysis and Mann-Kendall (MK) test.The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-3',
 			title: 'Annual Temperature Anomaly',
 			dataset_id: 'annual-temp-anamoly-series',
-			info: 'The annual temperature anomaly is the average temperature change over a period of time. It is calculated by taking the average of the temperature data for the period and subtracting the average of the temperature data for the previous period. The annual temperature anomaly is expressed in degrees Celsius per decade.',
+			info: 'Annual Temperature Anamoly represents the timeseries map of temperature anamoly from 1995 to 2024. The anamoly value is calculated by subtracting the long-term baseline value from each years mean temperature, with the baseline defined as the average temperature over the 34-year period from 1991 to 2024.',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-4',
-			title: 'Annual Precipitation Trend',
-			dataset_id: 'ppt-trend-10y',
-			info: 'The annual precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation trend is expressed in millimeters per decade.',
-			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
+			title: 'Minimum Temperature Trend',
+			dataset_id: 'min-temp-trend-10y',
+			info: '',
+			source: ''
+		},
+		{
+			id: 'map-indicator-5',
+			title: 'Maximum Temperature Trend',
+			dataset_id: 'max-temp-trend-10y',
+			info: '',
+			source: ''
 		},
 		{
 			id: 'map-indicator-5',
 			title: 'Seasonal Precipitation Trend',
 			dataset_id: 'seasonal-ppt-trend',
-			info: 'The seasonal precipitation trend is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The seasonal precipitation trend is expressed in millimeters per decade.',
+			info: 'It Represents  the spatial pattern of precipitation trend for each climatic season: Spring (March-April-May), Summer (June-July-August), Autumn (September-October-November), and Winter (December-January-February)over the years(1995-2024).Each pixel on the map represents the rate of seasonal precipitation change per decade, derived using Sen-Median trend analysis and Mann-Kendall (MK) test.The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-6',
 			title: 'Annual Precipitation Anomaly',
 			dataset_id: 'annual-ppt-anamoly-series',
-			info: 'The annual precipitation anomaly is the average precipitation change over a period of time. It is calculated by taking the average of the precipitation data for the period and subtracting the average of the precipitation data for the previous period. The annual precipitation anomaly is expressed in millimeters per decade.',
+			info: 'Annual Precipitation Anamoly represents the timeseries map of precipitation anamoly from 1995 to 2024. The anamoly value is calculated by subtracting the long-term baseline value from each years total precipitation , with the baseline value defined as the average precipitation over the 34-year period from 1991 to 2024.',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-7',
 			title: 'Snowfall Trend',
 			dataset_id: 'seasonal-snowfall-trend-10y',
-			info: 'The seasonal snowfall trend Represents  the spatial pattern of snowfall trend for each climatic season: Spring (March-April-May), Summer (June-July-August), Autumn (September-October-November), and Winter (December-January-February)over the years(1995-2024).Each pixel on the map represents the rate of snowfall change per decade, derived using Sen-Median trend analysis and Mann-Kendall (MK) test.The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
+			info: 'The Snowfall Trend represents the spatial pattern of annual and seasonal (Spring, Summer, Autumn, Winter) snowfall trends from 1995 to 2024.Each pixel represents the rate of snowfall change per decade, derived using Sen-Median trend analysis and the Mann-Kendall (MK) test. The ""Overall"" results show the calculated trend for every pixel across the region, while the ""Significant"" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		}
 	];
@@ -3291,7 +4107,7 @@
 	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection)
-	let selectedInformationLayer = $state<string | null>('Annual Temperature Trend');
+	let selectedInformationLayer = $state<string | null>('Seasonal Temperature Trend');
 
 	// Track expanded layer for accordion - default closed
 	let expandedLayer = $state<string | null>(null);
