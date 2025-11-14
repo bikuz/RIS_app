@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import climate_1 from '$lib/assets/images/climate_1.png';
-	import climate_2 from '$lib/assets/images/climate_2.png';
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
@@ -66,6 +64,9 @@
 	let isPlaying = $state(false);
 	let currentTimeIndex = $state(0);
 	let playInterval: ReturnType<typeof setInterval> | null = null;
+
+	// Track iframe loading state
+	let isStoryMapLoading = $state(true);
 
 	// Time slider functions
 	function toggleTimeSlider() {
@@ -4989,202 +4990,77 @@
 		</button>
 	{/if}
 	<!-- Left Sidebar - Story + Questions -->
+
 	<div
-		class="sticky top-6 col-span-12 h-fit max-h-[calc(100vh-8rem)] flex-1 space-y-4 overflow-y-auto lg:col-span-3 lg:max-h-[calc(100vh-16rem)] lg:space-y-6"
+		class="sticky top-9 col-span-12 h-[90vh] min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 		class:hidden={layoutState === 'hide-left'}
 		class:lg:col-span-12={layoutState === 'left-full'}
+		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
 	>
-		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/100 p-4 lg:p-6">
-			<div class="mb-6 flex items-center justify-between">
-				<div class="flex items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
-						<Cloud class="h-5 w-5 text-white" />
+		<!-- StoryMap Iframe Container -->
+		<div class="relative h-full w-full overflow-hidden">
+			<!-- Loading Screen -->
+			{#if isStoryMapLoading}
+				<div
+					class="absolute inset-0 z-30 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100"
+				>
+					<div class="text-center">
+						<!-- Animated Spinner -->
+						<div class="mb-4 flex justify-center">
+							<div
+								class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500"
+							></div>
+						</div>
+						<!-- Loading Text -->
+						<p class="text-sm font-medium text-slate-600">Loading Story...</p>
+						<p class="mt-1 text-xs text-slate-500">Please wait</p>
 					</div>
-					<h3
-						class="{layoutState === 'left-full'
-							? 'text-2xl'
-							: 'text-lg'} font-bold text-slate-800 transition-all duration-300"
+				</div>
+			{/if}
+
+			<!-- Iframe -->
+			<iframe
+				src="https://storymaps.arcgis.com/stories/591c56e9ae254c649df92c33c07cffce"
+				width="100%"
+				height="100%"
+				style="border:none;"
+				allowfullscreen
+				class="h-full w-full"
+				title="ArcGIS StoryMap - Climate"
+				onload={() => {
+					isStoryMapLoading = false;
+				}}
+			></iframe>
+
+			<!-- Overlay Control Buttons -->
+			<div class="absolute top-2 right-2 z-20 flex items-center space-x-1 lg:space-x-2">
+				{#if layoutState !== 'left-full'}
+					<!-- Hide Left Panel Button - Show Map -->
+					<button
+						onclick={() => setLayoutState('hide-left')}
+						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+						title="Show Map"
 					>
-						Climate Change in HKH
-					</h3>
-				</div>
-				<div class="flex items-center space-x-2">
-					{#if layoutState !== 'left-full'}
-						<!-- Hide Left Panel Button -->
-						<button
-							onclick={() => setLayoutState('hide-left')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-							title="Hide Story Panel"
-						>
-							<ChevronsLeft class="h-5 w-5 lg:h-4 lg:w-4" />
-						</button>
-						<!-- Expand Story Button (Hidden on mobile) -->
-						<button
-							onclick={() => setLayoutState('left-full')}
-							class="hidden rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:block lg:p-1.5"
-							title="Expand Story"
-						>
-							<ChevronsRight class="h-5 w-5 lg:h-4 lg:w-4" />
-						</button>
-					{:else}
-						<!-- Back to Default Button -->
-						<button
-							onclick={() => setLayoutState('default')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-							title="Back to Default"
-						>
-							<ChevronsLeft class="h-5 w-5 lg:h-4 lg:w-4" />
-						</button>
-					{/if}
-				</div>
-			</div>
-
-			<div
-				class="{layoutState === 'left-full'
-					? 'space-y-6'
-					: 'space-y-4'} transition-all duration-300"
-			>
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-700 transition-all duration-300"
-				>
-					Historically, the climate of the HKH has experienced significant changes that are closely
-					related to the rise and fall of regional cultures and civilizations. The region is one of
-					the most climate-sensitive mountain systems in the world. Known as the "Third Pole" for
-					its vast ice reserves, the HKH plays a critical role in regulating Asia's climate and
-					serves as the source of ten major river systems that sustain the livelihoods of over 1.6
-					billion people downstream. However, the impacts of climate change are being felt here more
-					intensely than the global average, with temperatures rising significantly faster than
-					elsewhere.
-				</p>
-
-				<!-- First Image - After first paragraph -->
-				{#if layoutState === 'left-full'}
-					<div class="flex justify-center">
-						<div
-							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-						>
-							<img src={climate_1} alt="Himalayan glacial retreat" class="h-80 object-contain" />
-							<div class="p-4">
-								<p class="text-center text-sm leading-relaxed text-slate-700">
-									<span
-										>We see <span class="font-semibold text-slate-800"
-											>less snow on the mountain peaks
-										</span> in recent years
-									</span>
-								</p>
-							</div>
-						</div>
-					</div>
+						<ChevronsLeft class="h-3.5 w-3.5" />
+					</button>
+					<!-- Expand Story Button - Desktop only -->
+					<button
+						onclick={() => setLayoutState('left-full')}
+						class="hidden rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
+						title="Expand Story"
+					>
+						<ChevronsRight class="h-3.5 w-3.5" />
+					</button>
 				{:else}
-					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-						<img
-							src={climate_1}
-							alt="Himalayan glacial retreat"
-							class="h-50 w-full object-contain"
-						/>
-						<div class="p-2">
-							<p class="text-center text-xs text-slate-600">
-								<span
-									>We see <span class="font-semibold">less snow on the mountain peaks </span> in recent
-									years
-								</span>
-							</p>
-						</div>
-					</div>
+					<!-- Back to Default Button -->
+					<button
+						onclick={() => setLayoutState('default')}
+						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+						title="Back to Default"
+					>
+						<ChevronsLeft class="h-3.5 w-3.5" />
+					</button>
 				{/if}
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					In the future, even if global warming is kept to 1.5 °C, warming in the Hindu Kush
-					Himalaya (HKH) region will likely be at least 0.3 °C higher, and in the northwest Himalaya
-					and Karakoram at least 0.7 °C higher. Such large warming could trigger a multitude of
-					biophysical and socio-economic impacts, such as biodiversity loss, increased glacial
-					melting, and less predictable water availability—all of which will impact livelihoods and
-					well-being in the HKH.
-				</p>
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Glaciers in the HKH are retreating at unprecedented rates, snow cover is diminishing, and
-					permafrost is degrading, all of which are altering river flows and threatening water
-					security.
-				</p>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Climate change is also amplifying the frequency and severity of extreme weather events,
-					including floods, droughts, and landslides, which pose immediate risks to lives,
-					infrastructure, and economies. The loss of cryospheric mass not only threatens long-term
-					water availability but also increases the risk of glacial lake outburst floods (GLOFs)
-					that can devastate downstream communities.
-				</p>
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The impacts extend beyond the physical environment to agriculture, biodiversity, and
-					cultural heritage. Shifts in seasonal patterns are affecting crop yields, while warming
-					temperatures are pushing species to higher altitudes, disrupting delicate alpine
-					ecosystems. Many communities in the HKH rely on climate-sensitive livelihoods such as
-					farming, herding, and tourism, making them particularly vulnerable.
-				</p>
-
-				<!-- Second Image - Before last paragraph -->
-				{#if layoutState === 'left-full'}
-					<div class="flex justify-center">
-						<div
-							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-						>
-							<img src={climate_2} alt="Climate impacts" class="h-80 object-contain" />
-							<div class="p-4">
-								<p class="text-center text-sm leading-relaxed text-slate-700">
-									<span>
-										<span class="font-semibold text-slate-800"> Flooded street in Kathmandu </span> after
-										a less than an hour heavy downpour</span
-									>
-								</p>
-							</div>
-						</div>
-					</div>
-				{:else}
-					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-						<img src={climate_2} alt="Climate impacts" class="h-55 w-full object-contain" />
-						<div class="p-2">
-							<p class="text-center text-xs text-slate-600">
-								<span>
-									<span class="font-semibold"> Flooded street in Kathmandu </span> after a less than
-									an hour heavy downpour</span
-								>
-							</p>
-						</div>
-					</div>
-				{/if}
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Addressing climate change in the HKH requires urgent, coordinated, and region-wide action.
-					This includes investing in climate-resilient infrastructure, expanding early warning
-					systems, improving water management, and enhancing scientific monitoring of glaciers and
-					weather patterns. Regional cooperation is essential for sharing data, aligning adaptation
-					strategies, and managing shared water resources sustainably. Equally important is
-					empowering local communities with knowledge, technology, and resources to adapt to
-					changing conditions while preserving the environmental and cultural richness of the HKH.
-				</p>
 			</div>
 		</div>
 	</div>

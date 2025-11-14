@@ -1,8 +1,5 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import ecosystem1 from '$lib/assets/images/ecosystem1.jpg';
-	import ecosystem2 from '$lib/assets/images/ecosystem2.jpg';
-
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
@@ -77,6 +74,9 @@
 	function toggleQuestionsPanel() {
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
+
+	// Track iframe loading state
+	let isStoryMapLoading = $state(true);
 
 	// Add new state variables for layers panel
 	let layersPanelOpen = $state(false);
@@ -1043,236 +1043,77 @@
 	{/if}
 
 	<!-- Left Sidebar - Story + Information -->
+
 	<div
-		class="sticky top-6 col-span-12 h-fit max-h-[calc(100vh-8rem)] flex-1 space-y-4 overflow-y-auto lg:col-span-3 lg:max-h-[calc(100vh-16rem)] lg:space-y-6"
+		class="sticky top-9 col-span-12 h-[90vh] min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 		class:hidden={layoutState === 'hide-left'}
 		class:lg:col-span-12={layoutState === 'left-full'}
+		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
 	>
-		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/100 p-4 lg:p-6">
-			<div class="mb-4 flex items-center justify-between lg:mb-6">
-				<div class="flex items-center space-x-2 lg:space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 p-1.5 lg:p-2">
-						<Leaf class="h-3.5 w-3.5 text-white lg:h-5 lg:w-5" />
+		<!-- StoryMap Iframe Container -->
+		<div class="relative h-full w-full overflow-hidden">
+			<!-- Loading Screen -->
+			{#if isStoryMapLoading}
+				<div
+					class="absolute inset-0 z-30 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100"
+				>
+					<div class="text-center">
+						<!-- Animated Spinner -->
+						<div class="mb-4 flex justify-center">
+							<div
+								class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-green-500"
+							></div>
+						</div>
+						<!-- Loading Text -->
+						<p class="text-sm font-medium text-slate-600">Loading Story...</p>
+						<p class="mt-1 text-xs text-slate-500">Please wait</p>
 					</div>
-					<h3
-						class="{layoutState === 'left-full'
-							? 'text-xl lg:text-2xl'
-							: 'text-base lg:text-lg'} font-bold text-slate-800 transition-all duration-300"
+				</div>
+			{/if}
+
+			<!-- Iframe -->
+			<iframe
+				src="https://storymaps.arcgis.com/stories/d5a8e4ea8c084a33bd5af57f6d84368f"
+				width="100%"
+				height="100%"
+				style="border:none;"
+				allowfullscreen
+				class="h-full w-full"
+				title="ArcGIS StoryMap - Ecosystem"
+				onload={() => {
+					isStoryMapLoading = false;
+				}}
+			></iframe>
+
+			<!-- Overlay Control Buttons -->
+			<div class="absolute top-2 right-2 z-20 flex items-center space-x-1 lg:space-x-2">
+				{#if layoutState !== 'left-full'}
+					<!-- Hide Left Panel Button - Show Map -->
+					<button
+						onclick={() => setLayoutState('hide-left')}
+						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+						title="Show Map"
 					>
-						Ecosystem Dynamics in HKH
-					</h3>
-				</div>
-				<div class="flex items-center space-x-1 lg:space-x-2">
-					{#if layoutState !== 'left-full'}
-						<!-- Hide Left Panel Button - Show Map -->
-						<button
-							onclick={() => setLayoutState('hide-left')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-							title="Show Map"
-						>
-							<ChevronsLeft class="h-3.5 w-3.5" />
-						</button>
-						<!-- Expand Story Button - Desktop only -->
-						<button
-							onclick={() => setLayoutState('left-full')}
-							class="hidden rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
-							title="Expand Story"
-						>
-							<ChevronsRight class="h-3.5 w-3.5" />
-						</button>
-					{:else}
-						<!-- Back to Default Button -->
-						<button
-							onclick={() => setLayoutState('default')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-							title="Back to Default"
-						>
-							<ChevronsLeft class="h-3.5 w-3.5" />
-						</button>
-					{/if}
-				</div>
-			</div>
-
-			<div
-				class="{layoutState === 'left-full'
-					? 'space-y-6'
-					: 'space-y-4'} transition-all duration-300"
-			>
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-700 transition-all duration-300"
-				>
-					The Hindu Kush Himalaya (HKH), often called the "Third Pole" for its vast reserves of snow
-					and ice, is home to one of the most diverse and unique collections of ecosystems on Earth.
-					It covers an area of about 4.3 million square kilometers. Within this immense expanse, the
-					region contains an extraordinary range of altitudes, from lowland plains and subtropical
-					valleys to towering peaks above 8,000 meters. This variation in elevation, combined with
-					diverse climatic zones, geology, and hydrology, gives rise to a mosaic of ecosystems that
-					support an exceptional level of biodiversity and sustain the livelihoods of nearly two
-					billion people downstream.
-				</p>
-				<!-- Second Image - Ecosystem 2 -->
-				{#if layoutState === 'left-full'}
-					<div class="flex justify-center">
-						<div
-							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-						>
-							<img src={ecosystem2} alt="Biodiversity impacts" class="h-80 object-contain" />
-							<div class="p-4">
-								<!-- <p class="text-center text-sm leading-relaxed text-slate-700">
-												<span>
-													<span class="font-semibold text-slate-800">Biodiversity impacts</span> of climate
-													change in the HKH region
-												</span>
-											</p> -->
-							</div>
-						</div>
-					</div>
+						<ChevronsLeft class="h-3.5 w-3.5" />
+					</button>
+					<!-- Expand Story Button - Desktop only -->
+					<button
+						onclick={() => setLayoutState('left-full')}
+						class="hidden rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
+						title="Expand Story"
+					>
+						<ChevronsRight class="h-3.5 w-3.5" />
+					</button>
 				{:else}
-					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-						<img src={ecosystem2} alt="Biodiversity impacts" class="h-55 w-full object-contain" />
-						<div class="p-2">
-							<!-- <p class="text-center text-xs text-slate-600">
-											<span>
-												<span class="font-semibold">Biodiversity impacts</span> of climate change in the HKH
-												region
-											</span>
-										</p> -->
-						</div>
-					</div>
+					<!-- Back to Default Button -->
+					<button
+						onclick={() => setLayoutState('default')}
+						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+						title="Back to Default"
+					>
+						<ChevronsLeft class="h-3.5 w-3.5" />
+					</button>
 				{/if}
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The ecosystems of the HKH are strongly shaped by altitude and climate. At the lower
-					elevations, subtropical and tropical ecosystems dominate, featuring dense forests,
-					wetlands, and fertile alluvial plains. These ecosystems are rich in species diversity and
-					provide critical services such as fertile soils for agriculture, water filtration, and
-					carbon sequestration.
-				</p>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Ascending the slopes, temperate ecosystems appear, often dominated by mixed coniferous and
-					broadleaf forests. These forests harbor globally significant biodiversity, including
-					charismatic species such as the red panda, Himalayan monal, and clouded leopard. At even
-					higher altitudes, alpine meadows and rangelands replace forests. These ecosystems, though
-					fragile, are crucial for pastoral communities and serve as habitats for rare species like
-					the snow leopard, Himalayan tahr, and Tibetan antelope.
-				</p>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					At the highest elevations, beyond the tree line, lie the cryospheric ecosystems: glaciers,
-					snowfields, permafrost, and ice-fed rivers. These provide the foundational hydrological
-					services that feed the great river systems of Asia—the Ganges, Indus, Brahmaputra,
-					Yangtze, Mekong, and many more. Thus, the HKH's ecosystems are vertically layered,
-					interconnected, and critical to the environmental balance of Asia.
-				</p>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The HKH is one of the world's biodiversity hotspots, with an estimated 35,000 species of
-					plants, including around 10,000 endemic species. The forests provide habitat for 300
-					species of mammals and more than 1,200 bird species, many of which are found nowhere else.
-					Endangered species such as the snow leopard, red panda, and Himalayan musk deer are
-					keystone species that reflect the health of their ecosystems. Rivers and wetlands of the
-					HKH are equally important, supporting fish populations, migratory birds, and human
-					communities dependent on freshwater resources.
-				</p>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The region's cultural diversity is intertwined with ecological diversity. Local
-					communities have coexisted with and shaped these ecosystems for centuries, developing
-					intricate knowledge systems, sustainable agricultural practices, and spiritual traditions
-					tied to mountains, rivers, and forests. Sacred landscapes, monasteries, and
-					community-managed forests highlight how ecosystems are both ecological and cultural
-					entities.
-				</p>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Downstream, billions of people rely on the rivers and watersheds sustained by HKH
-					ecosystems for drinking water, irrigation, energy, and fisheries. For mountain
-					communities, rangelands and forests remain the backbone of livelihoods, while
-					ecosystem-based tourism and traditional crafts provide alternative income sources.
-				</p>
-
-				<!-- First Image - Ecosystem 1 -->
-				{#if layoutState === 'left-full'}
-					<div class="flex justify-center">
-						<div
-							class="w-fit overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg"
-						>
-							<img src={ecosystem1} alt="Ecosystem dynamics" class="h-80 object-contain" />
-							<div class="p-4">
-								<p class="text-center text-sm leading-relaxed text-slate-700">
-									<!-- <span
-										>Ecosystem changes in the <span class="font-semibold text-slate-800"
-											>Himalayan region
-										</span> due to climate change
-									</span> -->
-								</p>
-							</div>
-						</div>
-					</div>
-				{:else}
-					<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-						<img src={ecosystem1} alt="Ecosystem dynamics" class="h-50 w-full object-contain" />
-						<div class="p-2">
-							<p class="text-center text-xs text-slate-600">
-								<!-- <span
-									>Ecosystem changes in the <span class="font-semibold">Himalayan region </span> due
-									to climate change
-								</span> -->
-							</p>
-						</div>
-					</div>
-				{/if}
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Despite their significance, HKH ecosystems are under severe threat. Climate change is
-					accelerating glacial melt, altering river flows, and pushing species to higher altitudes
-					where suitable habitats are limited. Rising temperatures threaten alpine ecosystems and
-					lead to the upward migration of treelines. Increasing frequency of extreme weather events,
-					such as floods, landslides, and droughts, further destabilizes fragile mountain systems.
-				</p>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Human pressures add to these stresses. Deforestation, land-use change, overgrazing,
-					infrastructure development, and mining fragment habitats and reduce ecological resilience.
-					Rapid urbanization and population growth in foothill regions increase demand for natural
-					resources, often leading to unsustainable exploitation. Pollution, particularly plastic
-					waste and untreated sewage, contaminates rivers and wetlands, reducing water quality and
-					threatening aquatic ecosystems.
-				</p>
 			</div>
 		</div>
 	</div>

@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import demogr_1 from '$lib/assets/images/Demography_1.png';
-	import demogr_2 from '$lib/assets/images/Demography_2.png';
 	import { getTopicName, getTopicIcon, getTopicColor } from '$lib/data/themeData.js';
 	const topic = 'human-dimensions';
 	const TopicIcon = getTopicIcon(topic);
@@ -510,18 +508,18 @@
 							{
 								name: 'Male',
 								data: [
-									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
-									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+									-2583174, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644, -6844482, -5837920, -5349179, -4440363, -3354569, -2507988,
+									-1866760, -1144430, -566243, -228994, -98160
 								],
 								color: '#3b82f6'
 							},
 							{
 								name: 'Female',
 								data: [
-									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
-									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
-									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+									2441938, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182,
+									7578636, 6765130, 5765991, 5317287, 4448304, 3438076, 2685983, 2179466, 1411112,
+									749921, 334153, 169997
 								],
 								color: '#ef4444'
 							}
@@ -555,51 +553,26 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age and Sex',
-					// subtitle: 'Source: WorldPop Global Population Data',
-					chart_type: 'bar',
-					isPyramid: true,
+					title: 'Population Distribution aged 75 years and above by Gender',
+					// subtitle: 'Distribution across HKH region',
+					chart_type: 'pie',
+					// units: 'Sq Km',
 					chart_data: {
-						categories: [
-							'0-1',
-							'1-4',
-							'5-9',
-							'10-14',
-							'15-19',
-							'20-24',
-							'25-29',
-							'30-34',
-							'35-39',
-							'40-44',
-							'45-49',
-							'50-54',
-							'55-59',
-							'60-64',
-							'65-69',
-							'70-74',
-							'75-79',
-							'80-84',
-							'85-89',
-							'90+'
-						],
 						series: [
 							{
-								name: 'Male',
+								name: 'Gender',
 								data: [
-									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
-									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
-								],
-								color: '#3b82f6'
-							},
-							{
-								name: 'Female',
-								data: [
-									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
-									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
-									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
-								],
-								color: '#ef4444'
+									{
+										name: 'Male',
+										y: 2037827
+										// color: '#A8A800' // Blue
+									},
+									{
+										name: 'Female',
+										y: 2665183
+										// color: '#D3FFBE' // Red
+									}
+								]
 							}
 						]
 					}
@@ -631,55 +604,85 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age and Sex',
-					// subtitle: 'Source: WorldPop Global Population Data',
-					chart_type: 'bar',
-					isPyramid: true,
+					title: 'Distribution of Child Woman Ratio Across HKH',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
 					chart_data: {
 						categories: [
-							'0-1',
-							'1-4',
-							'5-9',
-							'10-14',
-							'15-19',
-							'20-24',
-							'25-29',
-							'30-34',
-							'35-39',
-							'40-44',
-							'45-49',
-							'50-54',
-							'55-59',
-							'60-64',
-							'65-69',
-							'70-74',
-							'75-79',
-							'80-84',
-							'85-89',
-							'90+'
+							'Afghanistan',
+							'Pakistan',
+							'India',
+							'Nepal',
+							'China',
+							'Bhutan',
+							'Bangladesh',
+							'Myanmar'
 						],
 						series: [
 							{
-								name: 'Male',
-								data: [
-									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
-									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
-								],
-								color: '#3b82f6'
-							},
-							{
-								name: 'Female',
-								data: [
-									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
-									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
-									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
-								],
-								color: '#ef4444'
+								name: 'Population',
+								data: [659.15, 609.51, 306.28, 319.88, 187.24, 222.26, 445.12, 362.09],
+								color: '#5F87C1', // Modern blue
+								zIndex: 1
 							}
 						]
 					}
 				}
+				// {
+				// 	title: 'Distribution of Children and Women',
+				// 	// subtitle: 'Distribution across HKH region',
+				// 	chart_type: 'pie',
+				// 	// units: 'Sq Km',
+				// 	chart_data: {
+				// 		series: [
+				// 			{
+				// 				name: 'Age Group',
+				// 				data: [
+				// 					{
+				// 						name: 'Afghanistan',
+				// 						y: 659.15
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Pakistan',
+				// 						y: 609.51
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'India',
+				// 						y: 306.28
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Nepal',
+				// 						y: 319.88
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'China',
+				// 						y: 187.24
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Bhutan',
+				// 						y: 222.26
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'Bangladesh',
+				// 						y: 445.12
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Myanmar',
+				// 						y: 362.09
+				// 						// color: '#D3FFBE' // Red
+				// 					}
+				// 				]
+				// 			}
+				// 		]
+				// 	}
+				// },
 			],
 			control_type: 'none'
 		},
@@ -707,55 +710,85 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age and Sex',
-					// subtitle: 'Source: WorldPop Global Population Data',
-					chart_type: 'bar',
-					isPyramid: true,
+					title: 'Distribution of Child Dependency Ratio Across HKH',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
 					chart_data: {
 						categories: [
-							'0-1',
-							'1-4',
-							'5-9',
-							'10-14',
-							'15-19',
-							'20-24',
-							'25-29',
-							'30-34',
-							'35-39',
-							'40-44',
-							'45-49',
-							'50-54',
-							'55-59',
-							'60-64',
-							'65-69',
-							'70-74',
-							'75-79',
-							'80-84',
-							'85-89',
-							'90+'
+							'Afghanistan',
+							'Pakistan',
+							'India',
+							'Nepal',
+							'China',
+							'Bhutan',
+							'Bangladesh',
+							'Myanmar'
 						],
 						series: [
 							{
-								name: 'Male',
-								data: [
-									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
-									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
-								],
-								color: '#3b82f6'
-							},
-							{
-								name: 'Female',
-								data: [
-									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
-									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
-									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
-								],
-								color: '#ef4444'
+								name: 'Population',
+								data: [80.04, 76.93, 38.19, 45.49, 29.25, 29.74, 56.24, 43.12],
+								color: '#5F87C1', // Modern blue
+								zIndex: 1
 							}
 						]
 					}
 				}
+				// {
+				// 	title: 'Distribution of Child Dependency Ratio by Country',
+				// 	// subtitle: 'Distribution across HKH region',
+				// 	chart_type: 'pie',
+				// 	// units: 'Sq Km',
+				// 	chart_data: {
+				// 		series: [
+				// 			{
+				// 				name: 'Age Group',
+				// 				data: [
+				// 					{
+				// 						name: 'Afghanistan',
+				// 						y: 80.04
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Pakistan',
+				// 						y: 76.93
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'India',
+				// 						y: 38.19
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Nepal',
+				// 						y: 45.49
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'China',
+				// 						y: 29.25
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Bhutan',
+				// 						y: 29.74
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'Bangladesh',
+				// 						y: 56.24
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Myanmar',
+				// 						y: 43.12
+				// 						// color: '#D3FFBE' // Red
+				// 					}
+				// 				]
+				// 			}
+				// 		]
+				// 	}
+				// }
 			],
 			control_type: 'none'
 		},
@@ -783,55 +816,85 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age and Sex',
-					// subtitle: 'Source: WorldPop Global Population Data',
-					chart_type: 'bar',
-					isPyramid: true,
+					title: 'Distribution of Age Dependency Ratio Across HKH',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
 					chart_data: {
 						categories: [
-							'0-1',
-							'1-4',
-							'5-9',
-							'10-14',
-							'15-19',
-							'20-24',
-							'25-29',
-							'30-34',
-							'35-39',
-							'40-44',
-							'45-49',
-							'50-54',
-							'55-59',
-							'60-64',
-							'65-69',
-							'70-74',
-							'75-79',
-							'80-84',
-							'85-89',
-							'90+'
+							'Afghanistan',
+							'Pakistan',
+							'India',
+							'Nepal',
+							'China',
+							'Bhutan',
+							'Bangladesh',
+							'Myanmar'
 						],
 						series: [
 							{
-								name: 'Male',
-								data: [
-									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
-									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
-								],
-								color: '#3b82f6'
-							},
-							{
-								name: 'Female',
-								data: [
-									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
-									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
-									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
-								],
-								color: '#ef4444'
+								name: 'Population',
+								data: [4.52, 7.11, 10.42, 10.57, 17.79, 9.47, 8.38, 9.97],
+								color: '#5F87C1', // Modern blue
+								zIndex: 1
 							}
 						]
 					}
 				}
+				// {
+				// 	title: 'Distribution of Age Dependency Ratio by Country',
+				// 	// subtitle: 'Distribution across HKH region',
+				// 	chart_type: 'pie',
+				// 	// units: 'Sq Km',
+				// 	chart_data: {
+				// 		series: [
+				// 			{
+				// 				name: 'Age Group',
+				// 				data: [
+				// 					{
+				// 						name: 'Afghanistan',
+				// 						y: 4.52
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Pakistan',
+				// 						y: 7.11
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'India',
+				// 						y: 10.42
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Nepal',
+				// 						y: 10.57
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'China',
+				// 						y: 17.79
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Bhutan',
+				// 						y: 9.47
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'Bangladesh',
+				// 						y: 8.38
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Myanmar',
+				// 						y: 9.97
+				// 						// color: '#D3FFBE' // Red
+				// 					}
+				// 				]
+				// 			}
+				// 		]
+				// 	}
+				// }
 			],
 			control_type: 'none'
 		},
@@ -859,55 +922,85 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age and Sex',
-					// subtitle: 'Source: WorldPop Global Population Data',
-					chart_type: 'bar',
-					isPyramid: true,
+					title: 'Distribution of Total Dependency Ratio Across HKH',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
 					chart_data: {
 						categories: [
-							'0-1',
-							'1-4',
-							'5-9',
-							'10-14',
-							'15-19',
-							'20-24',
-							'25-29',
-							'30-34',
-							'35-39',
-							'40-44',
-							'45-49',
-							'50-54',
-							'55-59',
-							'60-64',
-							'65-69',
-							'70-74',
-							'75-79',
-							'80-84',
-							'85-89',
-							'90+'
+							'Afghanistan',
+							'Pakistan',
+							'India',
+							'Nepal',
+							'China',
+							'Bhutan',
+							'Bangladesh',
+							'Myanmar'
 						],
 						series: [
 							{
-								name: 'Male',
-								data: [
-									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
-									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
-								],
-								color: '#3b82f6'
-							},
-							{
-								name: 'Female',
-								data: [
-									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
-									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
-									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
-								],
-								color: '#ef4444'
+								name: 'Population',
+								data: [84.56, 84.04, 48.61, 56.06, 47.04, 39.21, 64.62, 53.08],
+								color: '#5F87C1', // Modern blue
+								zIndex: 1
 							}
 						]
 					}
 				}
+				// {
+				// 	title: 'Distribution of Total Dependency Ratio by Country',
+				// 	// subtitle: 'Distribution across HKH region',
+				// 	chart_type: 'pie',
+				// 	// units: 'Sq Km',
+				// 	chart_data: {
+				// 		series: [
+				// 			{
+				// 				name: 'Age Group',
+				// 				data: [
+				// 					{
+				// 						name: 'Afghanistan',
+				// 						y: 84.56
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Pakistan',
+				// 						y: 84.04
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'India',
+				// 						y: 48.61
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Nepal',
+				// 						y: 56.06
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'China',
+				// 						y: 47.04
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Bhutan',
+				// 						y: 39.21
+				// 						// color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'Bangladesh',
+				// 						y: 64.62
+				// 						// color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'Myanmar',
+				// 						y: 53.08
+				// 						// color: '#D3FFBE' // Red
+				// 					}
+				// 				]
+				// 			}
+				// 		]
+				// 	}
+				// }
 			],
 			control_type: 'none'
 		},
@@ -1044,56 +1137,56 @@
 				description: 'Night Light Data'
 			},
 			charts: [
-				{
-					title: 'Population Distribution by Age and Sex',
-					// subtitle: 'Source: WorldPop Global Population Data',
-					chart_type: 'bar',
-					isPyramid: true,
-					chart_data: {
-						categories: [
-							'0-1',
-							'1-4',
-							'5-9',
-							'10-14',
-							'15-19',
-							'20-24',
-							'25-29',
-							'30-34',
-							'35-39',
-							'40-44',
-							'45-49',
-							'50-54',
-							'55-59',
-							'60-64',
-							'65-69',
-							'70-74',
-							'75-79',
-							'80-84',
-							'85-89',
-							'90+'
-						],
-						series: [
-							{
-								name: 'Male',
-								data: [
-									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
-									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
-								],
-								color: '#3b82f6'
-							},
-							{
-								name: 'Female',
-								data: [
-									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
-									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
-									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
-								],
-								color: '#ef4444'
-							}
-						]
-					}
-				}
+				// {
+				// 	title: 'Population Distribution by Age and Sex',
+				// 	// subtitle: 'Source: WorldPop Global Population Data',
+				// 	chart_type: 'bar',
+				// 	isPyramid: true,
+				// 	chart_data: {
+				// 		categories: [
+				// 			'0-1',
+				// 			'1-4',
+				// 			'5-9',
+				// 			'10-14',
+				// 			'15-19',
+				// 			'20-24',
+				// 			'25-29',
+				// 			'30-34',
+				// 			'35-39',
+				// 			'40-44',
+				// 			'45-49',
+				// 			'50-54',
+				// 			'55-59',
+				// 			'60-64',
+				// 			'65-69',
+				// 			'70-74',
+				// 			'75-79',
+				// 			'80-84',
+				// 			'85-89',
+				// 			'90+'
+				// 		],
+				// 		series: [
+				// 			{
+				// 				name: 'Male',
+				// 				data: [
+				// 					-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+				// 					-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+				// 					-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+				// 				],
+				// 				color: '#3b82f6'
+				// 			},
+				// 			{
+				// 				name: 'Female',
+				// 				data: [
+				// 					2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+				// 					7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+				// 					2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+				// 				],
+				// 				color: '#ef4444'
+				// 			}
+				// 		]
+				// 	}
+				// }
 			],
 			control_type: 'none'
 		}
@@ -1221,6 +1314,9 @@
 	function toggleQuestionsPanel() {
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
+
+	// Track iframe loading state
+	let isStoryMapLoading = $state(true);
 
 	// Add new state variables for layers panel
 	let layersPanelOpen = $state(false);
@@ -1709,157 +1805,75 @@
 	<!-- Left Sidebar - Story + Questions -->
 
 	<div
-		class="sticky top-6 col-span-12 h-fit max-h-[calc(100vh-8rem)] flex-1 space-y-4 overflow-y-auto lg:col-span-3 lg:max-h-[calc(100vh-12rem)] lg:space-y-6"
+		class="sticky top-9 col-span-12 h-[90vh] min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 		class:hidden={layoutState === 'hide-left'}
 		class:lg:col-span-12={layoutState === 'left-full'}
+		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
 	>
-		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/70 p-4 lg:p-6">
-			<div class="mb-4 flex items-center justify-between lg:mb-6">
-				<div class="flex items-center space-x-2 lg:space-x-3">
-					<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-1.5 lg:p-2">
-						<TopicIcon class="h-3.5 w-3.5 text-white lg:h-5 lg:w-5" />
+		<!-- StoryMap Iframe Container -->
+		<div class="relative h-full w-full overflow-hidden">
+			<!-- Loading Screen -->
+			{#if isStoryMapLoading}
+				<div
+					class="absolute inset-0 z-30 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100"
+				>
+					<div class="text-center">
+						<!-- Animated Spinner -->
+						<div class="mb-4 flex justify-center">
+							<div
+								class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500"
+							></div>
+						</div>
+						<!-- Loading Text -->
+						<p class="text-sm font-medium text-slate-600">Loading Story...</p>
+						<p class="mt-1 text-xs text-slate-500">Please wait</p>
 					</div>
-					<h3
-						class="{layoutState === 'left-full'
-							? 'text-xl lg:text-2xl'
-							: 'text-base lg:text-lg'} font-bold text-slate-800 transition-all duration-300"
+				</div>
+			{/if}
+
+			<!-- Iframe -->
+			<iframe
+				src="https://storymaps.arcgis.com/stories/8037fc07d0ea45a891c94ebef9eeaa0a"
+				width="100%"
+				height="100%"
+				style="border:none;"
+				allowfullscreen
+				class="h-full w-full"
+				title="ArcGIS StoryMap - Human Dimensions"
+				onload={() => {
+					isStoryMapLoading = false;
+				}}
+			></iframe>
+
+			<!-- Overlay Control Buttons -->
+			<div class="absolute top-2 right-2 z-20 flex items-center space-x-1 lg:space-x-2">
+				{#if layoutState !== 'left-full'}
+					<!-- Hide Left Panel Button - Show Map -->
+					<button
+						onclick={() => setLayoutState('hide-left')}
+						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+						title="Show Map"
 					>
-						Human Dimensions Status in HKH
-					</h3>
-				</div>
-				<div class="flex items-center space-x-1 lg:space-x-2">
-					{#if layoutState !== 'left-full'}
-						<!-- Hide Left Panel Button - Show Map -->
-						<button
-							onclick={() => setLayoutState('hide-left')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-							title="Show Map"
-						>
-							<ChevronsLeft class="h-3.5 w-3.5" />
-						</button>
-						<!-- Expand Story Button - Desktop only -->
-						<button
-							onclick={() => setLayoutState('left-full')}
-							class="hidden rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
-							title="Expand Story"
-						>
-							<ChevronsRight class="h-3.5 w-3.5" />
-						</button>
-					{:else}
-						<!-- Back to Default Button -->
-						<button
-							onclick={() => setLayoutState('default')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-							title="Back to Default"
-						>
-							<ChevronsLeft class="h-3.5 w-3.5" />
-						</button>
-					{/if}
-				</div>
-			</div>
-
-			<div
-				class="{layoutState === 'left-full'
-					? 'space-y-6'
-					: 'space-y-4'} transition-all duration-300"
-			>
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The Hindu Kush Himalaya (HKH) region is home to over 270 million people, with demographic
-					patterns that reflect diverse cultural, economic, and environmental conditions across
-					eight countries. The region exhibits significant variations in population density, age
-					structure, and gender ratios that are influenced by factors including altitude,
-					accessibility, economic opportunities, and cultural practices.
-				</p>
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Population distribution in the HKH shows marked disparities, with most people concentrated
-					in accessible valleys and lower elevation areas. The demographic profile reveals varying
-					dependency ratios across different sub-regions, reflecting differences in fertility rates,
-					mortality patterns, and migration trends that have significant implications for social
-					services and economic development.
-				</p>
-
-				<!-- Images Section - Responsive Layout -->
-				<div class="mt-6 {layoutState === 'left-full' ? 'space-y-6' : 'space-y-3'}">
-					{#if layoutState === 'left-full'}
-						<!-- Full Width Layout -->
-						<div class="flex flex-wrap justify-center gap-6">
-							<div
-								class="w-full overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto"
-							>
-								<img
-									src={demogr_2}
-									alt="HKH demographic diversity"
-									class="mx-auto h-80 object-contain"
-								/>
-							</div>
-
-							<div
-								class="w-full overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 shadow-lg sm:w-auto"
-							>
-								<img src={demogr_1} alt="Population centers" class="mx-auto h-80 object-contain" />
-							</div>
-
-							<div class="mt-4 w-full text-center">
-								<p class="text-sm leading-relaxed text-slate-700">
-									<span class="font-semibold text-slate-800">Mountain communities</span>
-								</p>
-							</div>
-						</div>
-					{:else}
-						<!-- Default Layout - Stacked Images -->
-						<div class="space-y-3">
-							<div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-								<img
-									src={demogr_2}
-									alt="HKH demographic diversity"
-									class="h-50 w-full object-contain"
-								/>
-								<div class="p-2">
-									<p class="text-center text-xs text-slate-600">
-										<!-- <span
-											><span class="font-semibold">Mountain communities</span>
-										</span> -->
-									</p>
-								</div>
-							</div>
-							<!-- <div class="overflow-hidden rounded-lg border border-slate-200/50 bg-white/50">
-							<img src={climate_2} alt="Population centers" class="h-55 w-full object-contain" />
-							<div class="p-2">
-								<p class="text-center text-xs text-slate-600">
-									<span>
-										<span class="font-semibold"> Urban growth in mountain valleys </span>
-										showing demographic concentration</span
-									>
-								</p>
-							</div>
-						</div> -->
-						</div>
-					{/if}
-				</div>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The region’s rural people live in remote and environmentally harsh areas with poor social
-					and physical infrastructures and unfavourable market conditions. Traditional subsistence
-					smallholder farming and migratory pastoral livelihoods in these mountain regions face
-					increasing challenges from the impacts of climate change, human-animal conflicts,
-					increased natural disasters, and the degradation of forests and rangelands. In addition,
-					poor infrastructure, limited access to water and energy, poor market linkages, and limited
-					know-how on the development of marketable products and post-harvest management threaten
-					the sustainability of mountain agriculture and traditional rural livelihoods.
-				</p>
+						<ChevronsLeft class="h-3.5 w-3.5" />
+					</button>
+					<!-- Expand Story Button - Desktop only -->
+					<button
+						onclick={() => setLayoutState('left-full')}
+						class="hidden rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
+						title="Expand Story"
+					>
+						<ChevronsRight class="h-3.5 w-3.5" />
+					</button>
+				{:else}
+					<!-- Back to Default Button -->
+					<button
+						onclick={() => setLayoutState('default')}
+						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+						title="Back to Default"
+					>
+						<ChevronsLeft class="h-3.5 w-3.5" />
+					</button>
+				{/if}
 			</div>
 		</div>
 	</div>
