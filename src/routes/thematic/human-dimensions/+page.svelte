@@ -363,7 +363,7 @@
 				{
 					title: 'Distribution of Population Across HKH',
 					chart_type: 'column',
-					yAxisTitle: 'Pixel count',
+					yAxisTitle: 'Population',
 					chart_data: {
 						categories: [
 							'Afghanistan',
@@ -394,57 +394,57 @@
 							}
 						]
 					}
-				},
-				{
-					title: 'Population Distribution by Age and Sex',
-					// subtitle: 'Source: WorldPop Global Population Data',
-					chart_type: 'bar',
-					isPyramid: true,
-					chart_data: {
-						categories: [
-							'0-1',
-							'1-4',
-							'5-9',
-							'10-14',
-							'15-19',
-							'20-24',
-							'25-29',
-							'30-34',
-							'35-39',
-							'40-44',
-							'45-49',
-							'50-54',
-							'55-59',
-							'60-64',
-							'65-69',
-							'70-74',
-							'75-79',
-							'80-84',
-							'85-89',
-							'90+'
-						],
-						series: [
-							{
-								name: 'Male',
-								data: [
-									-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-									-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
-									-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
-								],
-								color: '#3b82f6'
-							},
-							{
-								name: 'Female',
-								data: [
-									2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
-									7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
-									2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
-								],
-								color: '#ef4444'
-							}
-						]
-					}
 				}
+				// {
+				// 	title: 'Population Distribution by Age and Sex',
+				// 	// subtitle: 'Source: WorldPop Global Population Data',
+				// 	chart_type: 'bar',
+				// 	isPyramid: true,
+				// 	chart_data: {
+				// 		categories: [
+				// 			'0-1',
+				// 			'1-4',
+				// 			'5-9',
+				// 			'10-14',
+				// 			'15-19',
+				// 			'20-24',
+				// 			'25-29',
+				// 			'30-34',
+				// 			'35-39',
+				// 			'40-44',
+				// 			'45-49',
+				// 			'50-54',
+				// 			'55-59',
+				// 			'60-64',
+				// 			'65-69',
+				// 			'70-74',
+				// 			'75-79',
+				// 			'80-84',
+				// 			'85-89',
+				// 			'90+'
+				// 		],
+				// 		series: [
+				// 			{
+				// 				name: 'Male',
+				// 				data: [
+				// 					-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+				// 					-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
+				// 					-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
+				// 				],
+				// 				color: '#3b82f6'
+				// 			},
+				// 			{
+				// 				name: 'Female',
+				// 				data: [
+				// 					2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
+				// 					7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
+				// 					2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
+				// 				],
+				// 				color: '#ef4444'
+				// 			}
+				// 		]
+				// 	}
+				// }
 			],
 			map_data: {
 				name: 'Population Trends across HKH',
@@ -455,21 +455,6 @@
 		},
 		{
 			id: 'sex-ratio-2025',
-			// charts: [
-			// 	{
-			// 		title: 'Population Distribution',
-			// 		chart_type: 'column',
-			// 		chart_data: {
-			// 			categories: ['2015', '2020', '2025', '2030'],
-			// 			series: [
-			// 				{
-			// 					name: 'Population (millions)',
-			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
-			// 				}
-			// 			]
-			// 		}
-			// 	}
-			// ],
 			map_data: {
 				name: 'Sex Ratio 2025',
 				layer_id: 1,
@@ -525,6 +510,61 @@
 							}
 						]
 					}
+				},
+				{
+					title: 'Country-wise Population Distribution within HKH Region by Gender',
+					chart_type: 'column',
+					isStacked: true,
+					yAxisTitle: 'Population',
+					chart_data: {
+						categories: [
+							'Afghanistan',
+							'Pakistan',
+							'India',
+							'Nepal',
+							'China',
+							'Bhutan',
+							'Bangladesh',
+							'Myanmar'
+						],
+						series: [
+							{
+								name: 'Female',
+								data: [17426901, 29178527, 26459146, 15503037, 17119987, 379148, 2568065, 6644774],
+								color: '#ef4444'
+							},
+							{
+								name: 'Male',
+								data: [17805582, 29894140, 28146092, 14208531, 17911710, 433608, 2645816, 6990423],
+								color: '#3b82f6'
+							}
+						]
+					}
+				},
+				{
+					title: 'Country-wise Male to Female Sex Ratio within HKH Region',
+					chart_type: 'column',
+					yAxisTitle: 'Ratio',
+					chart_data: {
+						categories: [
+							'Afghanistan',
+							'Pakistan',
+							'India',
+							'Nepal',
+							'China',
+							'Bhutan',
+							'Bangladesh',
+							'Myanmar'
+						],
+						series: [
+							{
+								name: 'Population',
+								data: [102.17, 102.45, 106.38, 91.65, 104.62, 114.36, 103.03, 105.2],
+								color: '#5F87C1', // Modern blue
+								zIndex: 1
+							}
+						]
+					}
 				}
 			],
 			control_type: 'none'
@@ -555,7 +595,7 @@
 				{
 					title: 'Country-wise Proportion of Population Age 75 years and above within HKH Region',
 					chart_type: 'column',
-					yAxisTitle: 'Pixel count',
+					yAxisTitle: 'Ratio',
 					chart_data: {
 						categories: [
 							'Afghanistan',
@@ -606,7 +646,7 @@
 				{
 					title: 'Country-wise Child Woman Ratio within HKH Region',
 					chart_type: 'column',
-					yAxisTitle: 'Pixel count',
+					yAxisTitle: 'Ratio',
 					chart_data: {
 						categories: [
 							'Afghanistan',
@@ -712,7 +752,7 @@
 				{
 					title: 'Country-wise Child Dependency Ratio within HKH Region',
 					chart_type: 'column',
-					yAxisTitle: 'Pixel count',
+					yAxisTitle: 'Ratio',
 					chart_data: {
 						categories: [
 							'Afghanistan',
@@ -818,7 +858,7 @@
 				{
 					title: 'Country-wise Age Dependency Ratio within HKH Region',
 					chart_type: 'column',
-					yAxisTitle: 'Pixel count',
+					yAxisTitle: 'Ratio',
 					chart_data: {
 						categories: [
 							'Afghanistan',
@@ -924,7 +964,7 @@
 				{
 					title: 'Country-wise Total Dependency Ratio within HKH Region',
 					chart_type: 'column',
-					yAxisTitle: 'Pixel count',
+					yAxisTitle: 'Ratio',
 					chart_data: {
 						categories: [
 							'Afghanistan',
@@ -2086,6 +2126,8 @@
 												subtitle={'subtitle' in chart ? chart.subtitle : ''}
 												chart_type={chart.chart_type}
 												isPyramid={'isPyramid' in chart ? chart.isPyramid : false}
+												isStacked={'isStacked' in chart ? chart.isStacked : false}
+												yAxisTitle={'yAxisTitle' in chart ? chart.yAxisTitle : 'Value'}
 											/>
 										</div>
 									{/each}

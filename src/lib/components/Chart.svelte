@@ -12,7 +12,8 @@
 		xAxisConfig = null,
 		showLegend = true,
 		isPyramid = false,
-		unit = ''
+		unit = '',
+		isStacked = false
 	} = $props<{
 		chartData: {
 			categories?: (string | number)[];
@@ -66,6 +67,7 @@
 		showLegend?: boolean;
 		isPyramid?: boolean;
 		unit?: string;
+		isStacked?: boolean;
 	}>();
 
 	let chartContainer: HTMLDivElement;
@@ -351,7 +353,7 @@
 				// chartConfig.chart.marginBottom = 80;
 				// chartConfig.chart.spacingBottom = 20;
 			} else {
-				chartConfig.plotOptions = {
+				const basePlotOptions = {
 					...plotOptions,
 					...(chartData.plotOptions || {}),
 					line: {
@@ -366,6 +368,18 @@
 						}
 					}
 				};
+
+				// Only add column stacking configuration when explicitly requested
+				if (isStacked) {
+					basePlotOptions.column = {
+						stacking: 'normal',
+						dataLabels: {
+							enabled: false
+						}
+					};
+				}
+
+				chartConfig.plotOptions = basePlotOptions;
 			}
 
 			// Configure series
