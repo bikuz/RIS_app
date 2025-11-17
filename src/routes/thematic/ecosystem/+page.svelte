@@ -268,7 +268,7 @@
 			},
 			charts: [
 				{
-					title: 'Land Cover HKH Region in 2022',
+					title: 'Land Cover of HKH Region in 2022',
 					chart_type: 'column',
 					chart_data: {
 						categories: [
@@ -1355,7 +1355,6 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												subtitle="Hindu Kush Himalaya Region Ecosystem Data"
 												chart_type={chart.chart_type}
 												yAxisTitle="Land Cover (hectares)"
 												showLegend={false}
