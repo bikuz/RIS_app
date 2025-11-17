@@ -1247,64 +1247,65 @@
 			id: 'info-layer-1',
 			title: 'Population 2025',
 			dataset_id: 'population-2025',
-			info: 'The map represents the spatial distribution of population across the HKH region. The dataset is obtained from WorldPop Global Project Population Data, providing population counts per 1km × 1km grid square.',
+			info: 'The map represents the spatial distribution of the 2025 population across the HKH region.The dataset is obtained from WorldPop Global Project Population Data, providing population counts per 1km × 1km grid square.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-2',
 			title: 'Sex Ratio',
 			dataset_id: 'sex-ratio-2025',
-			info: 'The map represents the spatial distribution of the sex ratio across HKH region. The ratio is calculated using the formula (Total Male Count / Total Female Count) × 100, with each pixel representing the number of males per 100 females.',
+			info: 'The map represents the spatial distribution of the sex ratio across HKH region based on the 2025 population data.The ratio is calculated using the formula (Total Male Count / Total Female Count) × 100, with each pixel representing the number of males per 100 females.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-3',
 			title: 'Proportion of Population Age >=75',
 			dataset_id: 'aged-75-proportion',
-			info: 'The map represents spatial distribution of the elderly population as a percentage of the total population across the region.The proportion is calculated using the formula (Population Aged >=75 Years / Total Population of All Ages) × 100.',
+			info: 'The map represents spatial distribution of the elderly population as a percentage of the total population across the region based on 2025 population data.The proportion is calculated using the formula (Population Aged >=75 Years / Total Population of All Ages) × 100.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-4',
 			title: 'Child-Woman Ratio',
 			dataset_id: 'child-woman-ratio-2025',
-			info: 'The map represents spatial distribution of Child-Woman Ratio across HKH region.The ratio is calculated using the formula (Children Aged 0-4 Years / Women Aged 15-49) × 1000 with each pixel representing the number of young children per 1,000 women of childbearing age.',
+			info: 'The map represents spatial distribution of Child-Woman Ratio across HKH region based on the 2025 population data.The ratio is calculated using the formula [Children Aged (0-4) Years / Women Aged (15-49)] × 1000 with each pixel representing the number of young children per 1,000 women of childbearing age.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-5',
 			title: 'Child-Dependency Ratio',
 			dataset_id: 'child-dependency-ratio-2025',
-			info: 'The map represents the number of young dependents per 100 working-age individuals. The ratio is calculated  using the formula (Population Aged 0-14 Years / Working-Age Population (15-64)) × 100.',
+			info: 'The map represents the number of young dependents per 100 working-age individuals. The ratio is calculated  using the formula [Population Aged (0-14) Years / Working-Age Population (15-64)] × 100, and is based on population data for the year 2025.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-6',
 			title: 'Age Dependency Ratio',
 			dataset_id: 'age-dependency-ratio-2025',
-			info: 'The map represents the number of elderly dependents per 100 working-age individuals.The ratio is calculated using gridded population data with the formula (Population Aged ≥60 Years / Working-Age Population (15-64)) × 100. ',
+			info: 'The map represents the number of elderly dependents per 100 working-age individuals.  .The ratio is calculated using formula [Population Aged ≥65 Years / Working-Age Population (15-64)] × 100 and is based on population data for the year 2025.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-7',
 			title: 'Total Dependency Ratio',
 			dataset_id: 'total-dependency-ratio-2025',
-			info: 'The map represents the total number of young and elderly dependents per 100 working-age individuals. The ratio is calculated using the formula: [(Population Aged 0-14 + Population Aged ≥60) / Working-Age Population (15-64)] × 100. ',
+			info: 'The map represents the total number of young and elderly dependents per 100 working-age individuals. The ratio is calculated using the formula: [(Population Aged (0-14) + Population Aged ≥65) / Working-Age Population (15-64)] × 100. ',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-8',
 			title: 'Impervious Surface',
 			dataset_id: 'impervious_surface',
-			info: 'Impervious Surface',
+			info: 'The dataset provides comprehensive insights into impervious-surface dynamics leveraging time-series Landsat imagery on the Google Earth Engine cloud computing platform created through an innovative and automated methodology that capitalizes on the strengths of spectral-generalization and automatic-sample-extraction strategies.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-9',
 			title: 'Night Light',
 			dataset_id: 'night-light',
-			info: 'Night Light Data',
-			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
+			info: 'The map shows the night light dataset indicating urbanization in the HKH region from 2015 to 2025. The map has been prepared from VIIRS Stray Light Corrected Nighttime Day/Night Band Composites data product with average radiance dataset for Janaury in 2015, 2020 and 2025 used to create a composite image.',
+			source:
+				'https://developers.google.com/earth-engine/datasets/catalog/NOAA_VIIRS_DNB_MONTHLY_V1_VCMSLCFG'
 		}
 	];
 
