@@ -558,7 +558,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [102.17, 102.45, 106.38, 91.65, 104.62, 114.36, 103.03, 105.2],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
@@ -609,7 +609,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [0.69, 1.12, 2.46, 2.12, 4.26, 2.2, 1.65, 1.67],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
@@ -660,7 +660,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [659.15, 609.51, 306.28, 319.88, 187.24, 222.26, 445.12, 362.09],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
@@ -766,7 +766,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [80.04, 76.93, 38.19, 45.49, 29.25, 29.74, 56.24, 43.12],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
@@ -872,7 +872,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [4.52, 7.11, 10.42, 10.57, 17.79, 9.47, 8.38, 9.97],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
@@ -978,7 +978,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [84.56, 84.04, 48.61, 56.06, 47.04, 39.21, 64.62, 53.08],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
