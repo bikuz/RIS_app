@@ -574,7 +574,7 @@
 
 	// Basemap switcher state
 	let basemapPanelOpen = $state(false);
-	let selectedBasemap = $state('dark-gray');
+	let selectedBasemap = $state('light');
 	let baseMapLayer: TileLayer<any> | null = null;
 
 	// Define available basemaps

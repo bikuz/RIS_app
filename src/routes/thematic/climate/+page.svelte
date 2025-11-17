@@ -4056,7 +4056,7 @@
 		// },
 		{
 			id: 'map-indicator-2',
-			title: 'Seasonal Temperature Trend',
+			title: 'Temperature Trend',
 			dataset_id: 'seasonal-temp-trend',
 			info: 'It represents  the spatial pattern of mean temperature trend for each climatic season: Spring (March-April-May), Summer (June-July-August), Autumn (September-October-November), and Winter (December-January-February)over the years(1995-2024).Each pixel on the map represents the rate of seasonal temperature change per decade, derived using Sen-Median trend analysis and Mann-Kendall (MK) test.The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
@@ -4072,19 +4072,19 @@
 			id: 'map-indicator-4',
 			title: 'Minimum Temperature Trend',
 			dataset_id: 'min-temp-trend-10y',
-			info: '',
-			source: ''
+			info: 'The temperature trend represents the spatial pattern of minimum annual and seasonal (Spring, Summer, Autumn, Winter) temperature trends from 1995 to 2024.Each pixel represents the rate of temperature change per decade, derived using Sen-Median trend analysis and the Mann-Kendall (MK) test. The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-5',
 			title: 'Maximum Temperature Trend',
 			dataset_id: 'max-temp-trend-10y',
-			info: '',
-			source: ''
+			info: 'The temperature trend represents the spatial pattern of maximum annual and seasonal (Spring, Summer, Autumn, Winter) temperature trends from 1995 to 2024.Each pixel represents the rate of temperature change per decade, derived using Sen-Median trend analysis and the Mann-Kendall (MK) test. The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
+			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-5',
-			title: 'Seasonal Precipitation Trend',
+			title: 'Precipitation Trend',
 			dataset_id: 'seasonal-ppt-trend',
 			info: 'It Represents  the spatial pattern of precipitation trend for each climatic season: Spring (March-April-May), Summer (June-July-August), Autumn (September-October-November), and Winter (December-January-February)over the years(1995-2024).Each pixel on the map represents the rate of seasonal precipitation change per decade, derived using Sen-Median trend analysis and Mann-Kendall (MK) test.The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
@@ -4161,7 +4161,7 @@
 
 	// Basemap switcher state
 	let basemapPanelOpen = $state(false);
-	let selectedBasemap = $state('dark-gray');
+	let selectedBasemap = $state('light');
 	let baseMapLayer: TileLayer<any> | null = null;
 
 	// Define base layers from HKH/Outline service
