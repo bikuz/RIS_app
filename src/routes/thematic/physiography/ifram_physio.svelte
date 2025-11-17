@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
@@ -14,8 +15,12 @@
 	import osmMap from '$lib/assets/images/basemaps/osm-map.png';
 	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
 	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
+	import physio_1 from '$lib/assets/images/physio-1.jpg';
+
+	import physio_2 from '$lib/assets/images/physio-2.jpg';
+	import physio_3 from '$lib/assets/images/physio-3.jpg';
 	import {
-		Leaf,
+		Mountain,
 		CheckCircle,
 		Layers,
 		Info,
@@ -39,7 +44,7 @@
 	import ImageWMS from 'ol/source/ImageWMS';
 	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
 
-	let { currentTopic = 'ecosystem', width = '100%', height = '400px' } = $props();
+	let { currentTopic = 'physiography', width = '100%', height = '400px' } = $props();
 
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
@@ -74,9 +79,6 @@
 	function toggleQuestionsPanel() {
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
-
-	// Track iframe loading state
-	let isStoryMapLoading = $state(true);
 
 	// Add new state variables for layers panel
 	let layersPanelOpen = $state(false);
@@ -246,270 +248,6 @@
 	>({});
 	let legendCollapsed = $state(false);
 
-	// Sample ecosystem datasets structure
-	const ecosystemDataset = [
-		{
-			id: 'land-cover-2022',
-			title: 'Land Cover 2022',
-			description: 'Land cover distribution in the HKH region',
-			control_type: 'none',
-			map_layers: {
-				// For 'none' control type, you can use a simple structure
-				// or just provide the layers directly
-				default: [
-					{
-						id: 'land-cover-2022-layer',
-						name: 'Land Cover 2022',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Landcover/MapServer/',
-						layerIndex: 21,
-						mapserver: 'arcgis'
-					}
-				]
-			},
-			charts: [
-				{
-					title: 'Land Cover HKH Region in 2022',
-					chart_type: 'column',
-					chart_data: {
-						categories: [
-							'Forest',
-							'Grassland',
-							'Cropland',
-							'Bare Soil',
-							'Bare Rock',
-							'Built-Up',
-							'Snow and Glacier',
-							'Water Body',
-							'Riverbed'
-						],
-						series: [
-							{
-								name: 'Land Cover (hectares)',
-								data: [
-									{ y: 84185046.72, color: '#006f00' },
-									{ y: 159413631.12, color: '#91ef7a' },
-									{ y: 20996243.19, color: '#f6ee04' },
-									{ y: 77065078.77, color: '#dcd4e1' },
-									{ y: 54904168.62, color: '#d9b2de' },
-									{ y: 1199387.79, color: '#ff0000' },
-									{ y: 12850846.29, color: '#b1f2ff' },
-									{ y: 6858504.36, color: '#081cfb' },
-									{ y: 1844620.92, color: '#a6dcda' }
-								]
-							}
-						]
-					}
-				}
-			]
-		},
-		{
-			id: 'browning-greening',
-			title: 'Vegetation Health',
-			description: 'Vegetation Health in the HKH region',
-			control_type: 'none',
-			map_layers: {
-				// For 'none' control type, you can use a simple structure
-				// or just provide the layers directly
-				default: [
-					{
-						id: 'browning-greening-layer',
-						name: 'Vegetation Health',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_NDVI_EVI/MapServer',
-						layerIndex: 0,
-						mapserver: 'arcgis'
-					}
-				]
-			},
-			charts: []
-		},
-		{
-			id: 'ndvi-trend',
-			title: 'NDVI Trend (2000-2023)',
-			description: 'NDVI Trend in the HKH region',
-			control_type: 'none',
-			map_layers: {
-				// For 'none' control type, you can use a simple structure
-				// or just provide the layers directly
-				default: [
-					{
-						id: 'ndvi-trend-layer',
-						name: 'NDVI Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_NDVI_EVI/MapServer',
-						layerIndex: 1,
-						mapserver: 'arcgis'
-					}
-				]
-			},
-			charts: []
-		},
-		{
-			id: 'evi-trend',
-			title: 'EVI Trend (2000-2023)',
-			description: 'EVI Trend in the HKH region',
-			control_type: 'none',
-			map_layers: {
-				// For 'none' control type, you can use a simple structure
-				// or just provide the layers directly
-				default: [
-					{
-						id: 'evi-trend-layer',
-						name: 'EVI Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_NDVI_EVI/MapServer',
-						layerIndex: 2,
-						mapserver: 'arcgis'
-					}
-				]
-			},
-			charts: []
-		},
-
-		{
-			id: 'soil-carbon-content',
-			title: 'Soil Organic Carbon Content',
-			control_type: 'threshold-control',
-			control_options: ['0', '30', '60', '200'],
-			default_option: '30',
-			charts: [],
-			map_layers: {
-				'0': [
-					{
-						id: 'soil-carbon-content-0',
-						name: 'At 0cm depth',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
-						layerIndex: 0,
-						mapserver: 'arcgis'
-					}
-				],
-
-				'30': [
-					{
-						id: 'soil-carbon-content-30',
-						name: 'At 30cm depth',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
-						layerIndex: 1,
-						mapserver: 'arcgis'
-					}
-				],
-				'60': [
-					{
-						id: 'soil-carbon-content-60',
-						name: 'At 60cm depth',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
-						layerIndex: 2,
-						mapserver: 'arcgis'
-					}
-				],
-				'200': [
-					{
-						id: 'soil-carbon-content-200',
-						name: 'At 200cm depth',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Soil_Carbon_Content/MapServer',
-						layerIndex: 3,
-						mapserver: 'arcgis'
-					}
-				]
-			}
-		}
-	];
-
-	const questions: any = [
-		// {
-		// 	id: 'question-1',
-		// 	question: 'Which areas have the highest forest cover in the HKH region?',
-		// 	dataset_id: 'forest-cover'
-		// },
-		// {
-		// 	id: 'question-2',
-		// 	question: 'Where are the major biodiversity hotspots located?',
-		// 	dataset_id: 'biodiversity-hotspots'
-		// },
-		// {
-		// 	id: 'question-3',
-		// 	question: 'How has ecosystem degradation affected wildlife corridors?',
-		// 	dataset_id: 'forest-cover'
-		// }
-	];
-
-	const information_layers: any = [
-		{
-			id: 'map-indicator-1',
-			title: 'Land Cover Distribution 2022',
-			dataset_id: 'land-cover-2022',
-			info: 'The landcover distribution map shows the physical or biophysical characteristics of the HKH region. This dataset is developed by ICIMOD under its SERVIR–HKH Initiative, using remote-sensing and Google Earth Engine, and collaborating with  partner organizations.',
-			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
-		},
-		{
-			id: 'map-indicator-3',
-			title: 'NDVI Trend (2000-2023)',
-			dataset_id: 'ndvi-trend',
-			info: 'NDVI Trend (2000-2023) represents the spatial pattern of vegetation greenness change over the past 24 years (2000–2023). Each pixel indicates the rate of NDVI change per year, derived using the Sen-Median trend analysis and Mann-Kendall (MK) test.',
-			source: 'MODIS'
-		},
-		{
-			id: 'map-indicator-2',
-			title: 'Vegetation Health',
-			dataset_id: 'browning-greening',
-			info: 'Vegetation Health',
-			source: ''
-		},
-		{
-			id: 'map-indicator-4',
-			title: 'EVI Trend (2000-2023)',
-			dataset_id: 'evi-trend',
-			info: 'EVI Trend (2000-2023) represents the spatial pattern of vegetation greenness change over the past 24 years (2000–2023). Each pixel indicates the rate of EVI change per year, derived using using the Sen-Median trend analysis and Mann-Kendall (MK) test.',
-			source: 'MODIS'
-		},
-		{
-			id: 'map-indicator-5',
-			title: 'Soil Organic Carbon Content',
-			dataset_id: 'soil-carbon-content',
-			info: 'The map represents the spaial distribution of soil organic carbon content across HKH at 4 different depths(0cm, 30cm, 60cm and 200cm).The data is sourced from the OpenLandMap global soil database.Values are expressed in g/kg, indicating the mass of soil organic carbon present per kilogram of soil at spatial resolution of 250m.',
-			source: 'OpenLandMap Soil Organic Carbon Content (https://stac.openlandmap.org/)'
-		}
-	];
-
-	// Track selected question - default to first question
-	let selectedQuestionId = $state('');
-
-	// Track selected information layer (single selection)
-	let selectedInformationLayer = $state<string | null>('Land Cover Distribution 2022');
-
-	// Track expanded layer for accordion - default closed
-	let expandedLayer = $state<string | null>(null);
-
-	// Control state variables
-	let soilCarbonDepth = $state<'0' | '30' | '60' | '200'>('30');
-
-	// Get current dataset based on selected question or information layer
-	let currentDataset = $derived.by(() => {
-		// First priority: selected question
-		if (selectedQuestionId) {
-			const selectedQuestion = questions.find((q) => q.id === selectedQuestionId);
-			if (selectedQuestion?.dataset_id) {
-				return ecosystemDataset.find((item) => item.id === selectedQuestion.dataset_id);
-			}
-		}
-
-		// Second priority: selected information layer
-		if (selectedInformationLayer) {
-			const selectedLayer = information_layers.find(
-				(layer) => layer.title === selectedInformationLayer
-			);
-			if (selectedLayer?.dataset_id) {
-				return ecosystemDataset.find((item) => item.id === selectedLayer.dataset_id);
-			}
-		}
-
-		// Default: nothing selected, return null
-		return null;
-	});
-
-	// Extract current data from dataset
-	let currentCharts = $derived(currentDataset?.charts || []);
-
-	// Get current map layers based on dataset
-	let currentMapLayers = $derived(currentDataset?.map_layers || null);
-
 	// Debounce timer for legend fetching
 	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -534,12 +272,9 @@
 			// Get current layers based on control type
 			let layersToFetch: any[] = [];
 
-			if (currentDataset.control_type === 'none') {
+			if (currentDataset.control_type === 'simple' || currentDataset.control_type === 'none') {
 				const layers = currentDataset.map_layers.default;
 				layersToFetch = Array.isArray(layers) ? layers : [layers];
-			} else if (currentDataset.control_type === 'threshold-control') {
-				const selectedLayers = currentMapLayers && (currentMapLayers as any)[soilCarbonDepth];
-				layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
 			}
 
 			// Fetch legend for each layer
@@ -589,6 +324,162 @@
 		}, 300); // 300ms debounce delay
 	}
 
+	// Sample physiography datasets structure
+	const physiographyDataset = [
+		{
+			id: 'elevation',
+			title: 'Elevation',
+			description: 'Elevation data for the HKH region',
+			control_type: 'simple',
+			map_layers: {
+				default: [
+					{
+						id: 'elevation-layer',
+						name: 'Elevation(DEM 90m)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer',
+						layerIndex: '5',
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
+		},
+		{
+			id: 'mountain-region',
+			title: 'Mountain Region',
+			description: 'Mountain region data for the HKH region',
+			control_type: 'simple',
+			map_layers: {
+				default: [
+					{
+						id: 'mountain-region-layer',
+						name: 'Mountain Region',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer',
+						layerIndex: '4',
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
+		}
+		// {
+		// 	id: 'slope',
+		// 	title: 'Slope',
+		// 	description: 'Slope data for the HKH region',
+		// 	control_type: 'simple',
+		// 	map_layers: {
+		// 		default: [
+		// 			{
+		// 				id: 'slope-layer',
+		// 				name: 'Slope',
+		// 				url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+		// 				layerIndex: 'springs:Slope',
+		// 				mapserver: 'geoserver'
+		// 			}
+		// 		]
+		// 	},
+		// 	charts: []
+		// },
+		// {
+		// 	id: 'aspect',
+		// 	title: 'Aspect',
+		// 	description: 'Aspect data for the HKH region',
+		// 	control_type: 'simple',
+		// 	map_layers: {
+		// 		default: [
+		// 			{
+		// 				id: 'aspect-layer',
+		// 				name: 'Aspect',
+		// 				url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
+		// 				layerIndex: 'springs:Aspect',
+		// 				mapserver: 'geoserver'
+		// 			}
+		// 		]
+		// 	},
+		// 	charts: []
+		// }
+	];
+
+	const questions: any = [
+		// {
+		// 	id: 'question-1',
+		// 	question: 'Which areas have the highest forest cover in the HKH region?',
+		// 	dataset_id: 'forest-cover'
+		// },
+		// {
+		// 	id: 'question-2',
+		// 	question: 'Where are the major biodiversity hotspots located?',
+		// 	dataset_id: 'biodiversity-hotspots'
+		// },
+		// {
+		// 	id: 'question-3',
+		// 	question: 'How has ecosystem degradation affected wildlife corridors?',
+		// 	dataset_id: 'forest-cover'
+		// }
+	];
+
+	const information_layers: any = [
+		{
+			id: 'map-indicator-1',
+			title: 'Elevation',
+			dataset_id: 'elevation',
+			info: 'The map illustrates the elevation variation across the HKH region, highlighting topographical gradients from low-lying valleys to high mountain ranges. This dataset is compiled from global SRTM DEM of 90 m resolution for HKH region and was prepared by ICIMOD.',
+			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
+		},
+		{
+			id: 'map-indicator-2',
+			title: 'Mountain Region',
+			dataset_id: 'mountain-region',
+			info: 'Mountain Region',
+			source: ''
+		}
+		// {
+		// 	id: 'map-indicator-3',
+		// 	title: 'Slope',
+		// 	dataset_id: 'slope'
+		// },
+		// {
+		// 	id: 'map-indicator-4',
+		// 	title: 'Aspect',
+		// 	dataset_id: 'aspect'
+		// }
+	];
+
+	// Track selected question - default to first question
+	let selectedQuestionId = $state('');
+
+	// Track selected information layer (single selection)
+	let selectedInformationLayer = $state<string | null>('Elevation');
+
+	// Track expanded layer for accordion - default closed
+	let expandedLayer = $state<string | null>(null);
+
+	// Get current dataset based on selected question or information layer
+	let currentDataset = $derived.by(() => {
+		// First priority: selected question
+		if (selectedQuestionId) {
+			const selectedQuestion = questions.find((q) => q.id === selectedQuestionId);
+			if (selectedQuestion?.dataset_id) {
+				return physiographyDataset.find((item) => item.id === selectedQuestion.dataset_id);
+			}
+		}
+
+		// Second priority: selected information layer
+		if (selectedInformationLayer) {
+			const selectedLayer = information_layers.find(
+				(layer) => layer.title === selectedInformationLayer
+			);
+			if (selectedLayer?.dataset_id) {
+				return physiographyDataset.find((item) => item.id === selectedLayer.dataset_id);
+			}
+		}
+
+		// Default: nothing selected, return null
+		return null;
+	});
+
+	// Extract current data from dataset
+	let currentCharts = $derived(currentDataset?.charts || []);
 	function initializeMap() {
 		if (!mapContainer) return;
 
@@ -784,17 +675,6 @@
 		// Clear question selection when selecting an information layer
 		selectedQuestionId = '';
 
-		// Find the dataset and set default control values
-		const selectedLayer = information_layers.find((layer) => layer.title === layerId);
-		if (selectedLayer?.dataset_id) {
-			const dataset = ecosystemDataset.find((item) => item.id === selectedLayer.dataset_id);
-
-			// Set default control values based on dataset
-			if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
-				soilCarbonDepth = dataset.default_option as '0' | '30' | '60' | '200';
-			}
-		}
-
 		console.log('Information layer selected:', layerId);
 	}
 
@@ -883,7 +763,7 @@
 				})
 			});
 		} else {
-			// Create WMS layer
+			// Create WMS layer (GeoServer)
 			layer = new ImageLayer({
 				visible: true,
 				zIndex: 10,
@@ -935,12 +815,12 @@
 		});
 	}
 
-	// Clear all ecosystem data layers (keep base map)
-	function clearEcosystemLayers() {
+	// Clear all physiography data layers (keep base map)
+	function clearPhysiographyLayers() {
 		if (!map) return;
 
 		const layers = map.getLayers().getArray().slice();
-		console.log('Clearing ecosystem layers. Total layers found:', layers.length);
+		console.log('Clearing physiography layers. Total layers found:', layers.length);
 
 		layers.forEach((layer) => {
 			const layerId = layer.get('id');
@@ -951,7 +831,10 @@
 			}
 		});
 
-		console.log('Ecosystem layers cleared. Remaining layers:', map.getLayers().getArray().length);
+		console.log(
+			'Physiography layers cleared. Remaining layers:',
+			map.getLayers().getArray().length
+		);
 	}
 
 	// Update layers based on current dataset
@@ -962,8 +845,8 @@
 		console.log('Current dataset:', currentDataset?.id);
 		console.log('Layers before clearing:', map.getLayers().getArray().length);
 
-		// Always clear existing ecosystem layers first
-		clearEcosystemLayers();
+		// Always clear existing physiography layers first
+		clearPhysiographyLayers();
 
 		// If no dataset is selected, stop here (layers are cleared)
 		if (!currentDataset || !currentDataset.map_layers) {
@@ -978,26 +861,16 @@
 			currentDataset.control_type
 		);
 
-		// For 'none' control type, show layers immediately
-		if (currentDataset.control_type === 'none') {
+		// For 'simple' or 'none' control type, show layers immediately
+		if (currentDataset.control_type === 'simple' || currentDataset.control_type === 'none') {
 			const layers = currentDataset.map_layers.default;
 			if (layers) {
 				if (Array.isArray(layers)) {
 					console.log('Adding multiple layers:', layers.length);
 					addMultipleLayers(layers);
 				} else {
-					console.log('Adding single layer:', (layers as any).name);
+					console.log('Adding single layer:', layers.name);
 					addWMSLayer(layers);
-				}
-			}
-		} else if (currentDataset.control_type === 'threshold-control') {
-			// For threshold control, show layer based on selected depth
-			const selectedLayers = currentMapLayers && (currentMapLayers as any)[soilCarbonDepth];
-			if (selectedLayers) {
-				if (Array.isArray(selectedLayers)) {
-					addMultipleLayers(selectedLayers);
-				} else {
-					addWMSLayer(selectedLayers);
 				}
 			}
 		}
@@ -1011,9 +884,8 @@
 
 	// Single consolidated effect for all map layer updates
 	$effect(() => {
-		// This will trigger when any of these state variables change
+		// This will trigger when currentDataset changes
 		const dataset = currentDataset;
-		const depth = soilCarbonDepth;
 
 		console.log(
 			'Main effect triggered - Dataset:',
@@ -1023,7 +895,7 @@
 		);
 
 		// Only update map layers if we have a dataset
-		if (dataset) {
+		if (dataset && map) {
 			updateMapLayers();
 		}
 	});
@@ -1043,46 +915,22 @@
 	{/if}
 
 	<!-- Left Sidebar - Story + Information -->
-
 	<div
-		class="sticky top-9 col-span-12 h-[90vh] min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
+		class="sticky top-9 col-span-12 mt-4 h-[90vh] min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 		class:hidden={layoutState === 'hide-left'}
 		class:lg:col-span-12={layoutState === 'left-full'}
 		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
 	>
 		<!-- StoryMap Iframe Container -->
 		<div class="relative h-full w-full overflow-hidden">
-			<!-- Loading Screen -->
-			{#if isStoryMapLoading}
-				<div
-					class="absolute inset-0 z-30 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100"
-				>
-					<div class="text-center">
-						<!-- Animated Spinner -->
-						<div class="mb-4 flex justify-center">
-							<div
-								class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-green-500"
-							></div>
-						</div>
-						<!-- Loading Text -->
-						<p class="text-sm font-medium text-slate-600">Loading Story...</p>
-						<p class="mt-1 text-xs text-slate-500">Please wait</p>
-					</div>
-				</div>
-			{/if}
-
-			<!-- Iframe -->
 			<iframe
-				src="https://storymaps.arcgis.com/stories/d5a8e4ea8c084a33bd5af57f6d84368f"
+				src="https://storymaps.arcgis.com/stories/f15cf3dee5b74a92bae05b5afe0b0c09"
 				width="100%"
 				height="100%"
 				style="border:none;"
 				allowfullscreen
 				class="h-full w-full"
-				title="ArcGIS StoryMap - Ecosystem"
-				onload={() => {
-					isStoryMapLoading = false;
-				}}
+				title="ArcGIS StoryMap"
 			></iframe>
 
 			<!-- Overlay Control Buttons -->
@@ -1243,51 +1091,6 @@
 								</div>
 							</div>
 
-							<!-- Dynamic Control Panel at Bottom -->
-							{#if currentDataset && currentDataset.control_type === 'threshold-control'}
-								<!-- Always show expanded Soil Carbon Depth Panel -->
-								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
-										? 'z-[9999]'
-										: 'z-10'}"
-								>
-									<!-- Depth Label -->
-									<div class="flex items-center space-x-2">
-										<div class="rounded-full bg-gradient-to-r from-green-500 to-emerald-500 p-1">
-											<div class="h-2 w-2 rounded-full bg-white"></div>
-										</div>
-										<span class="text-sm font-medium text-slate-700">Depth (g/kg)</span>
-									</div>
-
-									<!-- Separator -->
-									<div class="h-4 w-px bg-slate-300"></div>
-
-									<!-- Depth Options as Slider-like Radio Buttons -->
-									<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
-										{#if currentDataset.control_options}
-											{#each currentDataset.control_options as option}
-												<label class="relative cursor-pointer">
-													<input
-														type="radio"
-														bind:group={soilCarbonDepth}
-														value={option}
-														class="peer sr-only"
-													/>
-													<div
-														class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-emerald-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-green-600 peer-checked:hover:to-emerald-600 {soilCarbonDepth ===
-														option
-															? 'text-white'
-															: 'text-slate-600'}"
-													>
-														{option}cm
-													</div>
-												</label>
-											{/each}
-										{/if}
-									</div>
-								</div>
-							{/if}
-
 							<!-- Legend Panel - Bottom Right INSIDE the map container -->
 							{#if currentDataset && Object.keys(legendData).length > 0}
 								<div class="absolute right-4 bottom-4 {isFullscreen ? 'z-[9999]' : 'z-10'}">
@@ -1297,7 +1100,7 @@
 										onclick={() => (legendCollapsed = !legendCollapsed)}
 									>
 										<div class="flex items-center space-x-2">
-											<List class="h-3.5 w-3.5 text-green-600" />
+											<List class="h-3.5 w-3.5 text-amber-600" />
 											{#if !legendCollapsed}
 												<span class="font-medium text-slate-700">Legend</span>
 											{/if}
@@ -1357,14 +1160,12 @@
 												title={chart.title}
 												subtitle="Hindu Kush Himalaya Region Ecosystem Data"
 												chart_type={chart.chart_type}
-												yAxisTitle="Land Cover (hectares)"
-												showLegend={false}
 											/>
 										</div>
 									{/each}
 								</div>
-								<!-- {:else}
-								<div class="flex h-80 items-center justify-center">
+							{:else}
+								<!-- <div class="flex h-80 items-center justify-center">
 									<div class="text-center text-slate-500">
 										<p class="text-sm">
 											Select a question or information layer to view related charts
@@ -1383,7 +1184,7 @@
 					>
 						<!-- Information Layer Header -->
 						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-							<div class="rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 p-2">
+							<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-2">
 								<Layers class="h-5 w-5 text-white" />
 							</div>
 							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
@@ -1397,7 +1198,7 @@
 										<div
 											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
 											layer.title
-												? 'border-green-300 bg-gradient-to-r from-green-50/90 to-emerald-50/90 shadow-md'
+												? 'border-stone-300 bg-gradient-to-r from-stone-50/90 to-amber-50/90 shadow-md'
 												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
 										>
 											<button
@@ -1407,7 +1208,7 @@
 												<h4
 													class="flex-1 text-sm font-medium {selectedInformationLayer ===
 													layer.title
-														? 'text-green-800'
+														? 'text-stone-800'
 														: 'text-slate-800'}"
 												>
 													{layer.title}
@@ -1479,7 +1280,7 @@
 				class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right scale-100 transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 opacity-100 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
 			>
 				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 p-2">
+					<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-2">
 						<Info class="h-3.5 w-3.5 text-white" />
 					</div>
 					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
@@ -1490,8 +1291,8 @@
 						<button
 							class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
 							questionItem.id
-								? 'border-green-500 bg-green-50 shadow-md'
-								: 'border-slate-200/50 bg-white/50 hover:border-green-300 hover:bg-green-50/70 hover:shadow-sm'}"
+								? 'border-stone-500 bg-stone-50 shadow-md'
+								: 'border-slate-200/50 bg-white/50 hover:border-stone-300 hover:bg-stone-50/70 hover:shadow-sm'}"
 							onclick={() => selectQuestion(questionItem.id)}
 						>
 							<div class="flex items-start space-x-2">
@@ -1500,13 +1301,13 @@
 										<CheckCircle class="h-3.5 w-3.5 text-green-600" />
 									{:else}
 										<div
-											class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 group-hover:border-green-400"
+											class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 group-hover:border-stone-400"
 										></div>
 									{/if}
 								</div>
 								<p
 									class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-										? 'font-medium text-green-700'
+										? 'font-medium text-stone-700'
 										: 'text-slate-600 group-hover:text-slate-800'}"
 								>
 									{questionItem.question}
@@ -1520,7 +1321,7 @@
 
 		<button
 			onclick={toggleQuestionsPanel}
-			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
+			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-stone-500 to-amber-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
 			aria-label="Toggle questions panel"
 		>
 			<HelpCircle class="h-6 w-6" />

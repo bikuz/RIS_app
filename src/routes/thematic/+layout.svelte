@@ -172,7 +172,7 @@
 						<div class="rounded-lg bg-slate-100 p-1.5 group-hover:bg-slate-200 sm:p-2">
 							<ExternalLink class="h-4 w-4 text-slate-600 sm:h-5 sm:w-5" />
 						</div>
-						<span class="text-sm font-semibold sm:text-base">Regional Science App</span>
+						<span class="text-sm font-semibold sm:text-base">Science Apps</span>
 					</div>
 					<ChevronDown
 						class="ml-2 h-3.5 w-3.5 transition-transform duration-200 sm:ml-auto sm:h-4 sm:w-4 {isLinksDropdownOpen

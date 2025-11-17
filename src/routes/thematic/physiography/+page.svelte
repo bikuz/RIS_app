@@ -56,6 +56,9 @@
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
 
+	// StoryMap loading state
+	let isStoryMapLoading = $state(true);
+
 	// Function to check if screen is small (laptop, tablet, or mobile)
 	function isSmallScreen() {
 		return typeof window !== 'undefined' && window.innerWidth < 1280; // lg breakpoint
@@ -356,7 +359,148 @@
 					}
 				]
 			},
-			charts: []
+			charts: [
+				{
+					title: 'Countrywise Mountain Areas in the HKH Region',
+					// subtitle: 'Distribution across HKH region',
+					chart_type: 'pie',
+					units: 'Sq Km',
+					chart_data: {
+						series: [
+							{
+								name: 'Impervious Surface',
+								data: [
+									{
+										name: 'non-mountain region',
+										y: 441681,
+										color: '#A8A800' // Blue
+									},
+									{
+										name: 'elevation > 4500 m',
+										y: 1439526,
+										color: '#D3FFBE' // Red
+									},
+									{
+										name: 'elevation 3500 – 4500 m',
+										y: 734456,
+										color: '#55FF00' // Green
+									},
+									{
+										name: 'elevation 2500 – 3500 m',
+										y: 558920,
+										color: '#4CE600' // Amber
+									},
+									{
+										name: 'elevation 1500 – 2500 m and slope >= 20',
+										y: 410214,
+										color: '#38A800' // Amber
+									},
+									{
+										name: 'elevation 1000 – 1500 m and slope >= 50',
+										y: 272447,
+										color: '#267300' // Amber
+									},
+									{
+										name: 'elevation 300 – 1000 m and local elevation range (7 km radius) > 300 m',
+										y: 334595,
+										color: '#4C7300' // Amber
+									}
+								]
+							}
+						]
+					}
+				},
+				{
+					title: 'Countrywise Mountain Areas in the HKH Region',
+					// subtitle: 'Distribution across HKH region',
+					chart_type: 'pie',
+					units: 'Sq Km',
+					chart_data: {
+						series: [
+							{
+								name: 'Impervious Surface',
+								data: [
+									{
+										name: 'Afghanistan',
+										y: 311604
+										// color: '#147218' // Blue
+									},
+									{
+										name: 'Bangladesh',
+										y: 1254
+										// color: '#A4CF22' // Red
+									},
+									{
+										name: 'Bhutan',
+										y: 39283
+										// color: 'China' // Green
+									},
+									{
+										name: 'China',
+										y: 2381708
+										// color: '#FE3C19' // Amber
+									},
+									{
+										name: 'India',
+										y: 347768
+										// color: '#FE3C19' // Amber
+									},
+									{
+										name: 'Myanmar',
+										y: 234838
+										// color: '#FE3C19' // Amber
+									},
+									{
+										name: 'Nepal',
+										y: 119045
+										// color: '#FE3C19' // Amber
+									},
+									{
+										name: 'Pakistan',
+										y: 314660,
+										color: '#083316' // Amber
+									}
+								]
+							}
+						]
+					}
+				}
+				// {
+				// 	title: 'Mountain areas by different mountain classes',
+				// 	chart_type: 'column',
+				// 	yAxisTitle: 'Pixel count',
+				// 	chart_data: {
+				// 		categories: [
+				// 			'Afghanistan',
+				// 			'Bangladesh',
+				// 			'Bhutan',
+				// 			'China',
+				// 			'India',
+				// 			'Myanmar',
+				// 			'Nepal',
+				// 			'Pakistan'
+				// 		],
+
+				// 		// plotOptions: {
+				// 		// 	column: {
+				// 		// 		pointPadding: 0,
+				// 		// 		groupPadding: 0,
+				// 		// 		borderWidth: 0,
+				// 		// 		grouping: false,
+				// 		// 		pointPlacement: 0
+				// 		// 	}
+				// 		// },
+				// 		series: [
+				// 			{
+				// 				name: 'Classes',
+				// 				data: [311604, 1254, 39283, 2381708, 347768, 234838, 119045, 314660],
+				// 				color: '#3B82F6', // Modern blue
+				// 				zIndex: 1
+				// 			}
+				// 		]
+				// 	}
+				// }
+			]
 		}
 		// {
 		// 	id: 'slope',
@@ -445,7 +589,7 @@
 	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection)
-	let selectedInformationLayer = $state<string | null>('Elevation');
+	let selectedInformationLayer = $state<string | null>('Mountain Region');
 
 	// Track expanded layer for accordion - default closed
 	let expandedLayer = $state<string | null>(null);
@@ -911,114 +1055,77 @@
 		</button>
 	{/if}
 
-	<!-- Left Sidebar - Story + Information -->
+	<!-- Story Section - StoryMap Iframe -->
 	<div
-		class="sticky top-6 col-span-12 h-fit max-h-[calc(100vh-8rem)] flex-1 space-y-4 overflow-y-auto lg:col-span-3 lg:max-h-[calc(100vh-16rem)] lg:space-y-6"
+		class="sticky top-9 col-span-12 h-[90vh] min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
 		class:hidden={layoutState === 'hide-left'}
 		class:lg:col-span-12={layoutState === 'left-full'}
+		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
 	>
-		<!-- Story Section -->
-		<div class="rounded-2xl border border-white/20 bg-white/100 p-4 lg:p-6">
-			<div class="mb-4 flex items-center justify-between lg:mb-6">
-				<div class="flex items-center space-x-2 lg:space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-1.5 lg:p-2">
-						<Mountain class="h-4 w-4 text-white lg:h-5 lg:w-5" />
+		<!-- StoryMap Iframe Container -->
+		<div class="relative h-full w-full overflow-hidden">
+			<!-- Loading Screen -->
+			{#if isStoryMapLoading}
+				<div
+					class="absolute inset-0 z-30 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100"
+				>
+					<div class="text-center">
+						<!-- Animated Spinner -->
+						<div class="mb-4 flex justify-center">
+							<div
+								class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-amber-500"
+							></div>
+						</div>
+						<!-- Loading Text -->
+						<p class="text-sm font-medium text-slate-600">Loading Story...</p>
+						<p class="mt-1 text-xs text-slate-500">Please wait</p>
 					</div>
-					<h3
-						class="{layoutState === 'left-full'
-							? 'text-xl lg:text-2xl'
-							: 'text-base lg:text-lg'} font-bold text-slate-800 transition-all duration-300"
+				</div>
+			{/if}
+
+			<!-- Iframe -->
+			<iframe
+				src="https://storymaps.arcgis.com/stories/cfe99f86e3c04499827f3b13db5bee92"
+				width="100%"
+				height="100%"
+				style="border:none;"
+				allowfullscreen
+				class="h-full w-full"
+				title="ArcGIS StoryMap - Physiography"
+				onload={() => {
+					isStoryMapLoading = false;
+				}}
+			></iframe>
+
+			<!-- Overlay Control Buttons -->
+			<div class="absolute top-2 right-2 z-20 flex items-center space-x-1 lg:space-x-2">
+				{#if layoutState !== 'left-full'}
+					<!-- Hide Left Panel Button - Show Map -->
+					<button
+						onclick={() => setLayoutState('hide-left')}
+						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+						title="Show Map"
 					>
-						Physiography of HKH
-					</h3>
-				</div>
-				<div class="flex items-center space-x-1 lg:space-x-2">
-					{#if layoutState !== 'left-full'}
-						<!-- Hide Left Panel Button - Show Map -->
-						<button
-							onclick={() => setLayoutState('hide-left')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-							title="Show Map"
-						>
-							<ChevronsLeft class="h-4 w-4" />
-						</button>
-						<!-- Expand Story Button - Desktop only -->
-						<button
-							onclick={() => setLayoutState('left-full')}
-							class="hidden rounded-lg border border-slate-200 bg-white/50 p-1.5 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
-							title="Expand Story"
-						>
-							<ChevronsRight class="h-4 w-4" />
-						</button>
-					{:else}
-						<!-- Back to Default Button -->
-						<button
-							onclick={() => setLayoutState('default')}
-							class="rounded-lg border border-slate-200 bg-white/50 p-2 text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-							title="Back to Default"
-						>
-							<ChevronsLeft class="h-4 w-4" />
-						</button>
-					{/if}
-				</div>
-			</div>
-
-			<div
-				class="{layoutState === 'left-full'
-					? 'space-y-6'
-					: 'space-y-4'} transition-all duration-300"
-			>
-				<!-- <p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-700 transition-all duration-300"
-				>
-					The Hindu Kush Himalaya (HKH) region is recognized as one of the world's most biodiverse
-					mountain systems, harboring an extraordinary array of ecosystems from tropical forests to
-					alpine meadows. This vast region spans across eight countries and encompasses 35
-					biodiversity hotspots, making it a critical repository of global biological heritage. The
-					HKH supports over 25,000 plant species, including numerous endemic varieties, and provides
-					habitat for iconic wildlife such as snow leopards, Bengal tigers, one-horned rhinoceros,
-					and countless bird species.
-				</p>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					However, these precious ecosystems face unprecedented threats from climate change, habitat
-					fragmentation, and human encroachment. Rising temperatures are pushing species to higher
-					altitudes, disrupting established ecological relationships and threatening the survival of
-					cold-adapted species. Deforestation and land-use changes have fragmented critical wildlife
-					corridors, isolating populations and reducing genetic diversity.
-				</p>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					The region's forests, which act as crucial carbon sinks and regulate water cycles, are
-					under severe pressure from agricultural expansion, infrastructure development, and
-					unsustainable harvesting practices. Wetlands and grasslands, equally important for
-					biodiversity and ecosystem services, are being converted for agriculture and urban
-					development at alarming rates.
-				</p>
-
-				<p
-					class="text-justify {layoutState === 'left-full'
-						? 'text-base leading-loose'
-						: 'text-sm leading-relaxed'} text-slate-600 transition-all duration-300"
-				>
-					Conservation efforts in the HKH require urgent, coordinated action across borders.
-					Establishing and maintaining protected areas, creating wildlife corridors, and
-					implementing sustainable land management practices are essential. Community-based
-					conservation approaches that engage local populations as stewards of biodiversity have
-					shown promising results. Additionally, scientific research and monitoring programs are
-					crucial for understanding ecosystem dynamics and developing effective conservation
-					strategies that can adapt to changing environmental conditions.
-				</p> -->
+						<ChevronsLeft class="h-3.5 w-3.5" />
+					</button>
+					<!-- Expand Story Button - Desktop only -->
+					<button
+						onclick={() => setLayoutState('left-full')}
+						class="hidden rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
+						title="Expand Story"
+					>
+						<ChevronsRight class="h-3.5 w-3.5" />
+					</button>
+				{:else}
+					<!-- Back to Default Button -->
+					<button
+						onclick={() => setLayoutState('default')}
+						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
+						title="Back to Default"
+					>
+						<ChevronsLeft class="h-3.5 w-3.5" />
+					</button>
+				{/if}
 			</div>
 		</div>
 	</div>
@@ -1061,7 +1168,7 @@
 								}}
 								title="Reset to Home View"
 							>
-								<House class="h-4 w-4 text-slate-600" />
+								<House class="h-3.5 w-3.5 text-slate-600" />
 							</button>
 
 							<!-- Basemap Switcher Button -->
@@ -1071,7 +1178,7 @@
 								title="Change Basemap"
 								aria-label="Change Basemap"
 							>
-								<MapIcon class="h-4 w-4 text-slate-600" />
+								<MapIcon class="h-3.5 w-3.5 text-slate-600" />
 							</button>
 
 							<!-- Basemap Switcher Panel -->
@@ -1112,9 +1219,9 @@
 								onclick={() => (layersPanelOpen = !layersPanelOpen)}
 							>
 								{#if layersPanelOpen}
-									<ChevronsRight class="h-4 w-4" />
+									<ChevronsRight class="h-3.5 w-3.5" />
 								{:else}
-									<Layers class="h-4 w-4" />
+									<Layers class="h-3.5 w-3.5" />
 								{/if}
 							</button>
 
@@ -1157,7 +1264,7 @@
 										onclick={() => (legendCollapsed = !legendCollapsed)}
 									>
 										<div class="flex items-center space-x-2">
-											<List class="h-4 w-4 text-amber-600" />
+											<List class="h-3.5 w-3.5 text-amber-600" />
 											{#if !legendCollapsed}
 												<span class="font-medium text-slate-700">Legend</span>
 											{/if}
@@ -1215,8 +1322,9 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
-												subtitle="Hindu Kush Himalaya Region Ecosystem Data"
+												subtitle=""
 												chart_type={chart.chart_type}
+												unit={chart.units}
 											/>
 										</div>
 									{/each}
@@ -1287,9 +1395,9 @@
 													}}
 												>
 													{#if expandedLayer === layer.title}
-														<ChevronUp class="h-4 w-4 text-slate-600" />
+														<ChevronUp class="h-3.5 w-3.5 text-slate-600" />
 													{:else}
-														<ChevronDown class="h-4 w-4 text-slate-600" />
+														<ChevronDown class="h-3.5 w-3.5 text-slate-600" />
 													{/if}
 												</span>
 											</button>
@@ -1338,7 +1446,7 @@
 			>
 				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
 					<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-2">
-						<Info class="h-4 w-4 text-white" />
+						<Info class="h-3.5 w-3.5 text-white" />
 					</div>
 					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
 				</div>
@@ -1355,10 +1463,10 @@
 							<div class="flex items-start space-x-2">
 								<div class="mt-1 flex-shrink-0">
 									{#if selectedQuestionId === questionItem.id}
-										<CheckCircle class="h-4 w-4 text-green-600" />
+										<CheckCircle class="h-3.5 w-3.5 text-green-600" />
 									{:else}
 										<div
-											class="h-4 w-4 rounded-full border-2 border-slate-300 group-hover:border-stone-400"
+											class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 group-hover:border-stone-400"
 										></div>
 									{/if}
 								</div>

@@ -11,13 +11,14 @@
 		plotLines = [],
 		xAxisConfig = null,
 		showLegend = true,
-		isPyramid = false
+		isPyramid = false,
+		unit = ''
 	} = $props<{
 		chartData: {
-			categories: (string | number)[];
+			categories?: (string | number)[];
 			series: Array<{
 				name: string;
-				data: (number | null)[];
+				data: (number | null)[] | Array<{ name: string; y: number; color?: string }>;
 				color?: string;
 				marker?: any;
 				dashStyle?: string;
@@ -64,6 +65,7 @@
 		};
 		showLegend?: boolean;
 		isPyramid?: boolean;
+		unit?: string;
 	}>();
 
 	let chartContainer: HTMLDivElement;
@@ -139,8 +141,11 @@
 				}
 			};
 
-			// Configure xAxis for pyramid or regular chart
-			if (isPyramid) {
+			// Configure xAxis for pyramid, pie, or regular chart
+			if (chart_type === 'pie') {
+				// Pie charts don't use xAxis
+				chartConfig.xAxis = null;
+			} else if (isPyramid) {
 				// Population pyramid uses dual xAxis (mirror axis)
 				chartConfig.xAxis = [
 					{
@@ -216,8 +221,11 @@
 						};
 			}
 
-			// Configure yAxis for pyramid or regular chart
-			if (isPyramid) {
+			// Configure yAxis for pyramid, pie, or regular chart
+			if (chart_type === 'pie') {
+				// Pie charts don't use yAxis
+				chartConfig.yAxis = null;
+			} else if (isPyramid) {
 				chartConfig.yAxis = {
 					title: {
 						text: null
@@ -250,6 +258,11 @@
 					lineColor: '#cbd5e1',
 					tickColor: '#cbd5e1',
 					labels: {
+						formatter: unit
+							? function (this: any) {
+									return this.value + ' ' + unit;
+								}
+							: undefined,
 						style: {
 							color: '#64748b',
 							fontSize: '12px'
@@ -258,8 +271,19 @@
 				};
 			}
 
-			// Configure tooltip for pyramid or regular chart
-			if (isPyramid) {
+			// Configure tooltip for pyramid, pie, or regular chart
+			if (chart_type === 'pie') {
+				// Tooltip for pie is configured in series
+				chartConfig.tooltip = {
+					backgroundColor: 'rgba(255, 255, 255, 0.95)',
+					borderColor: '#e2e8f0',
+					borderRadius: 8,
+					shadow: true,
+					style: {
+						fontSize: '12px'
+					}
+				};
+			} else if (isPyramid) {
 				chartConfig.tooltip = {
 					backgroundColor: 'rgba(255, 255, 255, 0.95)',
 					borderColor: '#e2e8f0',
@@ -271,7 +295,7 @@
 					formatter: function (this: any) {
 						return (
 							`<b>${this.series.name}, age ${this.point.category}</b><br/>` +
-							`Population: <b>${Math.abs(this.point.y).toFixed(2)}</b>`
+							`Population: <b>${Math.abs(this.point.y).toFixed(2)}${unit ? ' ' + unit : ''}</b>`
 						);
 					}
 				};
@@ -286,13 +310,31 @@
 					},
 					formatter: function (this: any) {
 						return `<b>${this.series.name}</b><br/>
-                                ${this.x}: <b>${this.y}</b>`;
+                                ${this.x}: <b>${this.y}${unit ? ' ' + unit : ''}</b>`;
 					}
 				};
 			}
 
 			// Configure plotOptions
-			if (isPyramid) {
+			if (chart_type === 'pie') {
+				chartConfig.plotOptions = {
+					...plotOptions,
+					...(chartData.plotOptions || {}),
+					pie: {
+						allowPointSelect: true,
+						cursor: 'pointer',
+						dataLabels: {
+							enabled: true,
+							format: '<b>{point.name}</b>: {point.percentage:.2f} %',
+							style: {
+								color: '#64748b',
+								fontSize: '12px'
+							}
+						},
+						showInLegend: showLegend
+					}
+				};
+			} else if (isPyramid) {
 				chartConfig.plotOptions = {
 					...plotOptions,
 					...(chartData.plotOptions || {}),
@@ -327,7 +369,30 @@
 			}
 
 			// Configure series
-			if (isPyramid) {
+			if (chart_type === 'pie') {
+				// Pie chart uses a different data structure
+				// For pie charts, we expect a single series with data array of {name, y, color}
+				const pieSeries = chartData.series[0];
+				chartConfig.series = [
+					{
+						type: 'pie',
+						name: pieSeries?.name || 'Data',
+						data: pieSeries?.data || [],
+						showInLegend: showLegend,
+						dataLabels: {
+							enabled: true,
+							format: '<b>{point.name}</b>: {point.percentage:.2f} %',
+							style: {
+								color: '#64748b',
+								fontSize: '12px'
+							}
+						},
+						tooltip: {
+							pointFormat: `<b>{point.name}</b>: {point.y}${unit ? ' ' + unit : ''} ({point.percentage:.2f}%)`
+						}
+					}
+				];
+			} else if (isPyramid) {
 				chartConfig.series = chartData.series.map((serie: any, index: number) => ({
 					...serie,
 					color: serie.color || (index === 0 ? '#3b82f6' : '#ef4444')
