@@ -553,26 +553,26 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution aged 75 years and above by Gender',
-					// subtitle: 'Distribution across HKH region',
-					chart_type: 'pie',
-					// units: 'Sq Km',
+					title: 'Country-wise Proportion of Population Age 75 years and above within HKH Region',
+					chart_type: 'column',
+					yAxisTitle: 'Pixel count',
 					chart_data: {
+						categories: [
+							'Afghanistan',
+							'Pakistan',
+							'India',
+							'Nepal',
+							'China',
+							'Bhutan',
+							'Bangladesh',
+							'Myanmar'
+						],
 						series: [
 							{
-								name: 'Gender',
-								data: [
-									{
-										name: 'Male',
-										y: 2037827
-										// color: '#A8A800' // Blue
-									},
-									{
-										name: 'Female',
-										y: 2665183
-										// color: '#D3FFBE' // Red
-									}
-								]
+								name: 'Population',
+								data: [0.69, 1.12, 2.46, 2.12, 4.26, 2.2, 1.65, 1.67],
+								color: '#5F87C1', // Modern blue
+								zIndex: 1
 							}
 						]
 					}
@@ -604,7 +604,7 @@
 			},
 			charts: [
 				{
-					title: 'Distribution of Child Woman Ratio Across HKH',
+					title: 'Country-wise Child Woman Ratio within HKH Region',
 					chart_type: 'column',
 					yAxisTitle: 'Pixel count',
 					chart_data: {
@@ -710,7 +710,7 @@
 			},
 			charts: [
 				{
-					title: 'Distribution of Child Dependency Ratio Across HKH',
+					title: 'Country-wise Child Dependency Ratio within HKH Region',
 					chart_type: 'column',
 					yAxisTitle: 'Pixel count',
 					chart_data: {
@@ -816,7 +816,7 @@
 			},
 			charts: [
 				{
-					title: 'Distribution of Age Dependency Ratio Across HKH',
+					title: 'Country-wise Age Dependency Ratio within HKH Region',
 					chart_type: 'column',
 					yAxisTitle: 'Pixel count',
 					chart_data: {
@@ -922,7 +922,7 @@
 			},
 			charts: [
 				{
-					title: 'Distribution of Total Dependency Ratio Across HKH',
+					title: 'Country-wise Total Dependency Ratio within HKH Region',
 					chart_type: 'column',
 					yAxisTitle: 'Pixel count',
 					chart_data: {
@@ -1846,7 +1846,7 @@
 			></iframe>
 
 			<!-- Overlay Control Buttons -->
-			<div class="absolute top-2 right-2 z-20 flex items-center space-x-1 lg:space-x-2">
+			<div class="absolute top-2 right-5 z-20 flex items-center space-x-1 lg:space-x-2">
 				{#if layoutState !== 'left-full'}
 					<!-- Hide Left Panel Button - Show Map -->
 					<button
