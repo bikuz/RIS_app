@@ -1086,7 +1086,7 @@
 			></iframe>
 
 			<!-- Overlay Control Buttons -->
-			<div class="absolute top-2 right-2 z-20 flex items-center space-x-1 lg:space-x-2">
+			<div class="absolute top-2 right-5 z-20 flex items-center space-x-1 lg:space-x-2">
 				{#if layoutState !== 'left-full'}
 					<!-- Hide Left Panel Button - Show Map -->
 					<button
