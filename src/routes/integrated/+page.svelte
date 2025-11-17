@@ -122,101 +122,88 @@
 	// Dataset management state
 	let activeTab = $state<'available' | 'selected'>('available');
 	let searchQuery = $state('');
-	let selectedDatasets = $state<Set<string>>(new Set());
-	let datasetVisibility = $state<Record<string, boolean>>({});
+	// Track selected layers: key is full path like "datasetId|nestedKey1|nestedKey2|layerIndex"
+	let selectedLayers = $state<Set<string>>(new Set());
+	let layerVisibility = $state<Record<string, boolean>>({});
 	let expandedGroups = $state<Set<string>>(new Set(['physiography', 'ecosystem', 'cryosphere']));
+	let expandedDatasets = $state<Set<string>>(new Set());
+	let expandedNestedKeys = $state<Set<string>>(new Set());
 
-	// Transform allMapLayers into groupedDatasets format
-	// Helper function to extract the first/default layer from a dataset's map_layers
-	function extractDefaultLayer(datasetId: string, mapLayersConfig: any): {
-		id: string;
-		name: string;
-		description: string;
-		url: string;
-		layerIndex: number | string;
-		metadataUrl: string;
-	} | null {
-		if (!mapLayersConfig) return null;
+	// Helper function to check if map_layers has nested structure
+	function hasNestedLayers(mapLayers: any): boolean {
+		if (!mapLayers || typeof mapLayers !== 'object') return false;
+		
+		// Check if it's a direct layer object (has url and layerIndex/layer_id)
+		if (mapLayers.url && (mapLayers.layerIndex !== undefined || mapLayers.layer_id !== undefined)) {
+			return false;
+		}
+		
+		// Check if it has default array
+		if (Array.isArray(mapLayers.default)) {
+			return mapLayers.default.length > 1 || Object.keys(mapLayers).length > 1;
+		}
+		
+		// If it has multiple keys, it's nested
+		return Object.keys(mapLayers).length > 1;
+	}
 
-		// Handle different structures: default array, nested objects, or direct objects
-		let layer = null;
-
-		if (mapLayersConfig.default && Array.isArray(mapLayersConfig.default)) {
-			layer = mapLayersConfig.default[0];
-		} else if (Array.isArray(mapLayersConfig)) {
-			layer = mapLayersConfig[0];
-		} else if (mapLayersConfig.overall && Array.isArray(mapLayersConfig.overall)) {
-			layer = mapLayersConfig.overall[0];
-		} else if (typeof mapLayersConfig === 'object' && mapLayersConfig.url) {
-			layer = mapLayersConfig;
-		} else if (typeof mapLayersConfig === 'object') {
-			// Try to get first value from object
-			const firstKey = Object.keys(mapLayersConfig)[0];
-			const firstValue = mapLayersConfig[firstKey];
-			if (Array.isArray(firstValue)) {
-				layer = firstValue[0];
-			} else if (firstValue && typeof firstValue === 'object' && firstValue.url) {
-				layer = firstValue;
+	// Helper function to extract layer config from nested structure
+	function extractLayerConfig(mapLayers: any, path: string[] = []): any {
+		if (!mapLayers) return null;
+		
+		// Direct layer object
+		if (mapLayers.url && (mapLayers.layerIndex !== undefined || mapLayers.layer_id !== undefined)) {
+			return mapLayers;
+		}
+		
+		// Array of layers
+		if (Array.isArray(mapLayers)) {
+			return mapLayers[0] || null;
+		}
+		
+		// Object with nested structure - follow the path
+		if (typeof mapLayers === 'object') {
+			if (path.length === 0) {
+				// No path specified, try to get default or first available
+				if (mapLayers.default && Array.isArray(mapLayers.default)) {
+					return mapLayers.default[0] || null;
+				}
+				// Get first key's value
+				const firstKey = Object.keys(mapLayers)[0];
+				if (firstKey) {
+					return extractLayerConfig(mapLayers[firstKey], []);
+				}
+			} else {
+				// Follow the path
+				const [currentKey, ...rest] = path;
+				if (mapLayers[currentKey]) {
+					return extractLayerConfig(mapLayers[currentKey], rest);
+				}
 			}
 		}
-
-		if (!layer || !layer.url) return null;
-
-		return {
-			id: datasetId,
-			name: layer.name || datasetId,
-			description: layer.description || `${layer.name || datasetId} layer for the HKH region.`,
-			url: layer.url,
-			layerIndex: typeof layer.layerIndex === 'string' ? parseInt(layer.layerIndex) || layer.layerIndex : layer.layerIndex,
-			metadataUrl: 'https://rds.icimod.org/Home/DataDetail?metadataId=1972511'
-		};
+		
+		return null;
 	}
 
-	// Build groupedDatasets from allMapLayers
-	const groupedDatasets: Record<string, Array<{
-		id: string;
-		name: string;
-		description: string;
-		url: string;
-		layerIndex: number | string;
-		metadataUrl: string;
-	}>> = {};
+	// Get all datasets grouped by thematic area (preserving nested structure)
+	const groupedDatasets = allMapLayers;
 
-	// Process each thematic area
-	for (const [thematicArea, datasets] of Object.entries(allMapLayers)) {
-		if (!groupedDatasets[thematicArea]) {
-			groupedDatasets[thematicArea] = [];
-		}
-
-		// Process each dataset in the thematic area
-		for (const [datasetId, mapLayersConfig] of Object.entries(datasets as Record<string, any>)) {
-			const layer = extractDefaultLayer(datasetId, mapLayersConfig);
-			if (layer) {
-				groupedDatasets[thematicArea].push(layer);
+	// Flatten all datasets for search
+	function getAllDatasetsFlat() {
+		const flat: Array<{ id: string; title: string; thematicArea: string }> = [];
+		for (const [thematicArea, datasets] of Object.entries(allMapLayers)) {
+			if (Array.isArray(datasets)) {
+				for (const dataset of datasets) {
+					flat.push({
+						id: dataset.id,
+						title: (dataset as any).title || dataset.id,
+						thematicArea
+					});
+				}
 			}
 		}
+		return flat;
 	}
-
-	// Add some additional layers that might be missing
-	// HKH Outline layers
-	if (!groupedDatasets.physiography) {
-		groupedDatasets.physiography = [];
-	}
-	
-	// Add HKH Outline if not already present
-	if (!groupedDatasets.physiography.find(d => d.id === 'hkh-outline')) {
-		groupedDatasets.physiography.unshift({
-			id: 'hkh-outline',
-			name: 'HKH Outline',
-			description: 'HKH region outline boundary.',
-			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer',
-			layerIndex: 0,
-			metadataUrl: 'https://rds.icimod.org/Home/DataDetail?metadataId=1972511'
-		});
-	}
-
-	// Flatten all datasets for easy access
-	const availableDatasets = Object.values(groupedDatasets).flat();
 
 	// Toggle group expansion
 	function toggleGroup(groupId: string) {
@@ -228,70 +215,152 @@
 		expandedGroups = new Set(expandedGroups);
 	}
 
-	// Map layers storage
+	// Toggle dataset expansion
+	function toggleDataset(datasetId: string) {
+		if (expandedDatasets.has(datasetId)) {
+			expandedDatasets.delete(datasetId);
+		} else {
+			expandedDatasets.add(datasetId);
+		}
+		expandedDatasets = new Set(expandedDatasets);
+	}
+
+	// Toggle nested key expansion
+	function toggleNestedKey(key: string) {
+		if (expandedNestedKeys.has(key)) {
+			expandedNestedKeys.delete(key);
+		} else {
+			expandedNestedKeys.add(key);
+		}
+		expandedNestedKeys = new Set(expandedNestedKeys);
+	}
+
+	// Map layers storage - key is full path
 	let mapLayers = $state<Record<string, ImageLayer<any>>>({});
 
 	// Get filtered datasets by group
 	let filteredGroupedDatasets = $derived.by(() => {
 		if (activeTab === 'selected') {
-			const selected = getSelectedDatasets();
-			return { 'Selected': selected };
+			return getSelectedLayersGrouped();
 		}
 
-		const filtered: Record<string, typeof availableDatasets> = {};
+		const filtered: Record<string, any[]> = {};
 		const query = searchQuery.toLowerCase().trim();
 
 		for (const [groupId, datasets] of Object.entries(groupedDatasets)) {
-			const filteredDatasets = query
-				? datasets.filter((ds) => ds.name.toLowerCase().includes(query))
-				: datasets;
-			
-			if (filteredDatasets.length > 0) {
-				filtered[groupId] = filteredDatasets;
+			if (Array.isArray(datasets)) {
+				const filteredDatasets = query
+					? datasets.filter((ds) => ((ds as any).title || ds.id).toLowerCase().includes(query))
+					: datasets;
+				
+				if (filteredDatasets.length > 0) {
+					filtered[groupId] = filteredDatasets;
+				}
 			}
 		}
 
 		return filtered;
 	});
 
-	// Get selected datasets
-	function getSelectedDatasets() {
-		return availableDatasets.filter((ds) => selectedDatasets.has(ds.id));
+	// Get selected layers grouped
+	function getSelectedLayersGrouped() {
+		const grouped: Record<string, any[]> = {};
+		
+		for (const layerPath of selectedLayers) {
+			const [datasetId, ...rest] = layerPath.split('|');
+			
+			// Find the dataset
+			for (const [thematicArea, datasets] of Object.entries(allMapLayers)) {
+				if (Array.isArray(datasets)) {
+					const dataset = datasets.find(d => d.id === datasetId);
+					if (dataset) {
+						if (!grouped[thematicArea]) {
+							grouped[thematicArea] = [];
+						}
+						if (!grouped[thematicArea].find(d => d.id === datasetId)) {
+							grouped[thematicArea].push(dataset);
+						}
+						break;
+					}
+				}
+			}
+		}
+		
+		return grouped;
 	}
 
-	// Get currently displayed dataset
-	let currentDataset = $derived.by(() => {
-		const selected = getSelectedDatasets();
-		return selected.length > 0 ? selected[0] : null;
+	// Get currently displayed layer
+	let currentLayer = $derived.by(() => {
+		if (selectedLayers.size === 0) return null;
+		
+		const firstPath = Array.from(selectedLayers)[0];
+		const [datasetId, ...pathParts] = firstPath.split('|');
+		
+		// Find the dataset
+		for (const [, datasets] of Object.entries(allMapLayers)) {
+			if (Array.isArray(datasets)) {
+				const dataset = datasets.find(d => d.id === datasetId);
+				if (dataset) {
+					const layerConfig = extractLayerConfig(dataset.map_layers, pathParts);
+					if (layerConfig) {
+						return {
+							id: datasetId,
+							title: (dataset as any).title || datasetId,
+							description: layerConfig.description || `${(dataset as any).title || datasetId} layer for the HKH region.`,
+							url: layerConfig.url,
+							layerIndex: layerConfig.layerIndex !== undefined ? layerConfig.layerIndex : layerConfig.layer_id,
+							metadataUrl: 'https://rds.icimod.org/Home/DataDetail?metadataId=1972511'
+						};
+					}
+				}
+			}
+		}
+		
+		return null;
 	});
 
-	// Toggle dataset (add/remove)
-	function toggleDataset(datasetId: string) {
+	// Toggle layer (add/remove)
+	function toggleLayer(datasetId: string, path: string[] = [], layerConfig: any = null) {
 		if (!map) return;
 
-		const dataset = availableDatasets.find((ds) => ds.id === datasetId);
-		if (!dataset) return;
+		const layerPath = [datasetId, ...path].join('|');
+		
+		if (selectedLayers.has(layerPath)) {
+			// Remove layer
+			selectedLayers.delete(layerPath);
+			delete layerVisibility[layerPath];
 
-		if (selectedDatasets.has(datasetId)) {
-			// Remove dataset
-			selectedDatasets.delete(datasetId);
-			delete datasetVisibility[datasetId];
-
-			if (mapLayers[datasetId]) {
-				map.removeLayer(mapLayers[datasetId]);
-				delete mapLayers[datasetId];
+			if (mapLayers[layerPath]) {
+				map.removeLayer(mapLayers[layerPath]);
+				delete mapLayers[layerPath];
 			}
 		} else {
-			// Add dataset
-			selectedDatasets.add(datasetId);
-			datasetVisibility[datasetId] = true;
+			// Add layer
+			if (!layerConfig) {
+				// Find the dataset and extract layer config
+				for (const [, datasets] of Object.entries(allMapLayers)) {
+					if (Array.isArray(datasets)) {
+						const dataset = datasets.find(d => d.id === datasetId);
+						if (dataset) {
+							layerConfig = extractLayerConfig(dataset.map_layers, path);
+							break;
+						}
+					}
+				}
+			}
+			
+			if (!layerConfig || !layerConfig.url) return;
+
+			selectedLayers.add(layerPath);
+			layerVisibility[layerPath] = true;
 
 			// Create and add layer
+			const layerIndex = layerConfig.layerIndex !== undefined ? layerConfig.layerIndex : layerConfig.layer_id;
 			const layer = new ImageLayer({
 				source: new ImageArcGISRest({
-					url: dataset.url,
+					url: layerConfig.url,
 					params: {
-						LAYERS: `show:${dataset.layerIndex}`,
+						LAYERS: `show:${layerIndex}`,
 						FORMAT: 'PNG32',
 						TRANSPARENT: true
 					}
@@ -301,33 +370,33 @@
 				visible: true
 			});
 
-			layer.set('datasetId', datasetId);
+			layer.set('layerPath', layerPath);
 			map.addLayer(layer);
-			mapLayers[datasetId] = layer;
+			mapLayers[layerPath] = layer;
 		}
-		selectedDatasets = new Set(selectedDatasets);
+		selectedLayers = new Set(selectedLayers);
 	}
 
-	// Remove dataset from map
-	function removeDataset(datasetId: string) {
+	// Remove layer from map
+	function removeLayer(layerPath: string) {
 		if (!map) return;
 
-		selectedDatasets.delete(datasetId);
-		delete datasetVisibility[datasetId];
+		selectedLayers.delete(layerPath);
+		delete layerVisibility[layerPath];
 
-		if (mapLayers[datasetId]) {
-			map.removeLayer(mapLayers[datasetId]);
-			delete mapLayers[datasetId];
+		if (mapLayers[layerPath]) {
+			map.removeLayer(mapLayers[layerPath]);
+			delete mapLayers[layerPath];
 		}
-		selectedDatasets = new Set(selectedDatasets);
+		selectedLayers = new Set(selectedLayers);
 	}
 
-	// Toggle dataset visibility
-	function toggleVisibility(datasetId: string) {
-		if (!mapLayers[datasetId]) return;
-		const isVisible = !datasetVisibility[datasetId];
-		datasetVisibility[datasetId] = isVisible;
-		mapLayers[datasetId].setVisible(isVisible);
+	// Toggle layer visibility
+	function toggleLayerVisibility(layerPath: string) {
+		if (!mapLayers[layerPath]) return;
+		const isVisible = !layerVisibility[layerPath];
+		layerVisibility[layerPath] = isVisible;
+		mapLayers[layerPath].setVisible(isVisible);
 	}
 
 	function initializeMap() {
@@ -415,9 +484,15 @@
 
 	// Auto-add first dataset on mount
 	$effect(() => {
-		if (map && selectedDatasets.size === 0 && availableDatasets.length > 0) {
-			// Auto-add Land Cover dataset
-			toggleDataset('land-cover-2022');
+		if (map && selectedLayers.size === 0) {
+			// Auto-add Land Cover dataset if available
+			const landCoverDataset = allMapLayers.ecosystem?.find((d: any) => d.id === 'land-cover-2022');
+			if (landCoverDataset) {
+				const layerConfig = extractLayerConfig(landCoverDataset.map_layers);
+				if (layerConfig) {
+					toggleLayer('land-cover-2022', [], layerConfig);
+				}
+			}
 		}
 	});
 </script>
@@ -446,7 +521,7 @@
 			<div class="sticky top-6 flex h-[calc(100vh-9rem)] flex-col rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
 				<!-- Home Button -->
 				<button
-					onclick={() => goto(`${base}/layout3`)}
+					onclick={() => goto(`${base}/`)}
 					class="mb-4 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gradient-to-r from-blue-500 to-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:from-blue-600 hover:to-green-600 hover:shadow-md"
 					title="Go to Home Page"
 				>
@@ -529,31 +604,204 @@
 								{#if isExpanded}
 									<div class="border-t border-gray-100 p-2 space-y-1">
 										{#each datasets as dataset}
-											<div
-												class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-2.5 transition-all hover:border-blue-300 hover:bg-blue-50/50 {selectedDatasets.has(dataset.id)
-													? 'border-blue-500 bg-blue-50'
-													: ''}"
-											>
+											{@const hasNested = hasNestedLayers(dataset.map_layers)}
+											{@const isDatasetExpanded = expandedDatasets.has(dataset.id)}
+											<div class="rounded-lg border border-gray-200 bg-gray-50">
+												<!-- Dataset Header -->
 												<button
 													onclick={() => toggleDataset(dataset.id)}
-													class="flex-shrink-0 rounded p-1 text-blue-600 transition-colors hover:bg-blue-100"
-													title={selectedDatasets.has(dataset.id) ? 'Remove from map' : 'Add to map'}
+													class="flex w-full items-center justify-between p-2.5 text-left transition-colors hover:bg-gray-100"
 												>
-													{#if selectedDatasets.has(dataset.id)}
-														<CheckCircle class="h-4 w-4 fill-current" />
-													{:else}
-														<Circle class="h-4 w-4" />
+													<div class="flex items-center gap-2 flex-1 min-w-0">
+														{#if hasNested}
+															{#if isDatasetExpanded}
+																<ChevronDown class="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
+															{:else}
+																<ChevronRight class="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
+															{/if}
+														{/if}
+														<span class="text-sm font-medium text-gray-800 truncate">{(dataset as any).title || dataset.id}</span>
+													</div>
+												</button>
+
+												<!-- Nested Layers -->
+												{#if hasNested && isDatasetExpanded}
+													<div class="border-t border-gray-200 p-2 space-y-1">
+														{#each Object.entries(dataset.map_layers) as [key, value]}
+															{@const nestedKey = `${dataset.id}|${key}`}
+															{@const isNestedExpanded = expandedNestedKeys.has(nestedKey)}
+															{@const nestedValue = value}
+															
+															{#if Array.isArray(nestedValue) && nestedValue.length > 0}
+																<!-- Array of layers -->
+																{#if nestedValue.length === 1}
+																	{@const layerConfig = nestedValue[0]}
+																	{@const layerPath = `${dataset.id}|${key}`}
+																	{@const isSelected = selectedLayers.has(layerPath)}
+																	<div
+																		class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 transition-all hover:border-blue-300 hover:bg-blue-50/50 {isSelected
+																			? 'border-blue-500 bg-blue-50'
+																			: ''}"
+																	>
+																		<button
+																			onclick={() => toggleLayer(dataset.id, [key], layerConfig)}
+																			class="flex-shrink-0 rounded p-1 text-blue-600 transition-colors hover:bg-blue-100"
+																			title={isSelected ? 'Remove from map' : 'Add to map'}
+																		>
+																			{#if isSelected}
+																				<CheckCircle class="h-3.5 w-3.5 fill-current" />
+																			{:else}
+																				<Circle class="h-3.5 w-3.5" />
+																			{/if}
+																		</button>
+																		<div class="flex-1 min-w-0">
+																			<h5 class="truncate text-xs font-medium text-gray-700">{layerConfig.name || key}</h5>
+																		</div>
+																	</div>
+																{:else}
+																	<!-- Multiple layers in array - show as expandable -->
+																	<button
+																		onclick={() => toggleNestedKey(nestedKey)}
+																		class="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 text-left transition-colors hover:bg-gray-50"
+																	>
+																		{#if isNestedExpanded}
+																			<ChevronDown class="h-3 w-3 text-gray-500" />
+																		{:else}
+																			<ChevronRight class="h-3 w-3 text-gray-500" />
+																		{/if}
+																		<span class="text-xs font-medium text-gray-700">{key}</span>
+																	</button>
+																	{#if isNestedExpanded}
+																		<div class="ml-4 space-y-1">
+																			{#each nestedValue as layerConfig, idx}
+																				{@const layerPath = `${dataset.id}|${key}|${idx}`}
+																				{@const isSelected = selectedLayers.has(layerPath)}
+																				<div
+																					class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-1.5 transition-all hover:border-blue-300 hover:bg-blue-50/50 {isSelected
+																						? 'border-blue-500 bg-blue-50'
+																						: ''}"
+																				>
+																					<button
+																						onclick={() => toggleLayer(dataset.id, [key, String(idx)], layerConfig)}
+																						class="flex-shrink-0 rounded p-0.5 text-blue-600 transition-colors hover:bg-blue-100"
+																						title={isSelected ? 'Remove from map' : 'Add to map'}
+																					>
+																						{#if isSelected}
+																							<CheckCircle class="h-3 w-3 fill-current" />
+																						{:else}
+																							<Circle class="h-3 w-3" />
+																						{/if}
+																					</button>
+																					<div class="flex-1 min-w-0">
+																						<h6 class="truncate text-xs text-gray-600">{layerConfig.name || `${key} - ${idx + 1}`}</h6>
+																					</div>
+																				</div>
+																			{/each}
+																		</div>
+																	{/if}
+																{/if}
+															{:else if typeof nestedValue === 'object' && nestedValue !== null}
+																<!-- Nested object structure (e.g., overall/significant -> annual/spring) -->
+																<button
+																	onclick={() => toggleNestedKey(nestedKey)}
+																	class="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 text-left transition-colors hover:bg-gray-50"
+																>
+																	{#if isNestedExpanded}
+																		<ChevronDown class="h-3 w-3 text-gray-500" />
+																	{:else}
+																		<ChevronRight class="h-3 w-3 text-gray-500" />
+																	{/if}
+																	<span class="text-xs font-medium text-gray-700 capitalize">{key}</span>
+																</button>
+																{#if isNestedExpanded}
+																	<div class="ml-4 space-y-1">
+																		{#each Object.entries(nestedValue) as [subKey, subValue]}
+																			{@const subNestedKey = `${nestedKey}|${subKey}`}
+																			{@const isSubExpanded = expandedNestedKeys.has(subNestedKey)}
+																			
+																			{#if Array.isArray(subValue) && subValue.length > 0}
+																				{@const layerConfig = subValue[0]}
+																				{@const layerPath = `${dataset.id}|${key}|${subKey}`}
+																				{@const isSelected = selectedLayers.has(layerPath)}
+																				<div
+																					class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-1.5 transition-all hover:border-blue-300 hover:bg-blue-50/50 {isSelected
+																						? 'border-blue-500 bg-blue-50'
+																						: ''}"
+																				>
+																					<button
+																						onclick={() => toggleLayer(dataset.id, [key, subKey], layerConfig)}
+																						class="flex-shrink-0 rounded p-0.5 text-blue-600 transition-colors hover:bg-blue-100"
+																						title={isSelected ? 'Remove from map' : 'Add to map'}
+																					>
+																						{#if isSelected}
+																							<CheckCircle class="h-3 w-3 fill-current" />
+																						{:else}
+																							<Circle class="h-3 w-3" />
+																						{/if}
+																					</button>
+																					<div class="flex-1 min-w-0">
+																						<h6 class="truncate text-xs text-gray-600 capitalize">{layerConfig.name || subKey}</h6>
+																					</div>
+																				</div>
+																			{/if}
+																		{/each}
+																	</div>
+																{/if}
+															{:else if nestedValue && typeof nestedValue === 'object' && (nestedValue as any).url}
+																<!-- Direct layer object -->
+																{@const layerPath = `${dataset.id}|${key}`}
+																{@const isSelected = selectedLayers.has(layerPath)}
+																<div
+																	class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 transition-all hover:border-blue-300 hover:bg-blue-50/50 {isSelected
+																		? 'border-blue-500 bg-blue-50'
+																		: ''}"
+																>
+																	<button
+																		onclick={() => toggleLayer(dataset.id, [key], nestedValue)}
+																		class="flex-shrink-0 rounded p-1 text-blue-600 transition-colors hover:bg-blue-100"
+																		title={isSelected ? 'Remove from map' : 'Add to map'}
+																	>
+																		{#if isSelected}
+																			<CheckCircle class="h-3.5 w-3.5 fill-current" />
+																		{:else}
+																			<Circle class="h-3.5 w-3.5" />
+																		{/if}
+																	</button>
+																	<div class="flex-1 min-w-0">
+																		<h5 class="truncate text-xs font-medium text-gray-700">{(nestedValue as any).name || key}</h5>
+																	</div>
+																</div>
+															{/if}
+														{/each}
+													</div>
+												{:else if !hasNested}
+													<!-- No nested layers - show as direct layer -->
+													{@const layerConfig = extractLayerConfig(dataset.map_layers)}
+													{#if layerConfig}
+														{@const layerPath = dataset.id}
+														{@const isSelected = selectedLayers.has(layerPath)}
+														<div
+															class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 transition-all hover:border-blue-300 hover:bg-blue-50/50 {isSelected
+																? 'border-blue-500 bg-blue-50'
+																: ''}"
+														>
+															<button
+																onclick={() => toggleLayer(dataset.id, [], layerConfig)}
+																class="flex-shrink-0 rounded p-1 text-blue-600 transition-colors hover:bg-blue-100"
+																title={isSelected ? 'Remove from map' : 'Add to map'}
+															>
+																{#if isSelected}
+																	<CheckCircle class="h-3.5 w-3.5 fill-current" />
+																{:else}
+																	<Circle class="h-3.5 w-3.5" />
+																{/if}
+															</button>
+															<div class="flex-1 min-w-0">
+																<h5 class="truncate text-xs font-medium text-gray-700">{(layerConfig as any).name || (dataset as any).title || dataset.id}</h5>
+															</div>
+														</div>
 													{/if}
-												</button>
-												<div class="flex-1 min-w-0">
-													<h4 class="truncate text-sm font-medium text-gray-800">{dataset.name}</h4>
-												</div>
-												<button
-													class="rounded p-1 text-gray-600 transition-colors hover:bg-gray-100"
-													title="View details"
-												>
-													<FileText class="h-4 w-4" />
-												</button>
+												{/if}
 											</div>
 										{/each}
 									</div>
@@ -561,51 +809,52 @@
 							</div>
 						{/each}
 					{:else}
-						{#each getSelectedDatasets() as dataset}
-							<div
-								class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3 transition-all hover:border-blue-300 hover:shadow-md"
-							>
-								<div class="flex-1 min-w-0">
-									<h4 class="truncate text-sm font-medium text-gray-800">{dataset.name}</h4>
-								</div>
-								<div class="flex items-center gap-1">
-									<button
-										onclick={() => toggleVisibility(dataset.id)}
-										class="rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100"
-										title={datasetVisibility[dataset.id] ? 'Hide layer' : 'Show layer'}
-									>
-										{#if datasetVisibility[dataset.id] !== false}
-											<Eye class="h-4 w-4" />
-										{:else}
-											<EyeOff class="h-4 w-4" />
-										{/if}
-									</button>
-									<button
-										class="rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100"
-										title="Layer options"
-									>
-										<Layers class="h-4 w-4" />
-									</button>
-									<button
-										class="rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100"
-										title="View details"
-									>
-										<FileText class="h-4 w-4" />
-									</button>
-									<button
-										onclick={() => removeDataset(dataset.id)}
-										class="rounded p-1.5 text-red-600 transition-colors hover:bg-red-100"
-										title="Remove from map"
-									>
-										<Trash2 class="h-4 w-4" />
-									</button>
-								</div>
-							</div>
+						<!-- Selected Layers Tab -->
+						{#each Object.entries(getSelectedLayersGrouped()) as [groupId, datasets]}
+							{#each datasets as dataset}
+								{@const datasetLayers = Array.from(selectedLayers).filter(path => path.startsWith(dataset.id + '|') || path === dataset.id)}
+								{#each datasetLayers as layerPath}
+									{@const [datasetId, ...pathParts] = layerPath.split('|')}
+									{@const layerConfig = extractLayerConfig(dataset.map_layers, pathParts)}
+									{#if layerConfig}
+										<div
+											class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3 transition-all hover:border-blue-300 hover:shadow-md"
+										>
+											<div class="flex-1 min-w-0">
+												<h4 class="truncate text-sm font-medium text-gray-800">{(dataset as any).title || dataset.id}</h4>
+												{#if pathParts.length > 0}
+													<p class="truncate text-xs text-gray-500">{pathParts.join(' → ')}</p>
+												{/if}
+											</div>
+											<div class="flex items-center gap-1">
+												<button
+													onclick={() => toggleLayerVisibility(layerPath)}
+													class="rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100"
+													title={layerVisibility[layerPath] !== false ? 'Hide layer' : 'Show layer'}
+												>
+													{#if layerVisibility[layerPath] !== false}
+														<Eye class="h-4 w-4" />
+													{:else}
+														<EyeOff class="h-4 w-4" />
+													{/if}
+												</button>
+												<button
+													onclick={() => removeLayer(layerPath)}
+													class="rounded p-1.5 text-red-600 transition-colors hover:bg-red-100"
+													title="Remove from map"
+												>
+													<Trash2 class="h-4 w-4" />
+												</button>
+											</div>
+										</div>
+									{/if}
+								{/each}
+							{/each}
 						{/each}
 
-						{#if getSelectedDatasets().length === 0}
+						{#if selectedLayers.size === 0}
 							<div class="py-8 text-center text-sm text-gray-500">
-								<p>No datasets selected</p>
+								<p>No layers selected</p>
 							</div>
 						{/if}
 					{/if}
@@ -689,20 +938,20 @@
 				</div>
 
 				<!-- Dataset Description Panel -->
-				{#if currentDataset}
+				{#if currentLayer}
 					<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
 						<div class="flex items-start justify-between">
 							<div class="flex-1">
-								<h3 class="mb-2 text-lg font-semibold text-gray-800">{currentDataset.name}</h3>
-								<p class="mb-3 text-sm text-gray-600">{currentDataset.description}</p>
+								<h3 class="mb-2 text-lg font-semibold text-gray-800">{currentLayer.title}</h3>
+								<p class="mb-3 text-sm text-gray-600">{currentLayer.description}</p>
 								<a
-									href={currentDataset.metadataUrl}
+									href={currentLayer.metadataUrl}
 									target="_blank"
 									rel="noopener noreferrer"
 									class="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
 								>
 									<Download class="h-4 w-4" />
-									<span>{currentDataset.metadataUrl}</span>
+									<span>{currentLayer.metadataUrl}</span>
 								</a>
 							</div>
 						</div>
