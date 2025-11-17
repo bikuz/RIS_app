@@ -26,6 +26,7 @@
 		getTopicColor
 	} from '$lib/data/themeData.js';
 
+	import icimodLogo from '$lib/assets/logo/logo-icimod_white.png';
 	// Get current topic from the URL
 	let currentTopic = $derived($page.route.id?.split('/').pop() || '');
 
@@ -91,6 +92,24 @@
 	// 	return topicIcons[topic as keyof typeof topicIcons] || Cloud;
 	// }
 </script>
+
+<header class="relative overflow-hidden bg-gradient-to-r from-blue-800 to-green-800 text-white">
+	<div class="absolute inset-0 bg-black/20"></div>
+	<div class="relative mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="flex h-24 items-center justify-between">
+			<div class="flex items-center space-x-6">
+				<div class="flex flex-col">
+					 
+					<div class="text-3xl font-bold text-white">Hi-RIS (HKH Regional Information System)</div>
+				</div>
+			</div>
+
+			<div class="">
+				<img src={icimodLogo} alt="ICIMOD Logo" class="h-7 w-auto" />
+			</div>
+		</div>
+	</div>
+</header>
 
 <div class="min-h-screen bg-gray-50 p-3 sm:p-6">
 	<!-- Top Navigation -->

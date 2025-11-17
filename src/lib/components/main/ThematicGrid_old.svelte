@@ -8,7 +8,7 @@
 	} from '$lib/data/themeData';
 </script>
 
-<section class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-green-300 py-6 pt-0">
+<section class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-green-300 py-10">
 	<div class="absolute inset-0 bg-black/20"></div>
 	<div class="relative px-4 sm:px-6 lg:px-8">
 		<!-- <div class="mb-16 text-center">
@@ -19,7 +19,7 @@
 		</div> -->
 
 		<!-- Removed cards, using flat design with hover effects -->
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+		<div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
 			<!-- {#each thematicAreas as area}
 				<a 
 					href={area.href}
@@ -44,24 +44,24 @@
 				<button
 					onclick={() => !isDisabled && selectTopic(topic)}
 					disabled={isDisabled}
-					class="group block rounded-lg p-4 transition-all duration-300
+					class="group block rounded-lg p-8 transition-all duration-300
 						{!isDisabled
 						? 'bg-white/40 hover:cursor-pointer hover:bg-white/60 hover:shadow-xl backdrop-blur-sm'
 						: 'cursor-not-allowed bg-white/20 opacity-60'}"
 				>
-					<div class="flex flex-col items-center space-y-2 text-center">
+					<div class="flex flex-col items-center space-y-4 text-center">
 						<div
-							class="rounded-full bg-gradient-to-r p-3 {getTopicColor(
+							class="rounded-full bg-gradient-to-r p-4 {getTopicColor(
 								topic
 							)} text-white transition-colors
 								{!isDisabled ? 'transition-shadow duration-300 group-hover:shadow-xl' : ''}"
 						>
-							<IconComponent class="h-4 w-4" />
+							<IconComponent class="h-5 w-5" />
 						</div>
-						<h3 class="text-lg font-bold text-gray-900 transition-colors group-hover:text-gray-700">
+						<h3 class="text-xl font-bold text-gray-900 transition-colors group-hover:text-gray-700">
 							{getTopicName(topic)}
 						</h3>
-						<p class="text-sm leading-tight text-gray-700">
+						<p class="leading-relaxed text-gray-700">
 							{topicDetail[topic as keyof typeof topicDetail]}
 						</p>
 					</div>
@@ -70,3 +70,4 @@
 		</div>
 	</div>
 </section>
+
