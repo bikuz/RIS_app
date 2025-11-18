@@ -1338,7 +1338,7 @@
 	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection) - default to Population 2025
-	let selectedInformationLayer = $state<string | null>('Population 2025');
+	let selectedInformationLayer = $state<string | null>('Population');
 
 	// Track expanded layer for accordion - default closed
 	let expandedLayer = $state<string | null>(null);
