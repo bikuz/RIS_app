@@ -1,32 +1,13 @@
 <script lang="ts">
 	import {  Mountain, Globe, Users, Snowflake, Trees, Shield, MapPin, Waves, Pentagon } from '@lucide/svelte';
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
 
 	// import Map from './Map.svelte';
 	let Map3D: any=$state();
-	let useCompactLayout = $state(false);
 
-	onMount(() => {
-		// Load map component
-		import('./Map.svelte').then((module) => {
-			Map3D = module.default;
-		});
-
-		// Check viewport height to determine layout
-		if (browser) {
-			const checkHeight = () => {
-				// Use compact layout (2x2 grid) if viewport height is less than 700px
-				useCompactLayout = window.innerHeight < 700;
-			};
-
-			checkHeight();
-			window.addEventListener('resize', checkHeight);
-
-			return () => {
-				window.removeEventListener('resize', checkHeight);
-			};
-		}
+	onMount(async () => {
+		const module = await import('./Map.svelte');
+		Map3D = module.default;
 	});
 	
 	const stats = [
@@ -117,7 +98,7 @@
   const leftColumnStats = $derived(stats.slice(1))
 </script>
 
-<section class="relative pt-0 pb-8   ">
+<section class="relative pt-10 pb-8   ">
 	<div class="container mx-auto  py-8 ">
 		<!-- <div class=" mb-12">
 			<h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
@@ -151,16 +132,16 @@
 			</div> -->
 		
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8 ">
-				<div class="col-span-1 sm:col-span-2 lg:col-span-1">
-					<div class="{useCompactLayout ? 'grid grid-cols-2 gap-4 sm:gap-6' : 'space-y-4'}">
+				<div class="col-span-1">
+					<div class="space-y-0 ">
 						{#each leftColumnStats as stat, index}
 						  <div
-							class="rounded-2xl p-4 group"
+							class="rounded-2xl p-4  group"
 						  >
 							<!-- Changed to vertical layout: icon at top, text at bottom -->
 							<div class="text-center">
 							  <div
-								class="inline-flex items-center justify-center w-12 h-12 text-color-black rounded-xl mb-3"
+								class="inline-flex items-center justify-center w-12 h-12 text-color-black rounded-xl   mb-3"
 							  >
 								<stat.icon class="h-6 w-6 text-blue-600" />
 							  </div>
@@ -171,7 +152,7 @@
 						{/each}
 					  </div>
 				</div>
-				<div class="col-span-1 sm:col-span-2 lg:col-span-5">
+				<div class="lg:col-span-5">
 					<div class="space-y-4">
 						<!-- <Map/> -->
 						{#if Map3D}

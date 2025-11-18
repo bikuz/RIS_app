@@ -13,6 +13,7 @@
 	let mapContainer: HTMLDivElement;
 	let view: any = null;
 	let isLoading = $state(true);
+	let wheelHandler: ((event: WheelEvent) => void) | null = null;
 
 	// Camera parameters
 	let latitude = $state(0);
@@ -252,6 +253,31 @@
 				view.goTo(initialPosition);
 			});
 
+			// Disable default mouse wheel zoom
+			view.navigation.mouseWheelZoomEnabled = false;
+
+			// Custom wheel handler: only zoom when Ctrl is pressed
+			wheelHandler = (event: WheelEvent) => {
+				if (event.ctrlKey || event.metaKey) {
+					// Zoom map when Ctrl (or Cmd on Mac) is pressed
+					event.preventDefault();
+					const delta = event.deltaY;
+					const camera = view.camera.clone();
+					
+					// Calculate zoom factor
+					const zoomFactor = delta > 0 ? 0.9 : 1.1;
+					
+					// Adjust camera altitude for zoom effect
+					camera.position.z = camera.position.z * zoomFactor;
+					
+					view.goTo(camera, { duration: 0 });
+				}
+				// When Ctrl is not pressed, allow default behavior (page scroll)
+			};
+
+			// Add wheel event listener to the map container
+			mapContainer.addEventListener('wheel', wheelHandler, { passive: false });
+
 			// console.log('ArcGIS 3D Map loaded successfully');
 			isLoading = false;
 
@@ -281,8 +307,10 @@
 
 	onDestroy(() => {
 		// Clean up on component unmount
-		// 'view' is scoped inside onMount; recreate a reference if needed or manage globally
-		// Since 'view' is local above, no-op here. If you move 'view' to outer scope, destroy it here.
+		if (mapContainer && wheelHandler) {
+			// Remove wheel event listener
+			mapContainer.removeEventListener('wheel', wheelHandler);
+		}
 		if (view && typeof view.destroy === 'function') {
 			view.destroy();
 			view = null;
@@ -300,7 +328,7 @@
 		<!-- Map Display -->
 		<div class="relative flex-1">
 			<div
-				class="map-container relative flex h-96 items-center justify-center overflow-hidden lg:h-[600px]"
+				class="map-container relative flex h-full items-center justify-center overflow-hidden sm:h-80 md:h-96 lg:h-[550px]"
 				bind:this={mapContainer}
 			>
 				{#if isLoading}

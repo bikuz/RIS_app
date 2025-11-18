@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import icimod from '$lib/assets/logo/icimod_logo.svg';
+	import icimod from '$lib/assets/logo/logo-icimod_white.png';
 	let { children } = $props();
 </script>
 
@@ -10,33 +10,27 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50">
-	<header class="border-b border-gray-200 bg-white shadow-sm">
-		<div class=" mx-auto px-4 sm:px-6 lg:px-8">
+	<!-- <header class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-green-300 text-white">
+		<div class="absolute inset-0 bg-black/20"></div>
+		<div class="relative mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex h-24 items-center justify-between">
-				<!-- Left side - RDS Logo and Title -->
 				<div class="flex items-center space-x-6">
 					<div class="flex flex-col">
-						<!-- <div
-							class="ml-1 scale-x-110 bg-gradient-to-r from-blue-500 to-green-500
-						bg-clip-text text-6xl leading-none font-bold tracking-[0.1em] text-transparent"
-						>
-							RIS
-						</div> -->
-						<div class="text-3xl font-bold text-[#036CB6]">Hi-RIS: HKH Regional Information System</div>
+						 
+						<div class="text-3xl font-bold text-white">Hi-RIS: HKH Regional Information System</div>
 					</div>
 				</div>
 
-				<!-- Right side - ICIMOD Logo -->
 				<div class="">
 					<img src={icimod} alt="ICIMOD" class="h-7 w-auto" />
 				</div>
 			</div>
 		</div>
-	</header>
+	</header> -->
 
 	{@render children?.()}
 
-	<footer class=" bg-gradient-to-r from-blue-600 to-green-600 py-12 text-white">
+	<footer class=" bg-gradient-to-r from-blue-800 to-green-800 py-12 text-white">
 		<div class="container mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="grid gap-10 md:grid-cols-5">
 				<div class="col-span-2">

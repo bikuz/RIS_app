@@ -3,12 +3,12 @@
 </script>
 
 <section class="pt-12 pb-16 bg-gradient-to-br from-blue-100 to-green-100 -mt-12">
-	<div class="text-center mb-12">
+	<div class="pt-10 text-center mb-12">
 		<h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
-			HKH - The Third Pole
+			HKH - At a glance
 		</h2>
 		<p class="text-lg text-gray-600 max-w-3xl mx-auto">
-			Often called the "Third Pole," the HKH region is home to the world's highest peaks and 
+			The HKH region is home to the world's highest peaks and 
 			largest concentration of glaciers outside the polar regions.
 		</p>
 	</div>

@@ -2,11 +2,9 @@
 	import { Mountain, Globe, BarChart3, Map, Info } from '@lucide/svelte';
 	import Hero from '$lib/components/main/Hero.svelte';
 	import Banner from '$lib/components/main/banner.svelte';
-	import ThematicGrid3 from '$lib/components/main/ThematicGrid3.svelte';
-	import IntroMap from '$lib/components/main/IntroMap.svelte';
+	import ThematicGrid1 from '$lib/components/main/ThematicGrid1.svelte';
 	import StatsOverview from '$lib/components/main/StatsOverview.svelte';
 	import Intro from '$lib/components/main/intro.svelte';
-    import Short_intro from '$lib/components/main/Short_intro.svelte';
 	import RISIntroduction from '$lib/components/main/RISIntroduction.svelte';
 	import HKHRegionInfo from '$lib/components/main/HKHRegionInfo.svelte';
 	import HomepageMap from '$lib/components/main/HomepageMap.svelte';
@@ -21,16 +19,14 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<!-- <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css"> -->
 </svelte:head>
- 
+
+<main>
 	<!-- <Hero /> -->
-	<Banner />
-	<ThematicGrid3 />
-     
-	<IntroMap/>
-    <!-- <Short_intro /> -->
-	 
-	 <!-- <Intro/> -->
-	 <!-- <StatsOverview /> -->
+	<!-- <Banner /> -->
+	<ThematicGrid1 />
+	<!-- Added detailed RIS introduction section -->
+	<Intro />
+	<!-- <StatsOverview /> -->
 	<!-- <RISIntroduction /> -->
 	<!-- Moved ThematicGrid up and removed KeyFeatures -->
 	
@@ -40,4 +36,5 @@
 	<!-- <HomepageMap /> -->
 	<!-- Added dashboard charts section -->
 	<!-- <DashboardCharts /> -->
+</main>
  

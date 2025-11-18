@@ -8,8 +8,8 @@
 	} from '$lib/data/themeData';
 </script>
 
-<section class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-green-300 py-6 pt-0">
-	<div class="absolute inset-0 bg-black/20"></div>
+<section class="relative overflow-hidden py-6 pt-10">
+	<div class="absolute inset-0 "></div>
 	<div class="relative px-4 sm:px-6 lg:px-8">
 		<!-- <div class="mb-16 text-center">
 			<h2 class="mb-4 text-4xl font-bold text-gray-900">Thematic Categories</h2>
