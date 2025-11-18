@@ -4111,7 +4111,7 @@
 	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection)
-	let selectedInformationLayer = $state<string | null>('Seasonal Temperature Trend');
+	let selectedInformationLayer = $state<string | null>('Temperature Trend');
 
 	// Track expanded layer for accordion - default closed
 	let expandedLayer = $state<string | null>(null);
