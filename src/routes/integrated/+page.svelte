@@ -14,9 +14,8 @@
 	import icimodLogo from '$lib/assets/logo/logo-icimod_white.png';
 	import {
 		Search,
-		Filter,
-		CheckCircle,
-		Circle,
+		CheckSquare,
+		Square,
 		FileText,
 		Eye,
 		EyeOff,
@@ -24,13 +23,17 @@
 		Trash2,
 		Download,
 		MapIcon,
+		ArrowLeft,
 		House,
 		Layers,
 		ChevronDown,
-		ChevronRight
+		ChevronRight,
+		Sliders,
+		GripVertical
 	} from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
+	import { browser } from '$app/environment';
 	import { topicIcons, getTopicName, getTopicColor } from '$lib/data/themeData';
 	import FullScreen from 'ol/control/FullScreen';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
@@ -124,10 +127,23 @@
 	let searchQuery = $state('');
 	// Track selected layers: key is full path like "datasetId|nestedKey1|nestedKey2|layerIndex"
 	let selectedLayers = $state<Set<string>>(new Set());
+	let layerOrder = $state<string[]>([]); // Track order of layers as they're added
 	let layerVisibility = $state<Record<string, boolean>>({});
-	let expandedGroups = $state<Set<string>>(new Set(['physiography', 'ecosystem', 'cryosphere']));
+	let layerOpacity = $state<Record<string, number>>({});
+	let opacityPanelOpen = $state<Record<string, boolean>>({});
+	let expandedGroups = $state<Set<string>>(new Set([ 'ecosystem'])); //'physiography', 'cryosphere'
 	let expandedDatasets = $state<Set<string>>(new Set());
 	let expandedNestedKeys = $state<Set<string>>(new Set());
+	let draggedLayerIndex = $state<number | null>(null);
+	let dragOverIndex = $state<number | null>(null);
+	let dropPosition = $state<'above' | 'below' | null>(null);
+
+	// Helper function to get keys in insertion order (preserves order from source)
+	function getKeysInOrder(obj: any): string[] {
+		if (!obj || typeof obj !== 'object') return [];
+		// Use Reflect.ownKeys to preserve insertion order
+		return Reflect.ownKeys(obj).filter(key => typeof key === 'string') as string[];
+	}
 
 	// Helper function to check if map_layers has nested structure
 	function hasNestedLayers(mapLayers: any): boolean {
@@ -238,6 +254,9 @@
 	// Map layers storage - key is full path
 	let mapLayers = $state<Record<string, ImageLayer<any>>>({});
 
+	// Define the order of thematic areas as they appear in mapLayers.js
+	const thematicAreaOrder = ['climate', 'ecosystem', 'cryosphere', 'physiography', 'human-dimensions'];
+
 	// Get filtered datasets by group
 	let filteredGroupedDatasets = $derived.by(() => {
 		if (activeTab === 'selected') {
@@ -247,7 +266,9 @@
 		const filtered: Record<string, any[]> = {};
 		const query = searchQuery.toLowerCase().trim();
 
-		for (const [groupId, datasets] of Object.entries(groupedDatasets)) {
+		// Iterate in the order defined in mapLayers.js
+		for (const groupId of thematicAreaOrder) {
+			const datasets = (groupedDatasets as any)[groupId];
 			if (Array.isArray(datasets)) {
 				const filteredDatasets = query
 					? datasets.filter((ds) => ((ds as any).title || ds.id).toLowerCase().includes(query))
@@ -328,6 +349,7 @@
 		if (selectedLayers.has(layerPath)) {
 			// Remove layer
 			selectedLayers.delete(layerPath);
+			layerOrder = layerOrder.filter(path => path !== layerPath);
 			delete layerVisibility[layerPath];
 
 			if (mapLayers[layerPath]) {
@@ -352,7 +374,13 @@
 			if (!layerConfig || !layerConfig.url) return;
 
 			selectedLayers.add(layerPath);
+			// Add to order array (new layers go to the end)
+			layerOrder.push(layerPath);
 			layerVisibility[layerPath] = true;
+			// Set default opacity to 0.7 (70%) if not already set
+			if (layerOpacity[layerPath] === undefined) {
+				layerOpacity[layerPath] = 0.7;
+			}
 
 			// Create and add layer
 			const layerIndex = layerConfig.layerIndex !== undefined ? layerConfig.layerIndex : layerConfig.layer_id;
@@ -366,12 +394,21 @@
 					}
 				}),
 				zIndex: 10,
-				opacity: 0.7,
+				opacity: layerOpacity[layerPath] ?? 0.7,
 				visible: true
 			});
 
 			layer.set('layerPath', layerPath);
-			map.addLayer(layer);
+			
+			// Insert at index 1 to keep the first layer on top
+			// If this is the first layer, just add it normally
+			if (layerOrder.length === 1) {
+				map.addLayer(layer);
+			} else {
+				const layers = map.getLayers();
+				layers.insertAt(1, layer);
+			}
+			
 			mapLayers[layerPath] = layer;
 		}
 		selectedLayers = new Set(selectedLayers);
@@ -382,7 +419,10 @@
 		if (!map) return;
 
 		selectedLayers.delete(layerPath);
+		layerOrder = layerOrder.filter(path => path !== layerPath);
 		delete layerVisibility[layerPath];
+		delete layerOpacity[layerPath];
+		delete opacityPanelOpen[layerPath];
 
 		if (mapLayers[layerPath]) {
 			map.removeLayer(mapLayers[layerPath]);
@@ -397,6 +437,171 @@
 		const isVisible = !layerVisibility[layerPath];
 		layerVisibility[layerPath] = isVisible;
 		mapLayers[layerPath].setVisible(isVisible);
+	}
+
+	// Toggle opacity panel - only one panel open at a time
+	function toggleOpacityPanel(layerPath: string) {
+		const isCurrentlyOpen = opacityPanelOpen[layerPath];
+		
+		// Close all panels first
+		opacityPanelOpen = {};
+		
+		// If the clicked panel wasn't open, open it now
+		if (!isCurrentlyOpen) {
+			opacityPanelOpen[layerPath] = true;
+		}
+		
+		opacityPanelOpen = { ...opacityPanelOpen };
+	}
+
+	// Close opacity panel when clicking outside
+	$effect(() => {
+		const openPanelPath = Object.keys(opacityPanelOpen).find(path => opacityPanelOpen[path]);
+		if (!openPanelPath) return;
+
+		function handleClickOutside(event: MouseEvent) {
+			const target = event.target as HTMLElement;
+			const opacityPanel = document.querySelector(`[data-opacity-panel="${openPanelPath}"]`);
+			const opacityButton = document.querySelector(`[data-opacity-button="${openPanelPath}"]`);
+			
+			if (opacityPanel && opacityButton && openPanelPath) {
+				if (!opacityPanel.contains(target) && !opacityButton.contains(target)) {
+					opacityPanelOpen[openPanelPath] = false;
+					opacityPanelOpen = { ...opacityPanelOpen };
+				}
+			}
+		}
+
+		// Add click listener when panel is open
+		document.addEventListener('click', handleClickOutside);
+		
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
+
+	// Update layer opacity
+	function updateLayerOpacity(layerPath: string, opacity: number) {
+		if (!mapLayers[layerPath]) return;
+		layerOpacity[layerPath] = opacity;
+		mapLayers[layerPath].setOpacity(opacity);
+		layerOpacity = { ...layerOpacity };
+	}
+
+	// Throttle function to reduce rapid state updates
+	let dragOverUpdatePending = false;
+	
+	// Drag and drop handlers for reordering layers
+	function handleDragStart(index: number, event: DragEvent) {
+		draggedLayerIndex = index;
+		if (event.dataTransfer) {
+			event.dataTransfer.effectAllowed = 'move';
+			event.dataTransfer.setData('text/html', String(index));
+		}
+	}
+
+	function handleDragOver(index: number, event: DragEvent) {
+		event.preventDefault();
+		if (event.dataTransfer) {
+			event.dataTransfer.dropEffect = 'move';
+		}
+		if (draggedLayerIndex !== null && draggedLayerIndex !== index) {
+			// Use requestAnimationFrame to batch state updates and reduce flickering
+			if (!dragOverUpdatePending) {
+				dragOverUpdatePending = true;
+				// Capture values before requestAnimationFrame
+				const target = event.currentTarget as HTMLElement;
+				const mouseY = event.clientY;
+				
+				requestAnimationFrame(() => {
+					// Only update dragOverIndex if it actually changes
+					if (dragOverIndex !== index) {
+						dragOverIndex = index;
+					}
+					
+					// Update drop position based on mouse position (for drop indicator line only)
+					if (target) {
+						const rect = target.getBoundingClientRect();
+						const centerY = rect.top + rect.height / 2;
+						const newPosition = mouseY < centerY ? 'above' : 'below';
+						// Only update if position actually changes to reduce flickering
+						if (dropPosition !== newPosition) {
+							dropPosition = newPosition;
+						}
+					}
+					dragOverUpdatePending = false;
+				});
+			}
+		}
+	}
+
+	function handleDragLeave() {
+		// Use requestAnimationFrame to batch the state update
+		requestAnimationFrame(() => {
+			dragOverIndex = null;
+			dropPosition = null;
+		});
+	}
+
+	function handleDrop(index: number, event: DragEvent) {
+		event.preventDefault();
+		dragOverIndex = null;
+		dropPosition = null;
+
+		if (draggedLayerIndex === null || draggedLayerIndex === index) {
+			draggedLayerIndex = null;
+			return;
+		}
+
+		// Reorder the layerOrder array
+		const newOrder = [...layerOrder];
+		const [draggedItem] = newOrder.splice(draggedLayerIndex, 1);
+		newOrder.splice(index, 0, draggedItem);
+		layerOrder = newOrder;
+
+		// Update map layer order - reverse the UI order for map (map renders bottom to top)
+		// UI shows top layer first, but map renders last layer on top
+		// So UI index 0 (first in list) = map top (last position)
+		// UI index N (last in list) = map bottom (first position after basemap)
+		if (map) {
+			const layers = map.getLayers();
+			const draggedLayer = mapLayers[draggedItem];
+			
+			if (draggedLayer) {
+				// Remove the dragged layer from its current position
+				map.removeLayer(draggedLayer);
+				
+				// Get current layers after removal (basemap + remaining data layers)
+				const currentLayers = layers.getArray();
+				
+				// Calculate target index: reverse the UI index
+				// UI index 0 -> should be at end (top of map)
+				// UI index (length-1) -> should be at position 1 (after basemap, bottom of map)
+				const totalDataLayers = newOrder.length; // Includes the dragged item
+				const reversedUIIndex = totalDataLayers - 1 - index;
+				
+				// Map index: basemap is at 0, so data layers start at 1
+				// After removing dragged layer, we have (totalDataLayers - 1) data layers
+				// reversedUIIndex 0 = bottom of map = index 1
+				// reversedUIIndex (totalDataLayers-1) = top of map = index totalDataLayers
+				// But since we removed one layer, the top is now at (currentLayers.length)
+				const targetIndex = 1 + reversedUIIndex;
+				
+				// Ensure targetIndex doesn't exceed current layers length
+				const safeTargetIndex = Math.min(targetIndex, currentLayers.length);
+				
+				// Insert the dragged layer at the target position
+				layers.insertAt(safeTargetIndex, draggedLayer);
+			}
+		}
+
+		draggedLayerIndex = null;
+	}
+
+	function handleDragEnd() {
+		draggedLayerIndex = null;
+		dragOverIndex = null;
+		dropPosition = null;
 	}
 
 	function initializeMap() {
@@ -519,18 +724,25 @@
 		<!-- Left Sidebar: Dataset Management -->
 		<div class="col-span-12 lg:col-span-3">
 			<div class="sticky top-6 flex h-[calc(100vh-9rem)] flex-col rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
-				<!-- Home Button -->
-				<button
-					onclick={() => goto(`${base}/`)}
-					class="mb-4 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gradient-to-r from-blue-500 to-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:from-blue-600 hover:to-green-600 hover:shadow-md"
-					title="Go to Home Page"
-				>
-					<House class="h-4 w-4" />
-					<span>Home</span>
-				</button>
-
-				<!-- Search Bar -->
+				<!-- Back Button and Search Bar -->
 				<div class="mb-4 flex items-center gap-2">
+					<!-- Back Button -->
+					<button
+						onclick={() => {
+							if (browser && window.history.length > 1) {
+								window.history.back();
+							} else {
+								goto(`${base}/`);
+							}
+						}}
+						class="flex-shrink-0 flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gradient-to-r from-blue-500 to-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:from-blue-600 hover:to-green-600 hover:shadow-md"
+						title="Go Back"
+					>
+						<ArrowLeft class="h-4 w-4" />
+						<span>Back</span>
+					</button>
+
+					<!-- Search Bar -->
 					<div class="relative flex-1">
 						<Search
 							class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
@@ -542,12 +754,6 @@
 							class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
 						/>
 					</div>
-					<button
-						class="rounded-lg border border-gray-200 bg-gray-50 p-2 text-gray-600 hover:bg-gray-100"
-						title="Filter"
-					>
-						<Filter class="h-4 w-4" />
-					</button>
 				</div>
 
 				<!-- Tabs -->
@@ -627,7 +833,8 @@
 												<!-- Nested Layers -->
 												{#if hasNested && isDatasetExpanded}
 													<div class="border-t border-gray-200 p-2 space-y-1">
-														{#each Object.entries(dataset.map_layers) as [key, value]}
+														{#each getKeysInOrder(dataset.map_layers) as key}
+															{@const value = dataset.map_layers[key]}
 															{@const nestedKey = `${dataset.id}|${key}`}
 															{@const isNestedExpanded = expandedNestedKeys.has(nestedKey)}
 															{@const nestedValue = value}
@@ -649,12 +856,19 @@
 																			title={isSelected ? 'Remove from map' : 'Add to map'}
 																		>
 																			{#if isSelected}
-																				<CheckCircle class="h-3.5 w-3.5 fill-current" />
+																				<CheckSquare class="h-4.5 w-4.5 fill-blue-600 stroke-white stroke-[2]" />
 																			{:else}
-																				<Circle class="h-3.5 w-3.5" />
+																				<Square class="h-4.5 w-4.5 stroke-gray-400 stroke-[1.5]" />
 																			{/if}
 																		</button>
-																		<div class="flex-1 min-w-0">
+																		<div 
+																			class="flex-1 min-w-0 cursor-pointer"
+																			onclick={() => toggleLayer(dataset.id, [key], layerConfig)}
+																			onkeydown={(e) => e.key === 'Enter' && toggleLayer(dataset.id, [key], layerConfig)}
+																			role="button"
+																			tabindex="0"
+																			title={isSelected ? 'Remove from map' : 'Add to map'}
+																		>
 																			<h5 class="truncate text-xs font-medium text-gray-700">{layerConfig.name || key}</h5>
 																		</div>
 																	</div>
@@ -687,12 +901,19 @@
 																						title={isSelected ? 'Remove from map' : 'Add to map'}
 																					>
 																						{#if isSelected}
-																							<CheckCircle class="h-3 w-3 fill-current" />
+																							<CheckSquare class="h-4 w-4 fill-blue-600 stroke-white stroke-[2]" />
 																						{:else}
-																							<Circle class="h-3 w-3" />
+																							<Square class="h-4 w-4 stroke-gray-400 stroke-[1.5]" />
 																						{/if}
 																					</button>
-																					<div class="flex-1 min-w-0">
+																					<div 
+																						class="flex-1 min-w-0 cursor-pointer"
+																						onclick={() => toggleLayer(dataset.id, [key, String(idx)], layerConfig)}
+																						onkeydown={(e) => e.key === 'Enter' && toggleLayer(dataset.id, [key, String(idx)], layerConfig)}
+																						role="button"
+																						tabindex="0"
+																						title={isSelected ? 'Remove from map' : 'Add to map'}
+																					>
 																						<h6 class="truncate text-xs text-gray-600">{layerConfig.name || `${key} - ${idx + 1}`}</h6>
 																					</div>
 																				</div>
@@ -715,7 +936,8 @@
 																</button>
 																{#if isNestedExpanded}
 																	<div class="ml-4 space-y-1">
-																		{#each Object.entries(nestedValue) as [subKey, subValue]}
+																		{#each getKeysInOrder(nestedValue) as subKey}
+																			{@const subValue = nestedValue[subKey]}
 																			{@const subNestedKey = `${nestedKey}|${subKey}`}
 																			{@const isSubExpanded = expandedNestedKeys.has(subNestedKey)}
 																			
@@ -734,12 +956,19 @@
 																						title={isSelected ? 'Remove from map' : 'Add to map'}
 																					>
 																						{#if isSelected}
-																							<CheckCircle class="h-3 w-3 fill-current" />
+																							<CheckSquare class="h-4 w-4 fill-blue-600 stroke-white stroke-[2]" />
 																						{:else}
-																							<Circle class="h-3 w-3" />
+																							<Square class="h-4 w-4 stroke-gray-400 stroke-[1.5]" />
 																						{/if}
 																					</button>
-																					<div class="flex-1 min-w-0">
+																					<div 
+																						class="flex-1 min-w-0 cursor-pointer"
+																						onclick={() => toggleLayer(dataset.id, [key, subKey], layerConfig)}
+																						onkeydown={(e) => e.key === 'Enter' && toggleLayer(dataset.id, [key, subKey], layerConfig)}
+																						role="button"
+																						tabindex="0"
+																						title={isSelected ? 'Remove from map' : 'Add to map'}
+																					>
 																						<h6 class="truncate text-xs text-gray-600 capitalize">{layerConfig.name || subKey}</h6>
 																					</div>
 																				</div>
@@ -762,12 +991,19 @@
 																		title={isSelected ? 'Remove from map' : 'Add to map'}
 																	>
 																		{#if isSelected}
-																			<CheckCircle class="h-3.5 w-3.5 fill-current" />
+																			<CheckSquare class="h-4.5 w-4.5 fill-blue-600 stroke-white stroke-[2]" />
 																		{:else}
-																			<Circle class="h-3.5 w-3.5" />
+																			<Square class="h-4.5 w-4.5 stroke-gray-400 stroke-[1.5]" />
 																		{/if}
 																	</button>
-																	<div class="flex-1 min-w-0">
+																	<div 
+																		class="flex-1 min-w-0 cursor-pointer"
+																		onclick={() => toggleLayer(dataset.id, [key], nestedValue)}
+																		onkeydown={(e) => e.key === 'Enter' && toggleLayer(dataset.id, [key], nestedValue)}
+																		role="button"
+																		tabindex="0"
+																		title={isSelected ? 'Remove from map' : 'Add to map'}
+																	>
 																		<h5 class="truncate text-xs font-medium text-gray-700">{(nestedValue as any).name || key}</h5>
 																	</div>
 																</div>
@@ -791,12 +1027,19 @@
 																title={isSelected ? 'Remove from map' : 'Add to map'}
 															>
 																{#if isSelected}
-																	<CheckCircle class="h-3.5 w-3.5 fill-current" />
+																	<CheckSquare class="h-4.5 w-4.5 fill-blue-600 stroke-white stroke-[2]" />
 																{:else}
-																	<Circle class="h-3.5 w-3.5" />
+																	<Square class="h-4.5 w-4.5 stroke-gray-400 stroke-[1.5]" />
 																{/if}
 															</button>
-															<div class="flex-1 min-w-0">
+															<div 
+																class="flex-1 min-w-0 cursor-pointer"
+																onclick={() => toggleLayer(dataset.id, [], layerConfig)}
+																onkeydown={(e) => e.key === 'Enter' && toggleLayer(dataset.id, [], layerConfig)}
+																role="button"
+																tabindex="0"
+																title={isSelected ? 'Remove from map' : 'Add to map'}
+															>
 																<h5 class="truncate text-xs font-medium text-gray-700">{(layerConfig as any).name || (dataset as any).title || dataset.id}</h5>
 															</div>
 														</div>
@@ -809,47 +1052,133 @@
 							</div>
 						{/each}
 					{:else}
-						<!-- Selected Layers Tab -->
-						{#each Object.entries(getSelectedLayersGrouped()) as [groupId, datasets]}
-							{#each datasets as dataset}
-								{@const datasetLayers = Array.from(selectedLayers).filter(path => path.startsWith(dataset.id + '|') || path === dataset.id)}
-								{#each datasetLayers as layerPath}
-									{@const [datasetId, ...pathParts] = layerPath.split('|')}
-									{@const layerConfig = extractLayerConfig(dataset.map_layers, pathParts)}
-									{#if layerConfig}
+						<!-- Selected Layers Tab - Display in order they were added -->
+						{#each layerOrder as layerPath, index}
+							{@const [datasetId, ...pathParts] = layerPath.split('|')}
+							{@const dataset = (() => {
+								for (const [, datasets] of Object.entries(allMapLayers)) {
+									if (Array.isArray(datasets)) {
+										const found = datasets.find(d => d.id === datasetId);
+										if (found) return found;
+									}
+								}
+								return null;
+							})()}
+							{#if dataset}
+								{@const layerConfig = extractLayerConfig(dataset.map_layers, pathParts)}
+								{#if layerConfig}
+									<div 
+										class="relative {dragOverIndex === index && draggedLayerIndex !== null && draggedLayerIndex !== index ? 'mt-4' : ''}"
+										role="listitem"
+										ondragover={(e) => handleDragOver(index, e)}
+										ondragleave={handleDragLeave}
+										ondrop={(e) => handleDrop(index, e)}
+										ondragend={handleDragEnd}
+									>
+										<!-- Drop indicator line above -->
+										{#if dragOverIndex === index && draggedLayerIndex !== null && draggedLayerIndex !== index && dropPosition === 'above'}
+											<div class="absolute -top-2 left-0 right-0 h-1 bg-blue-500 border-2 border-dashed border-blue-500 rounded-full z-20 shadow-lg"></div>
+										{/if}
+										
+										<!-- Drop indicator line below -->
+										{#if dragOverIndex === index && draggedLayerIndex !== null && draggedLayerIndex !== index && dropPosition === 'below'}
+											<div class="absolute -bottom-2 left-0 right-0 h-1 bg-blue-500 border-2 border-dashed border-blue-500 rounded-full z-20 shadow-lg"></div>
+										{/if}
+										
 										<div
-											class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3 transition-all hover:border-blue-300 hover:shadow-md"
+											class="group flex items-center gap-2 rounded-lg border bg-white p-3 {dragOverIndex === index && draggedLayerIndex !== null && draggedLayerIndex !== index ? 'border-blue-500 border-2 border-dashed bg-blue-50/50 shadow-xl scale-[0.95] ring-2 ring-blue-200' : 'border-gray-200'} {draggedLayerIndex === index ? 'opacity-50 cursor-grabbing' : ''} {draggedLayerIndex === null ? 'transition-colors hover:border-blue-300 hover:shadow-md' : ''}"
+											style="will-change: transform, opacity;"
 										>
+											<!-- Drag Handle -->
+											<div 
+												class="flex-shrink-0 cursor-move text-gray-400 hover:text-gray-600"
+												role="button"
+												tabindex="0"
+												draggable="true"
+												ondragstart={(e) => {
+													// Only allow drag from the handle
+													handleDragStart(index, e);
+												}}
+											>
+												<GripVertical class="h-5 w-5" />
+											</div>
 											<div class="flex-1 min-w-0">
 												<h4 class="truncate text-sm font-medium text-gray-800">{(dataset as any).title || dataset.id}</h4>
-												{#if pathParts.length > 0}
-													<p class="truncate text-xs text-gray-500">{pathParts.join(' → ')}</p>
-												{/if}
-											</div>
-											<div class="flex items-center gap-1">
-												<button
-													onclick={() => toggleLayerVisibility(layerPath)}
-													class="rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100"
-													title={layerVisibility[layerPath] !== false ? 'Hide layer' : 'Show layer'}
-												>
-													{#if layerVisibility[layerPath] !== false}
-														<Eye class="h-4 w-4" />
-													{:else}
-														<EyeOff class="h-4 w-4" />
+													{#if pathParts.length > 0}
+														<p class="truncate text-xs text-gray-500">{pathParts.join(' → ')}</p>
 													{/if}
-												</button>
-												<button
-													onclick={() => removeLayer(layerPath)}
-													class="rounded p-1.5 text-red-600 transition-colors hover:bg-red-100"
-													title="Remove from map"
-												>
-													<Trash2 class="h-4 w-4" />
-												</button>
+												</div>
+												<div class="flex items-center gap-1 {draggedLayerIndex !== null ? 'pointer-events-none opacity-40' : ''}">
+													<button
+														onclick={() => toggleLayerVisibility(layerPath)}
+														disabled={draggedLayerIndex !== null}
+														class="rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+														title={layerVisibility[layerPath] !== false ? 'Hide layer' : 'Show layer'}
+													>
+														{#if layerVisibility[layerPath] !== false}
+															<Eye class="h-4 w-4" />
+														{:else}
+															<EyeOff class="h-4 w-4" />
+														{/if}
+													</button>
+													<button
+														data-opacity-button={layerPath}
+														onclick={() => toggleOpacityPanel(layerPath)}
+														disabled={draggedLayerIndex !== null}
+														ondragstart={(e) => e.stopPropagation()}
+														ondrag={(e) => e.stopPropagation()}
+														ondragover={(e) => e.stopPropagation()}
+														class="rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100 {opacityPanelOpen[layerPath] ? 'bg-blue-100 text-blue-600' : ''} disabled:opacity-40 disabled:cursor-not-allowed"
+														title="Adjust opacity"
+													>
+														<Sliders class="h-4 w-4" />
+													</button>
+													<button
+														onclick={() => removeLayer(layerPath)}
+														disabled={draggedLayerIndex !== null}
+														class="rounded p-1.5 text-red-600 transition-colors hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed"
+														title="Remove from map"
+													>
+														<Trash2 class="h-4 w-4" />
+													</button>
+												</div>
 											</div>
+											
+											<!-- Opacity Slider Panel -->
+											{#if opacityPanelOpen[layerPath]}
+												{@const currentOpacity = layerOpacity[layerPath] ?? 0.7}
+												<div 
+													data-opacity-panel={layerPath}
+													role="group"
+													class="absolute left-0 right-0 top-full z-10 mt-1 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+													ondragstart={(e) => e.stopPropagation()}
+													ondrag={(e) => e.stopPropagation()}
+													ondragover={(e) => e.stopPropagation()}
+													ondragenter={(e) => e.stopPropagation()}
+													ondragleave={(e) => e.stopPropagation()}
+													ondrop={(e) => e.stopPropagation()}
+												>
+													<div class="mb-2 flex items-center justify-between">
+														<span class="text-xs font-medium text-gray-700">Opacity</span>
+														<span class="text-xs text-gray-600">{Math.round(currentOpacity * 100)}%</span>
+													</div>
+													<input
+														type="range"
+														min="0"
+														max="1"
+														step="0.01"
+														value={currentOpacity}
+														oninput={(e) => updateLayerOpacity(layerPath, parseFloat(e.currentTarget.value))}
+														ondragstart={(e) => e.stopPropagation()}
+														ondrag={(e) => e.stopPropagation()}
+														ondragover={(e) => e.stopPropagation()}
+														class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-blue-600"
+													/>
+												</div>
+											{/if}
 										</div>
 									{/if}
-								{/each}
-							{/each}
+							{/if}
 						{/each}
 
 						{#if selectedLayers.size === 0}
@@ -881,9 +1210,9 @@
 					></div>
 
 					<!-- Map Controls -->
-					<!-- Home Reset Button -->
+					<!-- Home Reset Button - positioned below zoom controls -->
 					<button
-						class="absolute top-2 left-2 z-20 rounded border border-gray-200 bg-white p-1.5 shadow hover:bg-gray-100"
+						class="absolute left-12 top-[1.0rem] z-20 rounded border border-gray-200 bg-white p-1.5 shadow hover:bg-gray-100"
 						onclick={() => {
 							if (map) {
 								map.getView().setCenter(fromLonLat(HKH_CENTER));
@@ -936,27 +1265,6 @@
 						</div>
 					{/if}
 				</div>
-
-				<!-- Dataset Description Panel -->
-				{#if currentLayer}
-					<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-						<div class="flex items-start justify-between">
-							<div class="flex-1">
-								<h3 class="mb-2 text-lg font-semibold text-gray-800">{currentLayer.title}</h3>
-								<p class="mb-3 text-sm text-gray-600">{currentLayer.description}</p>
-								<a
-									href={currentLayer.metadataUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
-								>
-									<Download class="h-4 w-4" />
-									<span>{currentLayer.metadataUrl}</span>
-								</a>
-							</div>
-						</div>
-					</div>
-				{/if}
 			</div>
 		</div>
 	</div>
@@ -970,5 +1278,17 @@
 	:global(.ol-viewport) {
 		width: 100% !important;
 		height: 100% !important;
+	}
+
+	/* Position home button below zoom controls */
+	:global(.ol-zoom) {
+		margin: 0.5em;
+	}
+
+	/* Ensure home button is positioned correctly relative to zoom controls */
+	:global(.ol-zoom-in),
+	:global(.ol-zoom-out) {
+		width: 2em;
+		height: 2em;
 	}
 </style>

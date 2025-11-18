@@ -4,7 +4,7 @@
     import icimodLogo from '$lib/assets/logo/logo-icimod_white.png';
 </script>
 
-<section class=" relative overflow-hidden bg-cover bg-center  bg-gradient-to-r from-blue-800 to-green-800 bg-no-repeat text-white min-h-[280px]" 
+<section class=" relative overflow-hidden bg-cover bg-center  bg-gradient-to-r from-blue-800 to-green-800 bg-no-repeat text-white min-h-[250px]" 
   >
     <!-- Dark gradient overlay from left to right -->
     <div class="absolute inset-0 "></div>

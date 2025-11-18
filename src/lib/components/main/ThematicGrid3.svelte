@@ -30,7 +30,7 @@
 	 
 </script>
 
-<section class="relative overflow-hidden pt-5 " style="margin-top: -190px;">
+<section class="relative overflow-hidden pt-5 " style="margin-top: -170px;">
 	<div class="container mx-auto relative px-4 sm:px-6 lg:px-8">
 		<!-- Thematic Cards - Top Row -->
 		<div class="mb-10 lg:mb-12">
@@ -48,7 +48,7 @@
 								disabled={isDisabled}
 								class="group relative block rounded-full aspect-square p-0 transition-all duration-300 ease-out
 									border border-gray-200/50 bg-white/80 backdrop-blur-md
-									shadow-lg shadow-gray-200/50 w-20 h-20 sm:w-24 sm:h-24 md:w-26 md:h-26
+									shadow-lg shadow-gray-200/50 w-18 h-18 sm:w-18 sm:h-24 md:w-20 md:h-20
 									{!isDisabled
 									? 'hover:cursor-pointer hover:scale-[1.02] hover:shadow-2xl hover:shadow-gray-300/60 hover:border-gray-300/80 hover:-translate-y-1'
 									: 'cursor-not-allowed opacity-50'}"
