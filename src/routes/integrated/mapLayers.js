@@ -11,21 +11,21 @@ export const allMapLayers = {
 	climate: [
 		{
 			id: 'temp-trend-30y',
-			title: 'Annual Temperature Trend',		
+			title: 'Annual Temperature Trend ',		
 			map_layers: {
 				'0.5': [
 					{
 						id: 'temp-trend-0.5',
-						name: 'Annual Temperature Trend',
+						name: 'Annual Temperature Trend (0.5)',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
 						layerIndex: 1,
 						mapserver: 'arcgis'
 					}
 				],
-				'1': [
+				'1.0': [
 					{
 						id: 'temp-trend-1',
-						name: 'Annual Temperature Trend',
+						name: 'Annual Temperature Trend (1.0)',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
 						layerIndex: 2,
 						mapserver: 'arcgis'
@@ -34,16 +34,16 @@ export const allMapLayers = {
 				'1.5': [
 					{
 						id: 'temp-trend-1.5',
-						name: 'Annual Temperature Trend',
+						name: 'Annual Temperature Trend (1.5)',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
 						layerIndex: 3,
 						mapserver: 'arcgis'
 					}
 				],
-				'2': [
+				'2.0': [
 					{
 						id: 'temp-trend-2',
-						name: 'Annual Temperature Trend',
+						name: 'Annual Temperature Trend (2.0)' ,
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
 						layerIndex: 4,
 						mapserver: 'arcgis'
@@ -52,7 +52,7 @@ export const allMapLayers = {
 				'2.5': [
 					{
 						id: 'temp-trend-2.5',
-						name: 'Annual Temperature Trend',
+						name: 'Annual Temperature Trend (2.5)',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
 						layerIndex: 5,
 						mapserver: 'arcgis'
@@ -60,271 +60,271 @@ export const allMapLayers = {
 				]
 			}
 		},
-		{
-			id: 'temp-rise-decade',
-			title: 'Regional Temperature Rise',
-			map_layers: {
-				'0.5': [
-					{
-						id: 'temp-trend-0.5',
-						name: 'Annual Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
-						layerIndex: 1,
-						mapserver: 'arcgis'
-					}
-				],
-				'1': [
-					{
-						id: 'temp-trend-1',
-						name: 'Annual Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
-						layerIndex: 2,
-						mapserver: 'arcgis'
-					}
-				],
-				'1.5': [
-					{
-						id: 'temp-trend-1.5',
-						name: 'Annual Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
-						layerIndex: 3,
-						mapserver: 'arcgis'
-					}
-				],
-				'2': [
-					{
-						id: 'temp-trend-2',
-						name: 'Annual Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
-						layerIndex: 4,
-						mapserver: 'arcgis'
-					}
-				],
-				'2.5': [
-					{
-						id: 'temp-trend-2.5',
-						name: 'Annual Temperature Trend',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
-						layerIndex: 5,
-						mapserver: 'arcgis'
-					}
-				]
-			}
-		},
+		// {
+		// 	id: 'temp-rise-decade',
+		// 	title: 'Regional Temperature Rise',
+		// 	map_layers: {
+		// 		'0.5': [
+		// 			{
+		// 				id: 'temp-trend-0.5',
+		// 				name: 'Regional Temperature Trend (0.5)',
+		// 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+		// 				layerIndex: 1,
+		// 				mapserver: 'arcgis'
+		// 			}
+		// 		],
+		// 		'1.0': [
+		// 			{
+		// 				id: 'temp-trend-1',
+		// 				name: 'Regional Temperature Trend (1.0)',
+		// 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+		// 				layerIndex: 2,
+		// 				mapserver: 'arcgis'
+		// 			}
+		// 		],
+		// 		'1.5': [
+		// 			{
+		// 				id: 'temp-trend-1.5',
+		// 				name: 'Regional Temperature Trend (1.5)',
+		// 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+		// 				layerIndex: 3,
+		// 				mapserver: 'arcgis'
+		// 			}
+		// 		],
+		// 		'2.0': [
+		// 			{
+		// 				id: 'temp-trend-2',
+		// 				name: 'Regional Temperature Trend (2.0)',
+		// 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+		// 				layerIndex: 4,
+		// 				mapserver: 'arcgis'
+		// 			}
+		// 		],
+		// 		'2.5': [
+		// 			{
+		// 				id: 'temp-trend-2.5 (2.5)',
+		// 				name: 'Regional Temperature Trend',
+		// 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend/MapServer',
+		// 				layerIndex: 5,
+		// 				mapserver: 'arcgis'
+		// 			}
+		// 		]
+		// 	}
+		// },
 		{
 			id: 'annual-temp-anamoly-series',
 			title: 'Time Series Temperature Anomaly',
 			map_layers: {
-				'1995': {
+				'1995': [{
 					id: 'temp-time-series-1995',
 					name: 'Temperature Anamoly 1995',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 0,
 					mapserver: 'arcgis'
-				},
-				'1996': {
+				}],
+				'1996': [{
 					id: 'temp-time-series-1996',
 					name: 'Temperature Anamoly 1996',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 1,
 					mapserver: 'arcgis'
-				},
-				'1997': {
+				}],
+				'1997': [{
 					id: 'temp-time-series-1997',
 					name: 'Temperature Anamoly 1997',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 2,
 					mapserver: 'arcgis'
-				},
-				'1998': {
+				}],
+				'1998': [{
 					id: 'temp-time-series-1998',
 					name: 'Temperature Anamoly 1998',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 3,
 					mapserver: 'arcgis'
-				},
-				'1999': {
+				}],
+				'1999': [{
 					id: 'temp-time-series-1999',
 					name: 'Temperature Anamoly 1999',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 4,
 					mapserver: 'arcgis'
-				},
-				'2000': {
+				}],
+				'2000': [{
 					id: 'temp-time-series-2000',
 					name: 'Temperature Anamoly 2000',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 5,
 					mapserver: 'arcgis'
-				},
-				'2001': {
+				}],
+				'2001': [{
 					id: 'temp-time-series-2001',
 					name: 'Temperature Anamoly 2001',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 6,
 					mapserver: 'arcgis'
-				},
-				'2002': {
+				}],
+				'2002': [{
 					id: 'temp-time-series-2002',
 					name: 'Temperature Anamoly 2002',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 7,
 					mapserver: 'arcgis'
-				},
-				'2003': {
+				}],
+				'2003': [{
 					id: 'temp-time-series-2003',
 					name: 'Temperature Anamoly 2003',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 8,
 					mapserver: 'arcgis'
-				},
-				'2004': {
+				}],
+				'2004': [{
 					id: 'temp-time-series-2004',
 					name: 'Temperature Anamoly 2004',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 9,
 					mapserver: 'arcgis'
-				},
-				'2005': {
+				}],
+				'2005': [{
 					id: 'temp-time-series-2005',
 					name: 'Temperature Anamoly 2005',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 10,
 					mapserver: 'arcgis'
-				},
-				'2006': {
+				}],
+				'2006': [{
 					id: 'temp-time-series-2006',
 					name: 'Temperature Anamoly 2006',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 11,
 					mapserver: 'arcgis'
-				},
-				'2007': {
+				}],
+				'2007': [{
 					id: 'temp-time-series-2007',
 					name: 'Temperature Anamoly 2007',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 12,
 					mapserver: 'arcgis'
-				},
-				'2008': {
+				}],
+				'2008': [{
 					id: 'temp-time-series-2008',
 					name: 'Temperature Anamoly 2008',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 13,
 					mapserver: 'arcgis'
-				},
-				'2009': {
+				}],
+				'2009': [{
 					id: 'temp-time-series-2009',
 					name: 'Temperature Anamoly 2009',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 14,
 					mapserver: 'arcgis'
-				},
-				'2010': {
+				}],
+				'2010': [{
 					id: 'temp-time-series-2010',
 					name: 'Temperature Anamoly 2010',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 15, // 15 is the layer index for 2010
+					layerIndex: 15,
 					mapserver: 'arcgis'
-				},
-				'2011': {
+				}],
+				'2011': [{
 					id: 'temp-time-series-2011',
 					name: 'Temperature Anamoly 2011',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 16, // 16 is the layer index for 2011
+					layerIndex: 16,
 					mapserver: 'arcgis'
-				},
-				'2012': {
+				}],
+				'2012': [{
 					id: 'temp-time-series-2012',
 					name: 'Temperature Anamoly 2012',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 17, // 17 is the layer index for 2012
+					layerIndex: 17,
 					mapserver: 'arcgis'
-				},
-				'2013': {
+				}],
+				'2013': [{
 					id: 'temp-time-series-2013',
 					name: 'Temperature Anamoly 2013',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 18,
 					mapserver: 'arcgis'
-				},
-				'2014': {
+				}],
+				'2014': [{
 					id: 'temp-time-series-2014',
 					name: 'Temperature Anamoly 2014',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 19, // 19 is the layer index for 2014
+					layerIndex: 19,
 					mapserver: 'arcgis'
-				},
-				'2015': {
+				}],
+				'2015': [{
 					id: 'temp-time-series-2015',
 					name: 'Temperature Anamoly 2015',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 20, // 20 is the layer index for 2015
+					layerIndex: 20,
 					mapserver: 'arcgis'
-				},
-				'2016': {
+				}],
+				'2016': [{
 					id: 'temp-time-series-2016',
 					name: 'Temperature Anamoly 2016',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 21, // 21 is the layer index for 2016
+					layerIndex: 21,
 					mapserver: 'arcgis'
-				},
-				'2017': {
+				}],
+				'2017': [{
 					id: 'temp-time-series-2017',
 					name: 'Temperature Anamoly 2017',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 22, // 22 is the layer index for 2017
+					layerIndex: 22,
 					mapserver: 'arcgis'
-				},
-				'2018': {
+				}],
+				'2018': [{
 					id: 'temp-time-series-2018',
 					name: 'Temperature Anamoly 2018',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 23, // 23 is the layer index for 2018
+					layerIndex: 23,
 					mapserver: 'arcgis'
-				},
-				'2019': {
+				}],
+				'2019': [{
 					id: 'temp-time-series-2019',
 					name: 'Temperature Anamoly 2019',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 24, // 24 is the layer index for 2019
+					layerIndex: 24,
 					mapserver: 'arcgis'
-				},
-				'2020': {
+				}],
+				'2020': [{
 					id: 'temp-time-series-2020',
 					name: 'Temperature Anamoly 2020',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 25, // 25 is the layer index for 2020
+					layerIndex: 25,
 					mapserver: 'arcgis'
-				},
-				'2021': {
+				}],
+				'2021': [{
 					id: 'temp-time-series-2021',
 					name: 'Temperature Anamoly 2021',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 26, // 26 is the layer index for 2021
+					layerIndex: 26,
 					mapserver: 'arcgis'
-				},
-				'2022': {
+				}],
+				'2022': [{
 					id: 'temp-time-series-2022',
 					name: 'Temperature Anamoly 2022',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 27, // 27 is the layer index for 2022
+					layerIndex: 27,
 					mapserver: 'arcgis'
-				},
-				'2023': {
+				}],
+				'2023': [{
 					id: 'temp-time-series-2023',
 					name: 'Temperature Anamoly 2023',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 28, // 28 is the layer index for 2023
+					layerIndex: 28,
 					mapserver: 'arcgis'
-				},
-				'2024': {
+				}],
+				'2024': [{
 					id: 'temp-time-series-2024',
 					name: 'Temperature Anamoly 2024',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
-					layerIndex: 29, // 29 is the layer index for 2024
+					layerIndex: 29,
 					mapserver: 'arcgis'
-				}
+				}]
 			}
 		},
 		{
@@ -1249,100 +1249,145 @@ export const allMapLayers = {
 	'human-dimensions': [
 		{
 			id: 'population-2025',
+			title: 'Population Trends across HKH',
 			map_layers: {
-				name: 'Population Trends across HKH',
-				layer_id: 0,
-				mapserver: 'arcgis'
+				default: [
+					{
+						id: 'population-2025-layer',
+						name: 'Population Trends across HKH',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
+					}
+				]
 			},
-		},
-		{
-			id: 'sex-ratio-2025',
-			
-			map_layers: {
-				name: 'Sex Ratio 2025',
-				layer_id: 1,
-				mapserver: 'arcgis'
-			},
-			 
 		},
 		{
 			id: 'aged-75-proportion',
-			
+			title: 'Proportion of Age >=75',
 			map_layers: {
-				name: 'Proportion of Age >=75',
-				layer_id: 2,
-				mapserver: 'arcgis'
+				default: [
+					{
+						id: 'aged-75-proportion-layer',
+						name: 'Proportion of Age >=75',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer',
+						layerIndex: 2,
+						mapserver: 'arcgis'
+					}
+				]
 			},
 			 
 		},
 		{
 			id: 'child-woman-ratio-2025',
-			
+			title: 'Child Woman Ratio 2025',	
 			map_layers: {
-				name: 'Child Woman Ratio 2025',
-				layer_id: 3,
-				mapserver: 'arcgis'
+				default: [
+					{
+						id: 'child-woman-ratio-2025-layer',
+						name: 'Child Woman Ratio 2025',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer',
+						layerIndex: 3,
+						mapserver: 'arcgis'
+					}
+				]
 			},
 			 
 		},
 		{
 			id: 'child-dependency-ratio-2025',
-			
+			title: 'Child Dependency Ratio 2025',			
 			map_layers: {
-				name: 'Child Dependency Ratio 2025',
-				layer_id: 4,
-				mapserver: 'arcgis'
+				default: [
+					{
+						id: 'child-dependency-ratio-2025-layer',
+						name: 'Child Dependency Ratio 2025',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer',
+						layerIndex: 4,
+						mapserver: 'arcgis'
+					}
+				]
 			},
 			 
 		},
 		{
 			id: 'age-dependency-ratio-2025',
-			
+			title: 'Age Dependency Ratio 2025',			
 			map_layers: {
-				name: 'Age Dependency Ratio 2025',
-				layer_id: 5,
-				mapserver: 'arcgis'
+				default: [
+					{
+						id: 'age-dependency-ratio-2025-layer',
+						name: 'Age Dependency Ratio 2025',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer',
+						layerIndex: 5,
+						mapserver: 'arcgis'
+					}
+				]
 			},
 			 
 		},
 		{
 			id: 'total-dependency-ratio-2025',
-			
+			title: 'Total Dependency Ratio 2025',			
 			map_layers: {
-				name: 'Total Dependency Ratio 2025',
-				layer_id: 6,
-				mapserver: 'arcgis'
+				default: [
+					{
+						id: 'total-dependency-ratio-2025-layer',
+						name: 'Total Dependency Ratio 2025',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer',
+						layerIndex: 6,
+						mapserver: 'arcgis'
+					}
+				]
 			},
 			 
 		},
 		{
 			id: 'impervious_surface',
-
+			title: 'Impervious Surface',
 			map_layers: {
-				name: 'Impervious Surface',
-				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_HumanDimensions/MapServer',
-				layer_id: 0,
-				mapserver: 'arcgis'
+				default: [
+					{
+						id: 'impervious-surface-layer',
+						name: 'Impervious Surface',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_HumanDimensions/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
+					}
+				]
 			},
 			 
 		},
 
-		{
-			id: 'urban-center',
-			map_layers: {
-				name: 'Urban Center Location',
-				layer_id: 8,
-				mapserver: 'arcgis'
-			},
+		// {
+		// 	id: 'urban-center',
+		// 	title: 'Urban Center Location',
+		// 	map_layers: {
+		// 		default: [
+		// 			{
+		// 				id: 'urban-center-layer',
+		// 				name: 'Urban Center Location',
+		// 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_HumanDimensions/MapServer',
+		// 				layerIndex: 8,
+		// 				mapserver: 'arcgis'
+		// 			}
+		// 		]
+		// 	},
 			 
-		},
+		// },
 		{
 			id: 'night-light',
+			title: 'Night Light',
 			map_layers: {
-				name: 'Night Light',
-				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer',
-				layer_id: 7,
-				mapserver: 'arcgis'
+				default: [
+					{
+						id: 'night-light-layer',
+						name: 'Night Light',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer',
+						layerIndex: 7,
+						mapserver: 'arcgis'
+					}
+				]
 			},
 			
 			 

@@ -96,11 +96,11 @@
 					<div class="flex flex-col gap-2">
 						<h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 px-1">Regional Science app</h3>
 						<div class="flex flex-col gap-2">
-							<a href="/thematic/weather" class="group flex items-center gap-2 px-4 py-2.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200/50 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 hover:shadow-xl">
+							<a href="https://tethys.icimod.org/apps/hiwatrg/" target="_blank" class="group flex items-center gap-2 px-4 py-2.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200/50 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 hover:shadow-xl">
 								<Cloud class="h-4 w-4 text-blue-600 group-hover:text-blue-700" />
 								<span class="text-sm font-medium text-gray-700 group-hover:text-blue-700 whitespace-nowrap">Weather</span>
 							</a>
-							<a href="/thematic/air-quality" class="group flex items-center gap-2 px-4 py-2.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200/50 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 hover:shadow-xl">
+							<a href="https://smog.icimod.org/apps/airquality/" target="_blank" class="group flex items-center gap-2 px-4 py-2.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200/50 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 hover:shadow-xl">
 								<Wind class="h-4 w-4 text-blue-600 group-hover:text-blue-700" />
 								<span class="text-sm font-medium text-gray-700 group-hover:text-blue-700 whitespace-nowrap">AirQuality</span>
 							</a>
