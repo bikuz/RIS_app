@@ -504,43 +504,43 @@
 				// 	}
 				// }
 			]
+		},
+		{
+			id: 'slope',
+			title: 'Slope',
+			description: 'Slope data for the HKH region',
+			control_type: 'simple',
+			map_layers: {
+				default: [
+					{
+						id: 'slope-layer',
+						name: 'Slope',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer',
+						layerIndex: '6',
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
+		},
+		{
+			id: 'aspect',
+			title: 'Aspect',
+			description: 'Aspect data for the HKH region',
+			control_type: 'simple',
+			map_layers: {
+				default: [
+					{
+						id: 'aspect-layer',
+						name: 'Aspect',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer',
+						layerIndex: '7',
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
 		}
-		// {
-		// 	id: 'slope',
-		// 	title: 'Slope',
-		// 	description: 'Slope data for the HKH region',
-		// 	control_type: 'simple',
-		// 	map_layers: {
-		// 		default: [
-		// 			{
-		// 				id: 'slope-layer',
-		// 				name: 'Slope',
-		// 				url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-		// 				layerIndex: 'springs:Slope',
-		// 				mapserver: 'geoserver'
-		// 			}
-		// 		]
-		// 	},
-		// 	charts: []
-		// },
-		// {
-		// 	id: 'aspect',
-		// 	title: 'Aspect',
-		// 	description: 'Aspect data for the HKH region',
-		// 	control_type: 'simple',
-		// 	map_layers: {
-		// 		default: [
-		// 			{
-		// 				id: 'aspect-layer',
-		// 				name: 'Aspect',
-		// 				url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-		// 				layerIndex: 'springs:Aspect',
-		// 				mapserver: 'geoserver'
-		// 			}
-		// 		]
-		// 	},
-		// 	charts: []
-		// }
 	];
 
 	const questions: any = [
@@ -566,26 +566,30 @@
 			id: 'map-indicator-1',
 			title: 'Elevation',
 			dataset_id: 'elevation',
-			info: 'The map illustrates the elevation variation across the HKH region, highlighting topographical gradients from low-lying valleys to high mountain ranges. This dataset is compiled from global SRTM DEM of 90 m resolution for HKH region and was prepared by ICIMOD.',
-			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
+			info: 'The map represents the elevation variation across the HKH region, highlighting topographical gradients from low-lying valleys to high mountain ranges. This dataset is compiled from global SRTM DEM of 90 m resolution for HKH region and was prepared by ICIMOD.',
+			source: 'SRTM'
 		},
 		{
 			id: 'map-indicator-2',
 			title: 'Mountain Region',
 			dataset_id: 'mountain-region',
-			info: 'Mountain Region',
-			source: ''
+			info: 'The map represents different classes of mountain of mountain regions in HKH region. This dataset is prepared by ICIMOD based on GTOPO 1km resolution DEM showing different classes of mountains in HKH region.',
+			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
+		},
+		{
+			id: 'map-indicator-3',
+			title: 'Slope',
+			dataset_id: 'slope',
+			info: 'The map represents the steepness of the terrain, indicating how rapidly elevation changes over space. This dataset is derived from the Digital Elevation Model (DEM).',
+			source: 'SRTM'
+		},
+		{
+			id: 'map-indicator-4',
+			title: 'Aspect',
+			dataset_id: 'aspect',
+			info: 'The map represents the direction each slope faces, which influences sunlight exposure, temperature, and vegetation patterns. This dataset is derived from the Digital Elevation Model (DEM).',
+			source: 'SRTM'
 		}
-		// {
-		// 	id: 'map-indicator-3',
-		// 	title: 'Slope',
-		// 	dataset_id: 'slope'
-		// },
-		// {
-		// 	id: 'map-indicator-4',
-		// 	title: 'Aspect',
-		// 	dataset_id: 'aspect'
-		// }
 	];
 
 	// Track selected question - default to first question
