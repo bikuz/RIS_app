@@ -29,7 +29,9 @@
 		ChevronDown,
 		ChevronRight,
 		Sliders,
-		GripVertical
+		GripVertical,
+		Columns,
+		Info
 	} from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
@@ -43,6 +45,14 @@
 
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
+	
+	// Swipe mode state
+	let swipeMode = $state(false);
+	let swipePosition = $state(50); // Percentage (0-100)
+	let mapContainerRight: HTMLDivElement;
+	let mapRight: Map | null = null;
+	let baseMapLayerRight: TileLayer<any> | null = null;
+	let isDraggingDivider = $state(false);
 
 	// Hindu Kush Himalaya region coordinates
 	const HKH_CENTER = [82.94924, 27.6382055];
@@ -120,6 +130,264 @@
 		const layers = map.getLayers();
 		layers.insertAt(0, newBaseMapLayer);
 		baseMapLayer = newBaseMapLayer;
+		
+		// Also update right map basemap if swipe mode is active
+		if (swipeMode && mapRight && baseMapLayerRight) {
+			const newBaseMapLayerRight = new TileLayer({
+				source: new XYZ({
+					url: basemapConfig.url,
+					attributions: basemapConfig.attribution
+				}),
+				zIndex: 0
+			});
+			
+			const rightLayers = mapRight.getLayers();
+			rightLayers.insertAt(0, newBaseMapLayerRight);
+			mapRight.removeLayer(baseMapLayerRight);
+			baseMapLayerRight = newBaseMapLayerRight;
+		}
+	}
+	
+	// Initialize right map for swipe mode
+	function initializeRightMap() {
+		if (!mapContainerRight || !map) return;
+		
+		const initialBasemap = basemaps.find((b) => b.id === selectedBasemap);
+		if (!initialBasemap) return;
+		
+		baseMapLayerRight = new TileLayer({
+			source: new XYZ({
+				url: initialBasemap.url,
+				attributions: initialBasemap.attribution
+			}),
+			zIndex: 0
+		});
+		
+		// Copy view from main map
+		const mainView = map.getView();
+		mapRight = new Map({
+			target: mapContainerRight,
+			controls: defaultControls(),
+			layers: [baseMapLayerRight],
+			// view: new View({
+			// 	center: mainView.getCenter(),
+			// 	zoom: mainView.getZoom(),
+			// 	rotation: mainView.getRotation()
+			// })
+			view: mainView
+		});
+		
+		// // Sync views - when main map moves, update right map
+		// map.on('moveend', () => {
+		// 	if (mapRight) {
+		// 		const center = mainView.getCenter();
+		// 		const zoom = mainView.getZoom();
+		// 		if (center && zoom !== undefined) {
+		// 			mapRight.getView().setCenter(center);
+		// 			mapRight.getView().setZoom(zoom);
+		// 		}
+		// 	}
+		// });
+		
+		// // Also sync from right to left (in case user interacts with right map)
+		// const rightMapRef = mapRight;
+		// if (rightMapRef) {
+		// 	rightMapRef.on('moveend', () => {
+		// 		if (map && mapRight) {
+		// 			const rightView = mapRight.getView();
+		// 			const center = rightView.getCenter();
+		// 			const zoom = rightView.getZoom();
+		// 			if (center && zoom !== undefined) {
+		// 				map.getView().setCenter(center);
+		// 				map.getView().setZoom(zoom);
+		// 			}
+		// 		}
+		// 	});
+		// }
+		
+		// Update layers based on current layerOrder
+		updateSwipeLayers();
+		
+		// Ensure right map is properly sized (full width)
+		setTimeout(() => {
+			if (mapRight) {
+				mapRight.updateSize();
+				mapRight.render();
+			}
+		}, 50);
+	}
+	
+	// Helper function to create a layer instance from layerPath
+	function createLayerFromPath(layerPath: string): ImageLayer<any> | null {
+		if (!mapLayers[layerPath]) return null;
+		
+		const existingLayer = mapLayers[layerPath];
+		const source = existingLayer.getSource();
+		
+		// Create a new layer instance with the same source and properties
+		const newLayer = new ImageLayer({
+			source: source,
+			zIndex: existingLayer.getZIndex(),
+			opacity: existingLayer.getOpacity(),
+			visible: existingLayer.getVisible()
+		});
+		
+		newLayer.set('layerPath', layerPath);
+		return newLayer;
+	}
+	
+	// Update layers for swipe mode based on layerOrder
+	function updateSwipeLayers() {
+		if (!swipeMode || !map || !mapRight) return;
+		
+		const topLayerPath = layerOrder[0];
+		const otherLayerPaths = layerOrder.slice(1);
+		
+		// Collect all layers that need to be moved
+		const allLayerPaths = [topLayerPath, ...otherLayerPaths].filter(Boolean);
+		
+		// Remove all data layers from both maps first
+		const leftLayers = map.getLayers();
+		const rightLayers = mapRight.getLayers();
+		
+		const leftLayersToRemove: any[] = [];
+		leftLayers.forEach((layer) => {
+			if (layer.get('layerPath')) {
+				leftLayersToRemove.push(layer);
+			}
+		});
+		leftLayersToRemove.forEach((layer) => {
+			if (map) map.removeLayer(layer);
+		});
+		
+		const rightLayersToRemove: any[] = [];
+		rightLayers.forEach((layer) => {
+			if (layer.get('layerPath')) {
+				rightLayersToRemove.push(layer);
+			}
+		});
+		rightLayersToRemove.forEach((layer) => {
+			if (mapRight) mapRight.removeLayer(layer);
+		});
+		
+		// Add top layer to left map
+		if (topLayerPath && mapLayers[topLayerPath]) {
+			leftLayers.insertAt(1, mapLayers[topLayerPath]);
+		}
+		
+		// Add all other layers to right map
+		otherLayerPaths.forEach((layerPath) => {
+			if (mapLayers[layerPath]) {
+				rightLayers.insertAt(1, mapLayers[layerPath]);
+			}
+		});
+		
+		// Force render after layer updates
+		setTimeout(() => {
+			if (map) {
+				map.updateSize();
+				map.render();
+			}
+			if (mapRight) {
+				mapRight.updateSize();
+				mapRight.render();
+			}
+		}, 50);
+	}
+	
+	// Toggle swipe mode
+	function toggleSwipeMode() {
+		swipeMode = !swipeMode;
+		
+		if (swipeMode) {
+			// Enable swipe mode
+			// Wait for DOM to update, then update map target and size
+			setTimeout(() => {
+				if (map && mapContainer) {
+					// Update map target to the new container (in case it changed)
+					map.setTarget(mapContainer);
+					map.updateSize();
+					map.render();
+				}
+			}, 50);
+			
+			setTimeout(() => {
+				if (mapContainerRight) {
+					initializeRightMap();
+					// Update both map sizes after initialization
+					setTimeout(() => {
+						if (map) {
+							map.updateSize();
+							map.render();
+						}
+						if (mapRight) {
+							mapRight.updateSize();
+							mapRight.render();
+						}
+					}, 100);
+				}
+			}, 100);
+		} else {
+			// Disable swipe mode - restore all layers to main map
+			if (mapRight && map) {
+				// Get all layers from right map (except basemap)
+				const rightLayers = mapRight.getLayers();
+				const dataLayers: any[] = [];
+				rightLayers.forEach((layer) => {
+					if (layer.get('layerPath')) {
+						dataLayers.push(layer);
+					}
+				});
+				
+				// Add all layers back to main map
+				const mainLayers = map.getLayers();
+				dataLayers.forEach((layer) => {
+					mainLayers.insertAt(1, layer);
+				});
+				
+				// Dispose right map
+				mapRight.dispose();
+				mapRight = null;
+				baseMapLayerRight = null;
+				
+				// Update main map target and size
+				setTimeout(() => {
+					if (map && mapContainer) {
+						map.setTarget(mapContainer);
+						map.updateSize();
+						map.render();
+					}
+				}, 100);
+			}
+		}
+	}
+	
+	// Handle divider drag
+	function handleDividerMouseDown(event: MouseEvent) {
+		isDraggingDivider = true;
+		event.preventDefault();
+	}
+	
+	function handleDividerMouseMove(event: MouseEvent) {
+		if (!isDraggingDivider || !mapContainer) return;
+		
+		// Get parent container (the overlay container) for accurate width calculation
+		const parentContainer = mapContainer.parentElement;
+		if (!parentContainer) return;
+		
+		const rect = parentContainer.getBoundingClientRect();
+		const x = event.clientX - rect.left;
+		const percentage = (x / rect.width) * 100;
+		
+		// Clamp between 10% and 90%
+		swipePosition = Math.max(10, Math.min(90, percentage));
+		
+		// No map size updates needed - both maps are full width, just clipping changes
+	}
+	
+	function handleDividerMouseUp() {
+		isDraggingDivider = false;
+		// No map size updates needed - both maps are full width, just clipping changes
 	}
 
 	// Dataset management state
@@ -253,6 +521,16 @@
 
 	// Map layers storage - key is full path
 	let mapLayers = $state<Record<string, ImageLayer<any>>>({});
+	
+	// Store layer configs for legend fetching - key is full path
+	let layerConfigs = $state<Record<string, { url: string; layerIndex: number; name: string; mapserver?: string }>>({});
+	
+	// Legend state management
+	let legendData = $state<Record<string, { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }>>({});
+	let legendCollapsed = $state(false);
+	let leftLegendCollapsed = $state(false);
+	let rightLegendCollapsed = $state(false);
+	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	// Define the order of thematic areas as they appear in mapLayers.js
 	const thematicAreaOrder = ['climate', 'ecosystem', 'cryosphere', 'physiography', 'human-dimensions'];
@@ -358,15 +636,24 @@
 			}
 		} else {
 			// Add layer
+			let dataset: any = null;
 			if (!layerConfig) {
 				// Find the dataset and extract layer config
 				for (const [, datasets] of Object.entries(allMapLayers)) {
 					if (Array.isArray(datasets)) {
-						const dataset = datasets.find(d => d.id === datasetId);
+						dataset = datasets.find(d => d.id === datasetId);
 						if (dataset) {
 							layerConfig = extractLayerConfig(dataset.map_layers, path);
 							break;
 						}
+					}
+				}
+			} else {
+				// Find dataset for title
+				for (const [, datasets] of Object.entries(allMapLayers)) {
+					if (Array.isArray(datasets)) {
+						dataset = datasets.find(d => d.id === datasetId);
+						if (dataset) break;
 					}
 				}
 			}
@@ -400,6 +687,14 @@
 
 			layer.set('layerPath', layerPath);
 			
+			// Store layer config for legend fetching
+			layerConfigs[layerPath] = {
+				url: layerConfig.url,
+				layerIndex: layerIndex,
+				name: layerConfig.name || dataset?.title || datasetId,
+				mapserver: layerConfig.mapserver || 'arcgis'
+			};
+			
 			// Insert at index 1 to keep the first layer on top
 			// If this is the first layer, just add it normally
 			if (layerOrder.length === 1) {
@@ -412,6 +707,7 @@
 			mapLayers[layerPath] = layer;
 		}
 		selectedLayers = new Set(selectedLayers);
+		layerConfigs = { ...layerConfigs };
 	}
 
 	// Remove layer from map
@@ -428,7 +724,11 @@
 			map.removeLayer(mapLayers[layerPath]);
 			delete mapLayers[layerPath];
 		}
+		delete layerConfigs[layerPath];
+		delete legendData[layerPath];
 		selectedLayers = new Set(selectedLayers);
+		layerConfigs = { ...layerConfigs };
+		legendData = { ...legendData };
 	}
 
 	// Toggle layer visibility
@@ -486,6 +786,64 @@
 		layerOpacity[layerPath] = opacity;
 		mapLayers[layerPath].setOpacity(opacity);
 		layerOpacity = { ...layerOpacity };
+	}
+	
+	// Fetch legend data for selected layers
+	async function fetchLegendData() {
+		// Clear any existing timeout
+		if (legendFetchTimeout) {
+			clearTimeout(legendFetchTimeout);
+		}
+		
+		// Debounce the legend fetch to prevent rapid requests
+		legendFetchTimeout = setTimeout(async () => {
+			// Clear legend data first
+			legendData = {};
+			
+			// Fetch legend for each selected layer
+			for (const layerPath of layerOrder) {
+				const config = layerConfigs[layerPath];
+				if (!config) continue;
+				
+				try {
+					if (config.mapserver === 'arcgis') {
+						const legendUrl = `${config.url}/legend?f=json`;
+						const response = await fetch(legendUrl);
+						const data = await response.json();
+						
+						const targetLayerId = parseInt(String(config.layerIndex));
+						const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
+						
+						if (layerLegend) {
+							legendData[layerPath] = {
+								name: config.name,
+								items: layerLegend.legend.map((item: any) => ({
+									label: item.label,
+									imageData: `data:image/png;base64,${item.imageData}`
+								}))
+							};
+						}
+					} else {
+						// Handle WMS/GeoServer layers
+						const legendUrl = `${config.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${config.layerIndex}`;
+						
+						legendData[layerPath] = {
+							name: config.name,
+							items: [
+								{
+									label: config.name,
+									imageUrl: legendUrl
+								}
+							]
+						};
+					}
+				} catch (error) {
+					console.error(`Error fetching legend for ${layerPath}:`, error);
+				}
+			}
+			
+			legendData = { ...legendData };
+		}, 300); // 300ms debounce delay
 	}
 
 	// Throttle function to reduce rapid state updates
@@ -724,9 +1082,35 @@
 				}
 			});
 			resizeObserver.observe(mapContainer);
+			
+			// Also observe right map container when swipe mode is active
+			const rightMapObserver = new ResizeObserver(() => {
+				if (mapRight) {
+					setTimeout(() => {
+						if (mapRight) {
+							mapRight.updateSize();
+						}
+					}, 100);
+				}
+			});
+			
+			// Watch for swipe mode changes to observe right map
+			const checkSwipeMode = setInterval(() => {
+				if (swipeMode && mapContainerRight) {
+					try {
+						rightMapObserver.observe(mapContainerRight);
+					} catch (e) {
+						// Already observing
+					}
+				} else {
+					rightMapObserver.disconnect();
+				}
+			}, 500);
 
 			return () => {
+				clearInterval(checkSwipeMode);
 				resizeObserver.disconnect();
+				rightMapObserver.disconnect();
 			};
 		}
 	});
@@ -738,6 +1122,11 @@
 			document.removeEventListener('mozfullscreenchange', fullscreenHandler);
 			document.removeEventListener('MSFullscreenChange', fullscreenHandler);
 			fullscreenHandler = null;
+		}
+
+		if (mapRight) {
+			mapRight.dispose();
+			mapRight = null;
 		}
 
 		if (map) {
@@ -756,6 +1145,71 @@
 					toggleLayer('land-cover-2022', [], layerConfig);
 				}
 			}
+		}
+	});
+	
+	// Update swipe layers when layerOrder changes
+	$effect(() => {
+		if (swipeMode && layerOrder.length >= 0) {
+			updateSwipeLayers();
+		}
+	});
+	
+	// Fetch legends when layerOrder or layerConfigs change
+	$effect(() => {
+		if (layerOrder.length > 0 && Object.keys(layerConfigs).length > 0) {
+			fetchLegendData();
+		} else {
+			legendData = {};
+		}
+	});
+	
+	// No map size updates needed when swipe position changes
+	// Both maps are full width, only clipping changes via CSS
+	
+	// Watch swipeMode to ensure maps are properly initialized when mode changes
+	$effect(() => {
+		if (swipeMode && map && mapContainer) {
+			// When swipe mode is enabled, ensure both maps are full width and properly initialized
+			setTimeout(() => {
+				if (map && mapContainer) {
+					// Ensure map is pointing to the correct container
+					map.setTarget(mapContainer);
+					// Both maps should be full width - update size once to ensure proper rendering
+					map.updateSize();
+					map.render();
+				}
+				if (mapRight) {
+					// Right map is also full width
+					mapRight.updateSize();
+					mapRight.render();
+				}
+			}, 150);
+		} else if (!swipeMode && map && mapContainer) {
+			// When swipe mode is disabled, ensure map target is correct
+			setTimeout(() => {
+				if (map && mapContainer) {
+					map.setTarget(mapContainer);
+					map.updateSize();
+					map.render();
+				}
+			}, 150);
+		}
+	});
+	
+	// Add global mouse event listeners for divider dragging
+	$effect(() => {
+		if (isDraggingDivider) {
+			const handleMouseMove = (e: MouseEvent) => handleDividerMouseMove(e);
+			const handleMouseUp = () => handleDividerMouseUp();
+			
+			document.addEventListener('mousemove', handleMouseMove);
+			document.addEventListener('mouseup', handleMouseUp);
+			
+			return () => {
+				document.removeEventListener('mousemove', handleMouseMove);
+				document.removeEventListener('mouseup', handleMouseUp);
+			};
 		}
 	});
 </script>
@@ -1111,6 +1565,18 @@
 						{/each}
 					{:else}
 						<!-- Selected Layers Tab - Display in order they were added -->
+						<!-- Swipe Mode Toggle Button -->
+						<div class="mb-4">
+							<button
+								class="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium transition-colors hover:bg-gray-50 {swipeMode ? 'bg-blue-100 border-blue-500 text-blue-700' : 'text-gray-700'}"
+								onclick={toggleSwipeMode}
+								title={swipeMode ? 'Stop Swipe Mode' : 'Start Swipe Mode'}
+							>
+								<Columns class="h-4 w-4" />
+								<span>{swipeMode ? 'Stop Swipe' : 'Start Swipe'}</span>
+							</button>
+						</div>
+						
 						{#each layerOrder as layerPath, index}
 							{@const [datasetId, ...pathParts] = layerPath.split('|')}
 							{@const dataset = (() => {
@@ -1262,10 +1728,47 @@
 				<div
 					class="relative flex-1 min-h-0 overflow-hidden rounded-xl border border-gray-200"
 				>
-					<div
-						bind:this={mapContainer}
-						class="h-full w-full"
-					></div>
+					{#if swipeMode}
+						<!-- Swipe Mode: Overlay View with Clipping -->
+						<div class="relative h-full w-full">
+							<!-- Right Map (Other Layers) - Full width, behind -->
+							<div
+								bind:this={mapContainerRight}
+								class="absolute inset-0 h-full w-full"
+							></div>
+							
+							<!-- Left Map (Top Layer) - Full width, clipped from right -->
+							<div
+								bind:this={mapContainer}
+								class="absolute inset-0 h-full w-full z-10"
+								style="clip-path: inset(0 {100 - swipePosition}% 0 0);"
+							></div>
+							
+							<!-- Divider -->
+							<button
+								type="button"
+								class="absolute top-0 bottom-0 w-1 bg-black cursor-col-resize z-30 flex items-center justify-center hover:bg-gray-800 transition-colors border-0 p-0"
+								style="left: {swipePosition}%; transform: translateX(-50%);"
+								onmousedown={handleDividerMouseDown}
+								aria-label="Drag to adjust swipe position"
+								title="Drag to adjust swipe position"
+							>
+								<div class="w-8 h-12 bg-gray-700 rounded flex items-center justify-center shadow-lg pointer-events-none">
+									<div class="flex flex-col gap-0.5">
+										<div class="w-3 h-0.5 bg-white"></div>
+										<div class="w-3 h-0.5 bg-white"></div>
+										<div class="w-3 h-0.5 bg-white"></div>
+									</div>
+								</div>
+							</button>
+						</div>
+					{:else}
+						<!-- Normal Mode: Single Map -->
+						<div
+							bind:this={mapContainer}
+							class="h-full w-full relative"
+						></div>
+					{/if}
 
 					<!-- Map Controls -->
 					<!-- Home Reset Button - positioned below zoom controls -->
@@ -1275,6 +1778,10 @@
 							if (map) {
 								map.getView().setCenter(fromLonLat(HKH_CENTER));
 								map.getView().setZoom(HKH_ZOOM);
+							}
+							if (mapRight) {
+								mapRight.getView().setCenter(fromLonLat(HKH_CENTER));
+								mapRight.getView().setZoom(HKH_ZOOM);
 							}
 						}}
 						title="Reset to Home View"
@@ -1294,7 +1801,7 @@
 					<!-- Basemap Switcher Panel -->
 					{#if basemapPanelOpen}
 						<div
-							class="absolute top-12 right-2 z-20 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+							class="absolute top-10 right-2 z-20 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
 						>
 							<div class="p-3">
 								<h3 class="mb-2 text-sm font-semibold">Basemap</h3>
@@ -1322,6 +1829,187 @@
 							</div>
 						</div>
 					{/if}
+					
+					<!-- Legend Panel(s) -->
+					{#if layerOrder.some(path => legendData[path] && layerVisibility[path] !== false)}
+						{#if swipeMode}
+							<!-- Swipe Mode: Two separate legends -->
+							<!-- Left Map Legend (Top Layer) -->
+							{#if layerOrder[0] && legendData[layerOrder[0]] && layerVisibility[layerOrder[0]] !== false}
+								{@const topLayerPath = layerOrder[0]}
+								{@const topLegend = legendData[topLayerPath]}
+								<div
+									class="absolute bottom-2 left-2 z-20 w-56 max-h-[50vh] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+								>
+									<!-- Legend Header -->
+									<button
+										class="flex w-full items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+										onclick={() => (leftLegendCollapsed = !leftLegendCollapsed)}
+									>
+										<div class="flex items-center gap-2">
+											<Info class="h-4 w-4 text-gray-600" />
+											<h3 class="text-sm font-semibold text-gray-800">Left Map</h3>
+										</div>
+										{#if leftLegendCollapsed}
+											<ChevronRight class="h-4 w-4 text-gray-600" />
+										{:else}
+											<ChevronDown class="h-4 w-4 text-gray-600" />
+										{/if}
+									</button>
+									
+									{#if !leftLegendCollapsed}
+										<div class="max-h-[calc(50vh-3.5rem)] overflow-y-auto border-t border-gray-100">
+											<div class="p-3">
+												<h4 class="mb-2 text-xs font-semibold text-gray-700">{topLegend.name}</h4>
+												<div class="space-y-1.5">
+													{#each topLegend.items as item}
+														<div class="flex items-center gap-2">
+															{#if item.imageData}
+																<img
+																	src={item.imageData}
+																	alt={item.label}
+																	class="h-4 w-4 flex-shrink-0"
+																/>
+															{:else if item.imageUrl}
+																<img
+																	src={item.imageUrl}
+																	alt={item.label}
+																	class="h-4 w-4 flex-shrink-0"
+																	onerror={(e) => {
+																		(e.target as HTMLImageElement).style.display = 'none';
+																	}}
+																/>
+															{/if}
+															<span class="text-xs text-gray-600">{item.label}</span>
+														</div>
+													{/each}
+												</div>
+											</div>
+										</div>
+									{/if}
+								</div>
+							{/if}
+							
+							<!-- Right Map Legend (Other Layers) -->
+							{@const otherLayers = layerOrder.slice(1).filter(path => legendData[path] && layerVisibility[path] !== false)}
+							{#if otherLayers.length > 0}
+								<div
+									class="absolute bottom-2 right-2 z-20 w-56 max-h-[50vh] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+								>
+									<!-- Legend Header -->
+									<button
+										class="flex w-full items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+										onclick={() => (rightLegendCollapsed = !rightLegendCollapsed)}
+									>
+										<div class="flex items-center gap-2">
+											<Info class="h-4 w-4 text-gray-600" />
+											<h3 class="text-sm font-semibold text-gray-800">Right Map</h3>
+										</div>
+										{#if rightLegendCollapsed}
+											<ChevronRight class="h-4 w-4 text-gray-600" />
+										{:else}
+											<ChevronDown class="h-4 w-4 text-gray-600" />
+										{/if}
+									</button>
+									
+									{#if !rightLegendCollapsed}
+										<div class="max-h-[calc(50vh-3.5rem)] overflow-y-auto border-t border-gray-100">
+											{#each otherLayers as layerPath}
+												{@const legend = legendData[layerPath]}
+												<div class="border-b border-gray-100 last:border-b-0">
+													<div class="p-3">
+														<h4 class="mb-2 text-xs font-semibold text-gray-700">{legend.name}</h4>
+														<div class="space-y-1.5">
+															{#each legend.items as item}
+																<div class="flex items-center gap-2">
+																	{#if item.imageData}
+																		<img
+																			src={item.imageData}
+																			alt={item.label}
+																			class="h-4 w-4 flex-shrink-0"
+																		/>
+																	{:else if item.imageUrl}
+																		<img
+																			src={item.imageUrl}
+																			alt={item.label}
+																			class="h-4 w-4 flex-shrink-0"
+																			onerror={(e) => {
+																				(e.target as HTMLImageElement).style.display = 'none';
+																			}}
+																		/>
+																	{/if}
+																	<span class="text-xs text-gray-600">{item.label}</span>
+																</div>
+															{/each}
+														</div>
+													</div>
+												</div>
+											{/each}
+										</div>
+									{/if}
+								</div>
+							{/if}
+						{:else}
+							<!-- Normal Mode: Single legend -->
+							<div
+								class="absolute bottom-2 left-2 z-20 w-64 max-h-[60vh] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+							>
+								<!-- Legend Header -->
+								<button
+									class="flex w-full items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+									onclick={() => (legendCollapsed = !legendCollapsed)}
+								>
+									<div class="flex items-center gap-2">
+										<Info class="h-4 w-4 text-gray-600" />
+										<h3 class="text-sm font-semibold text-gray-800">Legends</h3>
+									</div>
+									{#if legendCollapsed}
+										<ChevronRight class="h-4 w-4 text-gray-600" />
+									{:else}
+										<ChevronDown class="h-4 w-4 text-gray-600" />
+									{/if}
+								</button>
+								
+								{#if !legendCollapsed}
+									<div class="max-h-[calc(60vh-3.5rem)] overflow-y-auto border-t border-gray-100">
+										{#each layerOrder as layerPath}
+											{#if legendData[layerPath] && layerVisibility[layerPath] !== false}
+												{@const legend = legendData[layerPath]}
+												<div class="border-b border-gray-100 last:border-b-0">
+													<div class="p-3">
+														<h4 class="mb-2 text-xs font-semibold text-gray-700">{legend.name}</h4>
+														<div class="space-y-1.5">
+															{#each legend.items as item}
+																<div class="flex items-center gap-2">
+																	{#if item.imageData}
+																		<img
+																			src={item.imageData}
+																			alt={item.label}
+																			class="h-4 w-4 flex-shrink-0"
+																		/>
+																	{:else if item.imageUrl}
+																		<img
+																			src={item.imageUrl}
+																			alt={item.label}
+																			class="h-4 w-4 flex-shrink-0"
+																			onerror={(e) => {
+																				(e.target as HTMLImageElement).style.display = 'none';
+																			}}
+																		/>
+																	{/if}
+																	<span class="text-xs text-gray-600">{item.label}</span>
+																</div>
+															{/each}
+														</div>
+													</div>
+												</div>
+											{/if}
+										{/each}
+									</div>
+								{/if}
+							</div>
+						{/if}
+					{/if}
 				</div>
 			</div>
 		</div>
@@ -1334,6 +2022,19 @@
 	}
 
 	:global(.ol-viewport) {
+		width: 100% !important;
+		height: 100% !important;
+	}
+
+	/* Ensure map containers in swipe mode have proper dimensions */
+	:global(.ol-map) {
+		width: 100% !important;
+		height: 100% !important;
+	}
+
+	/* Ensure map containers fill their parent in swipe mode */
+	:global(.ol-viewport),
+	:global(.ol-overlaycontainer-stopevent) {
 		width: 100% !important;
 		height: 100% !important;
 	}
