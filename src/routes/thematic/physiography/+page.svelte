@@ -504,43 +504,43 @@
 				// 	}
 				// }
 			]
+		},
+		{
+			id: 'slope',
+			title: 'Slope',
+			description: 'Slope data for the HKH region',
+			control_type: 'simple',
+			map_layers: {
+				default: [
+					{
+						id: 'slope-layer',
+						name: 'Slope',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer',
+						layerIndex: '6',
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
+		},
+		{
+			id: 'aspect',
+			title: 'Aspect',
+			description: 'Aspect data for the HKH region',
+			control_type: 'simple',
+			map_layers: {
+				default: [
+					{
+						id: 'aspect-layer',
+						name: 'Aspect',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer',
+						layerIndex: '7',
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
 		}
-		// {
-		// 	id: 'slope',
-		// 	title: 'Slope',
-		// 	description: 'Slope data for the HKH region',
-		// 	control_type: 'simple',
-		// 	map_layers: {
-		// 		default: [
-		// 			{
-		// 				id: 'slope-layer',
-		// 				name: 'Slope',
-		// 				url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-		// 				layerIndex: 'springs:Slope',
-		// 				mapserver: 'geoserver'
-		// 			}
-		// 		]
-		// 	},
-		// 	charts: []
-		// },
-		// {
-		// 	id: 'aspect',
-		// 	title: 'Aspect',
-		// 	description: 'Aspect data for the HKH region',
-		// 	control_type: 'simple',
-		// 	map_layers: {
-		// 		default: [
-		// 			{
-		// 				id: 'aspect-layer',
-		// 				name: 'Aspect',
-		// 				url: 'https://tethys.icimod.org:8443/geoserver/springs/wms',
-		// 				layerIndex: 'springs:Aspect',
-		// 				mapserver: 'geoserver'
-		// 			}
-		// 		]
-		// 	},
-		// 	charts: []
-		// }
 	];
 
 	const questions: any = [
@@ -575,17 +575,17 @@
 			dataset_id: 'mountain-region',
 			info: 'Mountain Region',
 			source: ''
+		},
+		{
+			id: 'map-indicator-3',
+			title: 'Slope',
+			dataset_id: 'slope'
+		},
+		{
+			id: 'map-indicator-4',
+			title: 'Aspect',
+			dataset_id: 'aspect'
 		}
-		// {
-		// 	id: 'map-indicator-3',
-		// 	title: 'Slope',
-		// 	dataset_id: 'slope'
-		// },
-		// {
-		// 	id: 'map-indicator-4',
-		// 	title: 'Aspect',
-		// 	dataset_id: 'aspect'
-		// }
 	];
 
 	// Track selected question - default to first question

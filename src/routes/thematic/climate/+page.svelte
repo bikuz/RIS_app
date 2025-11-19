@@ -1059,7 +1059,7 @@
 			},
 			default_option: {
 				trend_analysis: 'overall',
-				season: 'spring'
+				season: 'annual'
 			},
 			charts: [
 				{
@@ -3204,7 +3204,7 @@
 			},
 			default_option: {
 				trend_analysis: 'overall',
-				season: 'spring'
+				season: 'annual'
 			},
 			charts: [
 				{
@@ -3808,7 +3808,7 @@
 			},
 			default_option: {
 				trend_analysis: 'overall',
-				season: 'spring'
+				season: 'annual'
 			},
 			charts: [],
 			map_layers: {
@@ -3919,7 +3919,7 @@
 			},
 			default_option: {
 				trend_analysis: 'overall',
-				season: 'spring'
+				season: 'annual'
 			},
 			charts: [],
 			map_layers: {
@@ -4124,7 +4124,7 @@
 	let temperatureRiseThreshold = $state<'0.5' | '1' | '1.5' | '2' | '2.5'>('1.5');
 
 	// Track seasonal selection for nested radio controls - dynamic based on dataset control_options
-	let selectedSeason = $state<string>('spring');
+	let selectedSeason = $state<string>('annual');
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');
