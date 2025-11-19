@@ -1241,11 +1241,12 @@
 					<!-- Back Button -->
 					<button
 						onclick={() => {
-							if (browser && window.history.length > 1) {
-								window.history.back();
-							} else {
-								goto(`${base}/`);
-							}
+							goto(`${base}/`);
+							// if (browser && window.history.length > 1) {
+							// 	window.history.back();
+							// } else {
+							// 	goto(`${base}/`);
+							// }
 						}}
 						class="flex-shrink-0 flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gradient-to-r from-blue-500 to-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:from-blue-600 hover:to-green-600 hover:shadow-md"
 						title="Go Back"

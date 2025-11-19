@@ -87,7 +87,7 @@
 			<div class="w-full lg:w-[15%] h-48 sm:h-64 md:h-80 lg:h-[550px] flex items-center justify-center">
 				<div class="flex flex-col gap-4 w-full">
 					<!-- Interactive map (standalone) -->
-					<a href="/integrated" class="group flex items-center gap-2 px-4 py-2.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200/50 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 hover:shadow-xl">
+					<a href="/ris/integrated" class="group flex items-center gap-2 px-4 py-2.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200/50 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 hover:shadow-xl">
 						<Map class="h-4 w-4 text-blue-600 group-hover:text-blue-700" />
 						<span class="text-sm font-medium text-gray-700 group-hover:text-blue-700 whitespace-nowrap">Integrated Viewer</span>
 					</a>
@@ -103,6 +103,10 @@
 							<a href="https://smog.icimod.org/apps/airquality/" target="_blank" class="group flex items-center gap-2 px-4 py-2.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200/50 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 hover:shadow-xl">
 								<Wind class="h-4 w-4 text-blue-600 group-hover:text-blue-700" />
 								<span class="text-sm font-medium text-gray-700 group-hover:text-blue-700 whitespace-nowrap">AirQuality</span>
+							</a>
+							<a href="https://icimod.maps.arcgis.com/apps/instant/streamflowviewer/index.html?appid=7f282e15d6444679add88d9313c3a6bc" target="_blank" class="group flex items-center gap-2 px-4 py-2.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200/50 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 hover:shadow-xl">
+								<Wind class="h-4 w-4 text-blue-600 group-hover:text-blue-700" />
+								<span class="text-sm font-medium text-gray-700 group-hover:text-blue-700 whitespace-nowrap">Streamflow</span>
 							</a>
 						</div>
 					</div>
