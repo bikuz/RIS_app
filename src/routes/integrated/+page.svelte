@@ -1748,17 +1748,20 @@
 							<!-- Divider -->
 							<button
 								type="button"
-								class="absolute top-0 bottom-0 w-1 bg-black cursor-col-resize z-30 flex items-center justify-center hover:bg-gray-800 transition-colors border-0 p-0"
+								class="absolute top-0 bottom-0 w-12 cursor-col-resize z-30 flex items-center justify-center border-0 p-0 overflow-visible"
 								style="left: {swipePosition}%; transform: translateX(-50%);"
 								onmousedown={handleDividerMouseDown}
 								aria-label="Drag to adjust swipe position"
 								title="Drag to adjust swipe position"
 							>
-								<div class="w-8 h-12 bg-gray-700 rounded flex items-center justify-center shadow-lg pointer-events-none">
-									<div class="flex flex-col gap-0.5">
-										<div class="w-3 h-0.5 bg-white"></div>
-										<div class="w-3 h-0.5 bg-white"></div>
-										<div class="w-3 h-0.5 bg-white"></div>
+								<!-- Visible divider line -->
+								<div class="absolute top-0 bottom-0 w-0.5 bg-black pointer-events-none z-0"></div>
+								<!-- Holder with dots -->
+								<div class="relative w-4 h-12 bg-gray-700 rounded flex items-center justify-center shadow-lg pointer-events-none z-10">
+									<div class="flex flex-col gap-1.5">
+										<div class="w-1 h-1 bg-gray-300 rounded-full"></div>
+										<div class="w-1 h-1 bg-gray-300 rounded-full"></div>
+										<div class="w-1 h-1 bg-gray-300 rounded-full"></div>
 									</div>
 								</div>
 							</button>
