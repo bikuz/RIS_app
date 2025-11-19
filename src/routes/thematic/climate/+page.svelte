@@ -1059,7 +1059,7 @@
 			},
 			default_option: {
 				trend_analysis: 'overall',
-				season: 'spring'
+				season: 'annual'
 			},
 			charts: [
 				{
@@ -3204,7 +3204,7 @@
 			},
 			default_option: {
 				trend_analysis: 'overall',
-				season: 'spring'
+				season: 'annual'
 			},
 			charts: [
 				{
@@ -3808,7 +3808,7 @@
 			},
 			default_option: {
 				trend_analysis: 'overall',
-				season: 'spring'
+				season: 'annual'
 			},
 			charts: [],
 			map_layers: {
@@ -3919,7 +3919,7 @@
 			},
 			default_option: {
 				trend_analysis: 'overall',
-				season: 'spring'
+				season: 'annual'
 			},
 			charts: [],
 			map_layers: {
@@ -4061,42 +4061,42 @@
 			id: 'map-indicator-2',
 			title: 'Temperature Trend',
 			dataset_id: 'seasonal-temp-trend',
-			info: 'It represents  the spatial pattern of mean temperature trend for each climatic season: Spring (March-April-May), Summer (June-July-August), Autumn (September-October-November), and Winter (December-January-February)over the years(1995-2024).Each pixel on the map represents the rate of seasonal temperature change per decade, derived using Sen-Median trend analysis and Mann-Kendall (MK) test.The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
+			info: 'The map represents the spatial pattern of annual and seasonal (Spring, Summer, Autumn, Winter) temperature trends from 1995 to 2024.Each pixel represents the rate of temperature change per decade, derived using Sen-Median trend analysis and the Mann-Kendall (MK) test. The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-3',
 			title: 'Annual Temperature Anomaly',
 			dataset_id: 'annual-temp-anamoly-series',
-			info: 'Annual Temperature Anamoly represents the timeseries map of temperature anamoly from 1995 to 2024. The anamoly value is calculated by subtracting the long-term baseline value from each years mean temperature, with the baseline defined as the average temperature over the 34-year period from 1991 to 2024.',
+			info: 'The map represents the timeseries map of temperature anamoly from 1995 to 2024. The anamoly value is calculated by subtracting the long-term baseline value from each years mean temperature, with the baseline defined as the average temperature over the 34-year period from 1991 to 2024.',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-4',
 			title: 'Minimum Temperature Trend',
 			dataset_id: 'min-temp-trend-10y',
-			info: 'The temperature trend represents the spatial pattern of minimum annual and seasonal (Spring, Summer, Autumn, Winter) temperature trends from 1995 to 2024.Each pixel represents the rate of temperature change per decade, derived using Sen-Median trend analysis and the Mann-Kendall (MK) test. The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
+			info: 'Minimum Temperature Trend represents the spatial pattern of minimum annual and seasonal (Spring, Summer, Autumn, Winter) temperature trends from 1995 to 2024.Each pixel represents the rate of temperature change per decade, derived using Sen-Median trend analysis and the Mann-Kendall (MK) test. The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-5',
 			title: 'Maximum Temperature Trend',
 			dataset_id: 'max-temp-trend-10y',
-			info: 'The temperature trend represents the spatial pattern of maximum annual and seasonal (Spring, Summer, Autumn, Winter) temperature trends from 1995 to 2024.Each pixel represents the rate of temperature change per decade, derived using Sen-Median trend analysis and the Mann-Kendall (MK) test. The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
+			info: 'Maximum Temperature Trend represents the spatial pattern of maximum annual and seasonal (Spring, Summer, Autumn, Winter) temperature trends from 1995 to 2024.Each pixel represents the rate of temperature change per decade, derived using Sen-Median trend analysis and the Mann-Kendall (MK) test. The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-5',
 			title: 'Precipitation Trend',
 			dataset_id: 'seasonal-ppt-trend',
-			info: 'It Represents  the spatial pattern of precipitation trend for each climatic season: Spring (March-April-May), Summer (June-July-August), Autumn (September-October-November), and Winter (December-January-February)over the years(1995-2024).Each pixel on the map represents the rate of seasonal precipitation change per decade, derived using Sen-Median trend analysis and Mann-Kendall (MK) test.The "Overall" results show the calculated trend for every pixel across the region, while the "Significant" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
+			info: 'The map represents the spatial pattern of annual and seasonal (Spring, Summer, Autumn, Winter) precipitation trends from 1995 to 2024. Each pixel represents the rate of precipitation change per decade, derived using Sen-Median trend analysis and the Mann-Kendall (MK) test. The ""Overall"" results show the calculated trend for every pixel across the region, while the ""Significant"" represent only trends that have passed the Mann-Kendall significance test with a 95% confidence level (p < 0.05)',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
 			id: 'map-indicator-6',
 			title: 'Annual Precipitation Anomaly',
 			dataset_id: 'annual-ppt-anamoly-series',
-			info: 'Annual Precipitation Anamoly represents the timeseries map of precipitation anamoly from 1995 to 2024. The anamoly value is calculated by subtracting the long-term baseline value from each years total precipitation , with the baseline value defined as the average precipitation over the 34-year period from 1991 to 2024.',
+			info: 'The map represents the timeseries map of precipitation anamoly from 1995 to 2024. The anamoly value is calculated by subtracting the long-term baseline value from each years total precipitation , with the baseline value defined as the average precipitation over the 34-year period from 1991 to 2024.',
 			source: 'ERA5-Land ( https://cds.climate.copernicus.eu)'
 		},
 		{
@@ -4124,7 +4124,7 @@
 	let temperatureRiseThreshold = $state<'0.5' | '1' | '1.5' | '2' | '2.5'>('1.5');
 
 	// Track seasonal selection for nested radio controls - dynamic based on dataset control_options
-	let selectedSeason = $state<string>('spring');
+	let selectedSeason = $state<string>('annual');
 
 	// Layout states: 'default' | 'hide-left' | 'left-full'
 	let layoutState = $state('default');

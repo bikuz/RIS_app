@@ -438,14 +438,14 @@
 			id: 'map-indicator-1',
 			title: 'Land Cover Distribution 2022',
 			dataset_id: 'land-cover-2022',
-			info: 'The landcover distribution map shows the physical or biophysical characteristics of the HKH region. This dataset is developed by ICIMOD under its SERVIR–HKH Initiative, using remote-sensing and Google Earth Engine, and collaborating with  partner organizations.',
+			info: 'The map represents the physical or biophysical characteristics of the HKH region. This dataset is developed by ICIMOD under its SERVIR–HKH Initiative, using remote-sensing and Google Earth Engine, and collaborating with  partner organizations.',
 			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
 			id: 'map-indicator-3',
 			title: 'NDVI Trend (2000-2023)',
 			dataset_id: 'ndvi-trend',
-			info: 'NDVI Trend (2000-2023) represents the spatial pattern of vegetation greenness change over the past 24 years (2000–2023). Each pixel indicates the rate of NDVI change per year, derived using the Sen-Median trend analysis and Mann-Kendall (MK) test.',
+			info: 'The map represents the spatial pattern of vegetation greenness change over the past 24 years (2000–2023). Each pixel indicates the rate of NDVI change per year, derived using the Sen-Median trend analysis and Mann-Kendall (MK) test.',
 			source: 'MODIS'
 		},
 		{
@@ -459,7 +459,7 @@
 			id: 'map-indicator-4',
 			title: 'EVI Trend (2000-2023)',
 			dataset_id: 'evi-trend',
-			info: 'EVI Trend (2000-2023) represents the spatial pattern of vegetation greenness change over the past 24 years (2000–2023). Each pixel indicates the rate of EVI change per year, derived using using the Sen-Median trend analysis and Mann-Kendall (MK) test.',
+			info: 'The map represents the spatial pattern of vegetation greenness change over the past 24 years (2000–2023). Each pixel indicates the rate of EVI change per year, derived using using the Sen-Median trend analysis and Mann-Kendall (MK) test.',
 			source: 'MODIS'
 		},
 		{
