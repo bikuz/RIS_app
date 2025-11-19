@@ -490,10 +490,31 @@
 
 	// Throttle function to reduce rapid state updates
 	let dragOverUpdatePending = false;
+	// Store original element bounds to prevent flickering when element scales
+	let originalElementBounds = $state<Record<number, { top: number; height: number }>>({});
+	// Store last drop position to prevent rapid toggling
+	let lastDropPosition = $state<{ index: number; position: 'above' | 'below' } | null>(null);
 	
 	// Drag and drop handlers for reordering layers
 	function handleDragStart(index: number, event: DragEvent) {
 		draggedLayerIndex = index;
+		originalElementBounds = {};
+		lastDropPosition = null;
+		
+		// Store original bounds for all elements before any transformations
+		setTimeout(() => {
+			const allItems = document.querySelectorAll('[role="listitem"]');
+			allItems.forEach((item, idx) => {
+				if (idx < layerOrder.length) {
+					const itemRect = item.getBoundingClientRect();
+					originalElementBounds[idx] = {
+						top: itemRect.top,
+						height: itemRect.height
+					};
+				}
+			});
+		}, 0);
+		
 		if (event.dataTransfer) {
 			event.dataTransfer.effectAllowed = 'move';
 			event.dataTransfer.setData('text/html', String(index));
@@ -514,21 +535,52 @@
 				const mouseY = event.clientY;
 				
 				requestAnimationFrame(() => {
+					// Store original bounds on first dragOver if not already stored
+					if (target && !originalElementBounds[index]) {
+						const rect = target.getBoundingClientRect();
+						originalElementBounds[index] = {
+							top: rect.top,
+							height: rect.height
+						};
+					}
+					
 					// Only update dragOverIndex if it actually changes
 					if (dragOverIndex !== index) {
 						dragOverIndex = index;
 					}
 					
-					// Update drop position based on mouse position (for drop indicator line only)
-					if (target) {
-						const rect = target.getBoundingClientRect();
-						const centerY = rect.top + rect.height / 2;
-						const newPosition = mouseY < centerY ? 'above' : 'below';
-						// Only update if position actually changes to reduce flickering
+					// Update drop position based on mouse position using original bounds
+					// This prevents flickering when the element scales down
+					if (target && originalElementBounds[index]) {
+						const bounds = originalElementBounds[index];
+						const centerY = bounds.top + bounds.height / 2;
+						const distanceFromCenter = mouseY - centerY;
+						
+						// Use a threshold (8px) to create a dead zone near the center
+						// This prevents rapid toggling when mouse is between original and scaled positions
+						const threshold = 8;
+						
+						let newPosition: 'above' | 'below';
+						if (Math.abs(distanceFromCenter) < threshold) {
+							// In the dead zone - keep the last position if we have one
+							if (lastDropPosition?.index === index) {
+								newPosition = lastDropPosition.position;
+							} else {
+								// Default to 'below' if no previous position
+								newPosition = 'below';
+							}
+						} else {
+							// Outside dead zone - determine position normally
+							newPosition = distanceFromCenter < 0 ? 'above' : 'below';
+						}
+						
+						// Only update if position actually changes
 						if (dropPosition !== newPosition) {
 							dropPosition = newPosition;
+							lastDropPosition = { index, position: newPosition };
 						}
 					}
+					
 					dragOverUpdatePending = false;
 				});
 			}
@@ -538,8 +590,12 @@
 	function handleDragLeave() {
 		// Use requestAnimationFrame to batch the state update
 		requestAnimationFrame(() => {
-			dragOverIndex = null;
-			dropPosition = null;
+			// Only clear if we're not currently dragging over another element
+			// This prevents flickering when moving between elements
+			if (dragOverIndex === null) {
+				dropPosition = null;
+				lastDropPosition = null;
+			}
 		});
 	}
 
@@ -602,6 +658,8 @@
 		draggedLayerIndex = null;
 		dragOverIndex = null;
 		dropPosition = null;
+		originalElementBounds = {};
+		lastDropPosition = null;
 	}
 
 	function initializeMap() {
