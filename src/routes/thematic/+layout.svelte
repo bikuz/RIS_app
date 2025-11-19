@@ -65,7 +65,11 @@
 		{
 			label: 'Air Quality',
 			url: 'https://smog.icimod.org/apps/airquality/'
-		}
+		},
+		{
+			label: 'Streamflow',
+			url: 'https://icimod.maps.arcgis.com/apps/instant/streamflowviewer/index.html?appid=7f282e15d6444679add88d9313c3a6bc'
+		},
 		// {
 		// 	label: 'SERVIR Hindu Kush Himalaya',
 		// 	url: 'https://servir.icimod.org'
