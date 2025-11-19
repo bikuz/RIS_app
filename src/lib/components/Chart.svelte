@@ -311,8 +311,10 @@
 						fontSize: '12px'
 					},
 					formatter: function (this: any) {
+						// Use point.category if available (for column charts), otherwise use this.x
+						const label = this.point?.category || this.key || this.x;
 						return `<b>${this.series.name}</b><br/>
-                                ${this.x}: <b>${this.y}${unit ? ' ' + unit : ''}</b>`;
+                                ${label}: <b>${this.y}${unit ? ' ' + unit : ''}</b>`;
 					}
 				};
 			}

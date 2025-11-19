@@ -361,40 +361,120 @@
 			id: 'population-2025',
 			charts: [
 				{
-					title: 'Distribution of Population Across HKH',
+					title: 'Population Distribution by Age and Sex in HKH Region',
+					// subtitle: 'Source: WorldPop Global Population Data',
+					chart_type: 'bar',
+					isPyramid: true,
+					chart_data: {
+						categories: [
+							'0-1',
+							'1-4',
+							'5-9',
+							'10-14',
+							'15-19',
+							'20-24',
+							'25-29',
+							'30-34',
+							'35-39',
+							'40-44',
+							'45-49',
+							'50-54',
+							'55-59',
+							'60-64',
+							'65-69',
+							'70-74',
+							'75-79',
+							'80-84',
+							'85-89',
+							'90+'
+						],
+						series: [
+							{
+								name: 'Male',
+								data: [
+									-2583174, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
+									-8535552, -7724644, -6844482, -5837920, -5349179, -4440363, -3354569, -2507988,
+									-1866760, -1144430, -566243, -228994, -98160
+								],
+								color: '#3b82f6'
+							},
+							{
+								name: 'Female',
+								data: [
+									2441938, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182,
+									7578636, 6765130, 5765991, 5317287, 4448304, 3438076, 2685983, 2179466, 1411112,
+									749921, 334153, 169997
+								],
+								color: '#ef4444'
+							}
+						]
+					}
+				},
+				{
+					title: 'Country-wise Population Distribution by Gender in HKH Region',
 					chart_type: 'column',
+					isStacked: true,
 					yAxisTitle: 'Population',
 					chart_data: {
 						categories: [
 							'Afghanistan',
-							'Bangladesh',
-							'Bhutan',
-							'China',
+							'Pakistan',
 							'India',
-							'Myanmar',
 							'Nepal',
-							'Pakistan'
+							'China',
+							'Bhutan',
+							'Bangladesh',
+							'Myanmar'
 						],
-
-						// plotOptions: {
-						// 	column: {
-						// 		pointPadding: 0,
-						// 		groupPadding: 0,
-						// 		borderWidth: 0,
-						// 		grouping: false,
-						// 		pointPlacement: 0
-						// 	}
-						// },
 						series: [
 							{
-								name: 'Population',
-								data: [35232483, 5213882, 812757, 35031698, 54605239, 13635199, 29711569, 59072668],
-								color: '#5F87C1', // Modern blue
-								zIndex: 1
+								name: 'Female',
+								data: [17426901, 29178527, 26459146, 15503037, 17119987, 379148, 2568065, 6644774],
+								color: '#ef4444'
+							},
+							{
+								name: 'Male',
+								data: [17805582, 29894140, 28146092, 14208531, 17911710, 433608, 2645816, 6990423],
+								color: '#3b82f6'
 							}
 						]
 					}
 				}
+				// {
+				// 	title: 'Country-wise Population Distribution in HKH Region',
+				// 	chart_type: 'column',
+				// 	yAxisTitle: 'Population',
+				// 	chart_data: {
+				// 		categories: [
+				// 			'Afghanistan',
+				// 			'Bangladesh',
+				// 			'Bhutan',
+				// 			'China',
+				// 			'India',
+				// 			'Myanmar',
+				// 			'Nepal',
+				// 			'Pakistan'
+				// 		],
+
+				// 		// plotOptions: {
+				// 		// 	column: {
+				// 		// 		pointPadding: 0,
+				// 		// 		groupPadding: 0,
+				// 		// 		borderWidth: 0,
+				// 		// 		grouping: false,
+				// 		// 		pointPlacement: 0
+				// 		// 	}
+				// 		// },
+				// 		series: [
+				// 			{
+				// 				name: 'Population',
+				// 				data: [35232483, 5213882, 812757, 35031698, 54605239, 13635199, 29711569, 59072668],
+				// 				color: '#5F87C1', // Modern blue
+				// 				zIndex: 1
+				// 			}
+				// 		]
+				// 	}
+				// }
 				// {
 				// 	title: 'Population Distribution by Age and Sex',
 				// 	// subtitle: 'Source: WorldPop Global Population Data',
@@ -462,87 +542,7 @@
 			},
 			charts: [
 				{
-					title: 'Population Distribution by Age and Sex',
-					// subtitle: 'Source: WorldPop Global Population Data',
-					chart_type: 'bar',
-					isPyramid: true,
-					chart_data: {
-						categories: [
-							'0-1',
-							'1-4',
-							'5-9',
-							'10-14',
-							'15-19',
-							'20-24',
-							'25-29',
-							'30-34',
-							'35-39',
-							'40-44',
-							'45-49',
-							'50-54',
-							'55-59',
-							'60-64',
-							'65-69',
-							'70-74',
-							'75-79',
-							'80-84',
-							'85-89',
-							'90+'
-						],
-						series: [
-							{
-								name: 'Male',
-								data: [
-									-2583174, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-									-8535552, -7724644, -6844482, -5837920, -5349179, -4440363, -3354569, -2507988,
-									-1866760, -1144430, -566243, -228994, -98160
-								],
-								color: '#3b82f6'
-							},
-							{
-								name: 'Female',
-								data: [
-									2441938, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182,
-									7578636, 6765130, 5765991, 5317287, 4448304, 3438076, 2685983, 2179466, 1411112,
-									749921, 334153, 169997
-								],
-								color: '#ef4444'
-							}
-						]
-					}
-				},
-				{
-					title: 'Country-wise Population Distribution within HKH Region by Gender',
-					chart_type: 'column',
-					isStacked: true,
-					yAxisTitle: 'Population',
-					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Pakistan',
-							'India',
-							'Nepal',
-							'China',
-							'Bhutan',
-							'Bangladesh',
-							'Myanmar'
-						],
-						series: [
-							{
-								name: 'Female',
-								data: [17426901, 29178527, 26459146, 15503037, 17119987, 379148, 2568065, 6644774],
-								color: '#ef4444'
-							},
-							{
-								name: 'Male',
-								data: [17805582, 29894140, 28146092, 14208531, 17911710, 433608, 2645816, 6990423],
-								color: '#3b82f6'
-							}
-						]
-					}
-				},
-				{
-					title: 'Country-wise Male to Female Sex Ratio within HKH Region',
+					title: 'Country-wise Sex Ratio in HKH Region',
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
@@ -558,7 +558,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [102.17, 102.45, 106.38, 91.65, 104.62, 114.36, 103.03, 105.2],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
@@ -593,7 +593,7 @@
 			},
 			charts: [
 				{
-					title: 'Country-wise Proportion of Population Age 75 years and above within HKH Region',
+					title: 'Country-wise Proportion of Population Aged 75 years and Above in HKH Region',
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
@@ -609,7 +609,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [0.69, 1.12, 2.46, 2.12, 4.26, 2.2, 1.65, 1.67],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
@@ -644,7 +644,7 @@
 			},
 			charts: [
 				{
-					title: 'Country-wise Child Woman Ratio within HKH Region',
+					title: 'Country-wise Child-Woman Ratio in HKH Region',
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
@@ -660,7 +660,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [659.15, 609.51, 306.28, 319.88, 187.24, 222.26, 445.12, 362.09],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
@@ -750,7 +750,7 @@
 			},
 			charts: [
 				{
-					title: 'Country-wise Child Dependency Ratio within HKH Region',
+					title: 'Country-wise Child Dependency Ratio in HKH Region',
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
@@ -766,7 +766,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [80.04, 76.93, 38.19, 45.49, 29.25, 29.74, 56.24, 43.12],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
@@ -856,7 +856,7 @@
 			},
 			charts: [
 				{
-					title: 'Country-wise Age Dependency Ratio within HKH Region',
+					title: 'Country-wise Aged Dependency Ratio in HKH Region',
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
@@ -872,7 +872,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [4.52, 7.11, 10.42, 10.57, 17.79, 9.47, 8.38, 9.97],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
@@ -962,7 +962,7 @@
 			},
 			charts: [
 				{
-					title: 'Country-wise Total Dependency Ratio within HKH Region',
+					title: 'Country-wise Total Dependency Ratio in HKH Region',
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
@@ -978,7 +978,7 @@
 						],
 						series: [
 							{
-								name: 'Population',
+								name: 'Ratio',
 								data: [84.56, 84.04, 48.61, 56.06, 47.04, 39.21, 64.62, 53.08],
 								color: '#5F87C1', // Modern blue
 								zIndex: 1
@@ -1055,9 +1055,34 @@
 			},
 			charts: [
 				{
-					title: 'Impervious Surface Distribution by Type',
+					title: 'Country-wise Total Dependency Ratio in HKH Region',
+					chart_type: 'column',
+					yAxisTitle: 'Ratio',
+					chart_data: {
+						categories: [
+							'Upto 1990',
+							'1990-2000',
+							'2000-2010',
+							'2010-2020'
+							// 'China',
+							// 'Bhutan',
+							// 'Bangladesh',
+							// 'Myanmar'
+						],
+						series: [
+							{
+								name: 'Ratio',
+								data: [3785, 1227, 42648, 2644],
+								color: '#5F87C1', // Modern blue
+								zIndex: 1
+							}
+						]
+					}
+				},
+				{
+					title: 'Impervious Surface Distribution in HKH Region',
 					// subtitle: 'Distribution across HKH region',
-					chart_type: 'pie',
+					chart_type: 'column',
 					chart_data: {
 						series: [
 							{
@@ -1245,66 +1270,67 @@
 	const information_layers = [
 		{
 			id: 'info-layer-1',
-			title: 'Population 2025',
+			title: 'Population',
 			dataset_id: 'population-2025',
-			info: 'The map represents the spatial distribution of population across the HKH region. The dataset is obtained from WorldPop Global Project Population Data, providing population counts per 1km × 1km grid square.',
+			info: 'The map represents the spatial distribution of the 2025 population across the HKH region.The dataset is obtained from WorldPop Global Project Population Data, providing population counts per 1km × 1km grid square.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-2',
 			title: 'Sex Ratio',
 			dataset_id: 'sex-ratio-2025',
-			info: 'The map represents the spatial distribution of the sex ratio across HKH region. The ratio is calculated using the formula (Total Male Count / Total Female Count) × 100, with each pixel representing the number of males per 100 females.',
+			info: 'The map represents the spatial distribution of the sex ratio across HKH region based on the 2025 population data.The ratio is calculated using the formula (Total Male Count / Total Female Count) × 100, with each pixel representing the number of males per 100 females.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-3',
-			title: 'Proportion of Population Age >=75',
+			title: 'Proportion of Population Aged >=75 Years',
 			dataset_id: 'aged-75-proportion',
-			info: 'The map represents spatial distribution of the elderly population as a percentage of the total population across the region.The proportion is calculated using the formula (Population Aged >=75 Years / Total Population of All Ages) × 100.',
+			info: 'The map represents spatial distribution of the elderly population as a percentage of the total population across the region based on 2025 population data.The proportion is calculated using the formula (Population Aged >=75 Years / Total Population of All Ages) × 100.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-4',
 			title: 'Child-Woman Ratio',
 			dataset_id: 'child-woman-ratio-2025',
-			info: 'The map represents spatial distribution of Child-Woman Ratio across HKH region.The ratio is calculated using the formula (Children Aged 0-4 Years / Women Aged 15-49) × 1000 with each pixel representing the number of young children per 1,000 women of childbearing age.',
+			info: 'The map represents spatial distribution of Child-Woman Ratio across HKH region based on the 2025 population data.The ratio is calculated using the formula [Children Aged (0-4) Years / Women Aged (15-49)] × 1000 with each pixel representing the number of young children per 1,000 women of childbearing age.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-5',
-			title: 'Child-Dependency Ratio',
+			title: 'Child Dependency Ratio',
 			dataset_id: 'child-dependency-ratio-2025',
-			info: 'The map represents the number of young dependents per 100 working-age individuals. The ratio is calculated  using the formula (Population Aged 0-14 Years / Working-Age Population (15-64)) × 100.',
+			info: 'The map represents the number of young dependents per 100 working-age individuals. The ratio is calculated  using the formula [Population Aged (0-14) Years / Working-Age Population (15-64)] × 100, and is based on population data for the year 2025.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-6',
-			title: 'Age Dependency Ratio',
+			title: 'Aged Dependency Ratio',
 			dataset_id: 'age-dependency-ratio-2025',
-			info: 'The map represents the number of elderly dependents per 100 working-age individuals.The ratio is calculated using gridded population data with the formula (Population Aged ≥60 Years / Working-Age Population (15-64)) × 100. ',
+			info: 'The map represents the number of elderly dependents per 100 working-age individuals.  .The ratio is calculated using formula [Population Aged ≥65 Years / Working-Age Population (15-64)] × 100 and is based on population data for the year 2025.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-7',
 			title: 'Total Dependency Ratio',
 			dataset_id: 'total-dependency-ratio-2025',
-			info: 'The map represents the total number of young and elderly dependents per 100 working-age individuals. The ratio is calculated using the formula: [(Population Aged 0-14 + Population Aged ≥60) / Working-Age Population (15-64)] × 100. ',
+			info: 'The map represents the total number of young and elderly dependents per 100 working-age individuals. The ratio is calculated using the formula: [(Population Aged (0-14) + Population Aged ≥65) / Working-Age Population (15-64)] × 100. ',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-8',
 			title: 'Impervious Surface',
 			dataset_id: 'impervious_surface',
-			info: 'Impervious Surface',
+			info: 'The dataset provides comprehensive insights into impervious-surface dynamics leveraging time-series Landsat imagery on the Google Earth Engine cloud computing platform created through an innovative and automated methodology that capitalizes on the strengths of spectral-generalization and automatic-sample-extraction strategies.',
 			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
 		},
 		{
 			id: 'info-layer-9',
 			title: 'Night Light',
 			dataset_id: 'night-light',
-			info: 'Night Light Data',
-			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
+			info: 'The map shows the night light dataset indicating urbanization in the HKH region from 2015 to 2025. The map has been prepared from VIIRS Stray Light Corrected Nighttime Day/Night Band Composites data product with average radiance dataset for Janaury in 2015, 2020 and 2025 used to create a composite image.',
+			source:
+				'https://developers.google.com/earth-engine/datasets/catalog/NOAA_VIIRS_DNB_MONTHLY_V1_VCMSLCFG'
 		}
 	];
 
@@ -1312,7 +1338,7 @@
 	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection) - default to Population 2025
-	let selectedInformationLayer = $state<string | null>('Population 2025');
+	let selectedInformationLayer = $state<string | null>('Population');
 
 	// Track expanded layer for accordion - default closed
 	let expandedLayer = $state<string | null>(null);
@@ -1358,13 +1384,16 @@
 	// Track iframe loading state
 	let isStoryMapLoading = $state(true);
 
+	// Generate iframe key based on layout state to force reload on layout change
+	let iframeKey = $state(0);
+
 	// Add new state variables for layers panel
 	let layersPanelOpen = $state(false);
 	let activeBaseLayers = $state({});
 
 	// Basemap switcher state
 	let basemapPanelOpen = $state(false);
-	let selectedBasemap = $state('dark-gray');
+	let selectedBasemap = $state('light');
 	let baseMapLayer: TileLayer<any> | null = null;
 
 	// Define base layers from HKH/Outline service
@@ -1780,6 +1809,12 @@
 	function setLayoutState(state: 'default' | 'hide-left' | 'left-full') {
 		layoutState = state;
 
+		// Force iframe reload when expanding/collapsing story section
+		if (state === 'left-full' || state === 'default') {
+			isStoryMapLoading = true;
+			iframeKey++;
+		}
+
 		// Force map resize with multiple attempts to ensure it works
 		const forceMapResize = () => {
 			if (map && mapContainer) {
@@ -1872,18 +1907,20 @@
 			{/if}
 
 			<!-- Iframe -->
-			<iframe
-				src="https://storymaps.arcgis.com/stories/8037fc07d0ea45a891c94ebef9eeaa0a"
-				width="100%"
-				height="100%"
-				style="border:none;"
-				allowfullscreen
-				class="h-full w-full"
-				title="ArcGIS StoryMap - Human Dimensions"
-				onload={() => {
-					isStoryMapLoading = false;
-				}}
-			></iframe>
+			{#key iframeKey}
+				<iframe
+					src="https://storymaps.arcgis.com/stories/8037fc07d0ea45a891c94ebef9eeaa0a"
+					width="100%"
+					height="100%"
+					style="border:none;"
+					allowfullscreen
+					class="h-full w-full"
+					title="ArcGIS StoryMap - Human Dimensions"
+					onload={() => {
+						isStoryMapLoading = false;
+					}}
+				></iframe>
+			{/key}
 
 			<!-- Overlay Control Buttons -->
 			<div class="absolute top-2 right-5 z-20 flex items-center space-x-1 lg:space-x-2">

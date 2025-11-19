@@ -59,6 +59,9 @@
 	// StoryMap loading state
 	let isStoryMapLoading = $state(true);
 
+	// Generate iframe key based on layout state to force reload on layout change
+	let iframeKey = $state(0);
+
 	// Function to check if screen is small (laptop, tablet, or mobile)
 	function isSmallScreen() {
 		return typeof window !== 'undefined' && window.innerWidth < 1280; // lg breakpoint
@@ -85,7 +88,7 @@
 
 	// Basemap switcher state
 	let basemapPanelOpen = $state(false);
-	let selectedBasemap = $state('dark-gray');
+	let selectedBasemap = $state('light');
 	let baseMapLayer: TileLayer<any> | null = null;
 
 	// Define available basemaps
@@ -832,6 +835,12 @@
 	function setLayoutState(state: 'default' | 'hide-left' | 'left-full') {
 		layoutState = state;
 
+		// Force iframe reload when expanding/collapsing story section
+		if (state === 'left-full' || state === 'default') {
+			isStoryMapLoading = true;
+			iframeKey++;
+		}
+
 		// Force map resize with multiple attempts to ensure it works
 		const forceMapResize = () => {
 			if (map && mapContainer) {
@@ -1084,18 +1093,20 @@
 			{/if}
 
 			<!-- Iframe -->
-			<iframe
-				src="https://storymaps.arcgis.com/stories/cfe99f86e3c04499827f3b13db5bee92"
-				width="100%"
-				height="100%"
-				style="border:none;"
-				allowfullscreen
-				class="h-full w-full"
-				title="ArcGIS StoryMap - Physiography"
-				onload={() => {
-					isStoryMapLoading = false;
-				}}
-			></iframe>
+			{#key iframeKey}
+				<iframe
+					src="https://storymaps.arcgis.com/stories/cfe99f86e3c04499827f3b13db5bee92"
+					width="100%"
+					height="100%"
+					style="border:none;"
+					allowfullscreen
+					class="h-full w-full"
+					title="ArcGIS StoryMap - Physiography"
+					onload={() => {
+						isStoryMapLoading = false;
+					}}
+				></iframe>
+			{/key}
 
 			<!-- Overlay Control Buttons -->
 			<div class="absolute top-2 right-5 z-20 flex items-center space-x-1 lg:space-x-2">
