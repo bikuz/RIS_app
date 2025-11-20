@@ -1055,9 +1055,11 @@
 			},
 			charts: [
 				{
-					title: 'Country-wise Total Dependency Ratio in HKH Region',
+					title: 'Impervious Surface Distribution in HKH Region',
 					chart_type: 'column',
-					yAxisTitle: 'Ratio',
+					yAxisTitle: 'Area (Sq Km)',
+					showLegend: false,
+					units: 'Sq Km',
 					chart_data: {
 						categories: [
 							'Upto 1990',
@@ -1071,48 +1073,53 @@
 						],
 						series: [
 							{
-								name: 'Ratio',
-								data: [3785, 1227, 42648, 2644],
-								color: '#5F87C1', // Modern blue
+								name: 'Area',
+								data: [
+									{ y: 3785, color: '#147218' },
+									{ y: 1227, color: '#A4CF22' },
+									{ y: 2648, color: '#FDC820' },
+									{ y: 2644, color: '#FE3C19' }
+								],
+								// color: '#5F87C1', // Modern blue
 								zIndex: 1
 							}
 						]
 					}
-				},
-				{
-					title: 'Impervious Surface Distribution in HKH Region',
-					// subtitle: 'Distribution across HKH region',
-					chart_type: 'column',
-					chart_data: {
-						series: [
-							{
-								name: 'Impervious Surface',
-								data: [
-									{
-										name: 'Upto 1990',
-										y: 3785,
-										color: '#147218' // Blue
-									},
-									{
-										name: '1990-2000',
-										y: 1227,
-										color: '#A4CF22' // Red
-									},
-									{
-										name: '2000-2010',
-										y: 2648,
-										color: '#FDC820' // Green
-									},
-									{
-										name: '2010-2020',
-										y: 2644,
-										color: '#FE3C19' // Amber
-									}
-								]
-							}
-						]
-					}
 				}
+				// {
+				// 	title: 'Impervious Surface Distribution in HKH Region',
+				// 	// subtitle: 'Distribution across HKH region',
+				// 	chart_type: 'column',
+				// 	chart_data: {
+				// 		series: [
+				// 			{
+				// 				name: 'Impervious Surface',
+				// 				data: [
+				// 					{
+				// 						name: 'Upto 1990',
+				// 						y: 3785,
+				// 						color: '#147218' // Blue
+				// 					},
+				// 					{
+				// 						name: '1990-2000',
+				// 						y: 1227,
+				// 						color: '#A4CF22' // Red
+				// 					},
+				// 					{
+				// 						name: '2000-2010',
+				// 						y: 2648,
+				// 						color: '#FDC820' // Green
+				// 					},
+				// 					{
+				// 						name: '2010-2020',
+				// 						y: 2644,
+				// 						color: '#FE3C19' // Amber
+				// 					}
+				// 				]
+				// 			}
+				// 		]
+				// 	}
+				// }
 			],
 			control_type: 'none'
 		},
@@ -1880,7 +1887,7 @@
 	<!-- Left Sidebar - Story + Questions -->
 
 	<div
-		class="sticky top-9 col-span-12 h-[90vh] min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
+		class="sticky top-9 col-span-12 h-[70vh] min-h-[450px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[calc(100vh-14rem)] lg:min-h-[550px]"
 		class:hidden={layoutState === 'hide-left'}
 		class:lg:col-span-12={layoutState === 'left-full'}
 		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
@@ -1967,14 +1974,14 @@
 			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
 				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
 				<div
-					class="order-2 flex min-w-0 flex-col gap-4 lg:order-1 lg:gap-6 {layoutState ===
+					class="order-2 flex min-w-0 flex-col gap-2 lg:order-1 lg:gap-3 {layoutState ===
 					'hide-left'
 						? 'flex-1'
 						: 'flex-1'}"
 				>
 					<!-- Map Section -->
 					<div
-						class="relative h-[50vh] min-h-[400px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
+						class="relative h-[60vh] min-h-[450px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]"
 					>
 						<div class="map-container flex h-full flex-col">
 							<div
@@ -2165,6 +2172,9 @@
 												isPyramid={'isPyramid' in chart ? chart.isPyramid : false}
 												isStacked={'isStacked' in chart ? chart.isStacked : false}
 												yAxisTitle={'yAxisTitle' in chart ? chart.yAxisTitle : 'Value'}
+												showLegend={'showLegend' in chart ? chart.showLegend : true}
+												unit={'units' in chart ? chart.units : ''}
+												plotOptions={'plotOptions' in chart ? chart.plotOptions : {}}
 											/>
 										</div>
 									{/each}
