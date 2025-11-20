@@ -1104,7 +1104,7 @@
 
 	<!-- Story Section - StoryMap Iframe -->
 	<div
-		class="sticky top-9 col-span-12 h-[70vh] min-h-[450px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]"
+		class="sticky top-9 col-span-12 h-[70vh] min-h-[450px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[calc(100vh-14rem)] lg:min-h-[550px]"
 		class:hidden={layoutState === 'hide-left'}
 		class:lg:col-span-12={layoutState === 'left-full'}
 		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
