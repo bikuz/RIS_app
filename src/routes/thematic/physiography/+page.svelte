@@ -364,14 +364,21 @@
 			},
 			charts: [
 				{
-					title: 'Countrywise Mountain Areas in the HKH Region',
+					title: 'Class-wise Mountain Areas in the HKH Region',
 					// subtitle: 'Distribution across HKH region',
 					chart_type: 'pie',
 					units: 'Sq Km',
+					plotOptions: {
+						pie: {
+							dataLabels: {
+								enabled: false
+							}
+						}
+					},
 					chart_data: {
 						series: [
 							{
-								name: 'Impervious Surface',
+								name: 'mountain-region',
 								data: [
 									{
 										name: 'non-mountain region',
@@ -414,14 +421,14 @@
 					}
 				},
 				{
-					title: 'Countrywise Mountain Areas in the HKH Region',
+					title: 'Country-wise Mountain Areas in the HKH Region',
 					// subtitle: 'Distribution across HKH region',
 					chart_type: 'pie',
 					units: 'Sq Km',
 					chart_data: {
 						series: [
 							{
-								name: 'Impervious Surface',
+								name: 'Country',
 								data: [
 									{
 										name: 'Afghanistan',
@@ -1340,6 +1347,7 @@
 												subtitle=""
 												chart_type={chart.chart_type}
 												unit={chart.units}
+												plotOptions={chart.plotOptions || {}}
 											/>
 										</div>
 									{/each}

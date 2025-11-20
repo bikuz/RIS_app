@@ -321,21 +321,40 @@
 
 			// Configure plotOptions
 			if (chart_type === 'pie') {
+				// Default pie options
+				const defaultPieOptions = {
+					allowPointSelect: true,
+					cursor: 'pointer',
+					dataLabels: {
+						enabled: true,
+						format: '<b>{point.name}</b>: {point.percentage:.2f} %',
+						style: {
+							color: '#64748b',
+							fontSize: '12px'
+						}
+					},
+					showInLegend: showLegend
+				};
+
+				// Merge custom plotOptions with defaults (custom options override defaults)
+				const customPieOptions = {
+					...plotOptions.pie,
+					...(chartData.plotOptions?.pie || {})
+				};
+
 				chartConfig.plotOptions = {
 					...plotOptions,
 					...(chartData.plotOptions || {}),
 					pie: {
-						allowPointSelect: true,
-						cursor: 'pointer',
-						dataLabels: {
-							enabled: true,
-							format: '<b>{point.name}</b>: {point.percentage:.2f} %',
-							style: {
-								color: '#64748b',
-								fontSize: '12px'
+						...defaultPieOptions,
+						...customPieOptions,
+						// Deep merge dataLabels if provided
+						...(customPieOptions.dataLabels && {
+							dataLabels: {
+								...defaultPieOptions.dataLabels,
+								...customPieOptions.dataLabels
 							}
-						},
-						showInLegend: showLegend
+						})
 					}
 				};
 			} else if (isPyramid) {
@@ -395,14 +414,7 @@
 						name: pieSeries?.name || 'Data',
 						data: pieSeries?.data || [],
 						showInLegend: showLegend,
-						dataLabels: {
-							enabled: true,
-							format: '<b>{point.name}</b>: {point.percentage:.2f} %',
-							style: {
-								color: '#64748b',
-								fontSize: '12px'
-							}
-						},
+						// Don't set dataLabels here - let plotOptions handle it
 						tooltip: {
 							pointFormat: `<b>{point.name}</b>: {point.y}${unit ? ' ' + unit : ''} ({point.percentage:.2f}%)`
 						}
