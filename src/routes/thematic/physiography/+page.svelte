@@ -1104,7 +1104,7 @@
 
 	<!-- Story Section - StoryMap Iframe -->
 	<div
-		class="sticky top-9 col-span-12 h-[90vh] min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
+		class="sticky top-9 col-span-12 h-[70vh] min-h-[450px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]"
 		class:hidden={layoutState === 'hide-left'}
 		class:lg:col-span-12={layoutState === 'left-full'}
 		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
@@ -1191,14 +1191,14 @@
 			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
 				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
 				<div
-					class="order-2 flex min-w-0 flex-col gap-4 lg:order-1 lg:gap-6 {layoutState ===
+					class="order-2 flex min-w-0 flex-col gap-2 lg:order-1 lg:gap-3 {layoutState ===
 					'hide-left'
 						? 'flex-1'
 						: 'flex-1'}"
 				>
 					<!-- Map Section -->
 					<div
-						class="relative h-[50vh] min-h-[400px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
+						class="relative h-[60vh] min-h-[450px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]"
 					>
 						<div class="map-container flex h-full flex-col">
 							<div
