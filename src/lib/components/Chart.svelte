@@ -260,11 +260,6 @@
 					lineColor: '#cbd5e1',
 					tickColor: '#cbd5e1',
 					labels: {
-						formatter: unit
-							? function (this: any) {
-									return this.value + ' ' + unit;
-								}
-							: undefined,
 						style: {
 							color: '#64748b',
 							fontSize: '12px'
@@ -297,7 +292,7 @@
 					formatter: function (this: any) {
 						return (
 							`<b>${this.series.name}, age ${this.point.category}</b><br/>` +
-							`Population: <b>${Math.abs(this.point.y).toFixed(2)}${unit ? ' ' + unit : ''}</b>`
+							`Population: <b>${Math.abs(this.point.y).toLocaleString()}${unit ? ' ' + unit : ''}</b>`
 						);
 					}
 				};
@@ -314,28 +309,47 @@
 						// Use point.category if available (for column charts), otherwise use this.x
 						const label = this.point?.category || this.key || this.x;
 						return `<b>${this.series.name}</b><br/>
-                                ${label}: <b>${this.y}${unit ? ' ' + unit : ''}</b>`;
+                                ${label}: <b>${this.y.toLocaleString()}${unit ? ' ' + unit : ''}</b>`;
 					}
 				};
 			}
 
 			// Configure plotOptions
 			if (chart_type === 'pie') {
+				// Default pie options
+				const defaultPieOptions = {
+					allowPointSelect: true,
+					cursor: 'pointer',
+					dataLabels: {
+						enabled: true,
+						format: '<b>{point.name}</b>: {point.percentage:.2f} %',
+						style: {
+							color: '#64748b',
+							fontSize: '12px'
+						}
+					},
+					showInLegend: showLegend
+				};
+
+				// Merge custom plotOptions with defaults (custom options override defaults)
+				const customPieOptions = {
+					...plotOptions.pie,
+					...(chartData.plotOptions?.pie || {})
+				};
+
 				chartConfig.plotOptions = {
 					...plotOptions,
 					...(chartData.plotOptions || {}),
 					pie: {
-						allowPointSelect: true,
-						cursor: 'pointer',
-						dataLabels: {
-							enabled: true,
-							format: '<b>{point.name}</b>: {point.percentage:.2f} %',
-							style: {
-								color: '#64748b',
-								fontSize: '12px'
+						...defaultPieOptions,
+						...customPieOptions,
+						// Deep merge dataLabels if provided
+						...(customPieOptions.dataLabels && {
+							dataLabels: {
+								...defaultPieOptions.dataLabels,
+								...customPieOptions.dataLabels
 							}
-						},
-						showInLegend: showLegend
+						})
 					}
 				};
 			} else if (isPyramid) {
@@ -395,16 +409,11 @@
 						name: pieSeries?.name || 'Data',
 						data: pieSeries?.data || [],
 						showInLegend: showLegend,
-						dataLabels: {
-							enabled: true,
-							format: '<b>{point.name}</b>: {point.percentage:.2f} %',
-							style: {
-								color: '#64748b',
-								fontSize: '12px'
-							}
-						},
+						// Don't set dataLabels here - let plotOptions handle it
 						tooltip: {
-							pointFormat: `<b>{point.name}</b>: {point.y}${unit ? ' ' + unit : ''} ({point.percentage:.2f}%)`
+							pointFormatter: function (this: any) {
+								return `<b>${this.name}</b>: ${this.y.toLocaleString()}${unit ? ' ' + unit : ''} (${this.percentage.toFixed(2)}%)`;
+							}
 						}
 					}
 				];

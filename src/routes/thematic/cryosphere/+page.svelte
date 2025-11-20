@@ -366,6 +366,7 @@
 				{
 					title: 'Glaciers in Major Basins of HKH',
 					chart_type: 'column',
+
 					chart_data: {
 						categories: ['Amudarya', 'Brahmaputra', 'Ganga', 'Indus', 'Irrawaddy'],
 						series: [
@@ -499,14 +500,14 @@
 			id: 'info-layer-1',
 			title: 'Glacier',
 			dataset_id: 'glacier',
-			info: 'The glacier map presented here is sourced from from the Regional DataBase System of ICIMOD. There are an estimated 54,000 glaciers in the HKH region which cover about 60,000 square kilometers of the total area.',
+			info: 'This dataset provides information on the status of glaciers in the Hindu Kush Himalaya (HKH) region for the period 2005 ± 3 years (2002-2008). It was developed using Landsat ETM+ imageries from the corresponding years.There are an estimated 54,000 glaciers in the HKH region which cover about 60,000 square kilometers of the total area.',
 			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
 			id: 'info-layer-2',
 			title: 'Glacial Lake',
 			dataset_id: 'glacial_lake',
-			info: 'The glacial lake data obtained from the Regional DataBase System of ICIMOD represent the glacial lakes across the HKH region. The dataset is generated through semi-automated analysis of Landsat 5 TM and Landsat 7 ETM+ satellite images from the 2005 period (±2 years).',
+			info: 'This map represents the glacial lakes across the HKH region. The dataset is generated through semi-automated analysis of Landsat 5 TM and Landsat 7 ETM+ satellite images from the 2005 period (±2 years).',
 			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
@@ -1043,7 +1044,7 @@
 
 	<!-- Story Section - StoryMap Iframe -->
 	<div
-		class="sticky top-9 col-span-12 h-[90vh] min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
+		class="sticky top-9 col-span-12 h-[70vh] min-h-[450px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[calc(100vh-14rem)] lg:min-h-[550px]"
 		class:hidden={layoutState === 'hide-left'}
 		class:lg:col-span-12={layoutState === 'left-full'}
 		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
@@ -1130,14 +1131,14 @@
 			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
 				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
 				<div
-					class="order-2 flex min-w-0 flex-col gap-4 lg:order-1 lg:gap-6 {layoutState ===
+					class="order-2 flex min-w-0 flex-col gap-2 lg:order-1 lg:gap-3 {layoutState ===
 					'hide-left'
 						? 'flex-1'
 						: 'flex-1'}"
 				>
 					<!-- Map Section -->
 					<div
-						class="relative h-[50vh] min-h-[400px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
+						class="relative h-[60vh] min-h-[450px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]"
 					>
 						<div class="map-container flex h-full flex-col">
 							<div
@@ -1323,7 +1324,14 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
+												subtitle={'subtitle' in chart ? chart.subtitle : ''}
 												chart_type={chart.chart_type}
+												isPyramid={'isPyramid' in chart ? chart.isPyramid : false}
+												isStacked={'isStacked' in chart ? chart.isStacked : false}
+												yAxisTitle={'yAxisTitle' in chart ? chart.yAxisTitle : 'Value'}
+												showLegend={'showLegend' in chart ? chart.showLegend : true}
+												unit={'units' in chart ? chart.units : ''}
+												plotOptions={'plotOptions' in chart ? chart.plotOptions : {}}
 											/>
 										</div>
 									{/each}

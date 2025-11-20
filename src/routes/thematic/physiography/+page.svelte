@@ -364,64 +364,97 @@
 			},
 			charts: [
 				{
-					title: 'Countrywise Mountain Areas in the HKH Region',
-					// subtitle: 'Distribution across HKH region',
-					chart_type: 'pie',
+					title: 'Class-wise Mountain Areas in the HKH Region',
+					chart_type: 'column',
+					yAxisTitle: 'Sq Km',
 					units: 'Sq Km',
 					chart_data: {
+						categories: [
+							'non-mountain region',
+							'elevation > 4500 m',
+							'elevation 3500 – 4500 m',
+							'elevation 2500 – 3500 m',
+							'elevation 1500 – 2500 m and slope >= 20',
+							'elevation 1000 – 1500 m and slope >= 50',
+							'elevation 300 – 1000 m and local elevation range (7 km radius) > 300 m'
+						],
 						series: [
 							{
-								name: 'Impervious Surface',
-								data: [
-									{
-										name: 'non-mountain region',
-										y: 441681,
-										color: '#A8A800' // Blue
-									},
-									{
-										name: 'elevation > 4500 m',
-										y: 1439526,
-										color: '#D3FFBE' // Red
-									},
-									{
-										name: 'elevation 3500 – 4500 m',
-										y: 734456,
-										color: '#55FF00' // Green
-									},
-									{
-										name: 'elevation 2500 – 3500 m',
-										y: 558920,
-										color: '#4CE600' // Amber
-									},
-									{
-										name: 'elevation 1500 – 2500 m and slope >= 20',
-										y: 410214,
-										color: '#38A800' // Amber
-									},
-									{
-										name: 'elevation 1000 – 1500 m and slope >= 50',
-										y: 272447,
-										color: '#267300' // Amber
-									},
-									{
-										name: 'elevation 300 – 1000 m and local elevation range (7 km radius) > 300 m',
-										y: 334595,
-										color: '#4C7300' // Amber
-									}
-								]
+								name: 'Area',
+								data: [441681, 1439526, 734456, 558920, 410214, 272447, 334595],
+								color: '#5F87C1', // Modern blue
+								zIndex: 1
 							}
 						]
 					}
 				},
+
+				// {
+				// 	title: 'Class-wise Mountain Areas in the HKH Region',
+				// 	// subtitle: 'Distribution across HKH region',
+				// 	chart_type: 'pie',
+				// 	units: 'Sq Km',
+				// 	plotOptions: {
+				// 		pie: {
+				// 			dataLabels: {
+				// 				enabled: false
+				// 			}
+				// 		}
+				// 	},
+				// 	chart_data: {
+				// 		series: [
+				// 			{
+				// 				name: 'mountain-region',
+				// 				data: [
+				// 					{
+				// 						name: 'non-mountain region',
+				// 						y: 441681,
+				// 						color: '#A8A800' // Blue
+				// 					},
+				// 					{
+				// 						name: 'elevation > 4500 m',
+				// 						y: 1439526,
+				// 						color: '#D3FFBE' // Red
+				// 					},
+				// 					{
+				// 						name: 'elevation 3500 – 4500 m',
+				// 						y: 734456,
+				// 						color: '#55FF00' // Green
+				// 					},
+				// 					{
+				// 						name: 'elevation 2500 – 3500 m',
+				// 						y: 558920,
+				// 						color: '#4CE600' // Amber
+				// 					},
+				// 					{
+				// 						name: 'elevation 1500 – 2500 m and slope >= 20',
+				// 						y: 410214,
+				// 						color: '#38A800' // Amber
+				// 					},
+				// 					{
+				// 						name: 'elevation 1000 – 1500 m and slope >= 50',
+				// 						y: 272447,
+				// 						color: '#267300' // Amber
+				// 					},
+				// 					{
+				// 						name: 'elevation 300 – 1000 m and local elevation range (7 km radius) > 300 m',
+				// 						y: 334595,
+				// 						color: '#4C7300' // Amber
+				// 					}
+				// 				]
+				// 			}
+				// 		]
+				// 	}
+				// },
 				{
-					title: 'Countrywise Mountain Areas in the HKH Region',
+					title: 'Country-wise Mountain Areas in the HKH Region',
 					// subtitle: 'Distribution across HKH region',
 					chart_type: 'pie',
 					units: 'Sq Km',
 					chart_data: {
 						series: [
 							{
-								name: 'Impervious Surface',
+								name: 'Country',
 								data: [
 									{
 										name: 'Afghanistan',
@@ -563,13 +596,6 @@
 
 	const information_layers: any = [
 		{
-			id: 'map-indicator-1',
-			title: 'Elevation',
-			dataset_id: 'elevation',
-			info: 'The map represents the elevation variation across the HKH region, highlighting topographical gradients from low-lying valleys to high mountain ranges. This dataset is compiled from global SRTM DEM of 90 m resolution for HKH region and was prepared by ICIMOD.',
-			source: 'SRTM'
-		},
-		{
 			id: 'map-indicator-2',
 			title: 'Mountain Region',
 			dataset_id: 'mountain-region',
@@ -577,18 +603,26 @@
 			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
+			id: 'map-indicator-1',
+			title: 'Elevation',
+			dataset_id: 'elevation',
+			info: 'The map represents the elevation variation across the HKH region, highlighting topographical gradients from low-lying valleys to high mountain ranges. This dataset is compiled from global SRTM DEM of 90 m resolution for HKH region and was prepared by ICIMOD.',
+			source: 'SRTM 90m DEM'
+		},
+
+		{
 			id: 'map-indicator-3',
 			title: 'Slope',
 			dataset_id: 'slope',
 			info: 'The map represents the steepness of the terrain, indicating how rapidly elevation changes over space. This dataset is derived from the Digital Elevation Model (DEM).',
-			source: 'SRTM'
+			source: 'SRTM 90m DEM'
 		},
 		{
 			id: 'map-indicator-4',
 			title: 'Aspect',
 			dataset_id: 'aspect',
 			info: 'The map represents the direction each slope faces, which influences sunlight exposure, temperature, and vegetation patterns. This dataset is derived from the Digital Elevation Model (DEM).',
-			source: 'SRTM'
+			source: 'SRTM 90m DEM'
 		}
 	];
 
@@ -1070,7 +1104,7 @@
 
 	<!-- Story Section - StoryMap Iframe -->
 	<div
-		class="sticky top-9 col-span-12 h-[90vh] min-h-[400px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
+		class="sticky top-9 col-span-12 h-[70vh] min-h-[450px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[calc(100vh-14rem)] lg:min-h-[550px]"
 		class:hidden={layoutState === 'hide-left'}
 		class:lg:col-span-12={layoutState === 'left-full'}
 		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
@@ -1157,14 +1191,14 @@
 			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
 				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
 				<div
-					class="order-2 flex min-w-0 flex-col gap-4 lg:order-1 lg:gap-6 {layoutState ===
+					class="order-2 flex min-w-0 flex-col gap-2 lg:order-1 lg:gap-3 {layoutState ===
 					'hide-left'
 						? 'flex-1'
 						: 'flex-1'}"
 				>
 					<!-- Map Section -->
 					<div
-						class="relative h-[50vh] min-h-[400px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[60vh] lg:max-h-[800px] lg:min-h-[500px]"
+						class="relative h-[60vh] min-h-[450px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]"
 					>
 						<div class="map-container flex h-full flex-col">
 							<div
@@ -1340,6 +1374,8 @@
 												subtitle=""
 												chart_type={chart.chart_type}
 												unit={chart.units}
+												plotOptions={chart.plotOptions || {}}
+												yAxisTitle={'yAxisTitle' in chart ? chart.yAxisTitle : 'Value'}
 											/>
 										</div>
 									{/each}
