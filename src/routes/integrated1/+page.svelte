@@ -26,14 +26,15 @@
 		ArrowLeft,
 		House,
 		Layers,
-        ChevronUp,
+		ChevronUp,
 		ChevronDown,
 		ChevronRight,
 		Sliders,
 		GripVertical,
 		Columns,
-        List,
-		Info
+		Info,
+		Check,
+		List
 	} from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
@@ -55,6 +56,12 @@
 	let mapRight: Map | null = null;
 	let baseMapLayerRight: TileLayer<any> | null = null;
 	let isDraggingDivider = $state(false);
+	
+	// Swipe mode layer selection
+	let swipeModalOpen = $state(false);
+	let swipeSelectedLayers = $state<Set<string>>(new Set());
+	let originalLayerOrder = $state<string[]>([]); // Store original order before swipe mode
+	let originalSelectedLayers = $state<Set<string>>(new Set()); // Store original selection before swipe mode
 
 	// Hindu Kush Himalaya region coordinates
 	const HKH_CENTER = [82.94924, 27.6382055];
@@ -207,16 +214,17 @@
 		// 	});
 		// }
 		
-		// Update layers based on current layerOrder
-		updateSwipeLayers();
-		
-		// Ensure right map is properly sized (full width)
+		// Ensure right map is properly sized (full width) before updating layers
 		setTimeout(() => {
 			if (mapRight) {
 				mapRight.updateSize();
 				mapRight.render();
+				// Update layers after map is fully initialized and sized
+				if (swipeMode && map && mapRight && mapRight.getTarget()) {
+					updateSwipeLayers();
+				}
 			}
-		}, 50);
+		}, 100);
 	}
 	
 	// Helper function to create a layer instance from layerPath
@@ -240,7 +248,14 @@
 	
 	// Update layers for swipe mode based on layerOrder
 	function updateSwipeLayers() {
-		if (!swipeMode || !map || !mapRight) return;
+		if (!swipeMode || !map || !mapRight) {
+			return;
+		}
+		
+		// Ensure mapRight is fully initialized
+		if (!mapRight.getTarget()) {
+			return;
+		}
 		
 		const topLayerPath = layerOrder[0];
 		const otherLayerPaths = layerOrder.slice(1);
@@ -259,7 +274,11 @@
 			}
 		});
 		leftLayersToRemove.forEach((layer) => {
-			if (map) map.removeLayer(layer);
+			if (map) {
+				map.removeLayer(layer);
+				// Ensure layer is visible for potential re-addition
+				layer.setVisible(true);
+			}
 		});
 		
 		const rightLayersToRemove: any[] = [];
@@ -269,18 +288,34 @@
 			}
 		});
 		rightLayersToRemove.forEach((layer) => {
-			if (mapRight) mapRight.removeLayer(layer);
+			if (mapRight) {
+				mapRight.removeLayer(layer);
+				// Ensure layer is visible for potential re-addition
+				layer.setVisible(true);
+			}
 		});
 		
 		// Add top layer to left map
 		if (topLayerPath && mapLayers[topLayerPath]) {
-			leftLayers.insertAt(1, mapLayers[topLayerPath]);
+			const topLayer = mapLayers[topLayerPath];
+			// Ensure layer is visible and properly configured
+			topLayer.setVisible(true);
+			// Check if layer is not already on the map
+			if (!leftLayers.getArray().includes(topLayer)) {
+				leftLayers.insertAt(1, topLayer);
+			}
 		}
 		
 		// Add all other layers to right map
 		otherLayerPaths.forEach((layerPath) => {
 			if (mapLayers[layerPath]) {
-				rightLayers.insertAt(1, mapLayers[layerPath]);
+				const layer = mapLayers[layerPath];
+				// Ensure layer is visible and properly configured
+				layer.setVisible(true);
+				// Check if layer is not already on the map
+				if (!rightLayers.getArray().includes(layer)) {
+					rightLayers.insertAt(1, layer);
+				}
 			}
 		});
 		
@@ -297,13 +332,102 @@
 		}, 50);
 	}
 	
-	// Toggle swipe mode
-	function toggleSwipeMode() {
-		swipeMode = !swipeMode;
+	// Toggle layer selection in swipe modal
+	function toggleSwipeLayerSelection(layerPath: string) {
+		if (swipeSelectedLayers.has(layerPath)) {
+			swipeSelectedLayers.delete(layerPath);
+		} else {
+			if (swipeSelectedLayers.size >= 2) {
+				// Already have 2 selected, don't allow more
+				return;
+			}
+			swipeSelectedLayers.add(layerPath);
+		}
+		swipeSelectedLayers = new Set(swipeSelectedLayers);
+	}
+	
+	// Apply swipe mode with selected layers
+	function applySwipeMode() {
+		if (swipeSelectedLayers.size !== 2) {
+			return; // Must have exactly 2 layers
+		}
 		
-		if (swipeMode) {
-			// Enable swipe mode
-			// Wait for DOM to update, then update map target and size
+		// If mapRight already exists (from previous swipe session), dispose it first
+		if (mapRight && map) {
+			// Get all layers from right map (except basemap) and restore to main map
+			const rightLayers = mapRight.getLayers();
+			const dataLayers: any[] = [];
+			rightLayers.forEach((layer) => {
+				if (layer.get('layerPath')) {
+					dataLayers.push(layer);
+				}
+			});
+			
+			// Add all layers back to main map before disposing
+			const mainLayers = map.getLayers();
+			dataLayers.forEach((layer) => {
+				// Check if layer is not already on main map
+				if (!mainLayers.getArray().includes(layer)) {
+					mainLayers.insertAt(1, layer);
+					layer.setVisible(true);
+				}
+			});
+			
+			// Dispose right map
+			mapRight.dispose();
+			mapRight = null;
+			baseMapLayerRight = null;
+		}
+		
+		// Ensure all selected layers are on the main map and visible before starting swipe mode
+		if (map) {
+			const mainLayers = map.getLayers();
+			swipeSelectedLayers.forEach((layerPath) => {
+				if (mapLayers[layerPath]) {
+					const layer = mapLayers[layerPath];
+					// Ensure layer is visible
+					layer.setVisible(true);
+					// If layer is not on main map, add it
+					if (!mainLayers.getArray().includes(layer)) {
+						mainLayers.insertAt(1, layer);
+					}
+				}
+			});
+		}
+		
+		// Store original state (only if not already stored)
+		if (originalLayerOrder.length === 0) {
+			originalLayerOrder = [...layerOrder];
+		}
+		if (originalSelectedLayers.size === 0) {
+			originalSelectedLayers = new Set(selectedLayers);
+		}
+		
+		// Filter to only selected layers
+		const selectedArray = Array.from(swipeSelectedLayers);
+		layerOrder = selectedArray;
+		
+		// Hide layers not in swipe selection from map
+		if (map) {
+			const layers = map.getLayers();
+			layers.forEach((layer) => {
+				const layerPath = layer.get('layerPath');
+				if (layerPath && !swipeSelectedLayers.has(layerPath)) {
+					layer.setVisible(false);
+				} else if (layerPath && swipeSelectedLayers.has(layerPath)) {
+					// Ensure selected layers are visible
+					layer.setVisible(true);
+				}
+			});
+		}
+		
+		// Close modal and enable swipe mode
+		swipeModalOpen = false;
+		swipeMode = true;
+		
+		// Wait for DOM to update and ensure mapContainerRight is available
+		// Use requestAnimationFrame to ensure DOM is ready
+		requestAnimationFrame(() => {
 			setTimeout(() => {
 				if (map && mapContainer) {
 					// Update map target to the new container (in case it changed)
@@ -311,26 +435,66 @@
 					map.updateSize();
 					map.render();
 				}
+				
+				// Wait a bit longer to ensure mapContainerRight is bound to DOM
+				setTimeout(() => {
+					if (mapContainerRight) {
+						initializeRightMap();
+						// Update both map sizes after initialization and ensure layers are loaded
+						setTimeout(() => {
+							if (map) {
+								map.updateSize();
+								map.render();
+							}
+							if (mapRight) {
+								mapRight.updateSize();
+								mapRight.render();
+								// Force update swipe layers again to ensure layers are loaded
+								if (swipeMode && map && mapRight) {
+									updateSwipeLayers();
+								}
+							}
+						}, 150);
+					}
+				}, 100);
 			}, 50);
+		});
+	}
+	
+	// Cancel swipe mode selection
+	function cancelSwipeMode() {
+		swipeModalOpen = false;
+		swipeSelectedLayers = new Set();
+	}
+	
+	// Toggle swipe mode
+	function toggleSwipeMode() {
+		if (swipeMode) {
+			// Disable swipe mode - restore all layers
+			swipeMode = false;
 			
-			setTimeout(() => {
-				if (mapContainerRight) {
-					initializeRightMap();
-					// Update both map sizes after initialization
-					setTimeout(() => {
-						if (map) {
-							map.updateSize();
-							map.render();
-						}
-						if (mapRight) {
-							mapRight.updateSize();
-							mapRight.render();
-						}
-					}, 100);
-				}
-			}, 100);
-		} else {
-			// Disable swipe mode - restore all layers to main map
+			// Restore original layer order and selection
+			if (originalLayerOrder.length > 0) {
+				layerOrder = [...originalLayerOrder];
+			}
+			if (originalSelectedLayers.size > 0) {
+				selectedLayers = new Set(originalSelectedLayers);
+			}
+			
+			// Restore visibility of all layers based on original visibility state
+			if (map) {
+				const layers = map.getLayers();
+				layers.forEach((layer) => {
+					const layerPath = layer.get('layerPath');
+					if (layerPath && originalSelectedLayers.has(layerPath)) {
+						// Restore original visibility state
+						const wasVisible = layerVisibility[layerPath] !== false;
+						layer.setVisible(wasVisible);
+					}
+				});
+			}
+			
+			// Restore layers to main map
 			if (mapRight && map) {
 				// Get all layers from right map (except basemap)
 				const rightLayers = mapRight.getLayers();
@@ -360,6 +524,25 @@
 						map.render();
 					}
 				}, 100);
+			}
+			
+			// Clear swipe selection
+			swipeSelectedLayers = new Set();
+			originalLayerOrder = [];
+			originalSelectedLayers = new Set();
+		} else {
+			// Check if we have more than 2 layers
+			if (layerOrder.length > 2) {
+				// Show modal to select 2 layers
+				swipeSelectedLayers = new Set();
+				swipeModalOpen = true;
+			} else if (layerOrder.length === 2) {
+				// Exactly 2 layers, proceed directly
+				swipeSelectedLayers = new Set(layerOrder);
+				applySwipeMode();
+			} else {
+				// Less than 2 layers, can't enable swipe mode
+				alert('Please select at least 2 datasets to use swipe mode.');
 			}
 		}
 	}
@@ -1152,8 +1335,18 @@
 	
 	// Update swipe layers when layerOrder changes
 	$effect(() => {
-		if (swipeMode && layerOrder.length >= 0) {
-			updateSwipeLayers();
+		if (swipeMode && layerOrder.length >= 0 && map && mapRight) {
+			// Ensure mapRight is fully initialized before updating layers
+			if (mapRight.getTarget()) {
+				updateSwipeLayers();
+			} else {
+				// If mapRight isn't ready yet, wait a bit and try again
+				setTimeout(() => {
+					if (swipeMode && map && mapRight && mapRight.getTarget()) {
+						updateSwipeLayers();
+					}
+				}, 200);
+			}
 		}
 	});
 	
@@ -1852,10 +2045,10 @@
 										class="flex w-full items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
 										onclick={() => (leftLegendCollapsed = !leftLegendCollapsed)}
 									>
-										<div class="flex items-center gap-2">
-											<List class="h-4 w-4 text-gray-600" />
-											<h3 class="text-sm font-semibold text-gray-800">Left Map</h3>
-										</div>
+									<div class="flex items-center gap-2">
+										<List class="h-4 w-4 text-gray-600" />
+										<h3 class="text-sm font-semibold text-gray-800">Left Map</h3>
+									</div>
 										{#if leftLegendCollapsed}
 											<ChevronUp class="h-4 w-4 text-gray-600" />
 										{:else}
@@ -1907,10 +2100,10 @@
 										class="flex w-full items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
 										onclick={() => (rightLegendCollapsed = !rightLegendCollapsed)}
 									>
-										<div class="flex items-center gap-2">
-											<List class="h-4 w-4 text-gray-600" />
-											<h3 class="text-sm font-semibold text-gray-800">Right Map</h3>
-										</div>
+									<div class="flex items-center gap-2">
+										<List class="h-4 w-4 text-gray-600" />
+										<h3 class="text-sm font-semibold text-gray-800">Right Map</h3>
+									</div>
 										{#if rightLegendCollapsed}
 											<ChevronUp class="h-4 w-4 text-gray-600" />
 										{:else}
@@ -2021,6 +2214,124 @@
 		</div>
 	</div>
 </div>
+
+<!-- Swipe Mode Selection Modal -->
+{#if swipeModalOpen}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+		onclick={(e) => {
+			if (e.target === e.currentTarget) {
+				cancelSwipeMode();
+			}
+		}}
+		onkeydown={(e) => {
+			if (e.key === 'Escape') {
+				cancelSwipeMode();
+			}
+		}}
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="modal-title"
+		tabindex="-1"
+	>
+		<div class="w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+			<!-- Modal Header -->
+			<div class="border-b border-gray-200 bg-gradient-to-r from-blue-800 to-green-800 px-6 py-4">
+				<h2 id="modal-title" class="text-xl font-bold text-white">Select Two Datasets for Swipe Mode</h2>
+				<p class="mt-1 text-sm text-white/90">
+					Please select exactly 2 datasets to compare in swipe mode. Other datasets will be hidden.
+				</p>
+			</div>
+
+			<!-- Modal Body -->
+			<div class="max-h-[60vh] overflow-y-auto p-6">
+				<div class="space-y-2">
+					{#each layerOrder as layerPath}
+						{@const [datasetId, ...pathParts] = layerPath.split('|')}
+						{@const dataset = (() => {
+							for (const [, datasets] of Object.entries(allMapLayers)) {
+								if (Array.isArray(datasets)) {
+									const found = datasets.find(d => d.id === datasetId);
+									if (found) return found;
+								}
+							}
+							return null;
+						})()}
+						{#if dataset}
+							{@const layerConfig = extractLayerConfig(dataset.map_layers, pathParts)}
+							{@const isSelected = swipeSelectedLayers.has(layerPath)}
+							{@const canSelect = !isSelected && swipeSelectedLayers.size < 2}
+							<div
+								class="flex items-center gap-3 rounded-lg border p-4 transition-all {isSelected
+									? 'border-blue-500 bg-blue-50 shadow-md'
+									: canSelect
+										? 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer'
+										: 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'}"
+								onclick={() => {
+									if (canSelect || isSelected) {
+										toggleSwipeLayerSelection(layerPath);
+									}
+								}}
+								role="button"
+								tabindex={canSelect || isSelected ? 0 : -1}
+								onkeydown={(e) => {
+									if ((canSelect || isSelected) && e.key === 'Enter') {
+										toggleSwipeLayerSelection(layerPath);
+									}
+								}}
+							>
+								<div class="flex-shrink-0">
+									{#if isSelected}
+										<div class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 border-2 border-blue-600">
+											<Check class="h-4 w-4 text-white stroke-[3]" />
+										</div>
+									{:else}
+										<div class="flex h-6 w-6 items-center justify-center rounded-full border-2 border-gray-300 bg-white">
+											{#if !canSelect}
+												<span class="text-xs text-gray-400">2/2</span>
+											{/if}
+										</div>
+									{/if}
+								</div>
+								<div class="flex-1 min-w-0">
+									<h3 class="text-sm font-semibold text-gray-800">{(dataset as any).title || dataset.id}</h3>
+									{#if pathParts.length > 0}
+										<p class="mt-0.5 text-xs text-gray-500">{pathParts.join(' → ')}</p>
+									{/if}
+								</div>
+								{#if isSelected}
+									<span class="flex-shrink-0 text-xs font-medium text-blue-600">Selected</span>
+								{/if}
+							</div>
+						{/if}
+					{/each}
+				</div>
+			</div>
+
+			<!-- Modal Footer -->
+			<div class="border-t border-gray-200 bg-gray-50 px-6 py-4 flex items-center justify-between">
+				<div class="text-sm text-gray-600">
+					Selected: {swipeSelectedLayers.size} / 2
+				</div>
+				<div class="flex gap-3">
+					<button
+						onclick={cancelSwipeMode}
+						class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+					>
+						Cancel
+					</button>
+					<button
+						onclick={applySwipeMode}
+						disabled={swipeSelectedLayers.size !== 2}
+						class="rounded-lg bg-gradient-to-r from-blue-600 to-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:from-blue-700 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						Apply Swipe Mode
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	:global(.map-wrapper .map-container) {
