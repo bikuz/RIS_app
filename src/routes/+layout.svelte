@@ -3,6 +3,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import icimod from '$lib/assets/logo/logo-icimod_white.png';
 	let { children } = $props();
+	const currentYear = new Date().getFullYear();
 </script>
 
 <svelte:head>
@@ -73,7 +74,7 @@
 				</div>
 			</div>
 			<div class="border-white-800 mt-8 border-t pt-8 text-center">
-				<p>&copy; 2024 ICIMOD. All rights reserved.</p>
+				<p>&copy; {currentYear} ICIMOD. All rights reserved.</p>
 			</div>
 		</div>
 	</footer>
