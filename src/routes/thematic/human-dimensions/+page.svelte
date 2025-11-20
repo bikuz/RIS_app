@@ -1055,9 +1055,11 @@
 			},
 			charts: [
 				{
-					title: 'Country-wise Total Dependency Ratio in HKH Region',
+					title: 'Impervious Surface Distribution in HKH Region',
 					chart_type: 'column',
-					yAxisTitle: 'Ratio',
+					yAxisTitle: 'Area (Sq Km)',
+					showLegend: false,
+					units: 'Sq Km',
 					chart_data: {
 						categories: [
 							'Upto 1990',
@@ -1071,48 +1073,53 @@
 						],
 						series: [
 							{
-								name: 'Ratio',
-								data: [3785, 1227, 42648, 2644],
-								color: '#5F87C1', // Modern blue
+								name: 'Area',
+								data: [
+									{ y: 3785, color: '#147218' },
+									{ y: 1227, color: '#A4CF22' },
+									{ y: 2648, color: '#FDC820' },
+									{ y: 2644, color: '#FE3C19' }
+								],
+								// color: '#5F87C1', // Modern blue
 								zIndex: 1
 							}
 						]
 					}
-				},
-				{
-					title: 'Impervious Surface Distribution in HKH Region',
-					// subtitle: 'Distribution across HKH region',
-					chart_type: 'column',
-					chart_data: {
-						series: [
-							{
-								name: 'Impervious Surface',
-								data: [
-									{
-										name: 'Upto 1990',
-										y: 3785,
-										color: '#147218' // Blue
-									},
-									{
-										name: '1990-2000',
-										y: 1227,
-										color: '#A4CF22' // Red
-									},
-									{
-										name: '2000-2010',
-										y: 2648,
-										color: '#FDC820' // Green
-									},
-									{
-										name: '2010-2020',
-										y: 2644,
-										color: '#FE3C19' // Amber
-									}
-								]
-							}
-						]
-					}
 				}
+				// {
+				// 	title: 'Impervious Surface Distribution in HKH Region',
+				// 	// subtitle: 'Distribution across HKH region',
+				// 	chart_type: 'column',
+				// 	chart_data: {
+				// 		series: [
+				// 			{
+				// 				name: 'Impervious Surface',
+				// 				data: [
+				// 					{
+				// 						name: 'Upto 1990',
+				// 						y: 3785,
+				// 						color: '#147218' // Blue
+				// 					},
+				// 					{
+				// 						name: '1990-2000',
+				// 						y: 1227,
+				// 						color: '#A4CF22' // Red
+				// 					},
+				// 					{
+				// 						name: '2000-2010',
+				// 						y: 2648,
+				// 						color: '#FDC820' // Green
+				// 					},
+				// 					{
+				// 						name: '2010-2020',
+				// 						y: 2644,
+				// 						color: '#FE3C19' // Amber
+				// 					}
+				// 				]
+				// 			}
+				// 		]
+				// 	}
+				// }
 			],
 			control_type: 'none'
 		},
@@ -2165,6 +2172,9 @@
 												isPyramid={'isPyramid' in chart ? chart.isPyramid : false}
 												isStacked={'isStacked' in chart ? chart.isStacked : false}
 												yAxisTitle={'yAxisTitle' in chart ? chart.yAxisTitle : 'Value'}
+												showLegend={'showLegend' in chart ? chart.showLegend : true}
+												unit={'units' in chart ? chart.units : ''}
+												plotOptions={'plotOptions' in chart ? chart.plotOptions : {}}
 											/>
 										</div>
 									{/each}

@@ -273,6 +273,8 @@
 				{
 					title: 'Land Cover of HKH Region in 2022',
 					chart_type: 'column',
+					units: 'hectares',
+					yAxisTitle: 'hectares',
 					chart_data: {
 						categories: [
 							'Forest',
@@ -285,9 +287,10 @@
 							'Water Body',
 							'Riverbed'
 						],
+
 						series: [
 							{
-								name: 'Land Cover (hectares)',
+								name: 'Land Cover',
 								data: [
 									{ y: 84185046.72, color: '#006f00' },
 									{ y: 159413631.12, color: '#91ef7a' },
@@ -452,8 +455,8 @@
 			id: 'map-indicator-2',
 			title: 'Vegetation Health',
 			dataset_id: 'browning-greening',
-			info: 'Vegetation Health',
-			source: ''
+			info: 'The map represents the long-term vegetation productivity trends from 2000 to 2023 using NDVI as a proxy for vegetation productivity. Temporal trends were analyzed using the Mann-Kendall test to detect statistically significant changes and Theil-Sen slope estimator was applied to quantify the rate of change. Pixels are classified into three categories based on the Mann-Kendall Z-statistic at 95% confidence (α = 0.05): Degrading: Z <−1.96 (significant declining trend), Stable: −1.96 Z ≤ +1.96 (no significant trend) and Improving: Z > +1.96 (significant increasing trend).',
+			source: 'MODIS'
 		},
 		{
 			id: 'map-indicator-4',
@@ -1367,8 +1370,9 @@
 												chartData={chart.chart_data}
 												title={chart.title}
 												chart_type={chart.chart_type}
-												yAxisTitle="Land Cover (hectares)"
+												yAxisTitle={chart.yAxisTitle}
 												showLegend={false}
+												unit={chart.units}
 											/>
 										</div>
 									{/each}

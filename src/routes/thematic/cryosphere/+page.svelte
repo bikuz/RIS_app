@@ -366,6 +366,7 @@
 				{
 					title: 'Glaciers in Major Basins of HKH',
 					chart_type: 'column',
+
 					chart_data: {
 						categories: ['Amudarya', 'Brahmaputra', 'Ganga', 'Indus', 'Irrawaddy'],
 						series: [
@@ -1323,7 +1324,14 @@
 											<Chart
 												chartData={chart.chart_data}
 												title={chart.title}
+												subtitle={'subtitle' in chart ? chart.subtitle : ''}
 												chart_type={chart.chart_type}
+												isPyramid={'isPyramid' in chart ? chart.isPyramid : false}
+												isStacked={'isStacked' in chart ? chart.isStacked : false}
+												yAxisTitle={'yAxisTitle' in chart ? chart.yAxisTitle : 'Value'}
+												showLegend={'showLegend' in chart ? chart.showLegend : true}
+												unit={'units' in chart ? chart.units : ''}
+												plotOptions={'plotOptions' in chart ? chart.plotOptions : {}}
 											/>
 										</div>
 									{/each}
