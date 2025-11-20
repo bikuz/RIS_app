@@ -607,7 +607,7 @@
 			title: 'Elevation',
 			dataset_id: 'elevation',
 			info: 'The map represents the elevation variation across the HKH region, highlighting topographical gradients from low-lying valleys to high mountain ranges. This dataset is compiled from global SRTM DEM of 90 m resolution for HKH region and was prepared by ICIMOD.',
-			source: 'SRTM'
+			source: 'SRTM 90m DEM'
 		},
 
 		{
@@ -615,14 +615,14 @@
 			title: 'Slope',
 			dataset_id: 'slope',
 			info: 'The map represents the steepness of the terrain, indicating how rapidly elevation changes over space. This dataset is derived from the Digital Elevation Model (DEM).',
-			source: 'SRTM'
+			source: 'SRTM 90m DEM'
 		},
 		{
 			id: 'map-indicator-4',
 			title: 'Aspect',
 			dataset_id: 'aspect',
 			info: 'The map represents the direction each slope faces, which influences sunlight exposure, temperature, and vegetation patterns. This dataset is derived from the Digital Elevation Model (DEM).',
-			source: 'SRTM'
+			source: 'SRTM 90m DEM'
 		}
 	];
 

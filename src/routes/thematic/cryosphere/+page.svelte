@@ -500,14 +500,14 @@
 			id: 'info-layer-1',
 			title: 'Glacier',
 			dataset_id: 'glacier',
-			info: 'The glacier map presented here is sourced from from the Regional DataBase System of ICIMOD. There are an estimated 54,000 glaciers in the HKH region which cover about 60,000 square kilometers of the total area.',
+			info: 'This dataset provides information on the status of glaciers in the Hindu Kush Himalaya (HKH) region for the period 2005 ± 3 years (2002-2008). It was developed using Landsat ETM+ imageries from the corresponding years.There are an estimated 54,000 glaciers in the HKH region which cover about 60,000 square kilometers of the total area.',
 			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
 			id: 'info-layer-2',
 			title: 'Glacial Lake',
 			dataset_id: 'glacial_lake',
-			info: 'The glacial lake data obtained from the Regional DataBase System of ICIMOD represent the glacial lakes across the HKH region. The dataset is generated through semi-automated analysis of Landsat 5 TM and Landsat 7 ETM+ satellite images from the 2005 period (±2 years).',
+			info: 'This map represents the glacial lakes across the HKH region. The dataset is generated through semi-automated analysis of Landsat 5 TM and Landsat 7 ETM+ satellite images from the 2005 period (±2 years).',
 			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
 		},
 		{
