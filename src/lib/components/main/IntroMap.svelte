@@ -31,7 +31,7 @@
 	const stats = [
 		{
 			icon: Snowflake,
-			value: '2,548',
+			value: '54K',
 			label: 'Glaciers'
 		},
 		{
