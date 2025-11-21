@@ -607,8 +607,8 @@
 			id: 'map-indicator-2',
 			title: 'Mountain Region',
 			dataset_id: 'mountain-region',
-			info: 'The map represents different classes of mountain of mountain regions in HKH region. This dataset is prepared by ICIMOD based on GTOPO 1km resolution DEM showing different classes of mountains in HKH region.',
-			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
+			info: 'The map shows different classes of mountains in the HKH region with mountain classes defined by the Kapos et al. (2000). This dataset is prepared based on GTOPO 1km resolution DEM.',
+			source: 'ICIMOD'
 		},
 		{
 			id: 'map-indicator-1',
