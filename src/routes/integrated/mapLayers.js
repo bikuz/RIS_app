@@ -7,6 +7,26 @@
 // - human-dimensions/+page.svelte
 
 export const allMapLayers = {
+
+	// basic_Layer:[
+	// 	{
+	// 		id: 'basic',
+	// 		title: 'Basic Layer',		
+	// 		map_layers: {
+	// 			'hkh-outline': [
+	// 				{
+	// 					id: 'hkh-outline',
+	// 					name: 'HKH Outline',
+	// 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer',
+	// 					layerIndex: 0,
+	// 					mapserver: 'arcgis'
+	// 				}
+	// 			]
+
+	// 		}
+	// 	},
+	// ],
+
 	// ========== CLIMATE LAYERS ==========
 	climate: [
 		{
