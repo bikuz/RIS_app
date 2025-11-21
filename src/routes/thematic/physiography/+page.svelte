@@ -381,8 +381,16 @@
 						series: [
 							{
 								name: 'Area',
-								data: [441681, 1439526, 734456, 558920, 410214, 272447, 334595],
-								color: '#5F87C1', // Modern blue
+								data: [
+									{ y: 441681, color: '#A8A800' },
+									{ y: 1439526, color: '#D3FFBE' },
+									{ y: 734456, color: '#55FF00' },
+									{ y: 558920, color: '#4CE600' },
+									{ y: 410214, color: '#38A800' },
+									{ y: 272447, color: '#267300' },
+									{ y: 334595, color: '#4C7300' }
+								],
+								// color: '#5F87C1', // Modern blue
 								zIndex: 1
 							}
 						]
@@ -599,8 +607,8 @@
 			id: 'map-indicator-2',
 			title: 'Mountain Region',
 			dataset_id: 'mountain-region',
-			info: 'The map represents different classes of mountain of mountain regions in HKH region. This dataset is prepared by ICIMOD based on GTOPO 1km resolution DEM showing different classes of mountains in HKH region.',
-			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
+			info: 'The map shows different classes of mountains in the HKH region with mountain classes defined by the Kapos et al. (2000). This dataset is prepared based on GTOPO 1km resolution DEM.',
+			source: 'ICIMOD'
 		},
 		{
 			id: 'map-indicator-1',
