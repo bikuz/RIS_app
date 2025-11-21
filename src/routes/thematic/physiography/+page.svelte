@@ -381,8 +381,16 @@
 						series: [
 							{
 								name: 'Area',
-								data: [441681, 1439526, 734456, 558920, 410214, 272447, 334595],
-								color: '#5F87C1', // Modern blue
+								data: [
+									{ y: 441681, color: '#A8A800' },
+									{ y: 1439526, color: '#D3FFBE' },
+									{ y: 734456, color: '#55FF00' },
+									{ y: 558920, color: '#4CE600' },
+									{ y: 410214, color: '#38A800' },
+									{ y: 272447, color: '#267300' },
+									{ y: 334595, color: '#4C7300' }
+								],
+								// color: '#5F87C1', // Modern blue
 								zIndex: 1
 							}
 						]
