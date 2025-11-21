@@ -1249,12 +1249,12 @@ export const allMapLayers = {
 	'human-dimensions': [
 		{
 			id: 'population-2025',
-			title: 'Population Trends across HKH',
+			title: 'Population 2025',
 			map_layers: {
 				default: [
 					{
 						id: 'population-2025-layer',
-						name: 'Population Trends across HKH',
+						name: 'Population 2025',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer',
 						layerIndex: 0,
 						mapserver: 'arcgis'
@@ -1264,12 +1264,12 @@ export const allMapLayers = {
 		},
 		{
 			id: 'aged-75-proportion',
-			title: 'Proportion of Age >=75',
+			title: 'Proportion of Population Aged >=75',
 			map_layers: {
 				default: [
 					{
 						id: 'aged-75-proportion-layer',
-						name: 'Proportion of Age >=75',
+						name: 'Proportion of Population Aged >=75',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer',
 						layerIndex: 2,
 						mapserver: 'arcgis'
