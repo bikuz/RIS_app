@@ -76,6 +76,24 @@
 	let selectedBasemap = $state('dark-gray');
 	let baseMapLayer: TileLayer<any> | null = null;
 
+	// Layer panel state
+	let layerPanelOpen = $state(false);
+	
+	// Basic overlay layers (like boundaries, outlines, etc.)
+	const basicLayers = [
+		{
+			id: 'hkh-outline',
+			name: 'HKH Outline',
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer',
+			layerIndex: 0,
+			mapserver: 'arcgis'
+		}
+	];
+	
+	// Track which basic layers are active
+	let activeBasicLayers = $state<Set<string>>(new Set());
+	let basicMapLayers = $state<Record<string, ImageLayer<any>>>({});
+
 	// Define available basemaps
 	const basemaps = [
 		{
@@ -156,6 +174,87 @@
 			baseMapLayerRight = newBaseMapLayerRight;
 		}
 	}
+
+	// Toggle basic overlay layer (like HKH outline)
+	function toggleBasicLayer(layerId: string) {
+		if (!map) return;
+
+		const layerConfig = basicLayers.find((l) => l.id === layerId);
+		if (!layerConfig) return;
+
+		if (activeBasicLayers.has(layerId)) {
+			// Remove layer from main map
+			activeBasicLayers.delete(layerId);
+			if (basicMapLayers[layerId]) {
+				map.removeLayer(basicMapLayers[layerId]);
+				delete basicMapLayers[layerId];
+			}
+			
+			// Also remove from right map if swipe mode is active
+			if (swipeMode && mapRight) {
+				const rightLayers = mapRight.getLayers();
+				const layersArray = rightLayers.getArray();
+				for (let i = layersArray.length - 1; i >= 0; i--) {
+					const layer = layersArray[i];
+					// Check if it's an ImageLayer and has getSource method
+					if (layer instanceof ImageLayer) {
+						const source = layer.getSource();
+						if (source && 'getUrl' in source) {
+							const url = (source as any).getUrl();
+							if (url === layerConfig.url) {
+								mapRight.removeLayer(layer);
+								break;
+							}
+						}
+					}
+				}
+			}
+		} else {
+			// Add layer to main map
+			activeBasicLayers.add(layerId);
+			
+			const layer = new ImageLayer({
+				source: new ImageArcGISRest({
+					url: layerConfig.url,
+					params: {
+						LAYERS: `show:${layerConfig.layerIndex}`,
+						FORMAT: 'PNG32',
+						TRANSPARENT: true
+					}
+				}),
+				zIndex: 20, // Above all data layers (data layers use zIndex 10)
+				opacity: 1,
+				visible: true
+			});
+
+			// Insert at the end to ensure it's on top of all other layers
+			const layers = map.getLayers();
+			layers.push(layer);
+			basicMapLayers[layerId] = layer;
+			
+			// Also add to right map if swipe mode is active
+			if (swipeMode && mapRight) {
+				const rightLayer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerConfig.url,
+						params: {
+							LAYERS: `show:${layerConfig.layerIndex}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 20,
+					opacity: 1,
+					visible: true
+				});
+				const rightLayers = mapRight.getLayers();
+				rightLayers.push(rightLayer);
+			}
+		}
+		
+		activeBasicLayers = new Set(activeBasicLayers);
+		basicMapLayers = { ...basicMapLayers };
+	}
 	
 	// Initialize right map for swipe mode
 	function initializeRightMap() {
@@ -174,10 +273,33 @@
 		
 		// Copy view from main map
 		const mainView = map.getView();
+		
+		// Add active basic layers to right map
+		const rightMapLayers: any[] = [baseMapLayerRight];
+		for (const layerId of activeBasicLayers) {
+			const layerConfig = basicLayers.find((l) => l.id === layerId);
+			if (layerConfig) {
+				const rightLayer = new ImageLayer({
+					source: new ImageArcGISRest({
+						url: layerConfig.url,
+						params: {
+							LAYERS: `show:${layerConfig.layerIndex}`,
+							FORMAT: 'PNG32',
+							TRANSPARENT: true
+						}
+					}),
+					zIndex: 20, // Above all data layers
+					opacity: 1,
+					visible: true
+				});
+				rightMapLayers.push(rightLayer);
+			}
+		}
+		
 		mapRight = new Map({
 			target: mapContainerRight,
 			controls: defaultControls(),
-			layers: [baseMapLayerRight],
+			layers: rightMapLayers,
 			// view: new View({
 			// 	center: mainView.getCenter(),
 			// 	zoom: mainView.getZoom(),
@@ -965,6 +1087,37 @@
 		};
 	});
 
+	// Close layer and basemap panels when clicking outside
+	$effect(() => {
+		if (!layerPanelOpen && !basemapPanelOpen) return;
+
+		function handleClickOutside(event: MouseEvent) {
+			const target = event.target as HTMLElement;
+			const layerButton = document.querySelector('[data-layer-button]');
+			const layerPanel = document.querySelector('[data-layer-panel]');
+			const basemapButton = document.querySelector('[data-basemap-button]');
+			const basemapPanel = document.querySelector('[data-basemap-panel]');
+			
+			if (layerPanelOpen && layerButton && layerPanel) {
+				if (!layerPanel.contains(target) && !layerButton.contains(target)) {
+					layerPanelOpen = false;
+				}
+			}
+			
+			if (basemapPanelOpen && basemapButton && basemapPanel) {
+				if (!basemapPanel.contains(target) && !basemapButton.contains(target)) {
+					basemapPanelOpen = false;
+				}
+			}
+		}
+
+		document.addEventListener('click', handleClickOutside);
+		
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
+
 	// Update layer opacity
 	function updateLayerOpacity(layerPath: string, opacity: number) {
 		if (!mapLayers[layerPath]) return;
@@ -1319,15 +1472,22 @@
 		}
 	});
 
-	// Auto-add first dataset on mount
+	// Auto-add first dataset and hkh-outline on mount
 	$effect(() => {
-		if (map && selectedLayers.size === 0) {
-			// Auto-add Land Cover dataset if available
-			const landCoverDataset = allMapLayers.ecosystem?.find((d: any) => d.id === 'land-cover-2022');
-			if (landCoverDataset) {
-				const layerConfig = extractLayerConfig(landCoverDataset.map_layers);
-				if (layerConfig) {
-					toggleLayer('land-cover-2022', [], layerConfig);
+		if (map) {
+			// Auto-add HKH outline layer
+			if (!activeBasicLayers.has('hkh-outline')) {
+				toggleBasicLayer('hkh-outline');
+			}
+			
+			// Auto-add Land Cover dataset if available and no layers selected
+			if (selectedLayers.size === 0) {
+				const landCoverDataset = allMapLayers.ecosystem?.find((d: any) => d.id === 'land-cover-2022');
+				if (landCoverDataset) {
+					const layerConfig = extractLayerConfig(landCoverDataset.map_layers);
+					if (layerConfig) {
+						toggleLayer('land-cover-2022', [], layerConfig);
+					}
 				}
 			}
 		}
@@ -1356,6 +1516,57 @@
 			fetchLegendData();
 		} else {
 			legendData = {};
+		}
+	});
+	
+	// Ensure HKH outline layer stays on top of all data layers
+	$effect(() => {
+		if (!map) return;
+		
+		// Watch layerOrder to ensure basic layers stay on top when data layers change
+		const _ = layerOrder.length; // Trigger effect when layerOrder changes
+		
+		// Move all basic layers to the top whenever layerOrder changes
+		const layers = map.getLayers();
+		const layersArray = layers.getArray();
+		
+		for (const layerId of activeBasicLayers) {
+			const basicLayer = basicMapLayers[layerId];
+			if (basicLayer && layersArray.includes(basicLayer)) {
+				// Remove from current position
+				layers.remove(basicLayer);
+				// Add to the end (top of stack)
+				layers.push(basicLayer);
+			}
+		}
+		
+		// Also update right map if swipe mode is active
+		if (swipeMode && mapRight) {
+			const rightLayers = mapRight.getLayers();
+			const rightLayersArray = rightLayers.getArray();
+			
+			for (const layerId of activeBasicLayers) {
+				const layerConfig = basicLayers.find((l) => l.id === layerId);
+				if (layerConfig) {
+					// Find the matching layer in right map
+					for (let i = rightLayersArray.length - 1; i >= 0; i--) {
+						const layer = rightLayersArray[i];
+						if (layer instanceof ImageLayer) {
+							const source = layer.getSource();
+							if (source && 'getUrl' in source) {
+								const url = (source as any).getUrl();
+								if (url === layerConfig.url) {
+									// Remove from current position
+									rightLayers.remove(layer);
+									// Add to the end (top of stack)
+									rightLayers.push(layer);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	});
 	
@@ -1990,8 +2201,12 @@
 
 					<!-- Basemap Switcher Button -->
 					<button
+						data-basemap-button
 						class="absolute top-2 right-2 z-20 rounded border border-gray-200 bg-white p-1.5 shadow hover:bg-gray-100"
-						onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
+						onclick={() => {
+							basemapPanelOpen = !basemapPanelOpen;
+							if (basemapPanelOpen) layerPanelOpen = false;
+						}}
 						title="Change Basemap"
 					>
 						<MapIcon class="h-4 w-4 text-gray-700" />
@@ -2000,6 +2215,7 @@
 					<!-- Basemap Switcher Panel -->
 					{#if basemapPanelOpen}
 						<div
+							data-basemap-panel
 							class="absolute top-10 right-2 z-20 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
 						>
 							<div class="p-3">
@@ -2022,6 +2238,51 @@
 												alt={basemap.name}
 												class="h-8 w-12 rounded border border-gray-200 object-cover"
 											/>
+										</button>
+									{/each}
+								</div>
+							</div>
+						</div>
+					{/if}
+
+					<!-- Layer Button -->
+					<button
+						data-layer-button
+						class="absolute top-12 right-2 z-20 rounded border border-gray-200 bg-white p-1.5 shadow hover:bg-gray-100"
+						onclick={() => {
+							layerPanelOpen = !layerPanelOpen;
+							if (layerPanelOpen) basemapPanelOpen = false;
+						}}
+						title="Toggle Layers"
+					>
+						<Layers class="h-4 w-4 text-gray-700" />
+					</button>
+
+					<!-- Layer Panel -->
+					{#if layerPanelOpen}
+						<div
+							data-layer-panel
+							class="absolute top-20 right-2 z-20 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+						>
+							<div class="p-3">
+								<h3 class="mb-2 text-sm font-semibold">Layers</h3>
+								<div class="space-y-1">
+									{#each basicLayers as layer}
+										{@const isActive = activeBasicLayers.has(layer.id)}
+										<button
+											class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors {isActive
+												? 'bg-indigo-100 font-medium text-indigo-700'
+												: 'text-gray-700 hover:bg-gray-100'}"
+											onclick={() => toggleBasicLayer(layer.id)}
+										>
+											<div class="flex items-center gap-2 flex-1">
+												{#if isActive}
+													<CheckSquare class="h-4 w-4 fill-indigo-600 stroke-white stroke-[1.5] flex-shrink-0" />
+												{:else}
+													<Square class="h-4 w-4 stroke-gray-400 stroke-[1.5] flex-shrink-0" />
+												{/if}
+												<span class="flex-1">{layer.name}</span>
+											</div>
 										</button>
 									{/each}
 								</div>
