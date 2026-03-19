@@ -779,9 +779,8 @@
 
 	// Function to select information layer
 	function selectInformationLayer(layerId: string) {
-		// If clicking the same layer, deselect it
+		// If clicking the same layer, do nothing (don't deselect)
 		if (selectedInformationLayer === layerId) {
-			selectedInformationLayer = null;
 			return;
 		}
 

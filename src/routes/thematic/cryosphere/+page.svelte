@@ -932,6 +932,11 @@
 
 	// Function to select information layer
 	function selectInformationLayer(layerId: string) {
+		// If clicking the same layer, do nothing (don't deselect)
+		if (selectedInformationLayer === layerId) {
+			return;
+		}
+
 		// Always select the layer and add it to the map (no toggle off functionality)
 		selectedInformationLayer = layerId;
 		// Clear question selection when selecting an information layer
