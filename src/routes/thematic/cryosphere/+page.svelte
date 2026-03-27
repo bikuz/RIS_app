@@ -590,6 +590,7 @@
 	let layoutState = $state('default');
 
 	// StoryMap loading state
+	let isLayerLoading = $state(false);
 	let isStoryMapLoading = $state(true);
 
 	// Generate iframe key based on layout state to force reload on layout change
@@ -873,13 +874,14 @@
 	function addWMSLayer(layer: any) {
 		if (!map || !layer) return;
 		if (layer.mapserver === 'arcgis') {
-			const arcgisLayer = new ImageLayer({
-				source: new ImageArcGISRest({
-					url: layer.url,
-					params: { LAYERS: `show:${layer.layerIndex}`, FORMAT: 'PNG32', TRANSPARENT: true }
-				}),
-				zIndex: 2
+			const source = new ImageArcGISRest({
+				url: layer.url,
+				params: { LAYERS: `show:${layer.layerIndex}`, FORMAT: 'PNG32', TRANSPARENT: true }
 			});
+			source.on('imageloadstart', () => { isLayerLoading = true; });
+			source.on('imageloadend', () => { isLayerLoading = false; });
+			source.on('imageloaderror', () => { isLayerLoading = false; });
+			const arcgisLayer = new ImageLayer({ source, zIndex: 2 });
 			arcgisLayer.set('cryoLayerKey', `${layer.url}_${layer.layerIndex}`);
 			map.addLayer(arcgisLayer);
 		}
@@ -896,6 +898,7 @@
 		if (!map) return;
 		const toRemove = map.getLayers().getArray().filter((l) => l.get('cryoLayerKey') !== undefined);
 		toRemove.forEach((l) => map!.removeLayer(l));
+		isLayerLoading = false;
 	}
 
 	// Update map layers based on current dataset and control state
@@ -1164,6 +1167,18 @@
 								bind:this={mapContainer}
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
+
+							<!-- Layer Loading Overlay -->
+							{#if isLayerLoading}
+								<div
+									class="pointer-events-none absolute inset-0 z-30 flex items-center justify-center rounded-xl bg-white/40 backdrop-blur-[2px]"
+								>
+									<div class="flex items-center space-x-2 rounded-full border border-white/30 bg-white/90 px-4 py-2 shadow-lg backdrop-blur-sm">
+										<div class="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-cyan-500"></div>
+										<span class="text-xs font-medium text-slate-600">Loading layer...</span>
+									</div>
+								</div>
+							{/if}
 
 							<!-- Home Reset Button -->
 							<button
