@@ -31,7 +31,7 @@ export const topicColors = {
 	weather: 'from-yellow-500 to-orange-500',
 	physiography: 'from-stone-500 to-amber-500',
 	'air-quality': 'from-red-500 to-stone-500',
-	disaster: 'from-rose-600 to-[rgb(106,64,66)]'
+	disaster: 'from-[rgb(227,136,0)] to-[rgb(167,97,0)]'
 };
 
 // export const topicHoverColors = {

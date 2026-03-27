@@ -647,7 +647,7 @@
 					<div class="text-center">
 						<div class="mb-4 flex justify-center">
 							<div
-								class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-rose-600"
+								class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-[rgb(227,136,0)]"
 							></div>
 						</div>
 						<p class="text-sm font-medium text-slate-600">Loading Story...</p>
@@ -829,7 +829,7 @@
 										onclick={() => (legendCollapsed = !legendCollapsed)}
 									>
 										<div class="flex items-center space-x-2">
-											<List class="h-3.5 w-3.5 text-rose-600" />
+											<List class="h-3.5 w-3.5 text-[rgb(227,136,0)]" />
 											{#if !legendCollapsed}
 												<span class="font-medium text-slate-700">Legend</span>
 											{/if}
@@ -906,7 +906,7 @@
 					>
 						<!-- Information Layer Header -->
 						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-							<div class="rounded-lg bg-gradient-to-r from-rose-600 to-[rgb(106,64,66)] p-2">
+							<div class="rounded-lg bg-gradient-to-r from-[rgb(227,136,0)] to-[rgb(167,97,0)] p-2">
 								<Layers class="h-5 w-5 text-white" />
 							</div>
 							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
@@ -920,7 +920,7 @@
 										<div
 											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
 											layer.title
-												? 'border-rose-300 bg-gradient-to-r from-rose-50/90 to-[rgb(106,64,66)]/10 shadow-md'
+												? 'border-[rgb(227,136,0)] bg-gradient-to-r from-amber-50/90 to-[rgb(227,136,0)]/10 shadow-md'
 												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
 										>
 											<button
@@ -930,7 +930,7 @@
 												<h4
 													class="flex-1 text-sm font-medium {selectedInformationLayer ===
 													layer.title
-														? 'text-rose-800'
+														? 'text-[rgb(167,97,0)]'
 														: 'text-slate-800'}"
 												>
 													{layer.title}
@@ -1000,7 +1000,7 @@
 				class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right scale-100 transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 opacity-100 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
 			>
 				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-rose-600 to-[rgb(106,64,66)] p-2">
+					<div class="rounded-lg bg-gradient-to-r from-[rgb(227,136,0)] to-[rgb(167,97,0)] p-2">
 						<Info class="h-3.5 w-3.5 text-white" />
 					</div>
 					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
@@ -1011,23 +1011,23 @@
 						<button
 							class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
 							questionItem.id
-								? 'border-rose-600 bg-rose-50 shadow-md'
-								: 'border-slate-200/50 bg-white/50 hover:border-rose-300 hover:bg-rose-50/70 hover:shadow-sm'}"
+								? 'border-[rgb(227,136,0)] bg-amber-50 shadow-md'
+								: 'border-slate-200/50 bg-white/50 hover:border-[rgb(227,136,0)]/50 hover:bg-amber-50/70 hover:shadow-sm'}"
 							onclick={() => selectQuestion(questionItem.id)}
 						>
 							<div class="flex items-start space-x-2">
 								<div class="mt-1 flex-shrink-0">
 									{#if selectedQuestionId === questionItem.id}
-										<CheckCircle class="h-3.5 w-3.5 text-rose-600" />
+										<CheckCircle class="h-3.5 w-3.5 text-[rgb(227,136,0)]" />
 									{:else}
 										<div
-											class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 group-hover:border-rose-400"
+											class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 group-hover:border-[rgb(227,136,0)]"
 										></div>
 									{/if}
 								</div>
 								<p
 									class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-										? 'font-medium text-rose-700'
+										? 'font-medium text-[rgb(167,97,0)]'
 										: 'text-slate-600 group-hover:text-slate-800'}"
 								>
 									{questionItem.question}
@@ -1041,7 +1041,7 @@
 
 		<button
 			onclick={toggleQuestionsPanel}
-			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-rose-600 to-[rgb(106,64,66)] text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
+			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-[rgb(227,136,0)] to-[rgb(167,97,0)] text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
 			aria-label="Toggle questions panel"
 		>
 			<HelpCircle class="h-6 w-6" />
