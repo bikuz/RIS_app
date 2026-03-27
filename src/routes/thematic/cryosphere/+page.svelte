@@ -257,13 +257,6 @@
 				})
 			});
 
-			// Add default layer (Population 2025 - Layer 0) when map initializes
-			addArcGISLayer(
-				'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier/MapServer',
-				0,
-				'Glacier'
-			);
-
 			// Listen for fullscreen changes
 			const handleFullscreenChange = () => {
 				const isCurrentlyFullscreen = document.fullscreenElement !== null;
@@ -293,9 +286,12 @@
 				console.log('Map clicked at:', coordinate);
 			});
 
-			// Ensure map renders properly
+			// Ensure map renders properly and load initial layer
 			if (map) {
 				map.updateSize();
+				setTimeout(() => {
+					if (currentDataset) updateMapLayers();
+				}, 200);
 			}
 		}, 100);
 	}
@@ -384,13 +380,56 @@
 					}
 				}
 			],
-			map_data: {
-				name: 'Glacier Numbers across HKH',
-				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier/MapServer',
-				layer_id: 0,
-				description: 'Number of Glaciers across HKH'
-			},
-			control_type: 'none'
+			control_type: 'threshold-control',
+			control_options: ['All', '1990', '2000', '2010', '2020'],
+			default_option: 'All',
+			map_layers: {
+				All: [
+					{
+						id: 'glacier-all',
+						name: 'Glacier (All Years)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
+						layerIndex: 4,
+						mapserver: 'arcgis'
+					}
+				],
+				'1990': [
+					{
+						id: 'glacier-1990',
+						name: 'Glacier 1990',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
+						layerIndex: 3,
+						mapserver: 'arcgis'
+					}
+				],
+				'2000': [
+					{
+						id: 'glacier-2000',
+						name: 'Glacier 2000',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
+						layerIndex: 2,
+						mapserver: 'arcgis'
+					}
+				],
+				'2010': [
+					{
+						id: 'glacier-2010',
+						name: 'Glacier 2010',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
+						layerIndex: 1,
+						mapserver: 'arcgis'
+					}
+				],
+				'2020': [
+					{
+						id: 'glacier-2020',
+						name: 'Glacier 2020',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
+					}
+				]
+			}
 		},
 		{
 			id: 'glacial_lake',
@@ -415,13 +454,18 @@
 					}
 				}
 			],
-			map_data: {
-				name: 'Glacial Lake',
-				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/GlacialLake/MapServer',
-				layer_id: 0,
-				description: 'Glacial Lakes across HKH'
-			},
-			control_type: 'none'
+			control_type: 'none',
+			map_layers: {
+				default: [
+					{
+						id: 'glacial-lake',
+						name: 'Glacial Lake',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/GlacialLake/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
+					}
+				]
+			}
 		},
 		{
 			id: 'glof',
@@ -475,13 +519,18 @@
 					}
 				}
 			],
-			map_data: {
-				name: 'GLOFs',
-				layer_id: 0,
-				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/GLOF/MapServer',
-				description: 'GLOFs in High Mountain Asia'
-			},
-			control_type: 'none'
+			control_type: 'none',
+			map_layers: {
+				default: [
+					{
+						id: 'glof',
+						name: 'GLOFs in High Mountain Asia',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/GLOF/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
+					}
+				]
+			}
 		}
 	];
 
@@ -519,6 +568,9 @@
 		}
 	];
 
+	// Track year selection for glacier threshold-control
+	let selectedGlacierYear = $state('All');
+
 	// Track selected question - default to first question
 	let selectedQuestionId = $state('');
 
@@ -538,6 +590,7 @@
 	let layoutState = $state('default');
 
 	// StoryMap loading state
+	let isLayerLoading = $state(false);
 	let isStoryMapLoading = $state(true);
 
 	// Generate iframe key based on layout state to force reload on layout change
@@ -679,7 +732,7 @@
 			}
 		}
 
-		updateLegend();
+		fetchLegendData();
 	}
 
 	// Function to switch basemap
@@ -738,7 +791,8 @@
 
 	// Extract current data from dataset
 	let currentCharts = $derived(currentDataset?.charts || []);
-	let currentMapData = $derived(currentDataset?.map_data);
+	let currentMapLayers = $derived(currentDataset?.map_layers || null);
+	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	// Watch for layout state changes and update map size
 	$effect(() => {
@@ -772,139 +826,108 @@
 		}
 	});
 
-	// Get layer by layer ID from map
-	const getLayerByLayerId = (layerId: number): any | null => {
-		if (!map) return null;
-		const layers = map.getLayers().getArray();
-		for (const layer of layers) {
-			if (layer.get('layerId') === layerId) {
-				return layer;
+	// Fetch legend data for current layers
+	async function fetchLegendData() {
+		if (legendFetchTimeout) clearTimeout(legendFetchTimeout);
+
+		legendFetchTimeout = setTimeout(async () => {
+			legendData = {};
+			if (!currentDataset || !currentDataset.map_layers) return;
+
+			let layersToFetch: any[] = [];
+			if (currentDataset.control_type === 'none') {
+				const layers = (currentDataset.map_layers as any).default;
+				layersToFetch = Array.isArray(layers) ? layers : [layers];
+			} else if (currentDataset.control_type === 'threshold-control') {
+				const selected = (currentMapLayers as any)?.[selectedGlacierYear];
+				layersToFetch = Array.isArray(selected) ? selected : [selected];
 			}
-		}
-		return null;
-	};
 
-	// Function to fetch ArcGIS legend
-	async function fetchArcGISLegend(serviceUrl: string, layerId: number) {
-		try {
-			const legendUrl = `${serviceUrl}/legend?f=json`;
-			const response = await fetch(legendUrl);
-			const data = await response.json();
-
-			const layerLegend = data.layers.find((l: any) => l.layerId === layerId);
-			if (layerLegend) {
-				return {
-					name: layerLegend.layerName,
-					items: layerLegend.legend.map((item: any) => ({
-						label: item.label,
-						imageData: `data:image/png;base64,${item.imageData}`
-					}))
-				};
-			}
-		} catch (error) {
-			console.error('Error fetching ArcGIS legend:', error);
-		}
-		return null;
-	}
-
-	// Update legend when layers change
-	async function updateLegend() {
-		const newLegendData = {};
-
-		// Get all layers from the map
-		if (map) {
-			const layers = map.getLayers().getArray();
-
-			for (const layer of layers) {
-				const source = layer.getSource();
-
-				if (source instanceof ImageArcGISRest) {
-					// Handle layerId 0 explicitly, without using || that treats 0 as falsy
-					let layerId = layer.get('layerId');
-					if (layerId === undefined || layerId === null) {
-						layerId = layer.get('baseLayerId');
-					}
-
-					const serviceUrl = source.getUrl();
-
-					console.log('Found ArcGIS layer - ID:', layerId, 'URL:', serviceUrl);
-
-					if (layerId !== undefined && layerId !== null && serviceUrl) {
-						const legendKey = `${serviceUrl}_${layerId}`;
-
-						if (!legendData[legendKey]) {
-							console.log('Fetching legend for layer:', layerId);
-							const legend = await fetchArcGISLegend(serviceUrl, layerId);
-							if (legend) {
-								newLegendData[legendKey] = legend;
-								console.log('Legend fetched successfully for layer:', layerId);
-							} else {
-								console.log('No legend data returned for layer:', layerId);
-							}
-						} else {
-							newLegendData[legendKey] = legendData[legendKey];
-							console.log('Using cached legend for layer:', layerId);
+			for (const layer of layersToFetch) {
+				if (!layer) continue;
+				const uniqueKey = `${layer.url}_${layer.layerIndex}`;
+				if (layer.mapserver === 'arcgis') {
+					try {
+						const legendUrl = `${layer.url}/legend?f=json`;
+						const response = await fetch(legendUrl);
+						const data = await response.json();
+						const targetLayerId = parseInt(layer.layerIndex);
+						const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
+						if (layerLegend) {
+							legendData[uniqueKey] = {
+								name: layer.name,
+								items: layerLegend.legend.map((item: any) => ({
+									label: item.label,
+									imageData: `data:image/png;base64,${item.imageData}`
+								}))
+							};
 						}
+					} catch (error) {
+						console.error('Error fetching legend:', error);
 					}
 				}
 			}
+		}, 300);
+	}
+
+	// Add a single WMS/ArcGIS layer to map
+	function addWMSLayer(layer: any) {
+		if (!map || !layer) return;
+		if (layer.mapserver === 'arcgis') {
+			const source = new ImageArcGISRest({
+				url: layer.url,
+				params: { LAYERS: `show:${layer.layerIndex}`, FORMAT: 'PNG32', TRANSPARENT: true }
+			});
+			source.on('imageloadstart', () => { isLayerLoading = true; });
+			source.on('imageloadend', () => { isLayerLoading = false; });
+			source.on('imageloaderror', () => { isLayerLoading = false; });
+			const arcgisLayer = new ImageLayer({ source, zIndex: 2 });
+			arcgisLayer.set('cryoLayerKey', `${layer.url}_${layer.layerIndex}`);
+			map.addLayer(arcgisLayer);
+		}
+	}
+
+	// Add multiple layers to map
+	function addMultipleLayers(layers: any[]) {
+		if (!map) return;
+		layers.forEach((layer) => addWMSLayer(layer));
+	}
+
+	// Remove all cryo data layers from map
+	function clearCryoLayers() {
+		if (!map) return;
+		const toRemove = map.getLayers().getArray().filter((l) => l.get('cryoLayerKey') !== undefined);
+		toRemove.forEach((l) => map!.removeLayer(l));
+		isLayerLoading = false;
+	}
+
+	// Update map layers based on current dataset and control state
+	function updateMapLayers() {
+		if (!map) return;
+		clearCryoLayers();
+		if (!currentDataset || !currentMapLayers) return;
+
+		if (currentDataset.control_type === 'none') {
+			const layers = (currentMapLayers as any).default;
+			if (layers) {
+				Array.isArray(layers) ? addMultipleLayers(layers) : addWMSLayer(layers);
+			}
+		} else if (currentDataset.control_type === 'threshold-control') {
+			const selectedLayers = (currentMapLayers as any)[selectedGlacierYear];
+			if (selectedLayers) {
+				Array.isArray(selectedLayers) ? addMultipleLayers(selectedLayers) : addWMSLayer(selectedLayers);
+			}
 		}
 
-		legendData = newLegendData;
-		console.log('Final legend data:', legendData); // Debug log
+		fetchLegendData();
 	}
 
-	// Modified addArcGISLayer to update legend
-	async function addArcGISLayer(url: string, layerId: number, layerName: string) {
-		if (!map) return;
-		removeAllDemographicLayers();
-
-		const arcgisLayer = new ImageLayer({
-			source: new ImageArcGISRest({
-				url: url,
-				params: {
-					LAYERS: `show:${layerId}`,
-					FORMAT: 'PNG32',
-					TRANSPARENT: true
-				}
-			}),
-			zIndex: 2
-		});
-
-		arcgisLayer.set('layerId', layerId);
-		arcgisLayer.set('layerName', layerName);
-		arcgisLayer.set('serviceUrl', url);
-		map.addLayer(arcgisLayer);
-
-		console.log('Added layer - ID:', layerId, 'Name:', layerName); // Debug log
-
-		// Add a small delay to ensure the layer is fully loaded before updating legend
-		setTimeout(async () => {
-			await updateLegend();
-			console.log('Legend update completed'); // Debug log
-		}, 100);
-	}
-
-	// Remove all demographic layers from map
-	function removeAllDemographicLayers() {
-		if (!map) return;
-
-		const layers = map.getLayers().getArray();
-		const layersToRemove: any[] = [];
-
-		// Find all demographic layers (those with layerId property)
-		layers.forEach((layer) => {
-			if (layer.get('layerId') !== undefined) {
-				layersToRemove.push(layer);
-			}
-		});
-
-		// Remove all found demographic layers
-		layersToRemove.forEach((layer) => {
-			map!.removeLayer(layer);
-			console.log('Removed layer:', layer.get('layerName'));
-		});
-	}
+	// Consolidated effect: re-render map whenever dataset or year control changes
+	$effect(() => {
+		const dataset = currentDataset;
+		const year = selectedGlacierYear;
+		if (dataset) updateMapLayers();
+	});
 
 	// Function to handle question selection
 	function selectQuestion(questionId: string) {
@@ -916,15 +939,9 @@
 		const selectedQuestion = questions.find((q) => q.id === questionId);
 		if (selectedQuestion?.dataset_id) {
 			const dataset = cryoDataset.find((item) => item.id === selectedQuestion.dataset_id);
-			if (dataset?.map_data) {
-				addArcGISLayer(dataset.map_data.layer_id, dataset.map_data.name);
+			if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
+				selectedGlacierYear = dataset.default_option as string;
 			}
-
-			// if (dataset?.control_type === 'time_slider') {
-			// 	isTimeSliderVisible = true;
-			// } else {
-			// 	isTimeSliderVisible = false;
-			// }
 		}
 
 		console.log('Question selected:', questionId);
@@ -932,6 +949,11 @@
 
 	// Function to select information layer
 	function selectInformationLayer(layerId: string) {
+		// If clicking the same layer, do nothing (don't deselect)
+		if (selectedInformationLayer === layerId) {
+			return;
+		}
+
 		// Always select the layer and add it to the map (no toggle off functionality)
 		selectedInformationLayer = layerId;
 		// Clear question selection when selecting an information layer
@@ -940,8 +962,8 @@
 		const selectedLayer = information_layers.find((layer) => layer.title === layerId);
 		if (selectedLayer?.dataset_id) {
 			const dataset = cryoDataset.find((item) => item.id === selectedLayer.dataset_id);
-			if (dataset?.map_data) {
-				addArcGISLayer(dataset.map_data.url, dataset.map_data.layer_id, dataset.map_data.name);
+			if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
+				selectedGlacierYear = dataset.default_option as string;
 			}
 		}
 
@@ -1146,6 +1168,18 @@
 								class="map-element h-full w-full overflow-hidden rounded-xl"
 							></div>
 
+							<!-- Layer Loading Overlay -->
+							{#if isLayerLoading}
+								<div
+									class="pointer-events-none absolute inset-0 z-30 flex items-center justify-center rounded-xl bg-white/40 backdrop-blur-[2px]"
+								>
+									<div class="flex items-center space-x-2 rounded-full border border-white/30 bg-white/90 px-4 py-2 shadow-lg backdrop-blur-sm">
+										<div class="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-cyan-500"></div>
+										<span class="text-xs font-medium text-slate-600">Loading layer...</span>
+									</div>
+								</div>
+							{/if}
+
 							<!-- Home Reset Button -->
 							<button
 								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
@@ -1241,9 +1275,53 @@
 								</div>
 							</div>
 
-							<!-- Legend Panel - Bottom Right -->
+							<!-- Dynamic Control Panel - Floating Pill Bar (threshold-control) -->
+						{#if currentDataset && currentDataset.control_type === 'threshold-control'}
+							<div
+								class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+									? 'z-[9999]'
+									: 'z-10'}"
+							>
+								<!-- Label -->
+								<div class="flex items-center space-x-2">
+									<div class="rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 p-1">
+										<div class="h-2 w-2 rounded-full bg-white"></div>
+									</div>
+									<span class="text-sm font-medium text-slate-700">Year</span>
+								</div>
+
+								<!-- Separator -->
+								<div class="h-4 w-px bg-slate-300"></div>
+
+								<!-- Year options as radio pill buttons -->
+								<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
+									{#if currentDataset.control_options}
+										{#each currentDataset.control_options as option}
+											<label class="relative cursor-pointer">
+												<input
+													type="radio"
+													bind:group={selectedGlacierYear}
+													value={option}
+													class="peer sr-only"
+												/>
+												<div
+													class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-cyan-500 peer-checked:to-blue-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-cyan-600 peer-checked:hover:to-blue-600 {selectedGlacierYear ===
+													option
+														? 'text-white'
+														: 'text-slate-600'}"
+												>
+													{option}
+												</div>
+											</label>
+										{/each}
+									{/if}
+								</div>
+							</div>
+						{/if}
+
+						<!-- Legend Panel - Bottom Right -->
 							{#if currentDataset && Object.keys(legendData).length > 0}
-								<div class="absolute right-2 bottom-2">
+								<div class="absolute right-2 bottom-2 {isFullscreen ? 'z-[9999]' : 'z-10'}">
 									<!-- Legend Toggle Button -->
 									<button
 										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"

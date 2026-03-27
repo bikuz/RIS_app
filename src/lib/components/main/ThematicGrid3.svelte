@@ -16,6 +16,7 @@
 	import airQualityImg from '$lib/assets/icons/air_quality.png';
 	import cryosphereImg from '$lib/assets/icons/cryosphere.png';
 	import physiographyImg from '$lib/assets/icons/physio.png';
+	import disasterImg from '$lib/assets/icons/air_quality.png';
 
 	// Map topics to their corresponding images
 	const topicImages: Record<string, string> = {
@@ -24,7 +25,8 @@
 		'human-dimensions': humanDimensionImg,
 		'air-quality': airQualityImg,
 		cryosphere: cryosphereImg,
-		physiography: physiographyImg
+		physiography: physiographyImg,
+		disaster: disasterImg
 	};
  
 	 
