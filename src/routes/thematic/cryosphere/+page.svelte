@@ -364,16 +364,16 @@
 					chart_type: 'column',
 
 					chart_data: {
-						categories: ['Amudarya', 'Brahmaputra', 'Ganga', 'Indus', 'Irrawaddy'],
+						categories: ['Amu Darya','Indus','Ganges','Brahmaputra','Irrawaddy','Salween','Mekong','Yangtze','Yellow River','Tarim','Eastern Asian','Qinghai- Tibetan'],
 						series: [
 							{
 								name: 'Number of Glaciers',
-								data: [3277, 10274, 7963, 17925, 133],
+								data: [3551, 25986, 8029, 12687, 127, 2122, 540, 1854, 283, 920, 2377, 5285],
 								color: '#45c8ff'
 							},
 							{
 								name: 'Area of Glaciers (sq. km)',
-								data: [2567, 12898, 9017, 20789, 35],
+								data: [2348.34, 24571.19, 7518.52, 9450.32, 32.91, 1091.25, 233.4, 1437.50, 156.26, 1726.40, 1906.34, 5309.59],
 								color: '#6d68de'
 							}
 						]
@@ -547,10 +547,10 @@
 	const information_layers = [
 		{
 			id: 'info-layer-1',
-			title: 'Glacier',
+			title: 'Glacier Area Change',
 			dataset_id: 'glacier',
-			info: 'This dataset provides information on the status of glaciers in the Hindu Kush Himalaya (HKH) region for the period 2005 ± 3 years (2002-2008). It was developed using Landsat ETM+ imageries from the corresponding years.There are an estimated 54,000 glaciers in the HKH region which cover about 60,000 square kilometers of the total area.',
-			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
+			info: 'The map shows percentage of glacier area change over the period of 1990 – 2020',
+			source: 'ICIMOD (https://rds.icimod.org/Home/DataDetail?metadataId=1973447)'
 		},
 		{
 			id: 'info-layer-2',
@@ -574,8 +574,8 @@
 	// Track selected question - default to first question
 	let selectedQuestionId = $state('');
 
-	// Track selected information layer (single selection) - default to Population 2025
-	let selectedInformationLayer = $state<string | null>('Glacier');
+	// Track selected information layer (single selection) - default to Glacier Area Change
+	let selectedInformationLayer = $state<string | null>('Glacier Area Change');
 
 	// Track expanded layer for accordion - default closed
 	let expandedLayer = $state<string | null>(null);
