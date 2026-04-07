@@ -32,16 +32,16 @@
 	 
 </script>
 
-<section class="relative overflow-hidden pt-5 " style="margin-top: -170px;">
+<section class="relative overflow-hidden pt-5 mt-0 lg:-mt-[170px] bg-gradient-to-r from-blue-800 to-green-800 lg:[background:none] pb-6 lg:pb-0">
 	<div class="container mx-auto relative px-4 sm:px-6 lg:px-8">
 		<!-- Thematic Cards - Top Row -->
 		<div class="mb-10 lg:mb-12">
 			<div class="flex flex-col lg:flex-row gap-6 lg:gap-6">
 				<!-- Spacer to match left stats column width -->
 				<div class="hidden lg:block w-[15%]"></div>
-				
+
 				<!-- Thematic Cards - Spans from stats to map -->
-				<div class="w-full lg:w-[85%] flex flex-wrap justify-between items-start gap-6 lg:gap-8">
+				<div class="w-full lg:w-[85%] flex flex-wrap justify-center lg:justify-between items-start gap-6 lg:gap-8">
 					{#each Object.entries(topicIcons) as [topic, IconComponent]}
 						{@const isDisabled = ([] as string[]).includes(topic)}
 						<div class="flex flex-col items-center gap-2">
@@ -84,7 +84,7 @@
 			</div>
 		</div>
 
-		
+
 </section>
 
 <style>

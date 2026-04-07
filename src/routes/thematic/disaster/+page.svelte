@@ -536,15 +536,15 @@
 			id: 'info-earthquake',
 			title: 'Earthquake',
 			dataset_id: 'earthquake',
-			info: 'Earthquake hazard data for the Hindu Kush Himalaya region, showing seismic activity and risk zones.',
-			source: 'ICIMOD GeoApps'
+			info: 'The map shows earthquake incidents occurring in the HKH region from 1971 to 2025 ',
+			source: 'USGS Earthquake (https://www.usgs.gov/programs/earthquake-hazards)'
 		},
 		{
 			id: 'info-forest-fire',
 			title: 'Forest Fire',
 			dataset_id: 'forest-fire',
-			info: 'Forest fire occurrence and risk mapping across the HKH region.',
-			source: 'ICIMOD GeoApps'
+			info: 'The map represents total number of forest fire incidents occurring within 5x5 km grids over 25 years (2001-2025) period in the HKH region. MODIS active fire data (with confidence greater than 50%) is overlaid with ICIMOD’s regional land cover data of HKH region for 2022 to identify the forest fire incidents.',
+			source: 'MODIS active fire (https://firms.modaps.eosdis.nasa.gov)'
 		}
 	];
 
