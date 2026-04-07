@@ -380,52 +380,14 @@
 					}
 				}
 			],
-			control_type: 'threshold-control',
-			control_options: ['All', '1990', '2000', '2010', '2020'],
-			default_option: 'All',
+			control_type: 'none',
 			map_layers: {
-				All: [
+				default: [
 					{
 						id: 'glacier-all',
-						name: 'Glacier (All Years)',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
-						layerIndex: 4,
-						mapserver: 'arcgis'
-					}
-				],
-				'1990': [
-					{
-						id: 'glacier-1990',
-						name: 'Glacier 1990',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
-						layerIndex: 3,
-						mapserver: 'arcgis'
-					}
-				],
-				'2000': [
-					{
-						id: 'glacier-2000',
-						name: 'Glacier 2000',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
-						layerIndex: 2,
-						mapserver: 'arcgis'
-					}
-				],
-				'2010': [
-					{
-						id: 'glacier-2010',
-						name: 'Glacier 2010',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
-						layerIndex: 1,
-						mapserver: 'arcgis'
-					}
-				],
-				'2020': [
-					{
-						id: 'glacier-2020',
-						name: 'Glacier 2020',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
-						layerIndex: 0,
+						name: 'Glacier Area Change',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier/MapServer',
+						layerIndex: 5,
 						mapserver: 'arcgis'
 					}
 				]
@@ -591,6 +553,7 @@
 
 	// StoryMap loading state
 	let isLayerLoading = $state(false);
+	let pendingImageLoads = 0;
 	let isStoryMapLoading = $state(true);
 
 	// Generate iframe key based on layout state to force reload on layout change
@@ -878,9 +841,20 @@
 				url: layer.url,
 				params: { LAYERS: `show:${layer.layerIndex}`, FORMAT: 'PNG32', TRANSPARENT: true }
 			});
-			source.on('imageloadstart', () => { isLayerLoading = true; });
-			source.on('imageloadend', () => { isLayerLoading = false; });
-			source.on('imageloaderror', () => { isLayerLoading = false; });
+			source.on('imageloadstart', () => {
+				pendingImageLoads++;
+				isLayerLoading = true;
+			});
+			source.on('imageloadend', () => {
+				pendingImageLoads = Math.max(0, pendingImageLoads - 1);
+				if (pendingImageLoads === 0) {
+					map?.once('rendercomplete', () => { isLayerLoading = false; });
+				}
+			});
+			source.on('imageloaderror', () => {
+				pendingImageLoads = Math.max(0, pendingImageLoads - 1);
+				if (pendingImageLoads === 0) isLayerLoading = false;
+			});
 			const arcgisLayer = new ImageLayer({ source, zIndex: 2 });
 			arcgisLayer.set('cryoLayerKey', `${layer.url}_${layer.layerIndex}`);
 			map.addLayer(arcgisLayer);
@@ -898,6 +872,7 @@
 		if (!map) return;
 		const toRemove = map.getLayers().getArray().filter((l) => l.get('cryoLayerKey') !== undefined);
 		toRemove.forEach((l) => map!.removeLayer(l));
+		pendingImageLoads = 0;
 		isLayerLoading = false;
 	}
 
@@ -939,8 +914,8 @@
 		const selectedQuestion = questions.find((q) => q.id === questionId);
 		if (selectedQuestion?.dataset_id) {
 			const dataset = cryoDataset.find((item) => item.id === selectedQuestion.dataset_id);
-			if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
-				selectedGlacierYear = dataset.default_option as string;
+			if (dataset?.control_type === 'threshold-control' && (dataset as any).default_option) {
+				selectedGlacierYear = (dataset as any).default_option as string;
 			}
 		}
 
@@ -962,8 +937,8 @@
 		const selectedLayer = information_layers.find((layer) => layer.title === layerId);
 		if (selectedLayer?.dataset_id) {
 			const dataset = cryoDataset.find((item) => item.id === selectedLayer.dataset_id);
-			if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
-				selectedGlacierYear = dataset.default_option as string;
+			if (dataset?.control_type === 'threshold-control' && (dataset as any).default_option) {
+				selectedGlacierYear = (dataset as any).default_option as string;
 			}
 		}
 
