@@ -364,68 +364,30 @@
 					chart_type: 'column',
 
 					chart_data: {
-						categories: ['Amudarya', 'Brahmaputra', 'Ganga', 'Indus', 'Irrawaddy'],
+						categories: ['Amu Darya','Indus','Ganges','Brahmaputra','Irrawaddy','Salween','Mekong','Yangtze','Yellow River','Tarim','Eastern Asian','Qinghai- Tibetan'],
 						series: [
 							{
 								name: 'Number of Glaciers',
-								data: [3277, 10274, 7963, 17925, 133],
+								data: [3551, 25986, 8029, 12687, 127, 2122, 540, 1854, 283, 920, 2377, 5285],
 								color: '#45c8ff'
 							},
 							{
 								name: 'Area of Glaciers (sq. km)',
-								data: [2567, 12898, 9017, 20789, 35],
+								data: [2348.34, 24571.19, 7518.52, 9450.32, 32.91, 1091.25, 233.4, 1437.50, 156.26, 1726.40, 1906.34, 5309.59],
 								color: '#6d68de'
 							}
 						]
 					}
 				}
 			],
-			control_type: 'threshold-control',
-			control_options: ['All', '1990', '2000', '2010', '2020'],
-			default_option: 'All',
+			control_type: 'none',
 			map_layers: {
-				All: [
+				default: [
 					{
 						id: 'glacier-all',
-						name: 'Glacier (All Years)',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
-						layerIndex: 4,
-						mapserver: 'arcgis'
-					}
-				],
-				'1990': [
-					{
-						id: 'glacier-1990',
-						name: 'Glacier 1990',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
-						layerIndex: 3,
-						mapserver: 'arcgis'
-					}
-				],
-				'2000': [
-					{
-						id: 'glacier-2000',
-						name: 'Glacier 2000',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
-						layerIndex: 2,
-						mapserver: 'arcgis'
-					}
-				],
-				'2010': [
-					{
-						id: 'glacier-2010',
-						name: 'Glacier 2010',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
-						layerIndex: 1,
-						mapserver: 'arcgis'
-					}
-				],
-				'2020': [
-					{
-						id: 'glacier-2020',
-						name: 'Glacier 2020',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier_1990_2020/MapServer',
-						layerIndex: 0,
+						name: 'Glacier Area Change',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier/MapServer',
+						layerIndex: 5,
 						mapserver: 'arcgis'
 					}
 				]
@@ -547,10 +509,10 @@
 	const information_layers = [
 		{
 			id: 'info-layer-1',
-			title: 'Glacier',
+			title: 'Glacier Area Change',
 			dataset_id: 'glacier',
-			info: 'This dataset provides information on the status of glaciers in the Hindu Kush Himalaya (HKH) region for the period 2005 ± 3 years (2002-2008). It was developed using Landsat ETM+ imageries from the corresponding years.There are an estimated 54,000 glaciers in the HKH region which cover about 60,000 square kilometers of the total area.',
-			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
+			info: 'The map shows percentage of glacier area change over the period of 1990 – 2020',
+			source: 'ICIMOD (https://rds.icimod.org/Home/DataDetail?metadataId=1973447)'
 		},
 		{
 			id: 'info-layer-2',
@@ -574,8 +536,8 @@
 	// Track selected question - default to first question
 	let selectedQuestionId = $state('');
 
-	// Track selected information layer (single selection) - default to Population 2025
-	let selectedInformationLayer = $state<string | null>('Glacier');
+	// Track selected information layer (single selection) - default to Glacier Area Change
+	let selectedInformationLayer = $state<string | null>('Glacier Area Change');
 
 	// Track expanded layer for accordion - default closed
 	let expandedLayer = $state<string | null>(null);
@@ -591,6 +553,7 @@
 
 	// StoryMap loading state
 	let isLayerLoading = $state(false);
+	let pendingImageLoads = 0;
 	let isStoryMapLoading = $state(true);
 
 	// Generate iframe key based on layout state to force reload on layout change
@@ -878,10 +841,21 @@
 				url: layer.url,
 				params: { LAYERS: `show:${layer.layerIndex}`, FORMAT: 'PNG32', TRANSPARENT: true }
 			});
-			source.on('imageloadstart', () => { isLayerLoading = true; });
-			source.on('imageloadend', () => { isLayerLoading = false; });
-			source.on('imageloaderror', () => { isLayerLoading = false; });
-			const arcgisLayer = new ImageLayer({ source, zIndex: 2 });
+			source.on('imageloadstart', () => {
+				pendingImageLoads++;
+				isLayerLoading = true;
+			});
+			source.on('imageloadend', () => {
+				pendingImageLoads = Math.max(0, pendingImageLoads - 1);
+				if (pendingImageLoads === 0) {
+					map?.once('rendercomplete', () => { isLayerLoading = false; });
+				}
+			});
+			source.on('imageloaderror', () => {
+				pendingImageLoads = Math.max(0, pendingImageLoads - 1);
+				if (pendingImageLoads === 0) isLayerLoading = false;
+			});
+			const arcgisLayer = new ImageLayer({ source, zIndex: 2, opacity: 0.7 });
 			arcgisLayer.set('cryoLayerKey', `${layer.url}_${layer.layerIndex}`);
 			map.addLayer(arcgisLayer);
 		}
@@ -898,6 +872,7 @@
 		if (!map) return;
 		const toRemove = map.getLayers().getArray().filter((l) => l.get('cryoLayerKey') !== undefined);
 		toRemove.forEach((l) => map!.removeLayer(l));
+		pendingImageLoads = 0;
 		isLayerLoading = false;
 	}
 
@@ -939,8 +914,8 @@
 		const selectedQuestion = questions.find((q) => q.id === questionId);
 		if (selectedQuestion?.dataset_id) {
 			const dataset = cryoDataset.find((item) => item.id === selectedQuestion.dataset_id);
-			if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
-				selectedGlacierYear = dataset.default_option as string;
+			if (dataset?.control_type === 'threshold-control' && (dataset as any).default_option) {
+				selectedGlacierYear = (dataset as any).default_option as string;
 			}
 		}
 
@@ -962,8 +937,8 @@
 		const selectedLayer = information_layers.find((layer) => layer.title === layerId);
 		if (selectedLayer?.dataset_id) {
 			const dataset = cryoDataset.find((item) => item.id === selectedLayer.dataset_id);
-			if (dataset?.control_type === 'threshold-control' && dataset.default_option) {
-				selectedGlacierYear = dataset.default_option as string;
+			if (dataset?.control_type === 'threshold-control' && (dataset as any).default_option) {
+				selectedGlacierYear = (dataset as any).default_option as string;
 			}
 		}
 
