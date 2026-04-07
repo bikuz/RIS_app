@@ -855,7 +855,7 @@
 				pendingImageLoads = Math.max(0, pendingImageLoads - 1);
 				if (pendingImageLoads === 0) isLayerLoading = false;
 			});
-			const arcgisLayer = new ImageLayer({ source, zIndex: 2 });
+			const arcgisLayer = new ImageLayer({ source, zIndex: 2, opacity: 0.7 });
 			arcgisLayer.set('cryoLayerKey', `${layer.url}_${layer.layerIndex}`);
 			map.addLayer(arcgisLayer);
 		}
