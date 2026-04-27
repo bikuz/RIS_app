@@ -388,24 +388,6 @@
 			charts: []
 		},
 		{
-			id: 'landslide-susceptibility',
-			title: 'Landslide Susceptibility (Rainfall Triggered)',
-			description: 'Landslide Susceptibility (Rainfall Triggered) in the HKH region',
-			control_type: 'none',
-			map_layers: {
-				default: [
-					{
-						id: 'landslide-susceptibility-layer',
-						name: 'Landslide Susceptibility (Rainfall Triggered)',
-						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Ecosystem/MapServer',
-						layerIndex: 1,
-						mapserver: 'arcgis'
-					}
-				]
-			},
-			charts: []
-		},
-		{
 			id: 'hkh-wetland-distribution',
 			title: 'HKH Tropical Sub-Tropical Wetland Distribution',
 			description: 'HKH Tropical Sub-Tropical Wetland Distribution in the HKH region',
@@ -531,13 +513,6 @@
 			title: 'Conversion Pressure Index',
 			dataset_id: 'conversion-pressure-index',
 			info: 'The map represents the Conversion Pressure Index across the HKH region, indicating areas under pressure from land conversion activities.',
-			source: ''
-		},
-		{
-			id: 'map-indicator-7',
-			title: 'Landslide Susceptibility (Rainfall Triggered)',
-			dataset_id: 'landslide-susceptibility',
-			info: 'The map represents the susceptibility of areas in the HKH region to rainfall-triggered landslides.',
 			source: ''
 		},
 		{
