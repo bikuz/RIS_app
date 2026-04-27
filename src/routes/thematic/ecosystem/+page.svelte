@@ -370,6 +370,42 @@
 		},
 
 		{
+			id: 'conversion-pressure-index',
+			title: 'Conversion Pressure Index',
+			description: 'Conversion Pressure Index in the HKH region',
+			control_type: 'none',
+			map_layers: {
+				default: [
+					{
+						id: 'conversion-pressure-index-layer',
+						name: 'Conversion Pressure Index',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Ecosystem/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
+		},
+		{
+			id: 'hkh-wetland-distribution',
+			title: 'HKH Tropical Sub-Tropical Wetland Distribution',
+			description: 'HKH Tropical Sub-Tropical Wetland Distribution in the HKH region',
+			control_type: 'none',
+			map_layers: {
+				default: [
+					{
+						id: 'hkh-wetland-distribution-layer',
+						name: 'HKH Tropical Sub-Tropical Wetland Distribution',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Ecosystem/MapServer',
+						layerIndex: 2,
+						mapserver: 'arcgis'
+					}
+				]
+			},
+			charts: []
+		},
+		{
 			id: 'soil-carbon-content',
 			title: 'Soil Organic Carbon Content',
 			control_type: 'threshold-control',
@@ -471,6 +507,20 @@
 			dataset_id: 'soil-carbon-content',
 			info: 'The map represents the spaial distribution of soil organic carbon content across HKH at 4 different depths(0cm, 30cm, 60cm and 200cm).The data is sourced from the OpenLandMap global soil database.Values are expressed in g/kg, indicating the mass of soil organic carbon present per kilogram of soil at spatial resolution of 250m.',
 			source: 'OpenLandMap Soil Organic Carbon Content (https://stac.openlandmap.org/)'
+		},
+		{
+			id: 'map-indicator-6',
+			title: 'Conversion Pressure Index',
+			dataset_id: 'conversion-pressure-index',
+			info: 'The map represents the Conversion Pressure Index across the HKH region, indicating areas under pressure from land conversion activities.',
+			source: ''
+		},
+		{
+			id: 'map-indicator-8',
+			title: 'HKH Tropical Sub-Tropical Wetland Distribution',
+			dataset_id: 'hkh-wetland-distribution',
+			info: 'The map represents the distribution of tropical and sub-tropical wetlands across the HKH region.',
+			source: ''
 		}
 	];
 
