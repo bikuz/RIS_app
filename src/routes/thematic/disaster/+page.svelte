@@ -487,6 +487,22 @@
 			}
 		},
 		{
+			id: 'landslide-susceptibility',
+			control_type: 'none',
+			charts: [],
+			map_layers: {
+				default: [
+					{
+						id: 'landslide-susceptibility-layer',
+						name: 'Landslide Susceptibility (Rainfall Triggered)',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Ecosystem/MapServer',
+						layerIndex: 1,
+						mapserver: 'arcgis'
+					}
+				]
+			}
+		},
+		{
 			id: 'forest-fire',
 			control_type: 'none',
 			charts: [
@@ -538,6 +554,13 @@
 			dataset_id: 'earthquake',
 			info: 'The map shows earthquake incidents occurring in the HKH region from 1971 to 2025 ',
 			source: 'USGS Earthquake (https://www.usgs.gov/programs/earthquake-hazards)'
+		},
+		{
+			id: 'info-landslide-susceptibility',
+			title: 'Landslide Susceptibility (Rainfall Triggered)',
+			dataset_id: 'landslide-susceptibility',
+			info: 'The map represents the susceptibility of areas in the HKH region to rainfall-triggered landslides.',
+			source: ''
 		},
 		{
 			id: 'info-forest-fire',
