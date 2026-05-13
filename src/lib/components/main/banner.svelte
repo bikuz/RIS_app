@@ -23,7 +23,7 @@
       <!-- Text container taking 1/3 of screen width on left side -->
       <div class="w-full md:w-1/5 text-left">
         <p class="text-base md:text-2xl mb-8 text-white max-w-none leading-relaxed">
-          A comprehensive platform that integrates crtical information about HKH region
+          A comprehensive platform that integrates critical information about HKH region
 
         </p>
       </div>

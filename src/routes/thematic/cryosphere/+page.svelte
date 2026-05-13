@@ -511,7 +511,7 @@
 			id: 'info-layer-1',
 			title: 'Glacier Area Change',
 			dataset_id: 'glacier',
-			info: 'The map shows percentage of glacier area change over the period of 1990 – 2020',
+			info: 'The map shows percentage of glacier area change over the period of 1990 – 2020 in each one degree longitudinal and latitudinal grid in the HKH region.',
 			source: 'ICIMOD (https://rds.icimod.org/Home/DataDetail?metadataId=1973447)'
 		},
 		{
