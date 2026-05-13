@@ -403,7 +403,45 @@
 					}
 				]
 			},
-			charts: []
+			charts: [
+				{
+					title: 'HKH Tropical Sub-Tropical Wetland Distribution',
+					chart_type: 'column',
+					units: 'hectares',
+					yAxisTitle: 'Area (ha)',
+					chart_data: {
+						categories: [
+							'Open Waters',
+							'Mangroves',
+							'Swamps',
+							'Fens',
+							'Riverine and lacustrine',
+							'Floodouts',
+							'Floodplains',
+							'General Marshes',
+							'Marshes in arid climate',
+							'Marshes wet meadows'
+						],
+						series: [
+							{
+								name: 'Wetland',
+								data: [
+									{ y: 3216600, color: '#3F11F7' },
+									{ y: 63894, color: '#267300' },
+									{ y: 844129, color: '#E69800' },
+									{ y: 109008, color: '#E6E600' },
+									{ y: 10449, color: '#0084A8' },
+									{ y: 578681, color: '#FFA77F' },
+									{ y: 503364, color: '#FFD37F' },
+									{ y: 2205606, color: '#C7D79E' },
+									{ y: 461297, color: '#A87000' },
+									{ y: 784857, color: '#A83800' }
+								]
+							}
+						]
+					}
+				}
+			]
 		},
 		{
 			id: 'soil-carbon-content',
@@ -512,15 +550,15 @@
 			id: 'map-indicator-6',
 			title: 'Conversion Pressure Index',
 			dataset_id: 'conversion-pressure-index',
-			info: 'The map represents the Conversion Pressure Index across the HKH region, indicating areas under pressure from land conversion activities.',
-			source: ''
+			info: 'The map represents the Conversion Pressure Index across the HKH region showing a 1-km resolution map of land conversion pressure from multiple drivers. The CPI combines past rates of anthropogenic change, as measured by temporal human modification maps, with suitability maps for potential future expansion by large-scale development.',
+			source: 'https://doi.org/10.6084/m9.figshare.25340668'
 		},
 		{
 			id: 'map-indicator-8',
 			title: 'HKH Tropical Sub-Tropical Wetland Distribution',
 			dataset_id: 'hkh-wetland-distribution',
-			info: 'The map represents the distribution of tropical and sub-tropical wetlands across the HKH region.',
-			source: ''
+			info: 'The map represents the distribution of tropical and sub-tropical wetlands across the HKH region. The dataset is clipped for the HKH region from the Global Wetlands Map produced by the Sustainable Wetlands Adaptation and Mitigation Program ( SWAMP ).',
+			source: 'https://www2.cifor.org/global-wetlands/'
 		}
 	];
 
