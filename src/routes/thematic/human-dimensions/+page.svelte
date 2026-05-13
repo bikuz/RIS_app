@@ -1329,7 +1329,7 @@
 			title: 'Impervious Surface',
 			dataset_id: 'impervious_surface',
 			info: 'The dataset provides comprehensive insights into impervious-surface dynamics leveraging time-series Landsat imagery on the Google Earth Engine cloud computing platform created through an innovative and automated methodology that capitalizes on the strengths of spectral-generalization and automatic-sample-extraction strategies.',
-			source: 'WorldPop Global Population Data 2015-2030 (https://www.worldpop.org)'
+			source: 'Global 30m Impervious-Surface Dynamic Dataset (https://gee-community-catalog.org/projects/gisd30)'
 		},
 		{
 			id: 'info-layer-9',

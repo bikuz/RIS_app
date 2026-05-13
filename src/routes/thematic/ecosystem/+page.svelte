@@ -516,7 +516,7 @@
 			title: 'Land Cover Distribution 2022',
 			dataset_id: 'land-cover-2022',
 			info: 'The map represents the physical or biophysical characteristics of the HKH region. This dataset is developed by ICIMOD under its SERVIR–HKH Initiative, using remote-sensing and Google Earth Engine, and collaborating with  partner organizations.',
-			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
+			source: 'ICIMOD (https://rds.icimod.org/Home/DataDetail?metadataId=1972511)'
 		},
 		{
 			id: 'map-indicator-3',
