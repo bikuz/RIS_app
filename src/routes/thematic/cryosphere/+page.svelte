@@ -519,14 +519,14 @@
 			title: 'Glacial Lake',
 			dataset_id: 'glacial_lake',
 			info: 'This map represents the glacial lakes across the HKH region. The dataset is generated through semi-automated analysis of Landsat 5 TM and Landsat 7 ETM+ satellite images from the 2005 period (±2 years).',
-			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
+			source: 'ICIMOD (https://rds.icimod.org/Home/DataDetail?metadataId=35856)'
 		},
 		{
 			id: 'info-layer-3',
 			title: 'Glacial Lake Outburst Flood (GLOF)',
 			dataset_id: 'glof',
 			info: 'The map represents the Glacier Lake Outburst Floods (GLOFs) events across High Mountain Asia (HMA). The dataset is sourced from the ICIMODs Regional DataBase System  which have documented 697 individual GLOFs that occurred between 1833 and 2022.',
-			source: 'Regional Database System, Icimod  (https://rds.icimod.org/)'
+			source: 'ICIMOD (https://rds.icimod.org/Home/DataDetail?metadataId=1973283)'
 		}
 	];
 
