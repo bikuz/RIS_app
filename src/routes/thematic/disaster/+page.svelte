@@ -559,8 +559,8 @@
 			id: 'info-landslide-susceptibility',
 			title: 'Landslide Susceptibility (Rainfall Triggered)',
 			dataset_id: 'landslide-susceptibility',
-			info: 'The map represents the susceptibility of areas in the HKH region to rainfall-triggered landslides.',
-			source: ''
+			info: 'The map represents the susceptibility of areas in the HKH region to rainfall-triggered landslides classified into five susceptibility levels: very low, low, moderate, high, and very high. The landslide susceptibility is based on the model developed by NGI.  The precipitation-induced landslides susceptibility map classifies the terrain into five susceptibility classes by combining slope, vegetation, lithology, and antecedent rainfall information.',
+			source: 'https://giri.unepgrid.ch/'
 		},
 		{
 			id: 'info-forest-fire',
