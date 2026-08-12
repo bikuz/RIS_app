@@ -1,24 +1,7 @@
 <script lang="ts">
-	import {
-		topicIcons,
-		topicDetail,
-		getTopicColor,
-		selectTopic,
-		getTopicName
-	} from '$lib/data/themeData';
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { Mountain, Users, Snowflake, Pentagon, Map, Cloud, Wind, Waves } from '@lucide/svelte';
-
-	// Import images from assets
-	import climateImg from '$lib/assets/icons/climate.png';
-	import ecosystemImg from '$lib/assets/icons/ecosystem.png';
-	import humanDimensionImg from '$lib/assets/icons/human_dimension.png';
-	import airQualityImg from '$lib/assets/icons/air_quality.png';
-	import cryosphereImg from '$lib/assets/icons/cryosphere.png';
-	import physiographyImg from '$lib/assets/icons/physio.png';
-
-	 
 
 	let Map3D: any = $state();
 
