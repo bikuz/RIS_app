@@ -3,10 +3,8 @@
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
-	import OSM from 'ol/source/OSM';
 	import XYZ from 'ol/source/XYZ';
 	import { fromLonLat } from 'ol/proj';
-	import { defaults as defaultInteractions } from 'ol/interaction';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import lightMap from '$lib/assets/images/basemaps/light-map.png';
@@ -15,16 +13,11 @@
 	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
 	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
 	import {
-		Leaf,
 		CheckCircle,
 		Layers,
 		Info,
-		Eye,
-		EyeOff,
 		ChevronUp,
 		ChevronDown,
-		ChevronLeft,
-		ChevronRight,
 		ChevronsLeft,
 		ChevronsRight,
 		HelpCircle,
@@ -33,13 +26,10 @@
 		House
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
-	import ScaleLine from 'ol/control/ScaleLine';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
 	import ImageLayer from 'ol/layer/Image';
 	import ImageWMS from 'ol/source/ImageWMS';
 	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
-
-	let { currentTopic = 'ecosystem', width = '100%', height = '400px' } = $props();
 
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
@@ -623,8 +613,6 @@
 				return;
 			}
 
-			console.log('Fetching legend data for dataset:', currentDataset.id);
-
 			// Get current layers based on control type
 			let layersToFetch: any[] = [];
 
@@ -679,7 +667,6 @@
 				}
 			}
 
-			console.log('Legend data updated:', Object.keys(legendData));
 		}, 300); // 300ms debounce delay
 	}
 
@@ -745,11 +732,7 @@
 			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
 			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-			// Add some basic interaction
-			map.on('click', (event) => {
-				const coordinate = event.coordinate;
-				console.log('Map clicked at:', coordinate);
-			});
+			// Feature identify on click can be added here using event.coordinate
 
 			// Ensure map renders properly
 			if (map) {
@@ -757,7 +740,6 @@
 				// Load default layers after map is initialized only if a dataset is selected
 				setTimeout(() => {
 					if (currentDataset) {
-						console.log('Initial map layer update after map initialization');
 						updateMapLayers();
 					}
 				}, 200);
@@ -862,7 +844,6 @@
 		// Clear information layer selection when selecting a question
 		selectedInformationLayer = null;
 
-		console.log('Question selected:', questionId);
 	}
 
 	// Function to select information layer
@@ -888,7 +869,6 @@
 			}
 		}
 
-		console.log('Information layer selected:', layerId);
 	}
 
 	// Function to toggle layer expansion
@@ -947,7 +927,6 @@
 							view.setZoom(currentZoom);
 						}
 
-						console.log('Map resized for layout:', state);
 					}
 				}, 350);
 			}
@@ -1008,7 +987,6 @@
 		// Add to map
 		if (map) {
 			map.addLayer(layer);
-			console.log('Added layer:', layerConfig.name, 'ID:', layerConfig.id);
 		}
 	}
 
@@ -1029,7 +1007,6 @@
 		layers.forEach((layer) => {
 			if (layer.get('id') === layerId && map) {
 				map.removeLayer(layer);
-				console.log('Removed layer:', layerId);
 			}
 		});
 	}
@@ -1039,53 +1016,36 @@
 		if (!map) return;
 
 		const layers = map.getLayers().getArray().slice();
-		console.log('Clearing ecosystem layers. Total layers found:', layers.length);
 
 		layers.forEach((layer) => {
 			const layerId = layer.get('id');
 			// Remove layers that have an ID (our custom layers), keep base layer
 			if (layerId && map) {
-				console.log('Removing layer with ID:', layerId);
 				map.removeLayer(layer);
 			}
 		});
 
-		console.log('Ecosystem layers cleared. Remaining layers:', map.getLayers().getArray().length);
 	}
 
 	// Update layers based on current dataset
 	function updateMapLayers() {
 		if (!map) return;
 
-		console.log('=== Starting updateMapLayers ===');
-		console.log('Current dataset:', currentDataset?.id);
-		console.log('Layers before clearing:', map.getLayers().getArray().length);
-
 		// Always clear existing ecosystem layers first
 		clearEcosystemLayers();
 
 		// If no dataset is selected, stop here (layers are cleared)
 		if (!currentDataset || !currentDataset.map_layers) {
-			console.log('No dataset selected - layers cleared');
 			return;
 		}
-
-		console.log(
-			'Updating map layers for dataset:',
-			currentDataset.id,
-			'control_type:',
-			currentDataset.control_type
-		);
 
 		// For 'none' control type, show layers immediately
 		if (currentDataset.control_type === 'none') {
 			const layers = currentDataset.map_layers.default;
 			if (layers) {
 				if (Array.isArray(layers)) {
-					console.log('Adding multiple layers:', layers.length);
 					addMultipleLayers(layers);
 				} else {
-					console.log('Adding single layer:', (layers as any).name);
 					addWMSLayer(layers);
 				}
 			}
@@ -1101,9 +1061,6 @@
 			}
 		}
 
-		console.log('Layers after adding:', map.getLayers().getArray().length);
-		console.log('=== Finished updateMapLayers ===');
-
 		// Fetch legend data after updating layers
 		fetchLegendData();
 	}
@@ -1113,13 +1070,6 @@
 		// This will trigger when any of these state variables change
 		const dataset = currentDataset;
 		const depth = soilCarbonDepth;
-
-		console.log(
-			'Main effect triggered - Dataset:',
-			dataset?.id || 'null',
-			'Control type:',
-			dataset?.control_type
-		);
 
 		// Only update map layers if we have a dataset
 		if (dataset) {

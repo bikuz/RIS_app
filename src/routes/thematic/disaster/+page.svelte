@@ -3,10 +3,8 @@
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
-	import OSM from 'ol/source/OSM';
 	import XYZ from 'ol/source/XYZ';
 	import { fromLonLat } from 'ol/proj';
-	import { defaults as defaultInteractions } from 'ol/interaction';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import lightMap from '$lib/assets/images/basemaps/light-map.png';
@@ -18,12 +16,8 @@
 		CheckCircle,
 		Layers,
 		Info,
-		Eye,
-		EyeOff,
 		ChevronUp,
 		ChevronDown,
-		ChevronLeft,
-		ChevronRight,
 		ChevronsLeft,
 		ChevronsRight,
 		HelpCircle,
@@ -32,10 +26,8 @@
 		House
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
-	import ScaleLine from 'ol/control/ScaleLine';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
 	import ImageLayer from 'ol/layer/Image';
-	import ImageWMS from 'ol/source/ImageWMS';
 	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
 
 	let mapContainer: HTMLDivElement;

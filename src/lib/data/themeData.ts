@@ -34,30 +34,6 @@ export const topicColors = {
 	disaster: 'from-[rgb(227,136,0)] to-[rgb(167,97,0)]'
 };
 
-// export const topicHoverColors = {
-// 	climate: 'from-blue-600 to-cyan-600',
-// 	'human-dimensions': 'from-purple-600 to-pink-600',
-// 	ecosystem: 'from-[#8cab5c] to-emerald-600',
-// 	cryosphere: 'from-cyan-600 to-blue-600',
-// 	weather: 'from-yellow-600 to-orange-600',
-// 	physiography: 'from-stone-600 to-amber-600',
-// 	'air-quality': 'from-red-600 to-stone-600'
-// };
-export const topicAbstracts = [
-	{
-		topic: 'climate',
-		abstract:
-			"Climate is the long-term pattern of weather conditions in a region. It is influenced by a combination of factors, including the Earth's orbit, the tilt of its axis, and the amount of solar radiation it receives. Climate can be described in terms of temperature, precipitation, and other weather variables.",
-		images: ['img1.png', 'img2.png', 'img3.png']
-	},
-	{
-		topic: 'human-dimensions',
-		abstract:
-			'Demography is the study of human populations. It is concerned with the size, structure, and distribution of populations, as well as the factors that influence them. Demography is used to understand the relationship between population and the environment, and to develop policies and interventions to address population-related issues.',
-		images: ['img1.png', 'img2.png', 'img3.png']
-	}
-];
-
 export function selectTopic(topic: string) {
 	goto(`${base}/thematic/${topic}`);
 }
@@ -76,11 +52,3 @@ export function getTopicIcon(topic: string) {
 export function getTopicColor(topic: string): string {
 	return topicColors[topic as keyof typeof topicColors] || 'from-gray-500 to-slate-500';
 }
-
-// export function getTopicHoverColor(topic: string): string {
-// 	return topicColors[topic as keyof typeof topicHoverColors] || 'from-gray-600 to-slate-600';
-// }
-
-// export function getTopicDetail(topic: string): string {
-// 	return thematicAreas[topic as keyof typeof topicHoverColors] || 'from-gray-600 to-slate-600';
-// }

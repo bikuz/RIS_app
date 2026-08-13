@@ -1,38 +1,13 @@
 <script lang="ts">
-	// import '../app.css';
-	import {
-		Home,
-		Cloud,
-		Users,
-		Leaf,
-		Snowflake,
-		Sun,
-		Mountain,
-		Wind,
-		ChevronRight,
-		ChevronDown,
-		ExternalLink
-	} from '@lucide/svelte';
+	import { Home, ChevronRight, ChevronDown, ExternalLink } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { base } from '$app/paths';
 
-	import {
-		topicIcons,
-		// topicColors,
-		selectTopic,
-		getTopicName,
-		// getTopicIcon,
-		getTopicColor
-	} from '$lib/data/themeData.js';
+	import { topicIcons, selectTopic, getTopicName, getTopicColor } from '$lib/data/themeData.js';
 
 	import icimodLogo from '$lib/assets/logo/logo-icimod_white.png';
-	// Get current topic from the URL
 	let currentTopic = $derived($page.route.id?.split('/').pop() || '');
-
-	// let currentSection = $state('');
-	// let currentQuestionId = $state('');
-	// let controlValues = $state({});
 
 	let { children } = $props();
 
@@ -69,32 +44,12 @@
 		{
 			label: 'Streamflow',
 			url: 'https://icimod.maps.arcgis.com/apps/instant/streamflowviewer/index.html?appid=7f282e15d6444679add88d9313c3a6bc'
-		},
-		// {
-		// 	label: 'SERVIR Hindu Kush Himalaya',
-		// 	url: 'https://servir.icimod.org'
-		// },
-		// {
-		// 	label: 'HI-AWARE',
-		// 	url: 'https://www.hi-aware.org'
-		// },
-		// {
-		// 	label: 'Regional Database System',
-		// 	url: 'https://rds.icimod.org'
-		// }
+		}
+		// Additional science apps to consider:
+		// { label: 'SERVIR Hindu Kush Himalaya', url: 'https://servir.icimod.org' },
+		// { label: 'HI-AWARE', url: 'https://www.hi-aware.org' },
+		// { label: 'Regional Database System', url: 'https://rds.icimod.org' }
 	];
-
-	// function selectTopic(topic: string) {
-	// 	goto(`/thematic/${topic}`);
-	// }
-
-	// function getTopicName(topic: string): string {
-	// 	return topic.charAt(0).toUpperCase() + topic.slice(1).replace('-', ' ');
-	// }
-
-	// function getTopicIcon(topic: string) {
-	// 	return topicIcons[topic as keyof typeof topicIcons] || Cloud;
-	// }
 </script>
 
 <header class="relative overflow-hidden bg-gradient-to-r from-blue-800 to-green-800 text-white">

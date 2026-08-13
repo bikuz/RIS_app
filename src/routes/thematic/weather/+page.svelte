@@ -1,10 +1,9 @@
 <script>
-	import { Map, ChartBar, ChevronsLeft, Cloud, Layers } from '@lucide/svelte';
+	import { Map, ChartBar, ChevronsLeft, Layers } from '@lucide/svelte';
 	import climate_1 from '$lib/assets/images/climate_1.png';
 	import climate_2 from '$lib/assets/images/climate_2.png';
 
-	import { getTopicName, getTopicIcon, getTopicColor } from '$lib/data/themeData.js';
-	import DisplaySection from '$lib/components/DisplaySection.svelte';
+	import { getTopicIcon, getTopicColor } from '$lib/data/themeData.js';
 	const topic = 'weather';
 	const TopicIcon = getTopicIcon(topic);
 

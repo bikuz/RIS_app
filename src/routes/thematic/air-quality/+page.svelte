@@ -4,33 +4,22 @@
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
-	import OSM from 'ol/source/OSM';
 	import XYZ from 'ol/source/XYZ';
 	import { fromLonLat } from 'ol/proj';
 	import { defaults as defaultInteractions } from 'ol/interaction';
 	import 'ol/ol.css';
-	import Chart from '$lib/components/Chart.svelte';
 	import {
 		Wind,
 		CheckCircle,
 		Layers,
 		Info,
-		Eye,
-		EyeOff,
-		ChevronUp,
-		ChevronDown,
-		ChevronLeft,
-		ChevronRight,
 		ChevronsLeft,
 		ChevronsRight,
-		HelpCircle,
-		List
+		HelpCircle
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import ScaleLine from 'ol/control/ScaleLine';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
-
-	let { currentTopic = 'air-quality', width = '100%', height = '400px' } = $props();
 
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
@@ -222,11 +211,7 @@
 			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
 			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-			// Add some basic interaction
-			map.on('click', (event) => {
-				const coordinate = event.coordinate;
-				console.log('Map clicked at:', coordinate);
-			});
+			// Feature identify on click can be added here using event.coordinate
 
 			// Ensure map renders properly
 			if (map) {
@@ -313,7 +298,6 @@
 		// Clear information layer selection when selecting a question
 		selectedInformationLayer = null;
 
-		console.log('Question selected:', questionId);
 	}
 
 	// Function to select information layer
@@ -329,7 +313,6 @@
 		// Clear question selection when selecting an information layer
 		selectedQuestionId = '';
 
-		console.log('Information layer selected:', layerId);
 	}
 
 	// Function to set specific layout state
@@ -373,7 +356,6 @@
 							view.setZoom(currentZoom);
 						}
 
-						console.log('Map resized for layout:', state);
 					}
 				}, 350);
 			}

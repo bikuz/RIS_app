@@ -1,18 +1,14 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { getTopicName, getTopicIcon, getTopicColor } from '$lib/data/themeData.js';
+	import { getTopicColor } from '$lib/data/themeData.js';
 	const topic = 'cryosphere';
-	const TopicIcon = getTopicIcon(topic);
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
 	import ImageLayer from 'ol/layer/Image';
-	import OSM from 'ol/source/OSM';
 	import XYZ from 'ol/source/XYZ';
 	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
 	import { fromLonLat } from 'ol/proj';
-	import { defaults as defaultInteractions } from 'ol/interaction';
-	import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import lightMap from '$lib/assets/images/basemaps/light-map.png';
@@ -22,32 +18,18 @@
 	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
 	import {
 		House,
-		Cloud,
-		Users,
 		CheckCircle,
 		Layers,
 		Info,
-		Eye,
-		EyeOff,
 		ChevronUp,
 		ChevronDown,
-		ChevronLeft,
-		ChevronRight,
 		ChevronsLeft,
 		ChevronsRight,
-		Minimize2,
-		Maximize2,
 		HelpCircle,
-		Play,
-		Pause,
-		SkipBack,
-		SkipForward,
-		Calendar,
 		List,
 		MapIcon
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
-	import ScaleLine from 'ol/control/ScaleLine';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
 
 	// let { currentTopic = 'demography', width = '100%', height = '400px' } = $props();
@@ -174,7 +156,7 @@
 	// function updateMapForTime(timeIndex: number) {
 	// 	// This function would update the map layers based on the selected time
 	// 	// You can modify ArcGIS parameters or switch between different temporal layers
-	// 	console.log('Updating map for time:', timePeriods[timeIndex]);
+	// 	
 
 	// 	// Example: Update ArcGIS layer with time parameter if needed
 	// 	if (map && selectedInformationLayer) {
@@ -198,7 +180,7 @@
 
 	// // Function to handle trend analysis mode changes
 	// function updateMapForTrendMode(mode: 'overall' | 'significant') {
-	// 	console.log('Updating map for trend analysis mode:', mode);
+	// 	
 	// 	// Implementation for trend mode changes if needed
 	// }
 
@@ -209,7 +191,7 @@
 
 	// // Function to handle temperature rise threshold changes
 	// function updateMapForTemperatureRise(threshold: '0.5' | '1.5' | '2.5') {
-	// 	console.log('Updating map for temperature rise threshold:', threshold);
+	// 	
 	// 	// Implementation for temperature threshold changes if needed
 	// }
 
@@ -280,11 +262,7 @@
 			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
 			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-			// Add some basic interaction
-			map.on('click', (event) => {
-				const coordinate = event.coordinate;
-				console.log('Map clicked at:', coordinate);
-			});
+			// Feature identify on click can be added here using event.coordinate
 
 			// Ensure map renders properly and load initial layer
 			if (map) {
@@ -919,7 +897,6 @@
 			}
 		}
 
-		console.log('Question selected:', questionId);
 	}
 
 	// Function to select information layer
@@ -942,7 +919,6 @@
 			}
 		}
 
-		console.log('Information layer selected:', layerId);
 	}
 
 	// Function to toggle layer expansion
@@ -1012,7 +988,6 @@
 							view.setZoom(currentZoom);
 						}
 
-						console.log('Map resized for layout:', state);
 					}
 				}, 350);
 			}

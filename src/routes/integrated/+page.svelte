@@ -16,28 +16,22 @@
 		Search,
 		CheckSquare,
 		Square,
-		FileText,
 		Eye,
 		EyeOff,
-		MoreVertical,
 		Trash2,
-		Download,
 		MapIcon,
 		ArrowLeft,
 		House,
 		Layers,
-        ChevronUp,
+		ChevronUp,
 		ChevronDown,
-		ChevronRight,
 		Sliders,
 		GripVertical,
 		Columns,
-        List,
-		Info
+		List
 	} from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
-	import { browser } from '$app/environment';
 	import { topicIcons, getTopicName, getTopicColor } from '$lib/data/themeData';
 	import FullScreen from 'ol/control/FullScreen';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';

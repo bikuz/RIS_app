@@ -1,15 +1,6 @@
 <script lang="ts">
-	import {
-		topicIcons,
-		topicDetail,
-		getTopicColor,
-		selectTopic,
-		getTopicName
-	} from '$lib/data/themeData';
-	import { onMount } from 'svelte';
-	import { Mountain, Users, Snowflake, Pentagon } from '@lucide/svelte';
+	import { topicIcons, getTopicColor, selectTopic, getTopicName } from '$lib/data/themeData';
 
-	// Import images from assets
 	import climateImg from '$lib/assets/icons/climate.png';
 	import ecosystemImg from '$lib/assets/icons/ecosystem.png';
 	import humanDimensionImg from '$lib/assets/icons/human_dimension.png';
@@ -18,7 +9,6 @@
 	import physiographyImg from '$lib/assets/icons/physio.png';
 	import disasterImg from '$lib/assets/icons/air_quality.png';
 
-	// Map topics to their corresponding images
 	const topicImages: Record<string, string> = {
 		climate: climateImg,
 		ecosystem: ecosystemImg,
@@ -28,54 +18,44 @@
 		physiography: physiographyImg,
 		disaster: disasterImg
 	};
- 
-	 
 </script>
 
-<section class="relative overflow-hidden pt-5 mt-0 lg:-mt-[170px] bg-gradient-to-r from-blue-800 to-green-800 lg:[background:none] pb-6 lg:pb-0">
-	<div class="container mx-auto relative px-4 sm:px-6 lg:px-8">
-		<!-- Thematic Cards - Top Row -->
+<section
+	class="relative mt-0 overflow-hidden bg-gradient-to-r from-blue-800 to-green-800 pt-5 pb-6 lg:-mt-[170px] lg:[background:none] lg:pb-0"
+>
+	<div class="relative container mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="mb-10 lg:mb-12">
-			<div class="flex flex-col lg:flex-row gap-6 lg:gap-6">
-				<!-- Spacer to match left stats column width -->
-				<div class="hidden lg:block w-[15%]"></div>
+			<div class="flex flex-col gap-6 lg:flex-row">
+				<div class="hidden w-[15%] lg:block"></div>
 
-				<!-- Thematic Cards - Spans from stats to map -->
-				<div class="w-full lg:w-[85%] flex flex-wrap justify-center lg:justify-between items-start gap-6 lg:gap-8">
+				<div
+					class="flex w-full flex-wrap items-start justify-center gap-6 lg:w-[85%] lg:justify-between lg:gap-8"
+				>
 					{#each Object.entries(topicIcons) as [topic, IconComponent]}
-						{@const isDisabled = ([] as string[]).includes(topic)}
 						<div class="flex flex-col items-center gap-2">
 							<button
-								onclick={() => !isDisabled && selectTopic(topic)}
-								disabled={isDisabled}
-								class="group relative block rounded-full aspect-square p-0 transition-all duration-300 ease-out
-									border border-gray-200/50 bg-white/80 backdrop-blur-md
-									shadow-lg shadow-gray-200/50 w-18 h-18 sm:w-18 sm:h-24 md:w-20 md:h-20
-									{!isDisabled
-									? 'hover:cursor-pointer hover:scale-[1.02] hover:shadow-2xl hover:shadow-gray-300/60 hover:border-gray-300/80 hover:-translate-y-1'
-									: 'cursor-not-allowed opacity-50'}"
+								onclick={() => selectTopic(topic)}
+								class="group relative block aspect-square rounded-full border border-gray-200/50 bg-white/80 p-0 shadow-lg shadow-gray-200/50 backdrop-blur-md transition-all duration-300 ease-out hover:scale-[1.02] hover:border-gray-300/80 hover:shadow-2xl hover:shadow-gray-300/60 hover:-translate-y-1 h-18 w-18 sm:h-24 sm:w-18 md:h-20 md:w-20"
 							>
-								<div class="flex items-center justify-center h-full">
+								<div class="flex h-full items-center justify-center">
 									{#if topicImages[topic]}
 										<img
 											src={topicImages[topic]}
 											alt={getTopicName(topic)}
-											class="w-full h-full object-contain rounded-full transition-all duration-300 group-hover:scale-110"
+											class="h-full w-full rounded-full object-contain transition-all duration-300 group-hover:scale-110"
 										/>
 									{:else}
 										<div
 											class="relative rounded-xl bg-gradient-to-br {getTopicColor(
 												topic
-											)} p-2.5 text-white transition-all duration-300
-											shadow-md group-hover:scale-110 group-hover:shadow-lg
-											{!isDisabled ? '' : ''}"
+											)} p-2.5 text-white shadow-md transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg"
 										>
 											<IconComponent class="h-4 w-4" />
 										</div>
 									{/if}
 								</div>
 							</button>
-							<h3 class="text-base sm:text-lg text-white transition-colors text-center">
+							<h3 class="text-center text-base text-white transition-colors sm:text-lg">
 								{getTopicName(topic)}
 							</h3>
 						</div>
@@ -83,13 +63,5 @@
 				</div>
 			</div>
 		</div>
-
-
+	</div>
 </section>
-
-<style>
-	:global(.map-wrapper .map-container) {
-		height: 100% !important;
-	}
-</style>
-

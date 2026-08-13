@@ -3,15 +3,11 @@
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
-	import OSM from 'ol/source/OSM';
 	import XYZ from 'ol/source/XYZ';
 	import { fromLonLat } from 'ol/proj';
-	import TileWMS from 'ol/source/TileWMS';
 	import ImageLayer from 'ol/layer/Image';
 	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
 	import ImageWMS from 'ol/source/ImageWMS';
-	import { defaults as defaultInteractions } from 'ol/interaction';
-	import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import lightMap from '$lib/assets/images/basemaps/light-map.png';
@@ -20,16 +16,11 @@
 	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
 	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
 	import {
-		Cloud,
 		CheckCircle,
 		Layers,
 		Info,
-		Eye,
-		EyeOff,
 		ChevronUp,
 		ChevronDown,
-		ChevronLeft,
-		ChevronRight,
 		ChevronsLeft,
 		ChevronsRight,
 		HelpCircle,
@@ -43,10 +34,7 @@
 		MapIcon
 	} from '@lucide/svelte';
 	import FullScreen from 'ol/control/FullScreen';
-	import ScaleLine from 'ol/control/ScaleLine';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
-
-	let { currentTopic = 'climate', width = '100%', height = '400px' } = $props();
 
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
@@ -94,13 +82,9 @@
 		playInterval = setInterval(() => {
 			if (currentTimeIndex < timePeriods.length - 1) {
 				currentTimeIndex++;
-				updateMapForTime(currentTimeIndex);
 			} else {
-				// Loop back to start or stop
 				currentTimeIndex = 0;
-				updateMapForTime(currentTimeIndex);
-				// Uncomment next line to stop at end instead of looping
-				// stopPlayback();
+				// stopPlayback(); // stop at end instead of looping
 			}
 		}, playbackSpeed);
 	}
@@ -116,7 +100,6 @@
 	function goToTime(index: number) {
 		if (index >= 0 && index < timePeriods.length) {
 			currentTimeIndex = index;
-			updateMapForTime(index);
 		}
 	}
 
@@ -132,14 +115,6 @@
 		}
 	}
 
-	function updateMapForTime(timeIndex: number) {
-		// This function would update the map layers based on the selected time
-		console.log('Updating map for time:', timePeriods[timeIndex]);
-
-		// Note: Map layers will be updated automatically by the main effect
-		// No need to call updateMapLayers() here as it would cause duplicate updates
-	}
-
 	// Single consolidated effect for all map layer updates
 	$effect(() => {
 		// This will trigger when any of these state variables change
@@ -148,13 +123,6 @@
 		const tempThreshold = temperatureRiseThreshold;
 		const timeIndex = currentTimeIndex;
 		const season = selectedSeason;
-
-		console.log(
-			'Main effect triggered - Dataset:',
-			dataset?.id || 'null',
-			'Control type:',
-			dataset?.control_type
-		);
 
 		// Only update map layers if we have a dataset
 		if (dataset) {
@@ -174,12 +142,6 @@
 
 			// Only set default if this is a new dataset or we haven't set it for this dataset yet
 			if (hasSetDefaultForDataset !== datasetId && newDefaultIndex >= 0) {
-				console.log(
-					'Setting time index to default:',
-					newDefaultIndex,
-					'for year:',
-					timePeriods[newDefaultIndex]?.year
-				);
 				currentTimeIndex = newDefaultIndex;
 				hasSetDefaultForDataset = datasetId;
 			}
@@ -251,19 +213,12 @@
 			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
 			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-			// Add some basic interaction
-			map.on('click', (event) => {
-				const coordinate = event.coordinate;
-				console.log('Map clicked at:', coordinate);
-			});
-
 			// Ensure map renders properly
 			if (map) {
 				map.updateSize();
 				// Load default layers after map is initialized only if a dataset is selected
 				setTimeout(() => {
 					if (currentDataset) {
-						console.log('Initial map layer update after map initialization');
 						updateMapLayers();
 					}
 				}, 200);
@@ -5487,7 +5442,6 @@
 		// Add to map
 		if (map) {
 			map.addLayer(layer);
-			console.log('Added layer:', layerConfig.name, 'ID:', layerConfig.id);
 		}
 	}
 
@@ -5508,7 +5462,6 @@
 		layers.forEach((layer) => {
 			if (layer.get('id') === layerId && map) {
 				map.removeLayer(layer);
-				console.log('Removed layer:', layerId);
 			}
 		});
 	}
@@ -5560,23 +5513,14 @@
 
 							const serviceUrl = source.getUrl();
 
-							console.log('Found ArcGIS layer - ID:', layerId, 'URL:', serviceUrl);
-
 							if (layerId !== undefined && layerId !== null && serviceUrl) {
 								const legendKey = `${serviceUrl}_${layerId}`;
 
 								if (!legendData[legendKey]) {
-									console.log('Fetching legend for layer:', layerId);
 									const legend = await fetchArcGISLegend(serviceUrl, layerId);
 									if (legend) {
 										legendData[legendKey] = legend;
-										console.log('Legend fetched successfully for layer:', layerId);
-									} else {
-										console.log('No legend data returned for layer:', layerId);
 									}
-								} else {
-									legendData[legendKey] = legendData[legendKey];
-									console.log('Using cached legend for layer:', layerId);
 								}
 							}
 						}
@@ -5586,7 +5530,6 @@
 
 			// Also fetch legend for climate data layers if dataset is selected
 			if (currentDataset && currentMapLayers) {
-				console.log('Fetching legend data for dataset:', currentDataset.id);
 
 				// Get current layers based on control type
 				let layersToFetch: any[] = [];
@@ -5685,7 +5628,6 @@
 				}
 			}
 
-			console.log('Legend data updated:', Object.keys(legendData));
 		}, 300); // 300ms debounce delay
 	}
 
@@ -5698,23 +5640,13 @@
 
 		// If no dataset is selected, stop here (layers are cleared)
 		if (!currentDataset || !currentMapLayers) {
-			console.log('No dataset selected - layers cleared');
 			return;
 		}
-
-		console.log(
-			'Updating map layers for dataset:',
-			currentDataset.id,
-			'control_type:',
-			currentDataset.control_type
-		);
 
 		// Get current control state and add appropriate layers
 		if (currentDataset.control_type === 'radio') {
 			// For radio controls, show layer based on selected mode
-			console.log('Radio control - trendAnalysisMode:', trendAnalysisMode);
 			const selectedLayers = (currentMapLayers as any)[trendAnalysisMode];
-			console.log('Selected layers for', trendAnalysisMode, ':', selectedLayers);
 			if (selectedLayers) {
 				if (Array.isArray(selectedLayers)) {
 					addMultipleLayers(selectedLayers);
@@ -5816,14 +5748,9 @@
 				}
 			} else if (dataset?.control_type === 'time_slider' && dataset.time_dimension?.default_year) {
 				// Set time index to match default year - this will be handled by the effect watcher
-				console.log(
-					'Time slider dataset selected, default year:',
-					dataset.time_dimension.default_year
-				);
 			}
 		}
 
-		console.log('Question selected:', questionId);
 	}
 
 	// Function to select information layer
@@ -5904,14 +5831,9 @@
 				}
 			} else if (dataset?.control_type === 'time_slider' && dataset.time_dimension?.default_year) {
 				// Set time index to match default year - this will be handled by the effect watcher
-				console.log(
-					'Time slider dataset selected, default year:',
-					dataset.time_dimension.default_year
-				);
 			}
 		}
 
-		console.log('Information layer selected:', layerId);
 	}
 
 	// Function to set specific layout state
@@ -5961,7 +5883,6 @@
 							view.setZoom(currentZoom);
 						}
 
-						console.log('Map resized for layout:', state);
 					}
 				}, 350);
 			}

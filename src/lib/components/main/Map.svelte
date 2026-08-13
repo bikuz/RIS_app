@@ -1,33 +1,25 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import { Layers, List, RotateCcw, HomeIcon } from '@lucide/svelte';
+	import { Layers, List, HomeIcon } from '@lucide/svelte';
 
 	import '@arcgis/core/assets/esri/themes/light/main.css';
-
-	// import WebMap from '@arcgis/core/WebMap';
-	// import MapView from '@arcgis/core/views/MapView';
-	// import SceneView from '@arcgis/core/views/SceneView';
-	// import Basemap from '@arcgis/core/Basemap';
 
 	let mapContainer: HTMLDivElement;
 	let view: any = null;
 	let isLoading = $state(true);
 	let wheelHandler: ((event: WheelEvent) => void) | null = null;
 
-	// Camera parameters
+	// Camera parameters (used by the hidden debug overlay)
 	let latitude = $state(0);
 	let longitude = $state(0);
 	let altitude = $state(0);
 	let tilt = $state(0);
 	let heading = $state(0);
 
-	let selectedLayer = $state('elevation');
-	// let mapStyle = 'terrain';
-
 	let layerVisibility = $state<Record<string, boolean>>({
 		hkhOutline: true,
-		// river: true,
+		// river: true, // Physiography sublayer id 3 — enable when river network is needed
 		glacier: false,
 		mountainRegion: false,
 		nightTime: false
@@ -94,27 +86,11 @@
 
 		// Initialize your map here
 		try {
-			const [
-				Map,
-				SceneView,
-				Basemap,
-				ElevationLayer,
-				MapImageLayer,
-				GraphicsLayer,
-				Graphic,
-				Point,
-				TextSymbol,
-				Legend
-			] = await Promise.all([
+			const [Map, SceneView, ElevationLayer, MapImageLayer, Legend] = await Promise.all([
 				import('@arcgis/core/Map'),
 				import('@arcgis/core/views/SceneView'),
-				import('@arcgis/core/Basemap'),
 				import('@arcgis/core/layers/ElevationLayer'),
 				import('@arcgis/core/layers/MapImageLayer'),
-				import('@arcgis/core/layers/GraphicsLayer'),
-				import('@arcgis/core/Graphic'),
-				import('@arcgis/core/geometry/Point'),
-				import('@arcgis/core/symbols/TextSymbol'),
 				import('@arcgis/core/widgets/Legend')
 			]);
 
@@ -191,27 +167,14 @@
 			view = new SceneView.default({
 				container: mapContainer,
 				map: map,
-				// zoom: 12,
-				// center: [-118.805, 34.027], // Longitude, latitude
-				// viewingMode: 'local',
 				qualityProfile: 'high',
 				camera: {
 					position: {
 						longitude: 87,
 						latitude: 30,
-						z: 12000 // elevation in meters
+						z: 12000
 					},
 					tilt: 70
-					// heading: 15
-				},
-				environment: {
-					// lighting: {
-					//     // date: new Date("June 21, 2019 12:00:00 UTC"),
-					//     directShadowsEnabled: true,
-					//     ambientOcclusionEnabled: true
-					// },
-					// atmosphereEnabled: true,
-					// starsEnabled: true,
 				}
 			});
 
@@ -228,24 +191,7 @@
 			const legendContent = document.getElementById('legend-content');
 			legend.container = legendContent;
 
-			// const everestPoint = new Point.default({
-			//     longitude: 86.9250,
-			//     latitude: 27.9881,
-			//     z: 9000
-			// });
-
-			// const labelGraphic = new Graphic.default({
-			//     geometry: everestPoint,
-			//     symbol: new TextSymbol.default({
-			//         text: "Mount Everest\n8,848m",
-			//         color: "white",
-			//         haloColor: "black",
-			//         haloSize: 1,
-			//         font: { size: 12, weight: "bold" },
-			//         yoffset: 20
-			//     })
-			// });
-			// view.graphics.add(labelGraphic);
+			// Optional: add a Mount Everest label with Graphic + Point + TextSymbol (86.9250, 27.9881)
 
 			// Wait for view to load
 			await view.when(() => {
@@ -278,7 +224,7 @@
 			// Add wheel event listener to the map container
 			mapContainer.addEventListener('wheel', wheelHandler, { passive: false });
 
-			// console.log('ArcGIS 3D Map loaded successfully');
+			// 
 			isLoading = false;
 
 			// Update camera parameters on move
@@ -500,96 +446,12 @@
 				</div>
 			</div>
 		</div>
-
-		<!-- <div class="lg:w-80 bg-gray-50 p-6 border-r border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Layers class="w-5 h-5 mr-2" />
-                Layers
-            </h3>
-            
-            <div class="space-y-3 mb-6">
-                {#each layers as layer}
-                    <button
-                        class="w-full flex items-center p-3 rounded-lg border-2 transition-all {selectedLayer === layer.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}"
-                        onclick={() => selectedLayer = layer.id}
-                    >
-                        <div class="w-4 h-4 rounded {layer.color} mr-3"></div>
-                        <span class="font-medium text-gray-900">{layer.name}</span>
-                    </button>
-                {/each}
-            </div>
-            
-            <div class="border-t border-gray-200 pt-4">
-                <h4 class="text-sm font-semibold text-gray-700 mb-3">Map Controls</h4>
-                <div class="flex space-x-2">
-                    <button class="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                        <ZoomIn class="w-4 h-4" />
-                    </button>
-                    <button class="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                        <ZoomOut class="w-4 h-4" />
-                    </button>
-                    <button class="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                        <RotateCcw class="w-4 h-4" />
-                    </button>
-                </div>
-            </div>
-        </div> -->
 	</div>
 </div>
 
 <style>
-	/* Load ArcGIS CSS but override problematic rules */
-	/* @import "https://js.arcgis.com/4.28/esri/themes/light/main.css"; */
-
-	/* .map-wrapper {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      min-height: 400px;
-      border-radius: 0.5rem;
-      overflow: hidden;
-      background: #f3f4f6;
-    } */
-
-	/* .map-container {
-      width: 100% !important;
-      height: 100% !important;
-      min-height: 500px !important;
-      position: relative !important;
-      display: block !important;
-    }
-     */
-
-	/* .loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 1000;
-    } */
-
-	/* Critical overrides to prevent dimension collapse */
-	/* :global(.esri-view) {
-      width: 100% !important;
-      height: 100% !important;
-      min-width: 100px !important;
-      min-height: 100px !important;
-      position: relative !important;
-    } */
-
 	:global(.esri-view-root) {
 		width: 100% !important;
 		height: 100% !important;
 	}
-
-	/* :global(.esri-view-surface) {
-      width: 100% !important;
-      height: 100% !important;
-    } */
-
-	/* :global(canvas) {
-      width: 100% !important;
-      height: 100% !important;
-      display: block !important;
-    } */
 </style>

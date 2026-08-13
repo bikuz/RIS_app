@@ -84,7 +84,6 @@
 			// const ExportingModule = await import('highcharts/modules/exporting');
 			// ExportingModule(Highcharts);
 
-			console.log('Highcharts and exporting module loaded successfully');
 			createChart();
 		} catch (error) {
 			console.error('Failed to load Highcharts:', error);
@@ -93,15 +92,8 @@
 
 	function createChart() {
 		if (!chartContainer || !chartData || !Highcharts) {
-			console.log('Missing requirements for chart creation:', {
-				hasContainer: !!chartContainer,
-				hasData: !!chartData,
-				hasHighcharts: !!Highcharts
-			});
 			return;
 		}
-
-		console.log('Creating chart with data:', chartData);
 
 		// Destroy existing chart if it exists
 		if (chart) {
@@ -457,14 +449,12 @@
 
 			chart = Highcharts.chart(chartContainer, chartConfig);
 
-			console.log('Chart created successfully');
 		} catch (error) {
 			console.error('Error creating chart:', error);
 		}
 	}
 
 	onMount(() => {
-		console.log('HighchartsChart mounted', plotOptions);
 		loadHighcharts();
 	});
 
@@ -477,7 +467,6 @@
 
 	// Recreate chart when data changes
 	$effect(() => {
-		console.log('Chart data effect triggered:', chartData);
 		if (chartData && Highcharts) {
 			// Add a small delay to ensure DOM is ready
 			setTimeout(() => {
