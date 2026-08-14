@@ -266,7 +266,7 @@
 	export { view, toggleLayer, layerVisibility };
 </script>
 
-<div class="overflow-hidden rounded-[5px] bg-white">
+<div class="overflow-hidden rounded-[5px] bg-[#DCEAF5]">
 	<div class="flex flex-col lg:flex-row">
 		<!-- Map Controls -->
 
