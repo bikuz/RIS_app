@@ -5,7 +5,7 @@
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
 	import XYZ from 'ol/source/XYZ';
-	import { fromLonLat } from 'ol/proj';
+	import { fitMapToHkhOutline, HKH_OUTLINE_CENTER } from '$lib/map/hkh-extent';
 	import { defaults as defaultInteractions } from 'ol/interaction';
 	import 'ol/ol.css';
 	import {
@@ -24,9 +24,6 @@
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
 
-	// Hindu Kush Himalaya region coordinates (optimized for full HKH view)
-	const HKH_CENTER = [82.94924, 27.6382055]; // Longitude, Latitude - adjusted for better HKH coverage
-	const HKH_ZOOM = 4.8; // Reduced zoom to show more of the HKH region
 
 	// Track fullscreen state
 	let isFullscreen = $state(false);
@@ -183,8 +180,7 @@
 					})
 				],
 				view: new View({
-					center: fromLonLat(HKH_CENTER),
-					zoom: HKH_ZOOM
+					center: HKH_OUTLINE_CENTER
 				})
 			});
 
@@ -216,6 +212,7 @@
 			// Ensure map renders properly
 			if (map) {
 				map.updateSize();
+				fitMapToHkhOutline(map);
 			}
 		}, 100);
 	}

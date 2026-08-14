@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { getTopicColor } from '$lib/data/themeData.js';
-	const topic = 'human-dimensions';
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
 	import ImageLayer from 'ol/layer/Image';
 	import XYZ from 'ol/source/XYZ';
 	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
-	import { fromLonLat } from 'ol/proj';
+	import { fitMapToHkhOutline, HKH_OUTLINE_CENTER } from '$lib/map/hkh-extent';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import lightMap from '$lib/assets/images/basemaps/light-map.png';
@@ -16,322 +14,158 @@
 	import osmMap from '$lib/assets/images/basemaps/osm-map.png';
 	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
 	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
-	import {
-		House,
-		CheckCircle,
-		Layers,
-		Info,
-		ChevronUp,
-		ChevronDown,
-		ChevronsLeft,
-		ChevronsRight,
-		HelpCircle,
-		List,
-		MapIcon
-	} from '@lucide/svelte';
+	import { House, CheckCircle, Layers, Info, HelpCircle, MapIcon, SlidersHorizontal } from '@lucide/svelte';
+	import AccordionLayer from '$lib/components/AccordionLayer.svelte';
+	import ThemeInfoButton from '$lib/components/ThemeInfoButton.svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
 
-	// let { currentTopic = 'demography', width = '100%', height = '400px' } = $props();
-
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
-
-	// Hindu Kush Himalaya region coordinates (optimized for full HKH view)
-	const HKH_CENTER = [82.94924, 27.6382055]; // Longitude, Latitude - adjusted for better HKH coverage
-	const HKH_ZOOM = 4.8; // Reduced zoom to show more of the HKH region
 
 	// Track fullscreen state
 	let isFullscreen = $state(false);
 	let fullscreenHandler: (() => void) | null = null;
 
-	// ArcGIS MapServer configuration
+	// ArcGIS MapServer configuration (default service for most demographic layers)
 	const ARCGIS_MAPSERVER_URL =
 		'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer';
 
-	const BASELAYERS_URL =
-		'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer';
-
-	// Time slider state management
-	// let isTimeSliderVisible = $state(false);
-	// let isPlaying = $state(false);
-	// let currentTimeIndex = $state(0);
-	// let playbackSpeed = $state(1000); // milliseconds between frames
-	// let playInterval: number | null = null;
-
-	// Time periods for climate data (can be customized based on your data)
-	// const timePeriods = [
-	// 	{ year: 1995, label: '1995', season: 'Annual' },
-	// 	{ year: 1996, label: '1996', season: 'Annual' },
-	// 	{ year: 1997, label: '1997', season: 'Annual' },
-	// 	{ year: 1998, label: '1998', season: 'Annual' },
-	// 	{ year: 1999, label: '1999', season: 'Annual' },
-	// 	{ year: 2000, label: '2000', season: 'Annual' },
-	// 	{ year: 2001, label: '2001', season: 'Annual' },
-	// 	{ year: 2002, label: '2002', season: 'Annual' },
-	// 	{ year: 2003, label: '2003', season: 'Annual' },
-	// 	{ year: 2004, label: '2004', season: 'Annual' },
-	// 	{ year: 2005, label: '2005', season: 'Annual' },
-	// 	{ year: 2006, label: '2006', season: 'Annual' },
-	// 	{ year: 2007, label: '2007', season: 'Annual' },
-	// 	{ year: 2008, label: '2008', season: 'Annual' },
-	// 	{ year: 2009, label: '2009', season: 'Annual' },
-	// 	{ year: 2010, label: '2010', season: 'Annual' },
-	// 	{ year: 2011, label: '2011', season: 'Annual' },
-	// 	{ year: 2012, label: '2012', season: 'Annual' },
-	// 	{ year: 2013, label: '2013', season: 'Annual' },
-	// 	{ year: 2014, label: '2014', season: 'Annual' },
-	// 	{ year: 2015, label: '2015', season: 'Annual' },
-	// 	{ year: 2016, label: '2016', season: 'Annual' },
-	// 	{ year: 2017, label: '2017', season: 'Annual' },
-	// 	{ year: 2018, label: '2018', season: 'Annual' },
-	// 	{ year: 2019, label: '2019', season: 'Annual' },
-	// 	{ year: 2020, label: '2020', season: 'Annual' },
-	// 	{ year: 2021, label: '2021', season: 'Annual' },
-	// 	{ year: 2022, label: '2022', season: 'Annual' },
-	// 	{ year: 2023, label: '2023', season: 'Annual' },
-	// 	{ year: 2024, label: '2024', season: 'Annual' }
-	// ];
-
-	// // Time slider functions
-	// function toggleTimeSlider() {
-	// 	isTimeSliderVisible = !isTimeSliderVisible;
-	// 	if (!isTimeSliderVisible && isPlaying) {
-	// 		stopPlayback();
-	// 	}
-	// }
-
-	// function togglePlayback() {
-	// 	if (isPlaying) {
-	// 		stopPlayback();
-	// 	} else {
-	// 		startPlayback();
-	// 	}
-	// }
-
-	// function startPlayback() {
-	// 	if (playInterval) clearInterval(playInterval);
-
-	// 	isPlaying = true;
-	// 	playInterval = setInterval(() => {
-	// 		if (currentTimeIndex < timePeriods.length - 1) {
-	// 			currentTimeIndex++;
-	// 			updateMapForTime(currentTimeIndex);
-	// 		} else {
-	// 			// Loop back to start or stop
-	// 			currentTimeIndex = 0;
-	// 			updateMapForTime(currentTimeIndex);
-	// 			// Uncomment next line to stop at end instead of looping
-	// 			// stopPlayback();
-	// 		}
-	// 	}, playbackSpeed);
-	// }
-
-	// function stopPlayback() {
-	// 	if (playInterval) {
-	// 		clearInterval(playInterval);
-	// 		playInterval = null;
-	// 	}
-	// 	isPlaying = false;
-	// }
-
-	// function goToTime(index: number) {
-	// 	if (index >= 0 && index < timePeriods.length) {
-	// 		currentTimeIndex = index;
-	// 		updateMapForTime(index);
-	// 	}
-	// }
-
-	// function stepBackward() {
-	// 	if (currentTimeIndex > 0) {
-	// 		goToTime(currentTimeIndex - 1);
-	// 	}
-	// }
-
-	// function stepForward() {
-	// 	if (currentTimeIndex < timePeriods.length - 1) {
-	// 		goToTime(currentTimeIndex + 1);
-	// 	}
-	// }
-
-	// function updateMapForTime(timeIndex: number) {
-	// 	// This function would update the map layers based on the selected time
-	// 	// You can modify ArcGIS parameters or switch between different temporal layers
-	// 	
-
-	// 	// Example: Update ArcGIS layer with time parameter if needed
-	// 	if (map && selectedInformationLayer) {
-	// 		const layers = map.getLayers().getArray();
-	// 		layers.forEach((layer) => {
-	// 			if (layer.get('layerId') !== undefined) {
-	// 				const source = (layer as ImageLayer<any>).getSource();
-	// 				if (source && source instanceof ImageArcGISRest) {
-	// 					// Update ArcGIS parameters with time if your service supports it
-	// 					const currentParams = source.getParams();
-	// 					source.updateParams({
-	// 						...currentParams
-	// 						// Add time parameter if your ArcGIS service supports temporal data
-	// 						// time: timePeriods[timeIndex].year.toString()
-	// 					});
-	// 				}
-	// 			}
-	// 		});
-	// 	}
-	// }
-
-	// // Function to handle trend analysis mode changes
-	// function updateMapForTrendMode(mode: 'overall' | 'significant') {
-	// 	
-	// 	// Implementation for trend mode changes if needed
-	// }
-
-	// // Watch for trend analysis mode changes
-	// $effect(() => {
-	// 	updateMapForTrendMode(trendAnalysisMode);
-	// });
-
-	// // Function to handle temperature rise threshold changes
-	// function updateMapForTemperatureRise(threshold: '0.5' | '1.5' | '2.5') {
-	// 	
-	// 	// Implementation for temperature threshold changes if needed
-	// }
-
-	// // Watch for temperature rise threshold changes
-	// $effect(() => {
-	// 	updateMapForTemperatureRise(temperatureRiseThreshold);
-	// });
-
-	function initializeMap() {
-		if (!mapContainer) return;
-
-		// Small delay to ensure container has proper dimensions
-		setTimeout(() => {
-			// Create custom fullscreen control that includes our custom elements
-			const fullScreenControl = new FullScreen({
-				source: mapContainer.parentElement || mapContainer // Use the parent container that includes our custom controls, fallback to mapContainer
-			});
-
-			// Get initial basemap configuration
-			const initialBasemap = basemaps.find((b) => b.id === selectedBasemap);
-			if (!initialBasemap) return;
-
-			// Create initial basemap layer
-			baseMapLayer = new TileLayer({
-				source: new XYZ({
-					url: initialBasemap.url,
-					attributions: initialBasemap.attribution
-				}),
-				zIndex: 0
-			});
-
-			map = new Map({
-				target: mapContainer,
-				controls: defaultControls().extend([
-					fullScreenControl
-					// new ScaleLine({ units: 'metric', bar: true })
-				]),
-				// interactions: defaultInteractions({
-				// 	mouseWheelZoom: false
-				// }),
-				layers: [baseMapLayer],
-				view: new View({
-					center: fromLonLat(HKH_CENTER),
-					zoom: HKH_ZOOM
-				})
-			});
-
-			// Add default layer (Population 2025 - Layer 0) when map initializes
-			addArcGISLayer(0, 'Population 2025');
-
-			// Listen for fullscreen changes
-			const handleFullscreenChange = () => {
-				const isCurrentlyFullscreen = document.fullscreenElement !== null;
-				isFullscreen = isCurrentlyFullscreen;
-
-				// Force map resize when entering/exiting fullscreen
-				setTimeout(() => {
-					if (map) {
-						map.updateSize();
-						map.render();
-					}
-				}, 100);
-			};
-
-			// Store handler reference for cleanup
-			fullscreenHandler = handleFullscreenChange;
-
-			// Add fullscreen event listeners
-			document.addEventListener('fullscreenchange', handleFullscreenChange);
-			document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-			// Feature identify on click can be added here using event.coordinate
-
-			// Ensure map renders properly
-			if (map) {
-				map.updateSize();
-			}
-		}, 100);
+	// Track questions panel state
+	let isQuestionsPanelOpen = $state(false);
+	function toggleQuestionsPanel() {
+		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
 
-	onMount(() => {
-		// Initialize layout state based on screen size
-		initializeLayoutState();
+	// Base layer visibility (Outline overlay, controlled programmatically)
+	let activeBaseLayers = $state<Record<number, boolean>>({});
 
-		// Add window resize listener for responsive layout
-		const handleResize = () => {
-			initializeLayoutState();
-		};
-		window.addEventListener('resize', handleResize);
+	// Basemap switcher state
+	let basemapPanelOpen = $state(false);
+	let selectedBasemap = $state('light');
+	let baseMapLayer: TileLayer<any> | null = null;
 
-		initializeMap();
+	const basemaps = [
+		{
+			id: 'light',
+			name: 'Light',
+			url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors, © CARTO',
+			image: lightMap
+		},
+		{
+			id: 'dark-gray',
+			name: 'Dark',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+			attribution: '© OpenStreetMap contributors, © CARTO',
+			image: darkMap
+		},
+		{
+			id: 'osm',
+			name: 'OSM',
+			url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+			attribution: '© OpenStreetMap contributors',
+			image: osmMap
+		},
+		{
+			id: 'satellite',
+			name: 'Satellite',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+			attribution: 'Esri, DigitalGlobe, GeoEye, Earthstar Geographics',
+			image: satelliteMap
+		},
+		{
+			id: 'topographic',
+			name: 'Topographic',
+			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+			attribution:
+				'Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, CNES/Airbus DS, InterMap, NASA/METI, NASA/NGS and the GIS User Community',
+			image: terrainMap
+		}
+	];
 
-		// Add resize observer to handle container size changes
-		if (typeof ResizeObserver !== 'undefined' && mapContainer) {
-			const resizeObserver = new ResizeObserver(() => {
-				if (map) {
-					// Small delay to ensure DOM is updated
-					setTimeout(() => {
-						if (map) {
-							map.updateSize();
-						}
-					}, 100);
-				}
+	// Define base layers from HKH/Outline service
+	const baseLayers = [
+		{
+			id: 0,
+			name: 'Outline',
+			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
+		}
+	];
+
+	async function toggleBaseLayer(layerId: number, checked: boolean) {
+		if (!map) return;
+		activeBaseLayers = { ...activeBaseLayers, [layerId]: checked };
+
+		if (checked) {
+			const layerInfo = baseLayers.find((l) => l.id === layerId);
+			if (!layerInfo) return;
+
+			// HKH Outline always sits above every demographic data layer (zIndex 10) and the basemap (zIndex 0)
+			const layer = new ImageLayer({
+				source: new ImageArcGISRest({
+					url: layerInfo.url,
+					params: {
+						LAYERS: `show:${layerId}`,
+						FORMAT: 'PNG32',
+						TRANSPARENT: true
+					}
+				}),
+				zIndex: 20,
+				opacity: 0.7
 			});
-			resizeObserver.observe(mapContainer);
-
-			// Cleanup on destroy
-			return () => {
-				window.removeEventListener('resize', handleResize);
-				resizeObserver.disconnect();
-			};
+			layer.set('baseLayerId', layerId);
+			map.addLayer(layer);
+		} else {
+			const layers = map.getLayers().getArray();
+			for (const layer of layers) {
+				if (layer.get('baseLayerId') === layerId) {
+					map.removeLayer(layer);
+					break;
+				}
+			}
 		}
 
-		// Cleanup resize listener even if ResizeObserver is not available
-		return () => {
-			window.removeEventListener('resize', handleResize);
-		};
-	});
+		fetchLegendData();
+	}
 
-	// Cleanup on destroy
-	onDestroy(() => {
-		// if (playInterval) {
-		// 	clearInterval(playInterval);
-		// }
-		// Remove fullscreen event listeners
-		if (fullscreenHandler) {
-			document.removeEventListener('fullscreenchange', fullscreenHandler);
-			document.removeEventListener('webkitfullscreenchange', fullscreenHandler);
-			document.removeEventListener('mozfullscreenchange', fullscreenHandler);
-			document.removeEventListener('MSFullscreenChange', fullscreenHandler);
-			fullscreenHandler = null;
+	function switchBasemap(basemapId: string) {
+		if (!map) return;
+
+		selectedBasemap = basemapId;
+		const basemapConfig = basemaps.find((b) => b.id === basemapId);
+		if (!basemapConfig) return;
+
+		const newBaseMapLayer = new TileLayer({
+			source: new XYZ({
+				url: basemapConfig.url,
+				attributions: basemapConfig.attribution
+			}),
+			zIndex: 0
+		});
+
+		if (baseMapLayer) {
+			map.removeLayer(baseMapLayer);
 		}
 
-		if (map) {
-			map.dispose();
-		}
-	});
+		const layers = map.getLayers();
+		layers.insertAt(0, newBaseMapLayer);
+		baseMapLayer = newBaseMapLayer;
+	}
+
+	// Legend state
+	let legendData = $state<
+		Record<string, { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }>
+	>({});
+
+	// Legend for every information layer's default state, prefetched on mount so
+	// the sidebar doesn't have to wait on a network round-trip when a layer is clicked.
+	let layerLegends = $state<
+		Record<
+			string,
+			Record<string, { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }>
+		>
+	>({});
 
 	// Updated demographic dataset with ArcGIS layers
 	const demographicDataset = [
@@ -340,31 +174,12 @@
 			charts: [
 				{
 					title: 'Population Distribution by Age and Sex in HKH Region',
-					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
 					chart_data: {
 						categories: [
-							'0-1',
-							'1-4',
-							'5-9',
-							'10-14',
-							'15-19',
-							'20-24',
-							'25-29',
-							'30-34',
-							'35-39',
-							'40-44',
-							'45-49',
-							'50-54',
-							'55-59',
-							'60-64',
-							'65-69',
-							'70-74',
-							'75-79',
-							'80-84',
-							'85-89',
-							'90+'
+							'0-1','1-4','5-9','10-14','15-19','20-24','25-29','30-34','35-39','40-44',
+							'45-49','50-54','55-59','60-64','65-69','70-74','75-79','80-84','85-89','90+'
 						],
 						series: [
 							{
@@ -394,16 +209,7 @@
 					isStacked: true,
 					yAxisTitle: 'Population',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Pakistan',
-							'India',
-							'Nepal',
-							'China',
-							'Bhutan',
-							'Bangladesh',
-							'Myanmar'
-						],
+						categories: ['Afghanistan','Pakistan','India','Nepal','China','Bhutan','Bangladesh','Myanmar'],
 						series: [
 							{
 								name: 'Female',
@@ -418,91 +224,6 @@
 						]
 					}
 				}
-				// {
-				// 	title: 'Country-wise Population Distribution in HKH Region',
-				// 	chart_type: 'column',
-				// 	yAxisTitle: 'Population',
-				// 	chart_data: {
-				// 		categories: [
-				// 			'Afghanistan',
-				// 			'Bangladesh',
-				// 			'Bhutan',
-				// 			'China',
-				// 			'India',
-				// 			'Myanmar',
-				// 			'Nepal',
-				// 			'Pakistan'
-				// 		],
-
-				// 		// plotOptions: {
-				// 		// 	column: {
-				// 		// 		pointPadding: 0,
-				// 		// 		groupPadding: 0,
-				// 		// 		borderWidth: 0,
-				// 		// 		grouping: false,
-				// 		// 		pointPlacement: 0
-				// 		// 	}
-				// 		// },
-				// 		series: [
-				// 			{
-				// 				name: 'Population',
-				// 				data: [35232483, 5213882, 812757, 35031698, 54605239, 13635199, 29711569, 59072668],
-				// 				color: '#5F87C1', // Modern blue
-				// 				zIndex: 1
-				// 			}
-				// 		]
-				// 	}
-				// }
-				// {
-				// 	title: 'Population Distribution by Age and Sex',
-				// 	// subtitle: 'Source: WorldPop Global Population Data',
-				// 	chart_type: 'bar',
-				// 	isPyramid: true,
-				// 	chart_data: {
-				// 		categories: [
-				// 			'0-1',
-				// 			'1-4',
-				// 			'5-9',
-				// 			'10-14',
-				// 			'15-19',
-				// 			'20-24',
-				// 			'25-29',
-				// 			'30-34',
-				// 			'35-39',
-				// 			'40-44',
-				// 			'45-49',
-				// 			'50-54',
-				// 			'55-59',
-				// 			'60-64',
-				// 			'65-69',
-				// 			'70-74',
-				// 			'75-79',
-				// 			'80-84',
-				// 			'85-89',
-				// 			'90+'
-				// 		],
-				// 		series: [
-				// 			{
-				// 				name: 'Male',
-				// 				data: [
-				// 					-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-				// 					-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
-				// 					-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
-				// 				],
-				// 				color: '#3b82f6'
-				// 			},
-				// 			{
-				// 				name: 'Female',
-				// 				data: [
-				// 					2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
-				// 					7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
-				// 					2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
-				// 				],
-				// 				color: '#ef4444'
-				// 			}
-				// 		]
-				// 	}
-				// }
 			],
 			map_data: {
 				name: 'Population Trends across HKH',
@@ -524,21 +245,12 @@
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Pakistan',
-							'India',
-							'Nepal',
-							'China',
-							'Bhutan',
-							'Bangladesh',
-							'Myanmar'
-						],
+						categories: ['Afghanistan','Pakistan','India','Nepal','China','Bhutan','Bangladesh','Myanmar'],
 						series: [
 							{
 								name: 'Ratio',
 								data: [102.17, 102.45, 106.38, 91.65, 104.62, 114.36, 103.03, 105.2],
-								color: '#5F87C1', // Modern blue
+								color: '#5F87C1',
 								zIndex: 1
 							}
 						]
@@ -549,21 +261,6 @@
 		},
 		{
 			id: 'aged-75-proportion',
-			// charts: [
-			// 	{
-			// 		title: 'Population Distribution',
-			// 		chart_type: 'column',
-			// 		chart_data: {
-			// 			categories: ['2015', '2020', '2025', '2030'],
-			// 			series: [
-			// 				{
-			// 					name: 'Population (millions)',
-			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
-			// 				}
-			// 			]
-			// 		}
-			// 	}
-			// ],
 			map_data: {
 				name: 'Proportion of Age >=75',
 				layer_id: 2,
@@ -575,21 +272,12 @@
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Pakistan',
-							'India',
-							'Nepal',
-							'China',
-							'Bhutan',
-							'Bangladesh',
-							'Myanmar'
-						],
+						categories: ['Afghanistan','Pakistan','India','Nepal','China','Bhutan','Bangladesh','Myanmar'],
 						series: [
 							{
 								name: 'Ratio',
 								data: [0.69, 1.12, 2.46, 2.12, 4.26, 2.2, 1.65, 1.67],
-								color: '#5F87C1', // Modern blue
+								color: '#5F87C1',
 								zIndex: 1
 							}
 						]
@@ -600,21 +288,6 @@
 		},
 		{
 			id: 'child-woman-ratio-2025',
-			// charts: [
-			// 	{
-			// 		title: 'Population Distribution',
-			// 		chart_type: 'column',
-			// 		chart_data: {
-			// 			categories: ['2015', '2020', '2025', '2030'],
-			// 			series: [
-			// 				{
-			// 					name: 'Population (millions)',
-			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
-			// 				}
-			// 			]
-			// 		}
-			// 	}
-			// ],
 			map_data: {
 				name: 'Child Woman Ratio 2025',
 				layer_id: 3,
@@ -626,101 +299,22 @@
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Pakistan',
-							'India',
-							'Nepal',
-							'China',
-							'Bhutan',
-							'Bangladesh',
-							'Myanmar'
-						],
+						categories: ['Afghanistan','Pakistan','India','Nepal','China','Bhutan','Bangladesh','Myanmar'],
 						series: [
 							{
 								name: 'Ratio',
 								data: [659.15, 609.51, 306.28, 319.88, 187.24, 222.26, 445.12, 362.09],
-								color: '#5F87C1', // Modern blue
+								color: '#5F87C1',
 								zIndex: 1
 							}
 						]
 					}
 				}
-				// {
-				// 	title: 'Distribution of Children and Women',
-				// 	// subtitle: 'Distribution across HKH region',
-				// 	chart_type: 'pie',
-				// 	// units: 'Sq Km',
-				// 	chart_data: {
-				// 		series: [
-				// 			{
-				// 				name: 'Age Group',
-				// 				data: [
-				// 					{
-				// 						name: 'Afghanistan',
-				// 						y: 659.15
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Pakistan',
-				// 						y: 609.51
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'India',
-				// 						y: 306.28
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Nepal',
-				// 						y: 319.88
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'China',
-				// 						y: 187.24
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Bhutan',
-				// 						y: 222.26
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'Bangladesh',
-				// 						y: 445.12
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Myanmar',
-				// 						y: 362.09
-				// 						// color: '#D3FFBE' // Red
-				// 					}
-				// 				]
-				// 			}
-				// 		]
-				// 	}
-				// },
 			],
 			control_type: 'none'
 		},
 		{
 			id: 'child-dependency-ratio-2025',
-			// charts: [
-			// 	{
-			// 		title: 'Population Distribution',
-			// 		chart_type: 'column',
-			// 		chart_data: {
-			// 			categories: ['2015', '2020', '2025', '2030'],
-			// 			series: [
-			// 				{
-			// 					name: 'Population (millions)',
-			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
-			// 				}
-			// 			]
-			// 		}
-			// 	}
-			// ],
 			map_data: {
 				name: 'Child Dependency Ratio 2025',
 				layer_id: 4,
@@ -732,101 +326,22 @@
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Pakistan',
-							'India',
-							'Nepal',
-							'China',
-							'Bhutan',
-							'Bangladesh',
-							'Myanmar'
-						],
+						categories: ['Afghanistan','Pakistan','India','Nepal','China','Bhutan','Bangladesh','Myanmar'],
 						series: [
 							{
 								name: 'Ratio',
 								data: [80.04, 76.93, 38.19, 45.49, 29.25, 29.74, 56.24, 43.12],
-								color: '#5F87C1', // Modern blue
+								color: '#5F87C1',
 								zIndex: 1
 							}
 						]
 					}
 				}
-				// {
-				// 	title: 'Distribution of Child Dependency Ratio by Country',
-				// 	// subtitle: 'Distribution across HKH region',
-				// 	chart_type: 'pie',
-				// 	// units: 'Sq Km',
-				// 	chart_data: {
-				// 		series: [
-				// 			{
-				// 				name: 'Age Group',
-				// 				data: [
-				// 					{
-				// 						name: 'Afghanistan',
-				// 						y: 80.04
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Pakistan',
-				// 						y: 76.93
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'India',
-				// 						y: 38.19
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Nepal',
-				// 						y: 45.49
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'China',
-				// 						y: 29.25
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Bhutan',
-				// 						y: 29.74
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'Bangladesh',
-				// 						y: 56.24
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Myanmar',
-				// 						y: 43.12
-				// 						// color: '#D3FFBE' // Red
-				// 					}
-				// 				]
-				// 			}
-				// 		]
-				// 	}
-				// }
 			],
 			control_type: 'none'
 		},
 		{
 			id: 'age-dependency-ratio-2025',
-			// charts: [
-			// 	{
-			// 		title: 'Population Distribution',
-			// 		chart_type: 'column',
-			// 		chart_data: {
-			// 			categories: ['2015', '2020', '2025', '2030'],
-			// 			series: [
-			// 				{
-			// 					name: 'Population (millions)',
-			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
-			// 				}
-			// 			]
-			// 		}
-			// 	}
-			// ],
 			map_data: {
 				name: 'Age Dependency Ratio 2025',
 				layer_id: 5,
@@ -838,101 +353,22 @@
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Pakistan',
-							'India',
-							'Nepal',
-							'China',
-							'Bhutan',
-							'Bangladesh',
-							'Myanmar'
-						],
+						categories: ['Afghanistan','Pakistan','India','Nepal','China','Bhutan','Bangladesh','Myanmar'],
 						series: [
 							{
 								name: 'Ratio',
 								data: [4.52, 7.11, 10.42, 10.57, 17.79, 9.47, 8.38, 9.97],
-								color: '#5F87C1', // Modern blue
+								color: '#5F87C1',
 								zIndex: 1
 							}
 						]
 					}
 				}
-				// {
-				// 	title: 'Distribution of Age Dependency Ratio by Country',
-				// 	// subtitle: 'Distribution across HKH region',
-				// 	chart_type: 'pie',
-				// 	// units: 'Sq Km',
-				// 	chart_data: {
-				// 		series: [
-				// 			{
-				// 				name: 'Age Group',
-				// 				data: [
-				// 					{
-				// 						name: 'Afghanistan',
-				// 						y: 4.52
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Pakistan',
-				// 						y: 7.11
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'India',
-				// 						y: 10.42
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Nepal',
-				// 						y: 10.57
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'China',
-				// 						y: 17.79
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Bhutan',
-				// 						y: 9.47
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'Bangladesh',
-				// 						y: 8.38
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Myanmar',
-				// 						y: 9.97
-				// 						// color: '#D3FFBE' // Red
-				// 					}
-				// 				]
-				// 			}
-				// 		]
-				// 	}
-				// }
 			],
 			control_type: 'none'
 		},
 		{
 			id: 'total-dependency-ratio-2025',
-			// charts: [
-			// 	{
-			// 		title: 'Population Distribution',
-			// 		chart_type: 'column',
-			// 		chart_data: {
-			// 			categories: ['2015', '2020', '2025', '2030'],
-			// 			series: [
-			// 				{
-			// 					name: 'Population (millions)',
-			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
-			// 				}
-			// 			]
-			// 		}
-			// 	}
-			// ],
 			map_data: {
 				name: 'Total Dependency Ratio 2025',
 				layer_id: 6,
@@ -944,87 +380,22 @@
 					chart_type: 'column',
 					yAxisTitle: 'Ratio',
 					chart_data: {
-						categories: [
-							'Afghanistan',
-							'Pakistan',
-							'India',
-							'Nepal',
-							'China',
-							'Bhutan',
-							'Bangladesh',
-							'Myanmar'
-						],
+						categories: ['Afghanistan','Pakistan','India','Nepal','China','Bhutan','Bangladesh','Myanmar'],
 						series: [
 							{
 								name: 'Ratio',
 								data: [84.56, 84.04, 48.61, 56.06, 47.04, 39.21, 64.62, 53.08],
-								color: '#5F87C1', // Modern blue
+								color: '#5F87C1',
 								zIndex: 1
 							}
 						]
 					}
 				}
-				// {
-				// 	title: 'Distribution of Total Dependency Ratio by Country',
-				// 	// subtitle: 'Distribution across HKH region',
-				// 	chart_type: 'pie',
-				// 	// units: 'Sq Km',
-				// 	chart_data: {
-				// 		series: [
-				// 			{
-				// 				name: 'Age Group',
-				// 				data: [
-				// 					{
-				// 						name: 'Afghanistan',
-				// 						y: 84.56
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Pakistan',
-				// 						y: 84.04
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'India',
-				// 						y: 48.61
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Nepal',
-				// 						y: 56.06
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'China',
-				// 						y: 47.04
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Bhutan',
-				// 						y: 39.21
-				// 						// color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'Bangladesh',
-				// 						y: 64.62
-				// 						// color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'Myanmar',
-				// 						y: 53.08
-				// 						// color: '#D3FFBE' // Red
-				// 					}
-				// 				]
-				// 			}
-				// 		]
-				// 	}
-				// }
 			],
 			control_type: 'none'
 		},
 		{
 			id: 'impervious_surface',
-
 			map_data: {
 				name: 'Impervious Surface',
 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_HumanDimensions/MapServer',
@@ -1039,16 +410,7 @@
 					showLegend: false,
 					units: 'Sq Km',
 					chart_data: {
-						categories: [
-							'Upto 1990',
-							'1990-2000',
-							'2000-2010',
-							'2010-2020'
-							// 'China',
-							// 'Bhutan',
-							// 'Bangladesh',
-							// 'Myanmar'
-						],
+						categories: ['Upto 1990', '1990-2000', '2000-2010', '2010-2020'],
 						series: [
 							{
 								name: 'Area',
@@ -1058,67 +420,16 @@
 									{ y: 2648, color: '#FDC820' },
 									{ y: 2644, color: '#FE3C19' }
 								],
-								// color: '#5F87C1', // Modern blue
 								zIndex: 1
 							}
 						]
 					}
 				}
-				// {
-				// 	title: 'Impervious Surface Distribution in HKH Region',
-				// 	// subtitle: 'Distribution across HKH region',
-				// 	chart_type: 'column',
-				// 	chart_data: {
-				// 		series: [
-				// 			{
-				// 				name: 'Impervious Surface',
-				// 				data: [
-				// 					{
-				// 						name: 'Upto 1990',
-				// 						y: 3785,
-				// 						color: '#147218' // Blue
-				// 					},
-				// 					{
-				// 						name: '1990-2000',
-				// 						y: 1227,
-				// 						color: '#A4CF22' // Red
-				// 					},
-				// 					{
-				// 						name: '2000-2010',
-				// 						y: 2648,
-				// 						color: '#FDC820' // Green
-				// 					},
-				// 					{
-				// 						name: '2010-2020',
-				// 						y: 2644,
-				// 						color: '#FE3C19' // Amber
-				// 					}
-				// 				]
-				// 			}
-				// 		]
-				// 	}
-				// }
 			],
 			control_type: 'none'
 		},
-
 		{
 			id: 'urban-center',
-			// charts: [
-			// 	{
-			// 		title: 'Population Distribution',
-			// 		chart_type: 'column',
-			// 		chart_data: {
-			// 			categories: ['2015', '2020', '2025', '2030'],
-			// 			series: [
-			// 				{
-			// 					name: 'Population (millions)',
-			// 					data: [207.357006, 221.147189, 233.295930, 246.467761]
-			// 				}
-			// 			]
-			// 		}
-			// 	}
-			// ],
 			map_data: {
 				name: 'Urban Center Location',
 				layer_id: 8,
@@ -1127,31 +438,12 @@
 			charts: [
 				{
 					title: 'Population Distribution by Age and Sex',
-					// subtitle: 'Source: WorldPop Global Population Data',
 					chart_type: 'bar',
 					isPyramid: true,
 					chart_data: {
 						categories: [
-							'0-1',
-							'1-4',
-							'5-9',
-							'10-14',
-							'15-19',
-							'20-24',
-							'25-29',
-							'30-34',
-							'35-39',
-							'40-44',
-							'45-49',
-							'50-54',
-							'55-59',
-							'60-64',
-							'65-69',
-							'70-74',
-							'75-79',
-							'80-84',
-							'85-89',
-							'90+'
+							'0-1','1-4','5-9','10-14','15-19','20-24','25-29','30-34','35-39','40-44',
+							'45-49','50-54','55-59','60-64','65-69','70-74','75-79','80-84','85-89','90+'
 						],
 						series: [
 							{
@@ -1186,58 +478,7 @@
 				layer_id: 7,
 				description: 'Night Light Data'
 			},
-			charts: [
-				// {
-				// 	title: 'Population Distribution by Age and Sex',
-				// 	// subtitle: 'Source: WorldPop Global Population Data',
-				// 	chart_type: 'bar',
-				// 	isPyramid: true,
-				// 	chart_data: {
-				// 		categories: [
-				// 			'0-1',
-				// 			'1-4',
-				// 			'5-9',
-				// 			'10-14',
-				// 			'15-19',
-				// 			'20-24',
-				// 			'25-29',
-				// 			'30-34',
-				// 			'35-39',
-				// 			'40-44',
-				// 			'45-49',
-				// 			'50-54',
-				// 			'55-59',
-				// 			'60-64',
-				// 			'65-69',
-				// 			'70-74',
-				// 			'75-79',
-				// 			'80-84',
-				// 			'85-89',
-				// 			'90+'
-				// 		],
-				// 		series: [
-				// 			{
-				// 				name: 'Male',
-				// 				data: [
-				// 					-2583174.5, -10166841, -12606734, -12474449, -11504715, -10547001, -9653669,
-				// 					-8535552, -7724644.5, -6844482, -5837920.5, -5349179, -4440363.5, -3354569.25,
-				// 					-2507988.5, -1866760.625, -1144430.125, -566243.625, -228994.9531, -98160.13281
-				// 				],
-				// 				color: '#3b82f6'
-				// 			},
-				// 			{
-				// 				name: 'Female',
-				// 				data: [
-				// 					2441938.25, 9597426, 11860202, 11694790, 10997892, 10224739, 9384308, 8234182.5,
-				// 					7578636, 6765130.5, 5765991, 5317287, 4448304.5, 3438076.75, 2685983.5,
-				// 					2179466.25, 1411112.125, 749921.0625, 334153.0625, 169997.7031
-				// 				],
-				// 				color: '#ef4444'
-				// 			}
-				// 		]
-				// 	}
-				// }
-			],
+			charts: [],
 			control_type: 'none'
 		}
 	];
@@ -1319,224 +560,17 @@
 		}
 	];
 
-	// Track selected question - default to first question
+	// Track selected question
 	let selectedQuestionId = $state('');
 
-	// Track selected information layer (single selection) - default to Population 2025
+	// Track selected information layer (single selection) - default to Population
 	let selectedInformationLayer = $state<string | null>('Population');
 
 	// Track expanded layer for accordion - default closed
 	let expandedLayer = $state<string | null>(null);
 
-	// Track radio button selection for trend analysis
-	let trendAnalysisMode = $state<'overall' | 'significant'>('overall');
-
-	// Track temperature rise threshold selection
-	let temperatureRiseThreshold = $state<'0.5' | '1.5' | '2.5'>('1.5');
-
-	// Layout states: 'default' | 'hide-left' | 'left-full'
-	let layoutState = $state('default');
-
-	// Function to check if screen is small (laptop, tablet, or mobile)
-	function isSmallScreen() {
-		return typeof window !== 'undefined' && window.innerWidth < 1280; // lg breakpoint
-	}
-
-	// Initialize layout based on screen size
-	function initializeLayoutState() {
-		if (isSmallScreen()) {
-			layoutState = 'hide-left';
-		} else {
-			layoutState = 'default';
-		}
-	}
-
-	// Legend state management
-	let legendData = $state<
-		Record<
-			string,
-			{ name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }
-		>
-	>({});
-	let legendCollapsed = $state(false);
-
-	// Track questions panel state
-	let isQuestionsPanelOpen = $state(false);
-	function toggleQuestionsPanel() {
-		isQuestionsPanelOpen = !isQuestionsPanelOpen;
-	}
-
-	// Track iframe loading state
-	let isStoryMapLoading = $state(true);
-
-	// Generate iframe key based on layout state to force reload on layout change
-	let iframeKey = $state(0);
-
-	// Add new state variables for layers panel
-	let layersPanelOpen = $state(false);
-	let activeBaseLayers = $state({});
-
-	// Basemap switcher state
-	let basemapPanelOpen = $state(false);
-	let selectedBasemap = $state('light');
-	let baseMapLayer: TileLayer<any> | null = null;
-
-	// Define base layers from HKH/Outline service
-	const baseLayers = [
-		{
-			id: 0,
-			name: 'Outline',
-			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
-		}
-		// {
-		// 	id: 1,
-		// 	name: 'Soil',
-		// 	url: BASELAYERS_URL
-		// },
-		// {
-		// 	id: 3,
-		// 	name: 'River',
-		// 	url: BASELAYERS_URL
-		// }
-	];
-
-	// Define available basemaps
-	const basemaps = [
-		{
-			id: 'light',
-			name: 'Light',
-			url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-			attribution: '© OpenStreetMap contributors, © CARTO',
-			image: lightMap
-		},
-		{
-			id: 'dark-gray',
-			name: 'Dark',
-			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-			attribution: '© OpenStreetMap contributors, © CARTO',
-			image: darkMap
-		},
-		{
-			id: 'osm',
-			name: 'OSM',
-			url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-			attribution: '© OpenStreetMap contributors',
-			image: osmMap
-		},
-		{
-			id: 'satellite',
-			name: 'Satellite',
-			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-			attribution: 'Esri, DigitalGlobe, GeoEye, Earthstar Geographics',
-			image: satelliteMap
-		},
-		{
-			id: 'topographic',
-			name: 'Topographic',
-			url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-			attribution:
-				'Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, CNES/Airbus DS, InterMap, NASA/METI, NASA/NGS and the GIS User Community',
-			image: terrainMap
-		}
-		// {
-		// 	id: 'terrain',
-		// 	name: 'Terrain',
-		// 	url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
-		// 	attribution: '© OpenStreetMap contributors, SRTM',
-		// 	image: terrainMap
-		// }
-	];
-
-	// Function to toggle base layers
-	async function toggleBaseLayer(layerId: number, checked: boolean) {
-		if (!map) return;
-		activeBaseLayers = { ...activeBaseLayers, [layerId]: checked };
-
-		if (checked) {
-			const layerInfo = baseLayers.find((l) => l.id === layerId);
-			if (!layerInfo) return;
-
-			let layer;
-
-			if (layerId === 0) {
-				// Apply special styling or configuration for layerId 0
-				layer = new ImageLayer({
-					source: new ImageArcGISRest({
-						url: layerInfo.url,
-						params: {
-							LAYERS: `show:${layerId}`,
-							FORMAT: 'PNG32',
-							TRANSPARENT: true
-						}
-					}),
-					zIndex: 2,
-					// Example styling: reduce opacity or add custom properties
-					opacity: 0.5
-				});
-			} else {
-				// Default configuration for other layers
-				layer = new ImageLayer({
-					source: new ImageArcGISRest({
-						url: layerInfo.url,
-						params: {
-							LAYERS: `show:${layerId}`,
-							FORMAT: 'PNG32',
-							TRANSPARENT: true
-						}
-					}),
-					zIndex: 2
-				});
-			}
-
-			layer.set('baseLayerId', layerId);
-			map.addLayer(layer);
-		} else {
-			const layers = map.getLayers().getArray();
-			for (const layer of layers) {
-				if (layer.get('baseLayerId') === layerId) {
-					map.removeLayer(layer);
-					break;
-				}
-			}
-		}
-
-		// Update legend after changing layers
-		updateLegend();
-	}
-
-	// Function to switch basemap
-	function switchBasemap(basemapId: string) {
-		if (!map) return;
-
-		selectedBasemap = basemapId;
-		const basemapConfig = basemaps.find((b) => b.id === basemapId);
-		if (!basemapConfig) return;
-
-		// Create new basemap layer
-		const newBaseMapLayer = new TileLayer({
-			source: new XYZ({
-				url: basemapConfig.url,
-				attributions: basemapConfig.attribution
-			}),
-			zIndex: 0
-		});
-
-		// Remove old basemap layer
-		if (baseMapLayer) {
-			map.removeLayer(baseMapLayer);
-		}
-
-		// Add new basemap layer as the first layer (bottom)
-		const layers = map.getLayers();
-		layers.insertAt(0, newBaseMapLayer);
-
-		// Store reference to current basemap layer
-		baseMapLayer = newBaseMapLayer;
-	}
-
 	// Get current dataset based on selected question or information layer
 	let currentDataset = $derived.by(() => {
-		// First priority: selected question
 		if (selectedQuestionId) {
 			const selectedQuestion = questions.find((q) => q.id === selectedQuestionId);
 			if (selectedQuestion?.dataset_id) {
@@ -1544,7 +578,6 @@
 			}
 		}
 
-		// Second priority: selected information layer
 		if (selectedInformationLayer) {
 			const selectedLayer = information_layers.find(
 				(layer) => layer.title === selectedInformationLayer
@@ -1554,73 +587,44 @@
 			}
 		}
 
-		// Default: first dataset
 		return demographicDataset[0];
 	});
 
 	// Extract current data from dataset
 	let currentCharts = $derived(currentDataset?.charts || []);
-	let currentMapData = $derived(currentDataset?.map_data);
 
-	// Watch for layout state changes and update map size
-	$effect(() => {
-		// This effect runs whenever layoutState changes
-		layoutState;
+	// Resolve the single ArcGIS layer reference for a dataset's map_data
+	function resolveLayerForDataset(dataset: any): { url: string; layerId: number; name: string } | null {
+		if (!dataset || !dataset.map_data) return null;
+		return {
+			url: dataset.map_data.url || ARCGIS_MAPSERVER_URL,
+			layerId: dataset.map_data.layer_id,
+			name: dataset.map_data.name
+		};
+	}
 
-		// Multiple resize attempts with different timings
-		if (map && mapContainer) {
-			// Immediate attempt
-			requestAnimationFrame(() => {
-				if (map) {
-					map.updateSize();
-				}
-			});
+	// Fetch a legend entry for one ArcGIS layer reference
+	async function fetchLegendEntryForLayer(
+		layerRef: { url: string; layerId: number; name: string } | null
+	): Promise<{ key: string; entry: { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> } } | null> {
+		if (!layerRef) return null;
 
-			// Delayed attempt
-			setTimeout(() => {
-				if (map) {
-					map.updateSize();
-					map.render();
-				}
-			}, 150);
-
-			// Final attempt after all transitions
-			setTimeout(() => {
-				if (map) {
-					map.updateSize();
-					map.render();
-				}
-			}, 400);
-		}
-	});
-
-	// Get layer by layer ID from map
-	const getLayerByLayerId = (layerId: number): any | null => {
-		if (!map) return null;
-		const layers = map.getLayers().getArray();
-		for (const layer of layers) {
-			if (layer.get('layerId') === layerId) {
-				return layer;
-			}
-		}
-		return null;
-	};
-
-	// Function to fetch ArcGIS legend
-	async function fetchArcGISLegend(serviceUrl: string, layerId: number) {
+		const uniqueKey = `${layerRef.url}_${layerRef.layerId}`;
 		try {
-			const legendUrl = `${serviceUrl}/legend?f=json`;
+			const legendUrl = `${layerRef.url}/legend?f=json`;
 			const response = await fetch(legendUrl);
 			const data = await response.json();
-
-			const layerLegend = data.layers.find((l: any) => l.layerId === layerId);
+			const layerLegend = data.layers?.find((l: any) => l.layerId === layerRef.layerId);
 			if (layerLegend) {
 				return {
-					name: layerLegend.layerName,
-					items: layerLegend.legend.map((item: any) => ({
-						label: item.label,
-						imageData: `data:image/png;base64,${item.imageData}`
-					}))
+					key: uniqueKey,
+					entry: {
+						name: layerRef.name,
+						items: layerLegend.legend.map((item: any) => ({
+							label: item.label,
+							imageData: `data:image/png;base64,${item.imageData}`
+						}))
+					}
 				};
 			}
 		} catch (error) {
@@ -1629,43 +633,46 @@
 		return null;
 	}
 
-	// Update legend when layers change
-	async function updateLegend() {
-		const newLegendData = {};
+	// Prefetch the default legend for every information layer on mount, so the
+	// sidebar can show a legend instantly instead of waiting on a fetch per click.
+	async function prefetchAllLegends() {
+		const results = await Promise.all(
+			information_layers.map(async (infoLayer) => {
+				const dataset = demographicDataset.find((d) => d.id === infoLayer.dataset_id);
+				if (!dataset) return null;
 
-		// Get all layers from the map
-		if (map) {
-			const layers = map.getLayers().getArray();
+				const layerRef = resolveLayerForDataset(dataset);
+				const result = await fetchLegendEntryForLayer(layerRef);
+				if (!result) return null;
 
-			for (const layer of layers) {
-				const source = layer.getSource();
+				return { title: infoLayer.title, legendMap: { [result.key]: result.entry } };
+			})
+		);
 
-				if (source instanceof ImageArcGISRest) {
-					// Handle layerId 0 explicitly, without using || that treats 0 as falsy
-					let layerId = layer.get('layerId');
-					if (layerId === undefined || layerId === null) {
-						layerId = layer.get('baseLayerId');
-					}
-
-					const serviceUrl = source.getUrl();
-
-					if (layerId !== undefined && layerId !== null && serviceUrl) {
-						const legendKey = `${serviceUrl}_${layerId}`;
-
-						if (!legendData[legendKey]) {
-							const legend = await fetchArcGISLegend(serviceUrl, layerId);
-							if (legend) {
-								newLegendData[legendKey] = legend;
-							}
-						} else {
-							newLegendData[legendKey] = legendData[legendKey];
-						}
-					}
-				}
-			}
+		const combined: typeof layerLegends = {};
+		for (const result of results) {
+			if (result) combined[result.title] = result.legendMap;
 		}
+		layerLegends = combined;
+	}
 
-		legendData = newLegendData;
+	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	async function fetchLegendData() {
+		if (legendFetchTimeout) clearTimeout(legendFetchTimeout);
+
+		// Clear immediately (not inside the debounce) so a stale legend from the
+		// previously selected layer never flashes under the newly selected one —
+		// the sidebar falls back to that layer's prefetched legend instead.
+		legendData = {};
+
+		legendFetchTimeout = setTimeout(async () => {
+			if (currentDataset) {
+				const layerRef = resolveLayerForDataset(currentDataset);
+				const result = await fetchLegendEntryForLayer(layerRef);
+				if (result) legendData[result.key] = result.entry;
+			}
+		}, 300);
 	}
 
 	// Modified addArcGISLayer to update legend
@@ -1685,7 +692,7 @@
 					TRANSPARENT: true
 				}
 			}),
-			zIndex: 2
+			zIndex: 10
 		});
 
 		arcgisLayer.set('layerId', layerId);
@@ -1693,9 +700,7 @@
 		arcgisLayer.set('serviceUrl', serviceUrl);
 		map.addLayer(arcgisLayer);
 
-		setTimeout(async () => {
-			await updateLegend();
-		}, 100);
+		fetchLegendData();
 	}
 
 	// Remove all demographic layers from map
@@ -1705,14 +710,12 @@
 		const layers = map.getLayers().getArray();
 		const layersToRemove: any[] = [];
 
-		// Find all demographic layers (those with layerId property)
 		layers.forEach((layer) => {
 			if (layer.get('layerId') !== undefined) {
 				layersToRemove.push(layer);
 			}
 		});
 
-		// Remove all found demographic layers
 		layersToRemove.forEach((layer) => {
 			map!.removeLayer(layer);
 		});
@@ -1720,42 +723,30 @@
 
 	function selectQuestion(questionId: string) {
 		selectedQuestionId = questionId;
-		selectedInformationLayer = null; // clear info layer selection
+		selectedInformationLayer = null;
 
 		const selectedQuestion = questions.find((q) => q.id === questionId);
 		if (selectedQuestion?.dataset_id) {
 			const dataset = demographicDataset.find((item) => item.id === selectedQuestion.dataset_id);
 			if (dataset?.map_data) {
-				addArcGISLayer(
-					dataset.map_data.layer_id,
-					dataset.map_data.name,
-					dataset.map_data.url // only passed if exists
-				);
+				addArcGISLayer(dataset.map_data.layer_id, dataset.map_data.name, dataset.map_data.url);
 			}
 		}
-
 	}
 
-	// Function to select information layer
 	function selectInformationLayer(layerId: string) {
 		selectedInformationLayer = layerId;
-		selectedQuestionId = ''; // clear question selection
+		selectedQuestionId = '';
 
 		const selectedLayer = information_layers.find((layer) => layer.title === layerId);
 		if (selectedLayer?.dataset_id) {
 			const dataset = demographicDataset.find((item) => item.id === selectedLayer.dataset_id);
 			if (dataset?.map_data) {
-				addArcGISLayer(
-					dataset.map_data.layer_id,
-					dataset.map_data.name,
-					dataset.map_data.url // only passed if exists
-				);
+				addArcGISLayer(dataset.map_data.layer_id, dataset.map_data.name, dataset.map_data.url);
 			}
 		}
-
 	}
 
-	// Function to toggle layer expansion
 	function toggleLayerExpansion(layerId: string) {
 		if (expandedLayer === layerId) {
 			expandedLayer = null;
@@ -1764,552 +755,353 @@
 		}
 	}
 
-	// Function to cycle through layout states
-	function toggleLayoutState() {
-		if (layoutState === 'default') {
-			layoutState = 'hide-left';
-		} else if (layoutState === 'hide-left') {
-			layoutState = 'left-full';
-		} else {
-			layoutState = 'default';
-		}
-	}
+	function initializeMap() {
+		if (!mapContainer) return;
 
-	// Function to set specific layout state
-	function setLayoutState(state: 'default' | 'hide-left' | 'left-full') {
-		layoutState = state;
+		setTimeout(() => {
+			const fullScreenControl = new FullScreen({
+				source: mapContainer.parentElement || mapContainer
+			});
 
-		// Force iframe reload when expanding/collapsing story section
-		if (state === 'left-full' || state === 'default') {
-			isStoryMapLoading = true;
-			iframeKey++;
-		}
+			const initialBasemap = basemaps.find((b) => b.id === selectedBasemap);
+			if (!initialBasemap) return;
 
-		// Force map resize with multiple attempts to ensure it works
-		const forceMapResize = () => {
-			if (map && mapContainer) {
-				// Clear any existing size constraints
-				const mapElement = mapContainer;
-				mapElement.style.width = '100%';
-				mapElement.style.maxWidth = '100%';
+			baseMapLayer = new TileLayer({
+				source: new XYZ({
+					url: initialBasemap.url,
+					attributions: initialBasemap.attribution
+				}),
+				zIndex: 0
+			});
 
-				// First immediate update
-				map.updateSize();
+			map = new Map({
+				target: mapContainer,
+				controls: defaultControls().extend([fullScreenControl]),
+				layers: [baseMapLayer],
+				view: new View({
+					center: HKH_OUTLINE_CENTER
+				})
+			});
 
-				// Second update after a short delay
+			// Add default layer (Population 2025) when map initializes
+			addArcGISLayer(0, 'Population 2025');
+
+			const handleFullscreenChange = () => {
+				const isCurrentlyFullscreen = document.fullscreenElement !== null;
+				isFullscreen = isCurrentlyFullscreen;
 				setTimeout(() => {
 					if (map) {
 						map.updateSize();
-						// Force a render
 						map.render();
 					}
 				}, 100);
+			};
 
-				// Third update after CSS transitions complete
-				setTimeout(() => {
-					if (map) {
-						// Force complete resize
-						const view = map.getView();
-						const currentCenter = view.getCenter();
-						const currentZoom = view.getZoom();
+			fullscreenHandler = handleFullscreenChange;
+			document.addEventListener('fullscreenchange', handleFullscreenChange);
+			document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-						map.updateSize();
-						map.render();
-
-						// Restore view if it changed
-						if (currentCenter && currentZoom) {
-							view.setCenter(currentCenter);
-							view.setZoom(currentZoom);
-						}
-
-					}
-				}, 350);
+			if (map) {
+				map.updateSize();
+				fitMapToHkhOutline(map);
+				// Always show the HKH Outline, layered above everything else
+				toggleBaseLayer(0, true);
 			}
-		};
-
-		// Use requestAnimationFrame to ensure DOM updates are complete
-		requestAnimationFrame(() => {
-			forceMapResize();
-		});
+		}, 100);
 	}
+
+	onMount(() => {
+		initializeMap();
+
+		// Warm the sidebar's legend cache for every layer right away, instead of
+		// waiting on a fetch each time a layer is clicked.
+		prefetchAllLegends();
+
+		if (typeof ResizeObserver !== 'undefined' && mapContainer) {
+			const resizeObserver = new ResizeObserver(() => {
+				if (map) {
+					setTimeout(() => {
+						if (map) {
+							map.updateSize();
+						}
+					}, 100);
+				}
+			});
+			resizeObserver.observe(mapContainer);
+
+			return () => {
+				resizeObserver.disconnect();
+			};
+		}
+	});
+
+	onDestroy(() => {
+		if (legendFetchTimeout) {
+			clearTimeout(legendFetchTimeout);
+		}
+
+		if (fullscreenHandler) {
+			document.removeEventListener('fullscreenchange', fullscreenHandler);
+			document.removeEventListener('webkitfullscreenchange', fullscreenHandler);
+			document.removeEventListener('mozfullscreenchange', fullscreenHandler);
+			document.removeEventListener('MSFullscreenChange', fullscreenHandler);
+			fullscreenHandler = null;
+		}
+
+		if (map) {
+			map.dispose();
+		}
+	});
 </script>
 
-<!-- 3-Column Layout with Dynamic States -->
-<div class="relative grid grid-cols-12 items-stretch gap-6">
-	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
-	{#if layoutState === 'hide-left'}
-		<button
-			onclick={() => setLayoutState('default')}
-			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/90 p-2 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl active:bg-slate-100 lg:p-1.5"
-			title="Show Story Panel"
-		>
-			<ChevronsRight class="h-5 w-5 lg:h-4 lg:w-4" />
-		</button>
-	{/if}
-	<!-- Left Sidebar - Story + Questions -->
+<svelte:head>
+	<title>Human Dimensions | ICIMOD RIS</title>
+</svelte:head>
 
-	<div
-		class="sticky top-9 col-span-12 h-[70vh] min-h-[450px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[calc(100vh-14rem)] lg:min-h-[550px]"
-		class:hidden={layoutState === 'hide-left'}
-		class:lg:col-span-12={layoutState === 'left-full'}
-		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
-	>
-		<!-- StoryMap Iframe Container -->
-		<div class="relative h-full w-full overflow-hidden">
-			<!-- Loading Screen -->
-			{#if isStoryMapLoading}
-				<div
-					class="absolute inset-0 z-30 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100"
-				>
-					<div class="text-center">
-						<!-- Animated Spinner -->
-						<div class="mb-4 flex justify-center">
-							<div
-								class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500"
-							></div>
-						</div>
-						<!-- Loading Text -->
-						<p class="text-sm font-medium text-slate-600">Loading Story...</p>
-						<p class="mt-1 text-xs text-slate-500">Please wait</p>
-					</div>
-				</div>
-			{/if}
-
-			<!-- Iframe -->
-			{#key iframeKey}
-				<iframe
-					src="https://storymaps.arcgis.com/stories/8037fc07d0ea45a891c94ebef9eeaa0a"
-					width="100%"
-					height="100%"
-					style="border:none;"
-					allowfullscreen
-					class="h-full w-full"
-					title="ArcGIS StoryMap - Human Dimensions"
-					onload={() => {
-						isStoryMapLoading = false;
-					}}
-				></iframe>
-			{/key}
-
-			<!-- Overlay Control Buttons -->
-			<div class="absolute top-2 right-5 z-20 flex items-center space-x-1 lg:space-x-2">
-				{#if layoutState !== 'left-full'}
-					<!-- Hide Left Panel Button - Show Map -->
-					<button
-						onclick={() => setLayoutState('hide-left')}
-						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-						title="Show Map"
-					>
-						<ChevronsLeft class="h-3.5 w-3.5" />
-					</button>
-					<!-- Expand Story Button - Desktop only -->
-					<button
-						onclick={() => setLayoutState('left-full')}
-						class="hidden rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
-						title="Expand Story"
-					>
-						<ChevronsRight class="h-3.5 w-3.5" />
-					</button>
-				{:else}
-					<!-- Back to Default Button -->
-					<button
-						onclick={() => setLayoutState('default')}
-						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-						title="Back to Default"
-					>
-						<ChevronsLeft class="h-3.5 w-3.5" />
-					</button>
-				{/if}
-			</div>
-		</div>
+<div
+	class="theme-heading sticky z-[53] flex items-start justify-between gap-4 bg-[#F1F5F9] pb-2"
+	style="top: var(--app-header-height, 6rem)"
+>
+	<div class="max-w-2xl">
+		<h1 class="text-[20px] font-semibold tracking-[-0.045em] text-[#0F3557] sm:text-[22px]">Human Dimensions</h1>
+		<p class="mt-2 max-w-2xl text-sm leading-6 text-[#64788B]">
+			Understanding people and patterns in Hindu Kush Himalaya Region
+		</p>
 	</div>
-
-	<!-- Main Content Area - Unified container with common white background -->
-	<div
-		class="sticky col-span-12 lg:col-span-9"
-		class:lg:col-span-12={layoutState === 'hide-left'}
-		class:hidden={layoutState !== 'hide-left'}
-		class:lg:block={layoutState === 'default'}
-		class:lg:hidden={layoutState === 'left-full'}
-	>
-		<div class="rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
-			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
-				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
-				<div
-					class="order-2 flex min-w-0 flex-col gap-2 lg:order-1 lg:gap-3 {layoutState ===
-					'hide-left'
-						? 'flex-1'
-						: 'flex-1'}"
-				>
-					<!-- Map Section -->
-					<div
-						class="relative h-[60vh] min-h-[450px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]"
-					>
-						<div class="map-container flex h-full flex-col">
-							<div
-								bind:this={mapContainer}
-								class="map-element h-full w-full overflow-hidden rounded-xl"
-							></div>
-
-							<!-- Home Reset Button -->
-							<button
-								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
-								onclick={() => {
-									if (map) {
-										map.getView().setCenter(fromLonLat(HKH_CENTER));
-										map.getView().setZoom(HKH_ZOOM);
-									}
-								}}
-								title="Reset to Home View"
-							>
-								<House class="h-3.5 w-3.5 text-slate-600" />
-							</button>
-
-							<!-- Basemap Switcher Button -->
-							<button
-								class="absolute top-10 right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
-								onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
-								title="Change Basemap"
-								aria-label="Change Basemap"
-							>
-								<MapIcon class="h-3.5 w-3.5 text-slate-600" />
-							</button>
-
-							<!-- Basemap Switcher Panel -->
-							<div
-								class="absolute top-[4rem] right-10 z-20 w-48 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {basemapPanelOpen
-									? 'max-h-96 opacity-100'
-									: 'max-h-0 opacity-0'}"
-							>
-								<div class="p-3">
-									<h3 class="mb-2 text-sm font-semibold">Basemap</h3>
-									<div class="space-y-1">
-										{#each basemaps as basemap}
-											<button
-												class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
-												basemap.id
-													? 'bg-indigo-100 font-medium text-indigo-700'
-													: 'text-slate-700 hover:bg-gray-100'}"
-												onclick={() => {
-													switchBasemap(basemap.id);
-													basemapPanelOpen = false;
-												}}
-											>
-												<span class="flex-1">{basemap.name}</span>
-												<img
-													src={basemap.image}
-													alt={basemap.name}
-													class="h-8 w-12 rounded border border-slate-200 object-cover"
-												/>
-											</button>
-										{/each}
-									</div>
-								</div>
-							</div>
-
-							<!-- Layer Toggler Button -->
-							<button
-								class="absolute top-[4.5rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
-								onclick={() => (layersPanelOpen = !layersPanelOpen)}
-							>
-								{#if layersPanelOpen}
-									<ChevronsRight class="h-3.5 w-3.5" />
-								{:else}
-									<Layers class="h-3.5 w-3.5" />
-								{/if}
-							</button>
-
-							<!-- Layer Toggler Panel -->
-							<div
-								class="absolute top-[6rem] right-10 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
-									? 'max-h-96 opacity-100'
-									: 'max-h-0 opacity-0'}"
-							>
-								<div class="p-3">
-									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
-									<div class="space-y-2">
-										{#each baseLayers as layerInfo}
-											<label class="flex items-center space-x-2 text-sm">
-												<input
-													type="checkbox"
-													checked={!!activeBaseLayers[layerInfo.id]}
-													onchange={(e) => {
-														toggleBaseLayer(layerInfo.id, e.target.checked);
-														e.target.blur(); // Removes focus from the checkbox
-													}}
-													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-												/>
-												<span>{layerInfo.name}</span>
-											</label>
-										{/each}
-									</div>
-								</div>
-							</div>
-
-							<!-- Legend Panel - Bottom Right -->
-							{#if currentDataset && Object.keys(legendData).length > 0}
-								<div class="absolute right-2 bottom-2">
-									<!-- Legend Toggle Button -->
-									<button
-										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
-										onclick={() => (legendCollapsed = !legendCollapsed)}
-									>
-										<div class="flex items-center space-x-2">
-											<List class="h-3.5 w-3.5 text-blue-600" />
-											{#if !legendCollapsed}
-												<span class="font-medium text-slate-700">Legend</span>
-											{/if}
-										</div>
-										<!-- <svg
-											class="h-3.5 w-3.5 transform text-slate-600 transition-transform duration-300 {legendCollapsed
-												? 'rotate-180'
-												: ''}"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M19 9l-7 7-7-7"
-											/>
-										</svg> -->
-									</button>
-
-									<!-- Legend Content -->
-									{#if !legendCollapsed}
-										<div
-											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
-										>
-											<div class="max-h-[300px] w-35 space-y-4">
-												{#each Object.keys(legendData) as uniqueKey}
-													<div class="space-y-2">
-														<h4 class="text-sm font-semibold text-slate-800">
-															{legendData[uniqueKey].name}
-														</h4>
-														<div class="space-y-1">
-															{#each legendData[uniqueKey].items as item}
-																<div class="flex items-center space-x-2">
-																	{#if item.imageData}
-																		<img
-																			src={item.imageData}
-																			alt={item.label}
-																			class="h-4 w-5 flex-shrink-0"
-																		/>
-																	{:else if item.imageUrl}
-																		<img
-																			src={item.imageUrl}
-																			alt={item.label}
-																			class="h-4 w-5 flex-shrink-0"
-																		/>
-																	{/if}
-																	<span class="text-xs text-slate-700">{item.label}</span>
-																</div>
-															{/each}
-														</div>
-													</div>
-												{/each}
-											</div>
-										</div>
-									{/if}
-								</div>
-							{/if}
-						</div>
-					</div>
-
-					<!-- Chart Section -->
-					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
-						<!-- <h3 class="mb-4 text-lg font-semibold text-slate-700">Demographic Analytics</h3> -->
-						<div class="rounded-lg bg-slate-50/50">
-							{#if currentCharts && currentCharts.length > 0}
-								<div class="space-y-6">
-									{#each currentCharts as chart, index}
-										<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
-											<Chart
-												chartData={chart.chart_data}
-												title={chart.title}
-												subtitle={'subtitle' in chart ? chart.subtitle : ''}
-												chart_type={chart.chart_type}
-												isPyramid={'isPyramid' in chart ? chart.isPyramid : false}
-												isStacked={'isStacked' in chart ? chart.isStacked : false}
-												yAxisTitle={'yAxisTitle' in chart ? chart.yAxisTitle : 'Value'}
-												showLegend={'showLegend' in chart ? chart.showLegend : true}
-												unit={'units' in chart ? chart.units : ''}
-												plotOptions={'plotOptions' in chart ? chart.plotOptions : {}}
-											/>
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<div class="flex h-80 items-center justify-center">
-									<div class="text-center text-slate-500">
-										<!-- <p class="text-sm">Select a question to view related charts</p> -->
-									</div>
-								</div>
-							{/if}
-						</div>
-					</div>
-				</div>
-
-				<!-- Right part: Information Layer and Questions - Shows first on mobile/tablet -->
-				<div class="order-1 w-full flex-shrink-0 lg:order-2 lg:w-75">
-					<div
-						class="top-6 flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 p-4 lg:min-h-[calc(100vh-16rem)]"
-					>
-						<!-- Information Layer Header -->
-						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-							<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
-								<Layers class="h-5 w-5 text-white" />
-							</div>
-							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
-						</div>
-
-						<!-- Information Layer Content -->
-						<div class="flex-1 overflow-y-auto">
-							{#if information_layers && information_layers.length > 0}
-								<div class="space-y-3">
-									{#each information_layers as layer, index}
-										<div
-											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
-											layer.title
-												? 'border-blue-300 bg-gradient-to-r from-blue-50/90 to-cyan-50/90 shadow-md'
-												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
-										>
-											<button
-												onclick={() => selectInformationLayer(layer.title)}
-												class="flex w-full items-start space-x-2 p-4 text-left transition-all duration-200 hover:opacity-80"
-											>
-												<h4
-													class="flex-1 text-sm font-medium {selectedInformationLayer ===
-													layer.title
-														? 'text-blue-800'
-														: 'text-slate-800'}"
-												>
-													{layer.title}
-												</h4>
-												<span
-													class="flex-shrink-0 cursor-pointer"
-													role="button"
-													tabindex="0"
-													onclick={(e) => {
-														e.stopPropagation();
-														toggleLayerExpansion(layer.title);
-													}}
-													onkeydown={(e) => {
-														if (e.key === 'Enter' || e.key === ' ') {
-															e.preventDefault();
-															e.stopPropagation();
-															toggleLayerExpansion(layer.title);
-														}
-													}}
-												>
-													{#if expandedLayer === layer.title}
-														<ChevronUp class="h-3.5 w-3.5 text-slate-600" />
-													{:else}
-														<ChevronDown class="h-3.5 w-3.5 text-slate-600" />
-													{/if}
-												</span>
-											</button>
-
-											<!-- Expandable content -->
-											{#if expandedLayer === layer.title}
-												<div
-													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
-												>
-													<p>{layer.info}</p>
-													<p class="pt-1 text-left text-xs text-slate-600">
-														<span class="font-bold"> Data Source: </span>
-														{layer.source}
-													</p>
-												</div>
-											{/if}
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<div class="flex h-40 items-center justify-center">
-									<div class="text-center text-slate-500">
-										<Layers class="mx-auto mb-2 h-8 w-8 text-slate-400" />
-										<p class="text-sm">No indicators available</p>
-										<p class="text-xs">Select a question to view map layers</p>
-									</div>
-								</div>
-							{/if}
-						</div>
-
-						<!-- Questions section - now empty, button moved to fixed position -->
-						<div class="relative mt-6 flex min-h-0 flex-1 flex-col pt-6"></div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+	<ThemeInfoButton
+		src="https://storymaps.arcgis.com/stories/8037fc07d0ea45a891c94ebef9eeaa0a"
+		label="About human dimensions in the HKH"
+	/>
 </div>
 
-<!-- Conditionally render floating questions button -->
-<div>
-	{#if layoutState !== 'left-full'}
-		<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
-			{#if isQuestionsPanelOpen}
-				<div
-					class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right scale-100 transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 opacity-100 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
-				>
-					<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-						<div class="rounded-lg bg-gradient-to-r {getTopicColor(topic)} p-2">
-							<Info class="h-3.5 w-3.5 text-white" />
-						</div>
-						<h3 class="text-lg font-bold text-slate-800">Explore Questions</h3>
-					</div>
-
-					<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
-						{#each questions as questionItem, index}
-							<button
-								class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
-								questionItem.id
-									? 'border-blue-500 bg-blue-50 shadow-md'
-									: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-								onclick={() => selectQuestion(questionItem.id)}
-							>
-								<div class="flex items-start space-x-2">
-									<div class="mt-1 flex-shrink-0">
-										{#if selectedQuestionId === questionItem.id}
-											<CheckCircle class="h-3.5 w-3.5 text-blue-600" />
-										{:else}
-											<div
-												class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
-											></div>
+<div class="mt-6 grid gap-4 lg:grid-cols-[0.7fr_1.7fr_0.7fr] lg:items-stretch">
+	<!-- Left: Information layers -->
+	<aside class="context-panel p-5" style="background-color: #EEF6FB">
+		<div class="flex items-center justify-between border-b border-[#E0E7EE] pb-4">
+			<div>
+				<p class="chart-kicker">Layers</p>
+				<h2 class="mt-1 text-base font-semibold text-[#17324D]">Information layer</h2>
+			</div>
+			<span class="grid size-8 place-items-center rounded-lg bg-[#E8EEF4]">
+				<SlidersHorizontal class="size-4 text-[#64788B]" />
+			</span>
+		</div>
+		<div class="mt-3 max-h-[560px] space-y-2 overflow-y-auto pr-1">
+			{#if information_layers && information_layers.length > 0}
+				{#each information_layers as layer, index}
+					<AccordionLayer
+						title={layer.title}
+						active={selectedInformationLayer === layer.title}
+						open={expandedLayer === layer.title}
+						onclick={() => {
+							selectInformationLayer(layer.title);
+							toggleLayerExpansion(layer.title);
+						}}
+					>
+						{@const activeLegend =
+							selectedInformationLayer === layer.title && Object.keys(legendData).length > 0
+								? legendData
+								: layerLegends[layer.title]}
+						{#if activeLegend && Object.keys(activeLegend).length > 0}
+							<div class="space-y-2">
+								{#each Object.keys(activeLegend) as uniqueKey}
+									<div class="space-y-1.5">
+										{#if Object.keys(activeLegend).length > 1}
+											<p class="text-[10px] font-bold uppercase tracking-wide text-[#8A9BAD]">
+												{activeLegend[uniqueKey].name}
+											</p>
 										{/if}
+										{#each activeLegend[uniqueKey].items as item}
+											<div class="flex items-center gap-2 text-[11px] text-[#46637A]">
+												{#if item.imageData}
+													<img src={item.imageData} alt={item.label} class="h-3.5 w-4 shrink-0" />
+												{:else if item.imageUrl}
+													<img src={item.imageUrl} alt={item.label} class="h-3.5 w-4 shrink-0" />
+												{/if}
+												<span>{item.label}</span>
+											</div>
+										{/each}
 									</div>
-									<p
-										class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-											? 'font-medium text-blue-700'
-											: 'text-slate-600 group-hover:text-slate-800'}"
-									>
-										{questionItem.question}
-									</p>
-								</div>
-							</button>
-						{/each}
-					</div>
+								{/each}
+							</div>
+						{:else}
+							<p class="text-[11px] text-[#8A9BAD]">Loading legend…</p>
+						{/if}
+					</AccordionLayer>
+				{/each}
+			{:else}
+				<div class="flex h-40 flex-col items-center justify-center text-center text-[#8A9BAD]">
+					<Layers class="mx-auto mb-2 size-6" />
+					<p class="text-sm">No indicators available</p>
 				</div>
 			{/if}
+		</div>
+	</aside>
 
-			<button
-				onclick={toggleQuestionsPanel}
-				class="custom-shadow flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r {getTopicColor(
-					topic
-				)} text-white"
-				aria-label="Toggle questions panel"
-			>
-				<HelpCircle class="h-6 w-6" />
-			</button>
+	<!-- Middle: Map -->
+	<div class="relative h-[60vh] min-h-[450px] lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]">
+		<div class="map-frame h-full">
+			<div class="map-container relative flex h-full flex-col">
+				<div bind:this={mapContainer} class="map-element h-full w-full overflow-hidden rounded-[10px]"></div>
+
+				<!-- Home Reset Button -->
+				<button
+					class="map-btn absolute top-3 left-[52px] z-20"
+					onclick={() => fitMapToHkhOutline(map, 300)}
+					title="Reset to Home View"
+				>
+					<House class="size-4" />
+				</button>
+
+				<!-- Basemap Switcher Button -->
+				<button
+					class="map-btn absolute top-3 right-[52px] z-20"
+					onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
+					title="Change Basemap"
+					aria-label="Change Basemap"
+				>
+					<MapIcon class="size-4" />
+				</button>
+
+				<!-- Basemap Switcher Panel -->
+				<div
+					class="absolute top-14 right-[52px] z-20 w-48 overflow-hidden rounded-xl border border-[#D8E1EA] bg-white shadow-lg transition-all duration-300 ease-in-out {basemapPanelOpen
+						? 'max-h-96 opacity-100'
+						: 'max-h-0 opacity-0'}"
+				>
+					<div class="p-3">
+						<h3 class="mb-2 text-[11px] font-bold uppercase tracking-wider text-[#46637A]">Basemap</h3>
+						<div class="space-y-1">
+							{#each basemaps as basemap}
+								<button
+									class="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
+									basemap.id
+										? 'bg-[#DBEAFE] font-semibold text-[#2563EB]'
+										: 'text-[#46637A] hover:bg-[#F3F7FA]'}"
+									onclick={() => {
+										switchBasemap(basemap.id);
+										basemapPanelOpen = false;
+									}}
+								>
+									<span class="flex-1">{basemap.name}</span>
+									<img
+										src={basemap.image}
+										alt={basemap.name}
+										class="h-8 w-12 rounded border border-[#D8E1EA] object-cover"
+									/>
+								</button>
+							{/each}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Right: Description panel -->
+	<aside class="context-panel min-w-0">
+		{#if selectedInformationLayer}
+			{@const activeLayer = information_layers.find((l) => l.title === selectedInformationLayer)}
+			{#if activeLayer}
+				<h2 class="text-xl font-semibold tracking-[-0.03em] text-[#17324D]">{activeLayer.title}</h2>
+				<p class="mt-4 text-sm leading-6 text-[#71869A]">{activeLayer.info}</p>
+				<p class="mt-4 break-all text-sm leading-6 text-[#71869A]">
+					<span class="font-semibold text-[#46637A]">Data Source: </span>{activeLayer.source}
+				</p>
+			{/if}
+		{:else}
+			<p class="text-sm leading-6 text-[#71869A]">Select a layer to see its description.</p>
+		{/if}
+	</aside>
+</div>
+
+<!-- Chart Section -->
+{#if currentCharts && currentCharts.length > 0}
+	<div
+		class="mt-6 grid gap-4 {currentCharts.length === 1
+			? ''
+			: currentCharts.length === 2
+				? 'sm:grid-cols-2'
+				: 'sm:grid-cols-2 xl:grid-cols-3'}"
+	>
+		{#each currentCharts as chart, index}
+			<div class="data-card">
+				<Chart
+					chartData={chart.chart_data}
+					title={chart.title}
+					subtitle={'subtitle' in chart ? (chart as any).subtitle : ''}
+					chart_type={chart.chart_type}
+					isPyramid={'isPyramid' in chart ? (chart as any).isPyramid : false}
+					isStacked={'isStacked' in chart ? (chart as any).isStacked : false}
+					yAxisTitle={'yAxisTitle' in chart ? (chart as any).yAxisTitle : 'Value'}
+					showLegend={'showLegend' in chart ? (chart as any).showLegend : true}
+					unit={'units' in chart ? (chart as any).units : ''}
+					plotOptions={'plotOptions' in chart ? (chart as any).plotOptions : {}}
+					height={currentCharts.some((c) => 'isPyramid' in c && (c as { isPyramid?: boolean }).isPyramid)
+						? 520
+						: 260}
+				/>
+			</div>
+		{/each}
+	</div>
+{/if}
+
+<!-- Fixed Floating Questions Button and Panel -->
+<div class="fixed right-8 bottom-6 z-50 flex flex-col items-end">
+	{#if isQuestionsPanelOpen}
+		<div
+			class="mb-4 flex h-80 w-80 origin-bottom-right flex-col rounded-2xl border border-[#D8E1EA] bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+		>
+			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+				<div class="rounded-lg bg-[#2563EB] p-2">
+					<Info class="h-3.5 w-3.5 text-white" />
+				</div>
+				<h3 class="text-base font-bold text-[#17324D]">Explore Questions</h3>
+			</div>
+
+			<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
+				{#each questions as questionItem, index}
+					<button
+						class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
+						questionItem.id
+							? 'border-[#2563EB] bg-[#DBEAFE] shadow-md'
+							: 'border-[#D8E1EA] bg-white/50 hover:border-[#93C5FD] hover:bg-[#EEF6FB] hover:shadow-sm'}"
+						onclick={() => selectQuestion(questionItem.id)}
+					>
+						<div class="flex items-start space-x-2">
+							<div class="mt-1 flex-shrink-0">
+								{#if selectedQuestionId === questionItem.id}
+									<CheckCircle class="h-3.5 w-3.5 text-[#2563EB]" />
+								{:else}
+									<div class="h-3.5 w-3.5 rounded-full border-2 border-[#D8E1EA] group-hover:border-[#93C5FD]"></div>
+								{/if}
+							</div>
+							<p
+								class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+									? 'font-medium text-[#174D7C]'
+									: 'text-[#64788B] group-hover:text-[#31506A]'}"
+							>
+								{questionItem.question}
+							</p>
+						</div>
+					</button>
+				{/each}
+			</div>
 		</div>
 	{/if}
+
+	<button
+		onclick={toggleQuestionsPanel}
+		class="flex h-12 w-12 items-center justify-center rounded-full bg-[#0F3557] text-white shadow-xl transition-all duration-300 hover:scale-110 hover:bg-[#174D7C] hover:shadow-2xl"
+		aria-label="Toggle questions panel"
+	>
+		<HelpCircle class="h-6 w-6" />
+	</button>
 </div>
 
 <style>
-	/* Ensure map containers resize properly */
 	.map-container {
 		width: 100%;
 		max-width: 100%;
@@ -2325,7 +1117,6 @@
 		overflow: hidden;
 	}
 
-	/* Force OpenLayers map to be responsive */
 	:global(.ol-viewport) {
 		width: 100% !important;
 		max-width: 100% !important;
@@ -2339,12 +1130,17 @@
 		min-width: 0 !important;
 	}
 
-	/* Ensure flex children don't overflow */
 	:global(.flex > *) {
 		min-width: 0;
 	}
 
-	/* Fullscreen mode adjustments */
+	:global(.ol-attribution) {
+		right: auto !important;
+		left: 0.5em !important;
+		text-align: left !important;
+		flex-flow: row !important;
+	}
+
 	:global(:fullscreen .map-container),
 	:global(:-webkit-full-screen .map-container),
 	:global(:-moz-full-screen .map-container),
@@ -2355,78 +1151,11 @@
 		z-index: 9998 !important;
 	}
 
-	/* Ensure controls are visible in fullscreen */
 	:global(:fullscreen .absolute),
 	:global(:-webkit-full-screen .absolute),
 	:global(:-moz-full-screen .absolute),
 	:global(:-ms-fullscreen .absolute) {
 		position: fixed !important;
 		z-index: 9999 !important;
-	}
-
-	/* Compact Time Slider Styles */
-	/* .compact-slider {
-		-webkit-appearance: none;
-		appearance: none;
-		height: 4px;
-		border-radius: 2px;
-		background: linear-gradient(to right, #e2e8f0 0%, #cbd5e1 100%);
-		outline: none;
-		transition: all 0.3s ease;
-	}
-
-	.compact-slider::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		background: linear-gradient(135deg, #6366f1, #8b5cf6);
-		cursor: pointer;
-		border: 1px solid white;
-		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
-		transition: all 0.2s ease;
-	}
-
-	.compact-slider::-webkit-slider-thumb:hover {
-		transform: scale(1.1);
-		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
-	}
-
-	.compact-slider::-moz-range-thumb {
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		background: linear-gradient(135deg, #6366f1, #8b5cf6);
-		cursor: pointer;
-		border: 1px solid white;
-		box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
-		transition: all 0.2s ease;
-	}
-
-	.compact-slider::-moz-range-thumb:hover {
-		transform: scale(1.1);
-		box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
-	} */
-
-	/* .scrollbar-hide {
-		scrollbar-width: none; 
-		-ms-overflow-style: none; 
-	}
-
-	.scrollbar-hide::-webkit-scrollbar {
-		display: none; 
-	} */
-
-	.custom-shadow {
-		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); /* bigger shadow for Questions Button */
-		transition:
-			box-shadow 0.3s ease,
-			transform 0.3s ease;
-	}
-
-	.custom-shadow:hover {
-		/* box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);  */
-		transform: scale(1.1);
 	}
 </style>

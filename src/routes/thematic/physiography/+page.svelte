@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-
 	import Map from 'ol/Map';
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
 	import XYZ from 'ol/source/XYZ';
-	import { fromLonLat } from 'ol/proj';
+	import { fitMapToHkhOutline, HKH_OUTLINE_CENTER } from '$lib/map/hkh-extent';
 	import 'ol/ol.css';
 	import Chart from '$lib/components/Chart.svelte';
 	import lightMap from '$lib/assets/images/basemaps/light-map.png';
@@ -13,19 +12,9 @@
 	import osmMap from '$lib/assets/images/basemaps/osm-map.png';
 	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
 	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
-	import {
-		CheckCircle,
-		Layers,
-		Info,
-		ChevronUp,
-		ChevronDown,
-		ChevronsLeft,
-		ChevronsRight,
-		HelpCircle,
-		List,
-		MapIcon,
-		House
-	} from '@lucide/svelte';
+	import { CheckCircle, Layers, Info, HelpCircle, House, MapIcon, SlidersHorizontal } from '@lucide/svelte';
+	import AccordionLayer from '$lib/components/AccordionLayer.svelte';
+	import ThemeInfoButton from '$lib/components/ThemeInfoButton.svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
 	import ImageLayer from 'ol/layer/Image';
@@ -35,36 +24,10 @@
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
 
-	// Hindu Kush Himalaya region coordinates (optimized for full HKH view)
-	const HKH_CENTER = [82.94924, 27.6382055]; // Longitude, Latitude - adjusted for better HKH coverage
-	const HKH_ZOOM = 4.8; // Reduced zoom to show more of the HKH region
 
 	// Track fullscreen state
 	let isFullscreen = $state(false);
 	let fullscreenHandler: (() => void) | null = null;
-
-	// Layout states: 'default' | 'hide-left' | 'left-full'
-	let layoutState = $state('default');
-
-	// StoryMap loading state
-	let isStoryMapLoading = $state(true);
-
-	// Generate iframe key based on layout state to force reload on layout change
-	let iframeKey = $state(0);
-
-	// Function to check if screen is small (laptop, tablet, or mobile)
-	function isSmallScreen() {
-		return typeof window !== 'undefined' && window.innerWidth < 1280; // lg breakpoint
-	}
-
-	// Initialize layout based on screen size
-	function initializeLayoutState() {
-		if (isSmallScreen()) {
-			layoutState = 'hide-left';
-		} else {
-			layoutState = 'default';
-		}
-	}
 
 	// Track questions panel state
 	let isQuestionsPanelOpen = $state(false);
@@ -72,16 +35,14 @@
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
 
-	// Add new state variables for layers panel
-	let layersPanelOpen = $state(false);
-	let activeBaseLayers = $state({});
+	// Base layer visibility (Outline overlay, controlled programmatically)
+	let activeBaseLayers = $state<Record<number, boolean>>({});
 
 	// Basemap switcher state
 	let basemapPanelOpen = $state(false);
 	let selectedBasemap = $state('light');
 	let baseMapLayer: TileLayer<any> | null = null;
 
-	// Define available basemaps
 	const basemaps = [
 		{
 			id: 'light',
@@ -111,13 +72,6 @@
 			attribution: 'Esri, DigitalGlobe, GeoEye, Earthstar Geographics',
 			image: satelliteMap
 		},
-		// {
-		// 	id: 'terrain',
-		// 	name: 'Terrain',
-		// 	url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
-		// 	attribution: '© OpenStreetMap contributors, SRTM',
-		// 	image: terrainMap
-		// }
 		{
 			id: 'topographic',
 			name: 'Topographic',
@@ -128,7 +82,6 @@
 		}
 	];
 
-	// Function to switch basemap
 	function switchBasemap(basemapId: string) {
 		if (!map) return;
 
@@ -136,7 +89,6 @@
 		const basemapConfig = basemaps.find((b) => b.id === basemapId);
 		if (!basemapConfig) return;
 
-		// Create new basemap layer
 		const newBaseMapLayer = new TileLayer({
 			source: new XYZ({
 				url: basemapConfig.url,
@@ -145,39 +97,23 @@
 			zIndex: 0
 		});
 
-		// Remove old basemap layer
 		if (baseMapLayer) {
 			map.removeLayer(baseMapLayer);
 		}
 
-		// Add new basemap layer as the first layer (bottom)
 		const layers = map.getLayers();
 		layers.insertAt(0, newBaseMapLayer);
-
-		// Store reference to current basemap layer
 		baseMapLayer = newBaseMapLayer;
 	}
 
-	// Define base layers from HKH/Outline service
 	const baseLayers = [
 		{
 			id: 0,
 			name: 'Outline',
 			url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer'
 		}
-		// {
-		// 	id: 1,
-		// 	name: 'Soil',
-		// 	url: BASELAYERS_URL
-		// },
-		// {
-		// 	id: 3,
-		// 	name: 'River',
-		// 	url: BASELAYERS_URL
-		// }
 	];
 
-	// Function to toggle base layers
 	async function toggleBaseLayer(layerId: number, checked: boolean) {
 		if (!map) return;
 		activeBaseLayers = { ...activeBaseLayers, [layerId]: checked };
@@ -186,38 +122,19 @@
 			const layerInfo = baseLayers.find((l) => l.id === layerId);
 			if (!layerInfo) return;
 
-			let layer;
-
-			if (layerId === 0) {
-				// Apply special styling or configuration for layerId 0
-				layer = new ImageLayer({
-					source: new ImageArcGISRest({
-						url: layerInfo.url,
-						params: {
-							LAYERS: `show:${layerId}`,
-							FORMAT: 'PNG32',
-							TRANSPARENT: true
-						}
-					}),
-					zIndex: 2,
-					// Example styling: reduce opacity or add custom properties
-					opacity: 0.5
-				});
-			} else {
-				// Default configuration for other layers
-				layer = new ImageLayer({
-					source: new ImageArcGISRest({
-						url: layerInfo.url,
-						params: {
-							LAYERS: `show:${layerId}`,
-							FORMAT: 'PNG32',
-							TRANSPARENT: true
-						}
-					}),
-					zIndex: 2
-				});
-			}
-
+			// HKH Outline always sits above every physiography data layer (zIndex 10) and the basemap (zIndex 0)
+			const layer = new ImageLayer({
+				source: new ImageArcGISRest({
+					url: layerInfo.url,
+					params: {
+						LAYERS: `show:${layerId}`,
+						FORMAT: 'PNG32',
+						TRANSPARENT: true
+					}
+				}),
+				zIndex: 20,
+				opacity: 0.7
+			});
 			layer.set('baseLayerId', layerId);
 			map.addLayer(layer);
 		} else {
@@ -229,89 +146,23 @@
 				}
 			}
 		}
+
+		fetchLegendData();
 	}
 
-	// Legend state management
+	// Legend state
 	let legendData = $state<
+		Record<string, { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }>
+	>({});
+
+	// Legend for every information layer's default state, prefetched on mount so
+	// the sidebar doesn't have to wait on a network round-trip when a layer is clicked.
+	let layerLegends = $state<
 		Record<
 			string,
-			{ name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }
+			Record<string, { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }>
 		>
 	>({});
-	let legendCollapsed = $state(false);
-
-	// Debounce timer for legend fetching
-	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
-
-	// Fetch legend data for current layers
-	async function fetchLegendData() {
-		// Clear any existing timeout
-		if (legendFetchTimeout) {
-			clearTimeout(legendFetchTimeout);
-		}
-
-		// Debounce the legend fetch to prevent rapid requests
-		legendFetchTimeout = setTimeout(async () => {
-			// Clear legend data first
-			legendData = {};
-
-			if (!currentDataset || !currentDataset.map_layers) {
-				return;
-			}
-
-			// Get current layers based on control type
-			let layersToFetch: any[] = [];
-
-			if (currentDataset.control_type === 'simple' || currentDataset.control_type === 'none') {
-				const layers = currentDataset.map_layers.default;
-				layersToFetch = Array.isArray(layers) ? layers : [layers];
-			}
-
-			// Fetch legend for each layer
-			for (const layer of layersToFetch) {
-				if (!layer) continue;
-
-				const uniqueKey = `${layer.url}_${layer.layerIndex}`;
-
-				if (layer.mapserver === 'arcgis') {
-					try {
-						const legendUrl = `${layer.url}/legend?f=json`;
-						const response = await fetch(legendUrl);
-						const data = await response.json();
-
-						const targetLayerId = parseInt(layer.layerIndex);
-						const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
-
-						if (layerLegend) {
-							legendData[uniqueKey] = {
-								name: layer.name,
-								items: layerLegend.legend.map((item: any) => ({
-									label: item.label,
-									imageData: `data:image/png;base64,${item.imageData}`
-								}))
-							};
-						}
-					} catch (error) {
-						console.error('Error fetching ArcGIS legend:', error);
-					}
-				} else {
-					// Handle WMS/GeoServer layers
-					const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
-
-					legendData[uniqueKey] = {
-						name: layer.name,
-						items: [
-							{
-								label: layer.name,
-								imageUrl: legendUrl
-							}
-						]
-					};
-				}
-			}
-
-		}, 300); // 300ms debounce delay
-	}
 
 	// Sample physiography datasets structure
 	const physiographyDataset = [
@@ -355,6 +206,21 @@
 					chart_type: 'column',
 					yAxisTitle: 'Sq Km',
 					units: 'Sq Km',
+					showLegend: false,
+					xAxisConfig: {
+						labels: {
+							rotation: 0,
+							autoRotation: false,
+							useHTML: true,
+							style: {
+								fontSize: '10px',
+								whiteSpace: 'normal',
+								textOverflow: 'allow',
+								width: 72,
+								textAlign: 'center'
+							}
+						}
+					},
 					chart_data: {
 						categories: [
 							'non-mountain region',
@@ -377,160 +243,59 @@
 									{ y: 272447, color: '#267300' },
 									{ y: 334595, color: '#4C7300' }
 								],
-								// color: '#5F87C1', // Modern blue
 								zIndex: 1
 							}
 						]
 					}
 				},
-
-				// {
-				// 	title: 'Class-wise Mountain Areas in the HKH Region',
-				// 	// subtitle: 'Distribution across HKH region',
-				// 	chart_type: 'pie',
-				// 	units: 'Sq Km',
-				// 	plotOptions: {
-				// 		pie: {
-				// 			dataLabels: {
-				// 				enabled: false
-				// 			}
-				// 		}
-				// 	},
-				// 	chart_data: {
-				// 		series: [
-				// 			{
-				// 				name: 'mountain-region',
-				// 				data: [
-				// 					{
-				// 						name: 'non-mountain region',
-				// 						y: 441681,
-				// 						color: '#A8A800' // Blue
-				// 					},
-				// 					{
-				// 						name: 'elevation > 4500 m',
-				// 						y: 1439526,
-				// 						color: '#D3FFBE' // Red
-				// 					},
-				// 					{
-				// 						name: 'elevation 3500 – 4500 m',
-				// 						y: 734456,
-				// 						color: '#55FF00' // Green
-				// 					},
-				// 					{
-				// 						name: 'elevation 2500 – 3500 m',
-				// 						y: 558920,
-				// 						color: '#4CE600' // Amber
-				// 					},
-				// 					{
-				// 						name: 'elevation 1500 – 2500 m and slope >= 20',
-				// 						y: 410214,
-				// 						color: '#38A800' // Amber
-				// 					},
-				// 					{
-				// 						name: 'elevation 1000 – 1500 m and slope >= 50',
-				// 						y: 272447,
-				// 						color: '#267300' // Amber
-				// 					},
-				// 					{
-				// 						name: 'elevation 300 – 1000 m and local elevation range (7 km radius) > 300 m',
-				// 						y: 334595,
-				// 						color: '#4C7300' // Amber
-				// 					}
-				// 				]
-				// 			}
-				// 		]
-				// 	}
-				// },
 				{
 					title: 'Country-wise Mountain Areas in the HKH Region',
-					// subtitle: 'Distribution across HKH region',
 					chart_type: 'pie',
 					units: 'Sq Km',
+					legendConfig: {
+						align: 'right',
+						verticalAlign: 'middle',
+						layout: 'vertical',
+						floating: true,
+						symbolHeight: 8,
+						symbolWidth: 8,
+						symbolRadius: 2,
+						itemMarginTop: 1,
+						itemMarginBottom: 1,
+						padding: 0,
+						itemStyle: {
+							fontSize: '10px',
+							fontWeight: '500',
+							lineHeight: '12px'
+						}
+					},
+					plotOptions: {
+						pie: {
+							center: ['38%', '54%'],
+							size: '92%',
+							dataLabels: {
+								enabled: false
+							}
+						}
+					},
 					chart_data: {
 						series: [
 							{
 								name: 'Country',
 								data: [
-									{
-										name: 'Afghanistan',
-										y: 311604
-										// color: '#147218' // Blue
-									},
-									{
-										name: 'Bangladesh',
-										y: 1254
-										// color: '#A4CF22' // Red
-									},
-									{
-										name: 'Bhutan',
-										y: 39283
-										// color: 'China' // Green
-									},
-									{
-										name: 'China',
-										y: 2381708
-										// color: '#FE3C19' // Amber
-									},
-									{
-										name: 'India',
-										y: 347768
-										// color: '#FE3C19' // Amber
-									},
-									{
-										name: 'Myanmar',
-										y: 234838
-										// color: '#FE3C19' // Amber
-									},
-									{
-										name: 'Nepal',
-										y: 119045
-										// color: '#FE3C19' // Amber
-									},
-									{
-										name: 'Pakistan',
-										y: 314660,
-										color: '#083316' // Amber
-									}
+									{ name: 'Afghanistan', y: 311604 },
+									{ name: 'Bangladesh', y: 1254 },
+									{ name: 'Bhutan', y: 39283 },
+									{ name: 'China', y: 2381708 },
+									{ name: 'India', y: 347768 },
+									{ name: 'Myanmar', y: 234838 },
+									{ name: 'Nepal', y: 119045 },
+									{ name: 'Pakistan', y: 314660, color: '#083316' }
 								]
 							}
 						]
 					}
 				}
-				// {
-				// 	title: 'Mountain areas by different mountain classes',
-				// 	chart_type: 'column',
-				// 	yAxisTitle: 'Pixel count',
-				// 	chart_data: {
-				// 		categories: [
-				// 			'Afghanistan',
-				// 			'Bangladesh',
-				// 			'Bhutan',
-				// 			'China',
-				// 			'India',
-				// 			'Myanmar',
-				// 			'Nepal',
-				// 			'Pakistan'
-				// 		],
-
-				// 		// plotOptions: {
-				// 		// 	column: {
-				// 		// 		pointPadding: 0,
-				// 		// 		groupPadding: 0,
-				// 		// 		borderWidth: 0,
-				// 		// 		grouping: false,
-				// 		// 		pointPlacement: 0
-				// 		// 	}
-				// 		// },
-				// 		series: [
-				// 			{
-				// 				name: 'Classes',
-				// 				data: [311604, 1254, 39283, 2381708, 347768, 234838, 119045, 314660],
-				// 				color: '#3B82F6', // Modern blue
-				// 				zIndex: 1
-				// 			}
-				// 		]
-				// 	}
-				// }
 			]
 		},
 		{
@@ -571,23 +336,7 @@
 		}
 	];
 
-	const questions: any = [
-		// {
-		// 	id: 'question-1',
-		// 	question: 'Which areas have the highest forest cover in the HKH region?',
-		// 	dataset_id: 'forest-cover'
-		// },
-		// {
-		// 	id: 'question-2',
-		// 	question: 'Where are the major biodiversity hotspots located?',
-		// 	dataset_id: 'biodiversity-hotspots'
-		// },
-		// {
-		// 	id: 'question-3',
-		// 	question: 'How has ecosystem degradation affected wildlife corridors?',
-		// 	dataset_id: 'forest-cover'
-		// }
-	];
+	const questions: any[] = [];
 
 	const information_layers: any = [
 		{
@@ -604,7 +353,6 @@
 			info: 'The map represents the elevation variation across the HKH region, highlighting topographical gradients from low-lying valleys to high mountain ranges. This dataset is compiled from global SRTM DEM of 90 m resolution for HKH region and was prepared by ICIMOD.',
 			source: 'SRTM 90m DEM'
 		},
-
 		{
 			id: 'map-indicator-3',
 			title: 'Slope',
@@ -621,7 +369,7 @@
 		}
 	];
 
-	// Track selected question - default to first question
+	// Track selected question
 	let selectedQuestionId = $state('');
 
 	// Track selected information layer (single selection)
@@ -632,7 +380,6 @@
 
 	// Get current dataset based on selected question or information layer
 	let currentDataset = $derived.by(() => {
-		// First priority: selected question
 		if (selectedQuestionId) {
 			const selectedQuestion = questions.find((q) => q.id === selectedQuestionId);
 			if (selectedQuestion?.dataset_id) {
@@ -640,7 +387,6 @@
 			}
 		}
 
-		// Second priority: selected information layer
 		if (selectedInformationLayer) {
 			const selectedLayer = information_layers.find(
 				(layer) => layer.title === selectedInformationLayer
@@ -650,28 +396,124 @@
 			}
 		}
 
-		// Default: nothing selected, return null
 		return null;
 	});
 
 	// Extract current data from dataset
 	let currentCharts = $derived(currentDataset?.charts || []);
 
+	// Resolve which map-layer configs are active for a dataset (control_type is
+	// always 'simple' here, so this is just the default layer list).
+	function resolveLayersForDataset(dataset: any): any[] {
+		if (!dataset || !dataset.map_layers) return [];
+		const layers = dataset.map_layers.default;
+		if (!layers) return [];
+		return Array.isArray(layers) ? layers : [layers];
+	}
+
+	// Fetch a single legend entry for one map-layer config (ArcGIS or WMS/GeoServer)
+	async function fetchLegendEntryForLayer(
+		layer: any
+	): Promise<{ key: string; entry: { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> } } | null> {
+		if (!layer) return null;
+
+		const uniqueKey = `${layer.url}_${layer.layerIndex}`;
+
+		if (layer.mapserver === 'arcgis') {
+			try {
+				const legendUrl = `${layer.url}/legend?f=json`;
+				const response = await fetch(legendUrl);
+				const data = await response.json();
+				const targetLayerId = parseInt(layer.layerIndex);
+				const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
+				if (layerLegend) {
+					return {
+						key: uniqueKey,
+						entry: {
+							name: layer.name,
+							items: layerLegend.legend.map((item: any) => ({
+								label: item.label,
+								imageData: `data:image/png;base64,${item.imageData}`
+							}))
+						}
+					};
+				}
+			} catch (error) {
+				console.error('Error fetching ArcGIS legend:', error);
+			}
+			return null;
+		}
+
+		// WMS/GeoServer layers
+		const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
+		return {
+			key: uniqueKey,
+			entry: { name: layer.name, items: [{ label: layer.name, imageUrl: legendUrl }] }
+		};
+	}
+
+	// Prefetch the default legend for every information layer on mount, so the
+	// sidebar can show a legend instantly instead of waiting on a fetch per click.
+	async function prefetchAllLegends() {
+		const results = await Promise.all(
+			information_layers.map(async (infoLayer: any) => {
+				const dataset = physiographyDataset.find((d) => d.id === infoLayer.dataset_id);
+				if (!dataset) return null;
+
+				const layers = resolveLayersForDataset(dataset);
+				const entries = await Promise.all(layers.map((layer) => fetchLegendEntryForLayer(layer)));
+
+				const legendMap: Record<string, { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }> = {};
+				for (const result of entries) {
+					if (result) legendMap[result.key] = result.entry;
+				}
+				return { title: infoLayer.title, legendMap };
+			})
+		);
+
+		const combined: typeof layerLegends = {};
+		for (const result of results) {
+			if (result) combined[result.title] = result.legendMap;
+		}
+		layerLegends = combined;
+	}
+
+	// Debounce timer for legend fetching
+	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	// Fetch legend data for current layers
+	async function fetchLegendData() {
+		if (legendFetchTimeout) {
+			clearTimeout(legendFetchTimeout);
+		}
+
+		// Clear immediately (not inside the debounce) so a stale legend from the
+		// previously selected layer never flashes under the newly selected one —
+		// the sidebar falls back to that layer's prefetched legend instead.
+		legendData = {};
+
+		legendFetchTimeout = setTimeout(async () => {
+			if (currentDataset) {
+				const layersToFetch = resolveLayersForDataset(currentDataset);
+				const results = await Promise.all(layersToFetch.map((layer) => fetchLegendEntryForLayer(layer)));
+				for (const result of results) {
+					if (result) legendData[result.key] = result.entry;
+				}
+			}
+		}, 300);
+	}
+
 	function initializeMap() {
 		if (!mapContainer) return;
 
-		// Small delay to ensure container has proper dimensions
 		setTimeout(() => {
-			// Create custom fullscreen control
 			const fullScreenControl = new FullScreen({
 				source: mapContainer.parentElement || mapContainer
 			});
 
-			// Get initial basemap configuration
 			const initialBasemap = basemaps.find((b) => b.id === selectedBasemap);
 			if (!initialBasemap) return;
 
-			// Create initial basemap layer
 			baseMapLayer = new TileLayer({
 				source: new XYZ({
 					url: initialBasemap.url,
@@ -682,26 +524,16 @@
 
 			map = new Map({
 				target: mapContainer,
-				controls: defaultControls().extend([
-					fullScreenControl
-					// new ScaleLine({ units: 'metric', bar: true })
-				]),
-				// interactions: defaultInteractions({
-				// 	mouseWheelZoom: false
-				// }),
+				controls: defaultControls().extend([fullScreenControl]),
 				layers: [baseMapLayer],
 				view: new View({
-					center: fromLonLat(HKH_CENTER),
-					zoom: HKH_ZOOM
+					center: HKH_OUTLINE_CENTER
 				})
 			});
 
-			// Listen for fullscreen changes
 			const handleFullscreenChange = () => {
 				const isCurrentlyFullscreen = document.fullscreenElement !== null;
 				isFullscreen = isCurrentlyFullscreen;
-
-				// Force map resize when entering/exiting fullscreen
 				setTimeout(() => {
 					if (map) {
 						map.updateSize();
@@ -710,21 +542,18 @@
 				}, 100);
 			};
 
-			// Store handler reference for cleanup
 			fullscreenHandler = handleFullscreenChange;
-
-			// Add fullscreen event listeners
 			document.addEventListener('fullscreenchange', handleFullscreenChange);
 			document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
 			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-			// Feature identify on click can be added here using event.coordinate
-
-			// Ensure map renders properly
 			if (map) {
 				map.updateSize();
-				// Load default layers after map is initialized only if a dataset is selected
+				fitMapToHkhOutline(map);
+				// Always show the HKH Outline, layered above everything else
+				toggleBaseLayer(0, true);
+
 				setTimeout(() => {
 					if (currentDataset) {
 						updateMapLayers();
@@ -735,22 +564,15 @@
 	}
 
 	onMount(() => {
-		// Initialize layout state based on screen size
-		initializeLayoutState();
-
-		// Add window resize listener for responsive layout
-		const handleResize = () => {
-			initializeLayoutState();
-		};
-		window.addEventListener('resize', handleResize);
-
 		initializeMap();
 
-		// Add resize observer to handle container size changes
+		// Warm the sidebar's legend cache for every layer right away, instead of
+		// waiting on a fetch each time a layer is clicked.
+		prefetchAllLegends();
+
 		if (typeof ResizeObserver !== 'undefined' && mapContainer) {
 			const resizeObserver = new ResizeObserver(() => {
 				if (map) {
-					// Small delay to ensure DOM is updated
 					setTimeout(() => {
 						if (map) {
 							map.updateSize();
@@ -760,26 +582,17 @@
 			});
 			resizeObserver.observe(mapContainer);
 
-			// Cleanup on destroy
 			return () => {
-				window.removeEventListener('resize', handleResize);
 				resizeObserver.disconnect();
 			};
 		}
-
-		// Cleanup resize listener even if ResizeObserver is not available
-		return () => {
-			window.removeEventListener('resize', handleResize);
-		};
 	});
 
-	// Cleanup on destroy
 	onDestroy(() => {
 		if (legendFetchTimeout) {
 			clearTimeout(legendFetchTimeout);
 		}
 
-		// Remove fullscreen event listeners
 		if (fullscreenHandler) {
 			document.removeEventListener('fullscreenchange', fullscreenHandler);
 			document.removeEventListener('webkitfullscreenchange', fullscreenHandler);
@@ -793,47 +606,11 @@
 		}
 	});
 
-	// Watch for layout state changes and update map size
-	$effect(() => {
-		// This effect runs whenever layoutState changes
-		layoutState;
-
-		// Multiple resize attempts with different timings
-		if (map && mapContainer) {
-			// Immediate attempt
-			requestAnimationFrame(() => {
-				if (map) {
-					map.updateSize();
-				}
-			});
-
-			// Delayed attempt
-			setTimeout(() => {
-				if (map) {
-					map.updateSize();
-					map.render();
-				}
-			}, 150);
-
-			// Final attempt after all transitions
-			setTimeout(() => {
-				if (map) {
-					map.updateSize();
-					map.render();
-				}
-			}, 400);
-		}
-	});
-
-	// Function to handle question selection
 	function selectQuestion(questionId: string) {
 		selectedQuestionId = questionId;
-		// Clear information layer selection when selecting a question
 		selectedInformationLayer = null;
-
 	}
 
-	// Function to select information layer
 	function selectInformationLayer(layerId: string) {
 		// If clicking the same layer, deselect it
 		if (selectedInformationLayer === layerId) {
@@ -841,78 +618,16 @@
 			return;
 		}
 
-		// Simply select the layer
 		selectedInformationLayer = layerId;
-		// Clear question selection when selecting an information layer
 		selectedQuestionId = '';
-
 	}
 
-	// Function to toggle layer expansion
 	function toggleLayerExpansion(layerId: string) {
 		if (expandedLayer === layerId) {
 			expandedLayer = null;
 		} else {
 			expandedLayer = layerId;
 		}
-	}
-
-	// Function to set specific layout state
-	function setLayoutState(state: 'default' | 'hide-left' | 'left-full') {
-		layoutState = state;
-
-		// Force iframe reload when expanding/collapsing story section
-		if (state === 'left-full' || state === 'default') {
-			isStoryMapLoading = true;
-			iframeKey++;
-		}
-
-		// Force map resize with multiple attempts to ensure it works
-		const forceMapResize = () => {
-			if (map && mapContainer) {
-				// Clear any existing size constraints
-				const mapElement = mapContainer;
-				mapElement.style.width = '100%';
-				mapElement.style.maxWidth = '100%';
-
-				// First immediate update
-				map.updateSize();
-
-				// Second update after a short delay
-				setTimeout(() => {
-					if (map) {
-						map.updateSize();
-						// Force a render
-						map.render();
-					}
-				}, 100);
-
-				// Third update after CSS transitions complete
-				setTimeout(() => {
-					if (map) {
-						// Force complete resize
-						const view = map.getView();
-						const currentCenter = view.getCenter();
-						const currentZoom = view.getZoom();
-
-						map.updateSize();
-						map.render();
-
-						// Restore view if it changed
-						if (currentCenter && currentZoom) {
-							view.setCenter(currentCenter);
-							view.setZoom(currentZoom);
-						}
-
-					}
-				}, 350);
-			}
-		};
-
-		// Use requestAnimationFrame to ensure DOM updates are complete
-		requestAnimationFrame(() => {
-			forceMapResize();
-		});
 	}
 
 	// Add layer to map based on layer configuration
@@ -922,7 +637,6 @@
 		let layer;
 
 		if (layerConfig.mapserver === 'arcgis') {
-			// Create ArcGIS layer
 			layer = new ImageLayer({
 				visible: true,
 				zIndex: 10,
@@ -938,7 +652,6 @@
 				})
 			});
 		} else {
-			// Create WMS layer (GeoServer)
 			layer = new ImageLayer({
 				visible: true,
 				zIndex: 10,
@@ -957,66 +670,38 @@
 			});
 		}
 
-		// Set layer ID for identification
 		layer.set('id', layerConfig.id);
 		layer.set('layerName', layerConfig.name);
 
-		// Add to map
 		if (map) {
 			map.addLayer(layer);
 		}
 	}
 
-	// Add multiple layers (for datasets with multiple layers)
 	function addMultipleLayers(layerConfigs: any[]) {
 		if (!layerConfigs || !Array.isArray(layerConfigs)) return;
-
-		layerConfigs.forEach((layerConfig) => {
-			addWMSLayer(layerConfig);
-		});
+		layerConfigs.forEach((layerConfig) => addWMSLayer(layerConfig));
 	}
 
-	// Remove layer from map
-	function removeLayer(layerId: string) {
-		if (!map) return;
-
-		const layers = map.getLayers().getArray().slice();
-		layers.forEach((layer) => {
-			if (layer.get('id') === layerId && map) {
-				map.removeLayer(layer);
-			}
-		});
-	}
-
-	// Clear all physiography data layers (keep base map)
 	function clearPhysiographyLayers() {
 		if (!map) return;
-
 		const layers = map.getLayers().getArray().slice();
-
 		layers.forEach((layer) => {
 			const layerId = layer.get('id');
-			// Remove layers that have an ID (our custom layers), keep base layer
 			if (layerId && map) {
 				map.removeLayer(layer);
 			}
 		});
-
 	}
 
-	// Update layers based on current dataset
 	function updateMapLayers() {
 		if (!map) return;
-
-		// Always clear existing physiography layers first
 		clearPhysiographyLayers();
 
-		// If no dataset is selected, stop here (layers are cleared)
 		if (!currentDataset || !currentDataset.map_layers) {
 			return;
 		}
 
-		// For 'simple' or 'none' control type, show layers immediately
 		if (currentDataset.control_type === 'simple' || currentDataset.control_type === 'none') {
 			const layers = currentDataset.map_layers.default;
 			if (layers) {
@@ -1028,480 +713,261 @@
 			}
 		}
 
-		// Fetch legend data after updating layers
 		fetchLegendData();
 	}
 
-	// Single consolidated effect for all map layer updates
 	$effect(() => {
-		// This will trigger when currentDataset changes
 		const dataset = currentDataset;
-
-		// Only update map layers if we have a dataset
-		if (dataset && map) {
+		if (dataset) {
 			updateMapLayers();
 		}
 	});
 </script>
 
-<!-- 3-Column Layout with Dynamic States -->
-<div class="relative grid grid-cols-12 items-stretch gap-6">
-	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
-	{#if layoutState === 'hide-left'}
-		<button
-			onclick={() => setLayoutState('default')}
-			class="fixed top-[15rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/90 p-2 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl active:bg-slate-100 lg:p-1.5"
-			title="Show Story Panel"
-		>
-			<ChevronsRight class="h-5 w-5 lg:h-4 lg:w-4" />
-		</button>
-	{/if}
+<svelte:head>
+	<title>Physiography | ICIMOD RIS</title>
+</svelte:head>
 
-	<!-- Story Section - StoryMap Iframe -->
-	<div
-		class="sticky top-9 col-span-12 h-[70vh] min-h-[450px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[calc(100vh-14rem)] lg:min-h-[550px]"
-		class:hidden={layoutState === 'hide-left'}
-		class:lg:col-span-12={layoutState === 'left-full'}
-		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
-	>
-		<!-- StoryMap Iframe Container -->
-		<div class="relative h-full w-full overflow-hidden">
-			<!-- Loading Screen -->
-			{#if isStoryMapLoading}
-				<div
-					class="absolute inset-0 z-30 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100"
-				>
-					<div class="text-center">
-						<!-- Animated Spinner -->
-						<div class="mb-4 flex justify-center">
-							<div
-								class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-amber-500"
-							></div>
-						</div>
-						<!-- Loading Text -->
-						<p class="text-sm font-medium text-slate-600">Loading Story...</p>
-						<p class="mt-1 text-xs text-slate-500">Please wait</p>
-					</div>
-				</div>
-			{/if}
-
-			<!-- Iframe -->
-			{#key iframeKey}
-				<iframe
-					src="https://storymaps.arcgis.com/stories/cfe99f86e3c04499827f3b13db5bee92"
-					width="100%"
-					height="100%"
-					style="border:none;"
-					allowfullscreen
-					class="h-full w-full"
-					title="ArcGIS StoryMap - Physiography"
-					onload={() => {
-						isStoryMapLoading = false;
-					}}
-				></iframe>
-			{/key}
-
-			<!-- Overlay Control Buttons -->
-			<div class="absolute top-2 right-5 z-20 flex items-center space-x-1 lg:space-x-2">
-				{#if layoutState !== 'left-full'}
-					<!-- Hide Left Panel Button - Show Map -->
-					<button
-						onclick={() => setLayoutState('hide-left')}
-						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-						title="Show Map"
-					>
-						<ChevronsLeft class="h-3.5 w-3.5" />
-					</button>
-					<!-- Expand Story Button - Desktop only -->
-					<button
-						onclick={() => setLayoutState('left-full')}
-						class="hidden rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
-						title="Expand Story"
-					>
-						<ChevronsRight class="h-3.5 w-3.5" />
-					</button>
-				{:else}
-					<!-- Back to Default Button -->
-					<button
-						onclick={() => setLayoutState('default')}
-						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-						title="Back to Default"
-					>
-						<ChevronsLeft class="h-3.5 w-3.5" />
-					</button>
-				{/if}
-			</div>
-		</div>
+<div
+	class="theme-heading sticky z-[53] flex items-start justify-between gap-4 bg-[#F1F5F9] pb-2"
+	style="top: var(--app-header-height, 6rem)"
+>
+	<div class="max-w-2xl">
+		<h1 class="text-[20px] font-semibold tracking-[-0.045em] text-[#0F3557] sm:text-[22px]">Physiography</h1>
+		<p class="mt-2 max-w-2xl text-sm leading-6 text-[#64788B]">
+			From Subtropical Plains to the World's Highest Peaks
+		</p>
 	</div>
-
-	<!-- Main Content Area - Unified container with common white background -->
-	<div
-		class="sticky col-span-12 lg:col-span-9"
-		class:lg:col-span-12={layoutState === 'hide-left'}
-		class:hidden={layoutState !== 'hide-left'}
-		class:lg:block={layoutState === 'default'}
-		class:lg:hidden={layoutState === 'left-full'}
-	>
-		<div class="rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
-			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
-				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
-				<div
-					class="order-2 flex min-w-0 flex-col gap-2 lg:order-1 lg:gap-3 {layoutState ===
-					'hide-left'
-						? 'flex-1'
-						: 'flex-1'}"
-				>
-					<!-- Map Section -->
-					<div
-						class="relative h-[60vh] min-h-[450px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]"
-					>
-						<div class="map-container flex h-full flex-col">
-							<div
-								bind:this={mapContainer}
-								class="map-element h-full w-full overflow-hidden rounded-xl"
-							></div>
-
-							<!-- Home Reset Button -->
-							<button
-								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
-								onclick={() => {
-									if (map) {
-										map.getView().setCenter(fromLonLat(HKH_CENTER));
-										map.getView().setZoom(HKH_ZOOM);
-									}
-								}}
-								title="Reset to Home View"
-							>
-								<House class="h-3.5 w-3.5 text-slate-600" />
-							</button>
-
-							<!-- Basemap Switcher Button -->
-							<button
-								class="absolute top-10 right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
-								onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
-								title="Change Basemap"
-								aria-label="Change Basemap"
-							>
-								<MapIcon class="h-3.5 w-3.5 text-slate-600" />
-							</button>
-
-							<!-- Basemap Switcher Panel -->
-							<div
-								class="absolute top-[4rem] right-10 z-20 w-48 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {basemapPanelOpen
-									? 'max-h-96 opacity-100'
-									: 'max-h-0 opacity-0'}"
-							>
-								<div class="p-3">
-									<h3 class="mb-2 text-sm font-semibold">Basemap</h3>
-									<div class="space-y-1">
-										{#each basemaps as basemap}
-											<button
-												class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
-												basemap.id
-													? 'bg-indigo-100 font-medium text-indigo-700'
-													: 'text-slate-700 hover:bg-gray-100'}"
-												onclick={() => {
-													switchBasemap(basemap.id);
-													basemapPanelOpen = false;
-												}}
-											>
-												<span class="flex-1">{basemap.name}</span>
-												<img
-													src={basemap.image}
-													alt={basemap.name}
-													class="h-8 w-12 rounded border border-slate-200 object-cover"
-												/>
-											</button>
-										{/each}
-									</div>
-								</div>
-							</div>
-
-							<!-- Layer Toggler Button -->
-							<button
-								class="absolute top-[4.5rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
-								onclick={() => (layersPanelOpen = !layersPanelOpen)}
-							>
-								{#if layersPanelOpen}
-									<ChevronsRight class="h-3.5 w-3.5" />
-								{:else}
-									<Layers class="h-3.5 w-3.5" />
-								{/if}
-							</button>
-
-							<!-- Layer Toggler Panel -->
-							<div
-								class="absolute top-[6rem] right-10 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
-									? 'max-h-96 opacity-100'
-									: 'max-h-0 opacity-0'}"
-							>
-								<div class="p-3">
-									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
-									<div class="space-y-2">
-										{#each baseLayers as layerInfo}
-											<label class="flex items-center space-x-2 text-sm">
-												<input
-													type="checkbox"
-													checked={!!activeBaseLayers[
-														layerInfo.id as keyof typeof activeBaseLayers
-													]}
-													onchange={(e) => {
-														const target = e.target as HTMLInputElement;
-														toggleBaseLayer(layerInfo.id, target.checked);
-														target.blur(); // Removes focus from the checkbox
-													}}
-													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-												/>
-												<span>{layerInfo.name}</span>
-											</label>
-										{/each}
-									</div>
-								</div>
-							</div>
-
-							<!-- Legend Panel - Bottom Right INSIDE the map container -->
-							{#if currentDataset && Object.keys(legendData).length > 0}
-								<div class="absolute right-4 bottom-4 {isFullscreen ? 'z-[9999]' : 'z-10'}">
-									<!-- Legend Toggle Button -->
-									<button
-										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
-										onclick={() => (legendCollapsed = !legendCollapsed)}
-									>
-										<div class="flex items-center space-x-2">
-											<List class="h-3.5 w-3.5 text-amber-600" />
-											{#if !legendCollapsed}
-												<span class="font-medium text-slate-700">Legend</span>
-											{/if}
-										</div>
-									</button>
-
-									<!-- Legend Content -->
-									{#if !legendCollapsed}
-										<div
-											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
-										>
-											<div class="max-h-[320px] space-y-4 overflow-y-auto">
-												{#each Object.keys(legendData) as uniqueKey}
-													<div class="space-y-2">
-														<h4 class="text-sm font-semibold text-slate-800">
-															{legendData[uniqueKey].name}
-														</h4>
-														<div class="space-y-1">
-															{#each legendData[uniqueKey].items as item}
-																<div class="flex items-center space-x-2">
-																	{#if item.imageData}
-																		<img
-																			src={item.imageData}
-																			alt={item.label}
-																			class="h-4 w-5 flex-shrink-0"
-																		/>
-																	{:else if item.imageUrl}
-																		<img
-																			src={item.imageUrl}
-																			alt={item.label}
-																			class="h-4 w-5 flex-shrink-0"
-																		/>
-																	{/if}
-																	<span class="text-xs text-slate-700">{item.label}</span>
-																</div>
-															{/each}
-														</div>
-													</div>
-												{/each}
-											</div>
-										</div>
-									{/if}
-								</div>
-							{/if}
-						</div>
-					</div>
-
-					<!-- Chart Section -->
-					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
-						<div class="rounded-lg bg-slate-50/50">
-							{#if currentDataset && currentCharts && currentCharts.length > 0}
-								<div class="space-y-6">
-									{#each currentCharts as chart, index}
-										<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
-											<Chart
-												chartData={chart.chart_data}
-												title={chart.title}
-												subtitle=""
-												chart_type={chart.chart_type}
-												unit={chart.units}
-												plotOptions={chart.plotOptions || {}}
-												yAxisTitle={'yAxisTitle' in chart ? chart.yAxisTitle : 'Value'}
-											/>
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<!-- <div class="flex h-80 items-center justify-center">
-									<div class="text-center text-slate-500">
-										<p class="text-sm">
-											Select a question or information layer to view related charts
-										</p>
-									</div>
-								</div> -->
-							{/if}
-						</div>
-					</div>
-				</div>
-
-				<!-- Right part: Information Layer - Shows first on mobile/tablet -->
-				<div class="order-1 w-full flex-shrink-0 lg:order-2 lg:w-75">
-					<div
-						class="top-6 flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 p-4 lg:min-h-[calc(100vh-16rem)]"
-					>
-						<!-- Information Layer Header -->
-						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-							<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-2">
-								<Layers class="h-5 w-5 text-white" />
-							</div>
-							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
-						</div>
-
-						<!-- Information Layer Content -->
-						<div class="flex-1 overflow-y-auto">
-							{#if information_layers && information_layers.length > 0}
-								<div class="space-y-3">
-									{#each information_layers as layer, index}
-										<div
-											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
-											layer.title
-												? 'border-stone-300 bg-gradient-to-r from-stone-50/90 to-amber-50/90 shadow-md'
-												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
-										>
-											<button
-												onclick={() => selectInformationLayer(layer.title)}
-												class="flex w-full items-start space-x-2 p-4 text-left transition-all duration-200 hover:opacity-80"
-											>
-												<h4
-													class="flex-1 text-sm font-medium {selectedInformationLayer ===
-													layer.title
-														? 'text-stone-800'
-														: 'text-slate-800'}"
-												>
-													{layer.title}
-												</h4>
-												<span
-													class="flex-shrink-0 cursor-pointer"
-													role="button"
-													tabindex="0"
-													onclick={(e) => {
-														e.stopPropagation();
-														toggleLayerExpansion(layer.title);
-													}}
-													onkeydown={(e) => {
-														if (e.key === 'Enter' || e.key === ' ') {
-															e.preventDefault();
-															e.stopPropagation();
-															toggleLayerExpansion(layer.title);
-														}
-													}}
-												>
-													{#if expandedLayer === layer.title}
-														<ChevronUp class="h-3.5 w-3.5 text-slate-600" />
-													{:else}
-														<ChevronDown class="h-3.5 w-3.5 text-slate-600" />
-													{/if}
-												</span>
-											</button>
-
-											<!-- Expandable content -->
-											{#if expandedLayer === layer.title}
-												<div
-													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
-												>
-													<p>{layer.info}</p>
-													<p class="pt-1 text-left text-xs text-slate-600">
-														<span class="font-bold"> Data Source: </span>
-														{layer.source}
-													</p>
-												</div>
-											{/if}
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<div class="flex h-40 items-center justify-center">
-									<div class="text-center text-slate-500">
-										<Layers class="mx-auto mb-2 h-8 w-8 text-slate-400" />
-										<p class="text-sm">No indicators available</p>
-										<p class="text-xs">Select a question to view map layers</p>
-									</div>
-								</div>
-							{/if}
-						</div>
-
-						<!-- Questions section - now empty, button moved to fixed position -->
-						<div class="relative mt-6 flex min-h-0 flex-1 flex-col pt-6"></div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+	<ThemeInfoButton
+		src="https://storymaps.arcgis.com/stories/cfe99f86e3c04499827f3b13db5bee92"
+		label="About physiography in the HKH"
+	/>
 </div>
 
-<!-- Fixed Floating Questions Button and Panel -->
-{#if layoutState !== 'left-full'}
-	<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
-		{#if isQuestionsPanelOpen}
-			<div
-				class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right scale-100 transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 opacity-100 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
-			>
-				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-stone-500 to-amber-500 p-2">
-						<Info class="h-3.5 w-3.5 text-white" />
-					</div>
-					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
-				</div>
-
-				<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
-					{#each questions as questionItem, index}
-						<button
-							class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
-							questionItem.id
-								? 'border-stone-500 bg-stone-50 shadow-md'
-								: 'border-slate-200/50 bg-white/50 hover:border-stone-300 hover:bg-stone-50/70 hover:shadow-sm'}"
-							onclick={() => selectQuestion(questionItem.id)}
-						>
-							<div class="flex items-start space-x-2">
-								<div class="mt-1 flex-shrink-0">
-									{#if selectedQuestionId === questionItem.id}
-										<CheckCircle class="h-3.5 w-3.5 text-green-600" />
-									{:else}
-										<div
-											class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 group-hover:border-stone-400"
-										></div>
-									{/if}
-								</div>
-								<p
-									class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-										? 'font-medium text-stone-700'
-										: 'text-slate-600 group-hover:text-slate-800'}"
-								>
-									{questionItem.question}
-								</p>
+<div class="mt-6 grid gap-4 lg:grid-cols-[0.7fr_1.7fr_0.7fr] lg:items-stretch">
+	<!-- Left: Information layers -->
+	<aside class="context-panel p-5" style="background-color: #EEF6FB">
+		<div class="flex items-center justify-between border-b border-[#E0E7EE] pb-4">
+			<div>
+				<p class="chart-kicker">Layers</p>
+				<h2 class="mt-1 text-base font-semibold text-[#17324D]">Information layer</h2>
+			</div>
+			<span class="grid size-8 place-items-center rounded-lg bg-[#E8EEF4]">
+				<SlidersHorizontal class="size-4 text-[#64788B]" />
+			</span>
+		</div>
+		<div class="mt-3 max-h-[560px] space-y-2 overflow-y-auto pr-1">
+			{#if information_layers && information_layers.length > 0}
+				{#each information_layers as layer, index}
+					<AccordionLayer
+						title={layer.title}
+						active={selectedInformationLayer === layer.title}
+						open={expandedLayer === layer.title}
+						onclick={() => {
+							selectInformationLayer(layer.title);
+							toggleLayerExpansion(layer.title);
+						}}
+					>
+						{@const activeLegend =
+							selectedInformationLayer === layer.title && Object.keys(legendData).length > 0
+								? legendData
+								: layerLegends[layer.title]}
+						{#if activeLegend && Object.keys(activeLegend).length > 0}
+							<div class="space-y-2">
+								{#each Object.keys(activeLegend) as uniqueKey}
+									<div class="space-y-1.5">
+										{#if Object.keys(activeLegend).length > 1}
+											<p class="text-[10px] font-bold uppercase tracking-wide text-[#8A9BAD]">
+												{activeLegend[uniqueKey].name}
+											</p>
+										{/if}
+										{#each activeLegend[uniqueKey].items as item}
+											<div class="flex items-center gap-2 text-[11px] text-[#46637A]">
+												{#if item.imageData}
+													<img src={item.imageData} alt={item.label} class="h-3.5 w-4 shrink-0" />
+												{:else if item.imageUrl}
+													<img src={item.imageUrl} alt={item.label} class="h-3.5 w-4 shrink-0" />
+												{/if}
+												<span>{item.label}</span>
+											</div>
+										{/each}
+									</div>
+								{/each}
 							</div>
-						</button>
-					{/each}
+						{:else}
+							<p class="text-[11px] text-[#8A9BAD]">Loading legend…</p>
+						{/if}
+					</AccordionLayer>
+				{/each}
+			{:else}
+				<div class="flex h-40 flex-col items-center justify-center text-center text-[#8A9BAD]">
+					<Layers class="mx-auto mb-2 size-6" />
+					<p class="text-sm">No indicators available</p>
+				</div>
+			{/if}
+		</div>
+	</aside>
+
+	<!-- Middle: Map -->
+	<div class="relative h-[60vh] min-h-[450px] lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]">
+		<div class="map-frame h-full">
+			<div class="map-container relative flex h-full flex-col">
+				<div bind:this={mapContainer} class="map-element h-full w-full overflow-hidden rounded-[10px]"></div>
+
+				<!-- Home Reset Button -->
+				<button
+					class="map-btn absolute top-3 left-[52px] z-20"
+					onclick={() => fitMapToHkhOutline(map, 300)}
+					title="Reset to Home View"
+				>
+					<House class="size-4" />
+				</button>
+
+				<!-- Basemap Switcher Button -->
+				<button
+					class="map-btn absolute top-3 right-[52px] z-20"
+					onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
+					title="Change Basemap"
+					aria-label="Change Basemap"
+				>
+					<MapIcon class="size-4" />
+				</button>
+
+				<!-- Basemap Switcher Panel -->
+				<div
+					class="absolute top-14 right-[52px] z-20 w-48 overflow-hidden rounded-xl border border-[#D8E1EA] bg-white shadow-lg transition-all duration-300 ease-in-out {basemapPanelOpen
+						? 'max-h-96 opacity-100'
+						: 'max-h-0 opacity-0'}"
+				>
+					<div class="p-3">
+						<h3 class="mb-2 text-[11px] font-bold uppercase tracking-wider text-[#46637A]">Basemap</h3>
+						<div class="space-y-1">
+							{#each basemaps as basemap}
+								<button
+									class="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
+									basemap.id
+										? 'bg-[#DBEAFE] font-semibold text-[#2563EB]'
+										: 'text-[#46637A] hover:bg-[#F3F7FA]'}"
+									onclick={() => {
+										switchBasemap(basemap.id);
+										basemapPanelOpen = false;
+									}}
+								>
+									<span class="flex-1">{basemap.name}</span>
+									<img
+										src={basemap.image}
+										alt={basemap.name}
+										class="h-8 w-12 rounded border border-[#D8E1EA] object-cover"
+									/>
+								</button>
+							{/each}
+						</div>
+					</div>
 				</div>
 			</div>
-		{/if}
+		</div>
+	</div>
 
-		<button
-			onclick={toggleQuestionsPanel}
-			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-stone-500 to-amber-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
-			aria-label="Toggle questions panel"
-		>
-			<HelpCircle class="h-6 w-6" />
-		</button>
+	<!-- Right: Description panel -->
+	<aside class="context-panel">
+		{#if selectedInformationLayer}
+			{@const activeLayer = information_layers.find((l) => l.title === selectedInformationLayer)}
+			{#if activeLayer}
+				<h2 class="text-xl font-semibold tracking-[-0.03em] text-[#17324D]">{activeLayer.title}</h2>
+				<p class="mt-4 text-sm leading-6 text-[#71869A]">{activeLayer.info}</p>
+				<p class="mt-4 text-sm leading-6 text-[#71869A]">
+					<span class="font-semibold text-[#46637A]">Data Source: </span>{activeLayer.source}
+				</p>
+			{/if}
+		{:else}
+			<p class="text-sm leading-6 text-[#71869A]">Select a layer to see its description.</p>
+		{/if}
+	</aside>
+</div>
+
+<!-- Chart Section -->
+{#if currentDataset && currentCharts && currentCharts.length > 0}
+	<div
+		class="mt-6 grid gap-4 {currentCharts.length === 1
+			? ''
+			: currentCharts.length === 2
+				? 'sm:grid-cols-[minmax(0,1.85fr)_minmax(0,0.85fr)]'
+				: 'sm:grid-cols-2 xl:grid-cols-3'}"
+	>
+		{#each currentCharts as chart, index}
+			<div class="data-card min-w-0">
+				<Chart
+					chartData={chart.chart_data}
+					title={chart.title}
+					subtitle=""
+					chart_type={chart.chart_type}
+					unit={chart.units}
+					plotOptions={chart.plotOptions || {}}
+					yAxisTitle={'yAxisTitle' in chart ? chart.yAxisTitle : 'Value'}
+					showLegend={'showLegend' in chart ? Boolean((chart as { showLegend?: boolean }).showLegend) : true}
+					xAxisConfig={'xAxisConfig' in chart ? (chart as { xAxisConfig?: any }).xAxisConfig : null}
+					legendConfig={'legendConfig' in chart ? (chart as { legendConfig?: any }).legendConfig : null}
+					height={'xAxisConfig' in chart ? 320 : 260}
+				/>
+			</div>
+		{/each}
 	</div>
 {/if}
 
+<!-- Fixed Floating Questions Button and Panel -->
+<div class="fixed right-8 bottom-6 z-50 flex flex-col items-end">
+	{#if isQuestionsPanelOpen}
+		<div
+			class="mb-4 flex h-80 w-80 origin-bottom-right flex-col rounded-2xl border border-[#D8E1EA] bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+		>
+			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+				<div class="rounded-lg bg-[#2563EB] p-2">
+					<Info class="h-3.5 w-3.5 text-white" />
+				</div>
+				<h3 class="text-base font-bold text-[#17324D]">Explore Questions</h3>
+			</div>
+
+			<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
+				{#each questions as questionItem, index}
+					<button
+						class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
+						questionItem.id
+							? 'border-[#2563EB] bg-[#DBEAFE] shadow-md'
+							: 'border-[#D8E1EA] bg-white/50 hover:border-[#93C5FD] hover:bg-[#EEF6FB] hover:shadow-sm'}"
+						onclick={() => selectQuestion(questionItem.id)}
+					>
+						<div class="flex items-start space-x-2">
+							<div class="mt-1 flex-shrink-0">
+								{#if selectedQuestionId === questionItem.id}
+									<CheckCircle class="h-3.5 w-3.5 text-[#2563EB]" />
+								{:else}
+									<div class="h-3.5 w-3.5 rounded-full border-2 border-[#D8E1EA] group-hover:border-[#93C5FD]"></div>
+								{/if}
+							</div>
+							<p
+								class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+									? 'font-medium text-[#174D7C]'
+									: 'text-[#64788B] group-hover:text-[#31506A]'}"
+							>
+								{questionItem.question}
+							</p>
+						</div>
+					</button>
+				{/each}
+			</div>
+		</div>
+	{/if}
+
+	<button
+		onclick={toggleQuestionsPanel}
+		class="flex h-12 w-12 items-center justify-center rounded-full bg-[#0F3557] text-white shadow-xl transition-all duration-300 hover:scale-110 hover:bg-[#174D7C] hover:shadow-2xl"
+		aria-label="Toggle questions panel"
+	>
+		<HelpCircle class="h-6 w-6" />
+	</button>
+</div>
+
 <style>
-	/* Ensure map containers resize properly */
 	.map-container {
 		width: 100%;
 		max-width: 100%;
@@ -1517,7 +983,6 @@
 		overflow: hidden;
 	}
 
-	/* Force OpenLayers map to be responsive */
 	:global(.ol-viewport) {
 		width: 100% !important;
 		max-width: 100% !important;
@@ -1531,12 +996,17 @@
 		min-width: 0 !important;
 	}
 
-	/* Ensure flex children don't overflow */
 	:global(.flex > *) {
 		min-width: 0;
 	}
 
-	/* Fullscreen mode adjustments */
+	:global(.ol-attribution) {
+		right: auto !important;
+		left: 0.5em !important;
+		text-align: left !important;
+		flex-flow: row !important;
+	}
+
 	:global(:fullscreen .map-container),
 	:global(:-webkit-full-screen .map-container),
 	:global(:-moz-full-screen .map-container),
@@ -1547,7 +1017,6 @@
 		z-index: 9998 !important;
 	}
 
-	/* Ensure controls are visible in fullscreen */
 	:global(:fullscreen .absolute),
 	:global(:-webkit-full-screen .absolute),
 	:global(:-moz-full-screen .absolute),

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import { Layers, List, HomeIcon } from '@lucide/svelte';
+	import { List, HomeIcon, ChevronDown } from '@lucide/svelte';
 
 	import '@arcgis/core/assets/esri/themes/light/main.css';
 
@@ -24,7 +24,6 @@
 		mountainRegion: false,
 		nightTime: false
 	});
-	let layerListCollapsed = $state(false);
 	let legendCollapsed = $state(false);
 	let hkhOutline: any;
 	let physioLayer: any;
@@ -263,18 +262,18 @@
 		}
 	});
 
-	// Export view for parent component access
-	export { view };
+	// Export view + layer controls for parent component access
+	export { view, toggleLayer, layerVisibility };
 </script>
 
-<div class="overflow-hidden rounded-2xl bg-white shadow-xl">
+<div class="overflow-hidden rounded-[5px] bg-white">
 	<div class="flex flex-col lg:flex-row">
 		<!-- Map Controls -->
 
 		<!-- Map Display -->
 		<div class="relative flex-1">
 			<div
-				class="map-container relative flex h-full items-center justify-center overflow-hidden sm:h-80 md:h-96 lg:h-[550px]"
+				class="map-container relative flex h-full items-center justify-center overflow-hidden rounded-[5px] sm:h-80 md:h-96 lg:h-[550px]"
 				bind:this={mapContainer}
 			>
 				{#if isLoading}
@@ -312,136 +311,46 @@
 					</div>
 				</div>
 
-				<!-- Map overlay info -->
-				<div
-					class="absolute top-4 right-4 overflow-hidden rounded-lg bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-300"
-					style="max-height: {layerListCollapsed ? '40px' : '200px'}"
-				>
-					<!-- Header -->
+				<!-- Reset button — stacked below the ArcGIS zoom widget (top-left) -->
+				<div class="absolute top-[15px] left-[60px] z-20 overflow-hidden  shadow-md">
 					<button
 						type="button"
-						class="flex w-full cursor-pointer items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2"
-						onclick={() => (layerListCollapsed = !layerListCollapsed)}
-					>
-						<div class="flex items-center">
-							<Layers class="h-4 w-4 text-gray-600" />
-							<span
-								class="ml-2 text-sm font-semibold text-gray-700"
-								style="display: {layerListCollapsed ? 'none' : 'block'}">Layers</span
-							>
-						</div>
-						<!-- <span class="text-gray-500 transition-transform duration-300" 
-                              style="transform: rotate({layerListCollapsed ? '-90deg' : '0deg'})">▼</span> -->
-					</button>
-
-					<!-- Content -->
-					<div
-						class="p-3 transition-all duration-300"
-						style="display: {layerListCollapsed ? 'none' : 'block'}; max-height: {layerListCollapsed
-							? '0px'
-							: '150px'}; max-width: {layerListCollapsed ? '0px' : 'auto'}"
-					>
-						<div class="space-y-2 text-sm text-gray-700">
-							<!-- HKH Boundary Layer -->
-							<label class="group flex cursor-pointer items-center space-x-2">
-								<input
-									type="checkbox"
-									checked={layerVisibility.hkhOutline}
-									onchange={() => toggleLayer('hkhOutline')}
-									class="h-4 w-4 rounded border-gray-300 text-blue-600 group-hover:border-blue-400 focus:ring-blue-500"
-								/>
-								<span class="group-hover:text-blue-600">HKH Outline</span>
-							</label>
-
-							<!-- River Layer -->
-							<!-- <label class="flex items-center space-x-2 cursor-pointer group">
-                                <input 
-                                type="checkbox" 
-                                checked={layerVisibility.river}
-                                on:change={() => toggleLayer('river')}
-                                class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 group-hover:border-blue-400"
-                                />
-                                <span class="group-hover:text-blue-600">River Network</span>
-                            </label> -->
-
-							<!-- Glacier Layer -->
-							<label class="group flex cursor-pointer items-center space-x-2">
-								<input
-									type="checkbox"
-									checked={layerVisibility.glacier}
-									onchange={() => toggleLayer('glacier')}
-									class="h-4 w-4 rounded border-gray-300 text-blue-600 group-hover:border-blue-400 focus:ring-blue-500"
-								/>
-								<span class="group-hover:text-blue-600">Glacier</span>
-							</label>
-
-							<!-- Mountain Region Layer -->
-							<label class="group flex cursor-pointer items-center space-x-2">
-								<input
-									type="checkbox"
-									checked={layerVisibility.mountainRegion}
-									onchange={() => toggleLayer('mountainRegion')}
-									class="h-4 w-4 rounded border-gray-300 text-blue-600 group-hover:border-blue-400 focus:ring-blue-500"
-								/>
-								<span class="group-hover:text-blue-600">Mountain Region</span>
-							</label>
-
-							<!-- Night Time Layer -->
-							<label class="group flex cursor-pointer items-center space-x-2">
-								<input
-									type="checkbox"
-									checked={layerVisibility.nightTime}
-									onchange={() => toggleLayer('nightTime')}
-									class="h-4 w-4 rounded border-gray-300 text-blue-600 group-hover:border-blue-400 focus:ring-blue-500"
-								/>
-								<span class="group-hover:text-blue-600">Night Time</span>
-							</label>
-						</div>
-					</div>
-				</div>
-
-				<!-- Reset button -->
-				<div
-					class="absolute top-4 left-16 overflow-hidden bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-300"
-				>
-					<button
-						type="button"
-						class="flex cursor-pointer items-center justify-between border-b border-gray-200 bg-gray-50 px-2 py-2"
+						class="flex size-8 cursor-pointer items-center justify-center bg-white text-gray-600 transition hover:bg-gray-50"
 						onclick={resetMapView}
+						title="Reset to Home View"
+						aria-label="Reset to Home View"
 					>
-						<div class="flex items-center">
-							<HomeIcon class="h-4 w-4 text-gray-600" />
-						</div>
+						<HomeIcon class="h-4 w-4" />
 					</button>
 				</div>
 
 				<!-- Legend overlay -->
 				<div
-					class="absolute bottom-6 left-4 overflow-hidden rounded-lg bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-300"
-					style="max-height: {legendCollapsed ? '40px' : '300px'}"
+					class="absolute bottom-6 right-2 w-[150px] overflow-hidden rounded-xl border border-white/70 bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-300"
+					style="max-height: {legendCollapsed ? '37px' : '260px'}"
 				>
 					<button
 						type="button"
-						class="flex w-full cursor-pointer items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2"
+						class="flex w-full cursor-pointer items-center justify-between gap-2 border-b border-[#E5EAF0] bg-[#F8FAFC] px-2.5 py-1.5"
 						onclick={() => (legendCollapsed = !legendCollapsed)}
 					>
-						<div class="flex items-center">
-							<List class="h-4 w-4 text-gray-600" />
-							<span
-								class="ml-2 text-sm font-semibold text-gray-700"
-								style="display: {legendCollapsed ? 'none' : 'block'}">Legend</span
-							>
-						</div>
+						<span class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#46637A]">
+							<List class="h-3.5 w-3.5" />
+							Legend
+						</span>
+						<ChevronDown
+							class="h-3.5 w-3.5 shrink-0 text-[#8A9BAD] transition-transform duration-200 {legendCollapsed
+								? '-rotate-90'
+								: ''}"
+						/>
 					</button>
 
 					<!-- Content -->
 					<div
-						class="overflow-y-auto bg-white p-3 transition-all duration-300"
-						style="display: {legendCollapsed ? 'none' : 'block'}; max-height: {legendCollapsed
-							? '0px'
-							: '300px'}; max-width: {legendCollapsed ? '0px' : 'auto'}"
+						class="overflow-y-auto bg-white p-1.5 transition-all duration-300"
+						style="max-height: {legendCollapsed ? '0px' : '220px'}"
 					>
-						<div id="legend-content" class="text-sm text-gray-700"></div>
+						<div id="legend-content"></div>
 					</div>
 				</div>
 			</div>
@@ -453,5 +362,60 @@
 	:global(.esri-view-root) {
 		width: 100% !important;
 		height: 100% !important;
+		overflow: hidden !important;
+		border-radius: 5px;
+	}
+
+	:global(.esri-view),
+	:global(.esri-view-surface) {
+		overflow: hidden !important;
+		border-radius: 5px;
+	}
+
+	/* Compact the default Esri Legend widget so it's proportionate to the map card.
+	   Swatch/symbol sizes are left at their default — only spacing is tightened. */
+	:global(#legend-content .esri-legend) {
+		padding: 0 !important;
+		font-family: inherit !important;
+	}
+	:global(#legend-content .esri-legend__service) {
+		padding: 0 !important;
+	}
+	:global(#legend-content .esri-legend__layer) {
+		margin-bottom: 3px !important;
+	}
+	:global(#legend-content .esri-legend__layer:last-child) {
+		margin-bottom: 0 !important;
+	}
+	:global(#legend-content .esri-legend__layer-caption) {
+		margin: 0 0 1px !important;
+		padding: 0 !important;
+		font-size: 10.5px !important;
+		font-weight: 700 !important;
+		color: #31506a !important;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+	}
+	:global(#legend-content .esri-legend__layer-table),
+	:global(#legend-content .esri-legend__layer-body) {
+		margin: 0 !important;
+		border-spacing: 0 !important;
+	}
+	:global(#legend-content .esri-legend__layer-child-table) {
+		margin-bottom: 8px !important;
+	}
+	:global(#legend-content .esri-legend__layer-row) {
+		line-height: 1.05 !important;
+	}
+	:global(#legend-content .esri-legend__layer-cell) {
+		padding: 0 !important;
+	}
+	:global(#legend-content .esri-legend__layer-cell--symbols) {
+		padding-right: 4px !important;
+	}
+	:global(#legend-content .esri-legend__layer-cell--info) {
+		padding: 0 !important;
+		font-size: 10.5px !important;
+		color: #64788b !important;
 	}
 </style>

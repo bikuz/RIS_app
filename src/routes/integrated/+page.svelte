@@ -4,14 +4,12 @@
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
 	import XYZ from 'ol/source/XYZ';
-	import { fromLonLat } from 'ol/proj';
 	import 'ol/ol.css';
 	import lightMap from '$lib/assets/images/basemaps/light-map.png';
 	import darkMap from '$lib/assets/images/basemaps/dark-map.png';
 	import osmMap from '$lib/assets/images/basemaps/osm-map.png';
 	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
 	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
-	import icimodLogo from '$lib/assets/logo/logo-icimod_white.png';
 	import {
 		Search,
 		CheckSquare,
@@ -20,7 +18,6 @@
 		EyeOff,
 		Trash2,
 		MapIcon,
-		ArrowLeft,
 		House,
 		Layers,
 		ChevronUp,
@@ -28,11 +25,12 @@
 		Sliders,
 		GripVertical,
 		Columns,
-		List
+		List,
+		SlidersHorizontal
 	} from '@lucide/svelte';
-	import { goto } from '$app/navigation';
-	import { base } from '$app/paths';
-	import { topicIcons, getTopicName, getTopicColor } from '$lib/data/themeData';
+	import { themes } from '$lib/data/themes';
+	import { themeIcons } from '$lib/theme-icons';
+	import { fitMapToHkhOutline, HKH_OUTLINE_CENTER } from '$lib/map/hkh-extent';
 	import FullScreen from 'ol/control/FullScreen';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
 	import ImageLayer from 'ol/layer/Image';
@@ -50,17 +48,13 @@
 	let baseMapLayerRight: TileLayer<any> | null = null;
 	let isDraggingDivider = $state(false);
 
-	// Hindu Kush Himalaya region coordinates
-	const HKH_CENTER = [82.94924, 27.6382055];
-	const HKH_ZOOM = 4.8;
-
 	// Track fullscreen state
 	let isFullscreen = $state(false);
 	let fullscreenHandler: (() => void) | null = null;
 
 	// Basemap switcher state
 	let basemapPanelOpen = $state(false);
-	let selectedBasemap = $state('dark-gray');
+	let selectedBasemap = $state('light');
 	let baseMapLayer: TileLayer<any> | null = null;
 
 	// Layer panel state
@@ -1194,8 +1188,7 @@
 				controls: defaultControls().extend([fullScreenControl]),
 				layers: [baseMapLayer],
 				view: new View({
-					center: fromLonLat(HKH_CENTER),
-					zoom: HKH_ZOOM
+					center: HKH_OUTLINE_CENTER
 				})
 			});
 
@@ -1215,6 +1208,12 @@
 			document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
 			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+			if (map) {
+				map.updateSize();
+				fitMapToHkhOutline(map);
+				toggleBasicLayer('hkh-outline');
+			}
 		}, 100);
 	}
 
@@ -1422,138 +1421,115 @@
 	});
 </script>
 
-<header class="relative overflow-hidden bg-gradient-to-r from-blue-800 to-green-800 text-white">
-	<div class="absolute inset-0 bg-black/20"></div>
-	<div class="relative mx-auto px-4 sm:px-6 lg:px-8">
-		<div class="flex h-24 items-center justify-between">
-			<div class="flex items-center space-x-6">
-				<div class="flex flex-col">
-					<div class="text-3xl font-bold text-white">Hi-RIS (HKH Regional Information System)</div>
-				</div>
-			</div>
-			<div class="">
-				<img src={icimodLogo} alt="ICIMOD Logo" class="h-7 w-auto" />
-			</div>
-			
-		</div>
+<svelte:head>
+	<title>Integrated Viewer | ICIMOD RIS</title>
+</svelte:head>
+
+<div class="flex h-full min-h-0 flex-col">
+	<div class="shrink-0">
+		<h1 class="text-[20px] font-semibold tracking-[-0.045em] text-[#0F3557] sm:text-[22px]">
+			Integrated Viewer
+		</h1>
+		<p class="mt-1 max-w-2xl text-sm leading-6 text-[#64788B]">
+			Combine layers from every theme on one map to compare patterns across the HKH.
+		</p>
 	</div>
-</header>
 
-<div class="min-h-screen bg-gray-50 p-3 sm:p-6">
-	<div class="grid grid-cols-12 gap-4 lg:gap-6">
-		<!-- Left Sidebar: Dataset Management -->
-		<div class="col-span-12 lg:col-span-3">
-			<div class="sticky top-6 flex h-[calc(100vh-9rem)] flex-col rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
-				<!-- Back Button and Search Bar -->
-				<div class="mb-4 flex items-center gap-2">
-					<!-- Back Button -->
-					<button
-						onclick={() => {
-							goto(`${base}/`);
-							// if (browser && window.history.length > 1) {
-							// 	window.history.back();
-							// } else {
-							// 	goto(`${base}/`);
-							// }
-						}}
-						class="flex-shrink-0 flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gradient-to-r from-blue-500 to-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:from-blue-600 hover:to-green-600 hover:shadow-md"
-						title="Go Back"
-					>
-						<ArrowLeft class="h-4 w-4" />
-						<span>Back</span>
-					</button>
+	<div class="mt-3 grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_minmax(0,1.5fr)] gap-4 lg:grid-cols-[0.7fr_2.4fr] lg:grid-rows-[minmax(0,1fr)]">
+	<!-- Left Sidebar: Dataset Management -->
+	<aside class="context-panel flex h-full min-h-0 flex-col overflow-hidden p-5" style="background-color: #EEF6FB">
+		<div class="flex items-center justify-between border-b border-[#E0E7EE] pb-4">
+			<div>
+				<p class="chart-kicker">Viewer</p>
+				<h2 class="mt-1 text-base font-semibold text-[#17324D]">Datasets</h2>
+			</div>
+			<span class="grid size-8 place-items-center rounded-lg bg-[#E8EEF4]">
+				<SlidersHorizontal class="size-4 text-[#64788B]" />
+			</span>
+		</div>
 
-					<!-- Search Bar -->
-					<div class="relative flex-1">
-						<Search
-							class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-						/>
-						<input
-							type="text"
-							placeholder="Search datasets"
-							bind:value={searchQuery}
-							class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-						/>
-					</div>
-				</div>
+		<div class="relative mt-4">
+			<Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8A9BAD]" />
+			<input
+				type="text"
+				placeholder="Search datasets"
+				bind:value={searchQuery}
+				class="w-full rounded-lg border border-[#D8E1EA] bg-white py-2 pl-10 pr-4 text-sm text-[#17324D] placeholder:text-[#8A9BAD] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+			/>
+		</div>
 
-				<!-- Tabs -->
-				<div class="mb-4 flex gap-2 border-b border-gray-200">
-					<button
-						onclick={() => (activeTab = 'available')}
-						class="flex-1 border-b-2 px-4 py-2 text-sm font-medium transition-colors {activeTab ===
-						'available'
-							? 'border-blue-600 text-blue-600'
-							: 'border-transparent text-gray-600 hover:text-gray-800'}"
-					>
-						Available Datasets
-					</button>
-					<button
-						onclick={() => (activeTab = 'selected')}
-						class="flex-1 border-b-2 px-4 py-2 text-sm font-medium transition-colors {activeTab ===
-						'selected'
-							? 'border-blue-600 text-blue-600'
-							: 'border-transparent text-gray-600 hover:text-gray-800'}"
-					>
-						Selected Datasets
-					</button>
-				</div>
+		<div class="mt-4 flex gap-2 border-b border-[#D8E1EA]">
+			<button
+				onclick={() => (activeTab = 'available')}
+				class="flex-1 border-b-2 px-3 py-2 text-sm font-semibold transition-colors {activeTab ===
+				'available'
+					? 'border-[#2563EB] text-[#2563EB]'
+					: 'border-transparent text-[#46637A] hover:text-[#17324D]'}"
+			>
+				Available
+			</button>
+			<button
+				onclick={() => (activeTab = 'selected')}
+				class="flex-1 border-b-2 px-3 py-2 text-sm font-semibold transition-colors {activeTab ===
+				'selected'
+					? 'border-[#2563EB] text-[#2563EB]'
+					: 'border-transparent text-[#46637A] hover:text-[#17324D]'}"
+			>
+				Selected
+			</button>
+		</div>
 
 				<!-- Dataset List -->
-				<div class="flex-1 space-y-2 overflow-y-auto">
+				<div class="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
 					{#if activeTab === 'available'}
 						{#each Object.entries(filteredGroupedDatasets) as [groupId, datasets]}
-							{@const IconComponent = topicIcons[groupId as keyof typeof topicIcons]}
+							{@const theme = themes.find((t) => t.slug === groupId)}
+							{@const Icon = theme ? themeIcons[theme.icon] : Layers}
 							{@const isExpanded = expandedGroups.has(groupId)}
-							<div class="rounded-lg border border-gray-200 bg-white">
+							<div class="overflow-hidden rounded-xl border border-[#D8E1EA] bg-[#F3F7FA]">
 								<!-- Group Header -->
 								<button
 									onclick={() => toggleGroup(groupId)}
-									class="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-gray-50"
+									class="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-[#F3F7FA]"
 								>
 									<div class="flex items-center gap-2">
-										{#if IconComponent}
-											{@const Icon = IconComponent}
-											<div class="rounded-lg bg-gradient-to-r {getTopicColor(groupId)} p-1.5">
-												<Icon class="h-4 w-4 text-white" />
-											</div>
-										{/if}
-										<span class="text-sm font-semibold text-gray-800">{getTopicName(groupId)}</span>
+										<Icon class="size-4 shrink-0 text-[#46637A]" strokeWidth={2} />
+										<span class="text-sm font-semibold text-[#17324D]">{theme?.name ?? groupId}</span>
 									</div>
 									{#if isExpanded}
-										<ChevronDown class="h-4 w-4 text-gray-600" />
+										<ChevronDown class="h-4 w-4 text-[#46637A]" />
 									{:else}
-										<ChevronUp class="h-4 w-4 text-gray-600" />
+										<ChevronUp class="h-4 w-4 text-[#46637A]" />
 									{/if}
 								</button>
 
 								<!-- Group Datasets -->
 								{#if isExpanded}
-									<div class="border-t border-gray-100 p-2 space-y-1">
+									<div class="border-t border-[#E0E7EE] p-2 space-y-1">
 										{#each datasets as dataset}
 											{@const hasNested = hasNestedLayers(dataset.map_layers)}
 											{@const isDatasetExpanded = expandedDatasets.has(dataset.id)}
-											<div class="rounded-lg border border-gray-200 bg-gray-50">
+											<div class="rounded-lg border border-[#D8E1EA] bg-white">
 												<!-- Dataset Header -->
 												<button
 													onclick={() => toggleDataset(dataset.id)}
-													class="flex w-full items-center justify-between p-2.5 text-left transition-colors hover:bg-gray-100"
+													class="flex w-full items-center justify-between p-2.5 text-left transition-colors hover:bg-[#EEF6FB]"
 												>
 													<div class="flex items-center gap-2 flex-1 min-w-0">
 														{#if hasNested}
 															{#if isDatasetExpanded}
-																<ChevronDown class="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
+																<ChevronDown class="h-3.5 w-3.5 text-[#71869A] flex-shrink-0" />
 															{:else}
-																<ChevronUp class="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
+																<ChevronUp class="h-3.5 w-3.5 text-[#71869A] flex-shrink-0" />
 															{/if}
 														{/if}
-														<span class="text-sm font-medium text-gray-800 truncate">{(dataset as any).title || dataset.id}</span>
+														<span class="text-sm font-medium text-[#17324D] truncate">{(dataset as any).title || dataset.id}</span>
 													</div>
 												</button>
 
 												<!-- Nested Layers -->
 												{#if hasNested && isDatasetExpanded}
-													<div class="border-t border-gray-200 p-2 space-y-1">
+													<div class="border-t border-[#D8E1EA] p-2 space-y-1">
 														{#each getKeysInOrder(dataset.map_layers) as key}
 															{@const value = dataset.map_layers[key]}
 															{@const nestedKey = `${dataset.id}|${key}`}
@@ -1567,19 +1543,19 @@
 																	{@const layerPath = `${dataset.id}|${key}`}
 																	{@const isSelected = selectedLayers.has(layerPath)}
 																	<div
-																		class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 transition-all hover:border-blue-300 hover:bg-blue-50/50 {isSelected
-																			? 'border-blue-500 bg-blue-50'
+																		class="group flex items-center gap-2 rounded-lg border border-[#D8E1EA] bg-white p-2 transition-all hover:border-[#93C5FD] hover:bg-[#EEF6FB] {isSelected
+																			? 'border-[#2563EB] bg-[#DBEAFE]'
 																			: ''}"
 																	>
 																		<button
 																			onclick={() => toggleLayer(dataset.id, [key], layerConfig)}
-																			class="flex-shrink-0 rounded p-1 text-blue-600 transition-colors hover:bg-blue-100"
+																			class="flex-shrink-0 rounded p-1 text-[#2563EB] transition-colors hover:bg-[#DBEAFE]"
 																			title={isSelected ? 'Remove from map' : 'Add to map'}
 																		>
 																			{#if isSelected}
-																				<CheckSquare class="h-4.5 w-4.5 fill-blue-600 stroke-white stroke-[2]" />
+																				<CheckSquare class="h-4.5 w-4.5 fill-[#2563EB] stroke-white stroke-[2]" />
 																			{:else}
-																				<Square class="h-4.5 w-4.5 stroke-gray-400 stroke-[1.5]" />
+																				<Square class="h-4.5 w-4.5 stroke-[#8A9BAD] stroke-[1.5]" />
 																			{/if}
 																		</button>
 																		<div 
@@ -1590,21 +1566,21 @@
 																			tabindex="0"
 																			title={isSelected ? 'Remove from map' : 'Add to map'}
 																		>
-																			<h5 class="truncate text-xs font-medium text-gray-700">{layerConfig.name || key}</h5>
+																			<h5 class="truncate text-xs font-medium text-[#31506A]">{layerConfig.name || key}</h5>
 																		</div>
 																	</div>
 																{:else}
 																	<!-- Multiple layers in array - show as expandable -->
 																	<button
 																		onclick={() => toggleNestedKey(nestedKey)}
-																		class="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 text-left transition-colors hover:bg-gray-50"
+																		class="flex w-full items-center gap-2 rounded-lg border border-[#D8E1EA] bg-white p-2 text-left transition-colors hover:bg-[#F3F7FA]"
 																	>
 																		{#if isNestedExpanded}
-																			<ChevronDown class="h-3 w-3 text-gray-500" />
+																			<ChevronDown class="h-3 w-3 text-[#71869A]" />
 																		{:else}
-																			<ChevronUp class="h-3 w-3 text-gray-500" />
+																			<ChevronUp class="h-3 w-3 text-[#71869A]" />
 																		{/if}
-																		<span class="text-xs font-medium text-gray-700">{key}</span>
+																		<span class="text-xs font-medium text-[#31506A]">{key}</span>
 																	</button>
 																	{#if isNestedExpanded}
 																		<div class="ml-4 space-y-1">
@@ -1612,19 +1588,19 @@
 																				{@const layerPath = `${dataset.id}|${key}|${idx}`}
 																				{@const isSelected = selectedLayers.has(layerPath)}
 																				<div
-																					class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-1.5 transition-all hover:border-blue-300 hover:bg-blue-50/50 {isSelected
-																						? 'border-blue-500 bg-blue-50'
+																					class="group flex items-center gap-2 rounded-lg border border-[#D8E1EA] bg-white p-1.5 transition-all hover:border-[#93C5FD] hover:bg-[#EEF6FB] {isSelected
+																						? 'border-[#2563EB] bg-[#DBEAFE]'
 																						: ''}"
 																				>
 																					<button
 																						onclick={() => toggleLayer(dataset.id, [key, String(idx)], layerConfig)}
-																						class="flex-shrink-0 rounded p-0.5 text-blue-600 transition-colors hover:bg-blue-100"
+																						class="flex-shrink-0 rounded p-0.5 text-[#2563EB] transition-colors hover:bg-[#DBEAFE]"
 																						title={isSelected ? 'Remove from map' : 'Add to map'}
 																					>
 																						{#if isSelected}
-																							<CheckSquare class="h-4 w-4 fill-blue-600 stroke-white stroke-[2]" />
+																							<CheckSquare class="h-4 w-4 fill-[#2563EB] stroke-white stroke-[2]" />
 																						{:else}
-																							<Square class="h-4 w-4 stroke-gray-400 stroke-[1.5]" />
+																							<Square class="h-4 w-4 stroke-[#8A9BAD] stroke-[1.5]" />
 																						{/if}
 																					</button>
 																					<div 
@@ -1635,7 +1611,7 @@
 																						tabindex="0"
 																						title={isSelected ? 'Remove from map' : 'Add to map'}
 																					>
-																						<h6 class="truncate text-xs text-gray-600">{layerConfig.name || `${key} - ${idx + 1}`}</h6>
+																						<h6 class="truncate text-xs text-[#46637A]">{layerConfig.name || `${key} - ${idx + 1}`}</h6>
 																					</div>
 																				</div>
 																			{/each}
@@ -1646,14 +1622,14 @@
 																<!-- Nested object structure (e.g., overall/significant -> annual/spring) -->
 																<button
 																	onclick={() => toggleNestedKey(nestedKey)}
-																	class="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 text-left transition-colors hover:bg-gray-50"
+																	class="flex w-full items-center gap-2 rounded-lg border border-[#D8E1EA] bg-white p-2 text-left transition-colors hover:bg-[#F3F7FA]"
 																>
 																	{#if isNestedExpanded}
-																		<ChevronDown class="h-3 w-3 text-gray-500" />
+																		<ChevronDown class="h-3 w-3 text-[#71869A]" />
 																	{:else}
-																		<ChevronUp class="h-3 w-3 text-gray-500" />
+																		<ChevronUp class="h-3 w-3 text-[#71869A]" />
 																	{/if}
-																	<span class="text-xs font-medium text-gray-700 capitalize">{key}</span>
+																	<span class="text-xs font-medium text-[#31506A] capitalize">{key}</span>
 																</button>
 																{#if isNestedExpanded}
 																	<div class="ml-4 space-y-1">
@@ -1667,19 +1643,19 @@
 																				{@const layerPath = `${dataset.id}|${key}|${subKey}`}
 																				{@const isSelected = selectedLayers.has(layerPath)}
 																				<div
-																					class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-1.5 transition-all hover:border-blue-300 hover:bg-blue-50/50 {isSelected
-																						? 'border-blue-500 bg-blue-50'
+																					class="group flex items-center gap-2 rounded-lg border border-[#D8E1EA] bg-white p-1.5 transition-all hover:border-[#93C5FD] hover:bg-[#EEF6FB] {isSelected
+																						? 'border-[#2563EB] bg-[#DBEAFE]'
 																						: ''}"
 																				>
 																					<button
 																						onclick={() => toggleLayer(dataset.id, [key, subKey], layerConfig)}
-																						class="flex-shrink-0 rounded p-0.5 text-blue-600 transition-colors hover:bg-blue-100"
+																						class="flex-shrink-0 rounded p-0.5 text-[#2563EB] transition-colors hover:bg-[#DBEAFE]"
 																						title={isSelected ? 'Remove from map' : 'Add to map'}
 																					>
 																						{#if isSelected}
-																							<CheckSquare class="h-4 w-4 fill-blue-600 stroke-white stroke-[2]" />
+																							<CheckSquare class="h-4 w-4 fill-[#2563EB] stroke-white stroke-[2]" />
 																						{:else}
-																							<Square class="h-4 w-4 stroke-gray-400 stroke-[1.5]" />
+																							<Square class="h-4 w-4 stroke-[#8A9BAD] stroke-[1.5]" />
 																						{/if}
 																					</button>
 																					<div 
@@ -1690,7 +1666,7 @@
 																						tabindex="0"
 																						title={isSelected ? 'Remove from map' : 'Add to map'}
 																					>
-																						<h6 class="truncate text-xs text-gray-600 capitalize">{layerConfig.name || subKey}</h6>
+																						<h6 class="truncate text-xs text-[#46637A] capitalize">{layerConfig.name || subKey}</h6>
 																					</div>
 																				</div>
 																			{/if}
@@ -1702,19 +1678,19 @@
 																{@const layerPath = `${dataset.id}|${key}`}
 																{@const isSelected = selectedLayers.has(layerPath)}
 																<div
-																	class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 transition-all hover:border-blue-300 hover:bg-blue-50/50 {isSelected
-																		? 'border-blue-500 bg-blue-50'
+																	class="group flex items-center gap-2 rounded-lg border border-[#D8E1EA] bg-white p-2 transition-all hover:border-[#93C5FD] hover:bg-[#EEF6FB] {isSelected
+																		? 'border-[#2563EB] bg-[#DBEAFE]'
 																		: ''}"
 																>
 																	<button
 																		onclick={() => toggleLayer(dataset.id, [key], nestedValue)}
-																		class="flex-shrink-0 rounded p-1 text-blue-600 transition-colors hover:bg-blue-100"
+																		class="flex-shrink-0 rounded p-1 text-[#2563EB] transition-colors hover:bg-[#DBEAFE]"
 																		title={isSelected ? 'Remove from map' : 'Add to map'}
 																	>
 																		{#if isSelected}
-																			<CheckSquare class="h-4.5 w-4.5 fill-blue-600 stroke-white stroke-[2]" />
+																			<CheckSquare class="h-4.5 w-4.5 fill-[#2563EB] stroke-white stroke-[2]" />
 																		{:else}
-																			<Square class="h-4.5 w-4.5 stroke-gray-400 stroke-[1.5]" />
+																			<Square class="h-4.5 w-4.5 stroke-[#8A9BAD] stroke-[1.5]" />
 																		{/if}
 																	</button>
 																	<div 
@@ -1725,7 +1701,7 @@
 																		tabindex="0"
 																		title={isSelected ? 'Remove from map' : 'Add to map'}
 																	>
-																		<h5 class="truncate text-xs font-medium text-gray-700">{(nestedValue as any).name || key}</h5>
+																		<h5 class="truncate text-xs font-medium text-[#31506A]">{(nestedValue as any).name || key}</h5>
 																	</div>
 																</div>
 															{/if}
@@ -1738,19 +1714,19 @@
 														{@const layerPath = dataset.id}
 														{@const isSelected = selectedLayers.has(layerPath)}
 														<div
-															class="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 transition-all hover:border-blue-300 hover:bg-blue-50/50 {isSelected
-																? 'border-blue-500 bg-blue-50'
+															class="group flex items-center gap-2 rounded-lg border border-[#D8E1EA] bg-white p-2 transition-all hover:border-[#93C5FD] hover:bg-[#EEF6FB] {isSelected
+																? 'border-[#2563EB] bg-[#DBEAFE]'
 																: ''}"
 														>
 															<button
 																onclick={() => toggleLayer(dataset.id, [], layerConfig)}
-																class="flex-shrink-0 rounded p-1 text-blue-600 transition-colors hover:bg-blue-100"
+																class="flex-shrink-0 rounded p-1 text-[#2563EB] transition-colors hover:bg-[#DBEAFE]"
 																title={isSelected ? 'Remove from map' : 'Add to map'}
 															>
 																{#if isSelected}
-																	<CheckSquare class="h-4.5 w-4.5 fill-blue-600 stroke-white stroke-[2]" />
+																	<CheckSquare class="h-4.5 w-4.5 fill-[#2563EB] stroke-white stroke-[2]" />
 																{:else}
-																	<Square class="h-4.5 w-4.5 stroke-gray-400 stroke-[1.5]" />
+																	<Square class="h-4.5 w-4.5 stroke-[#8A9BAD] stroke-[1.5]" />
 																{/if}
 															</button>
 															<div 
@@ -1761,7 +1737,7 @@
 																tabindex="0"
 																title={isSelected ? 'Remove from map' : 'Add to map'}
 															>
-																<h5 class="truncate text-xs font-medium text-gray-700">{(layerConfig as any).name || (dataset as any).title || dataset.id}</h5>
+																<h5 class="truncate text-xs font-medium text-[#31506A]">{(layerConfig as any).name || (dataset as any).title || dataset.id}</h5>
 															</div>
 														</div>
 													{/if}
@@ -1777,7 +1753,7 @@
 						<!-- Swipe Mode Toggle Button -->
 						<div class="mb-4">
 							<button
-								class="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium transition-colors hover:bg-gray-50 {swipeMode ? 'bg-blue-100 border-blue-500 text-blue-700' : 'text-gray-700'}"
+								class="flex w-full items-center justify-center gap-2 rounded-lg border border-[#D8E1EA] bg-white px-4 py-2.5 text-sm font-medium transition-colors hover:bg-[#F3F7FA] {swipeMode ? 'bg-[#DBEAFE] border-[#2563EB] text-[#2563EB]' : 'text-[#31506A]'}"
 								onclick={toggleSwipeMode}
 								title={swipeMode ? 'Stop Swipe Mode' : 'Start Swipe Mode'}
 							>
@@ -1810,21 +1786,21 @@
 									>
 										<!-- Drop indicator line above -->
 										{#if dragOverIndex === index && draggedLayerIndex !== null && draggedLayerIndex !== index && dropPosition === 'above'}
-											<div class="absolute -top-2 left-0 right-0 h-1 bg-blue-500 border-2 border-dashed border-blue-500 rounded-full z-20 shadow-lg"></div>
+											<div class="absolute -top-2 left-0 right-0 h-1 bg-[#2563EB] border-2 border-dashed border-[#2563EB] rounded-full z-20 shadow-lg"></div>
 										{/if}
 										
 										<!-- Drop indicator line below -->
 										{#if dragOverIndex === index && draggedLayerIndex !== null && draggedLayerIndex !== index && dropPosition === 'below'}
-											<div class="absolute -bottom-2 left-0 right-0 h-1 bg-blue-500 border-2 border-dashed border-blue-500 rounded-full z-20 shadow-lg"></div>
+											<div class="absolute -bottom-2 left-0 right-0 h-1 bg-[#2563EB] border-2 border-dashed border-[#2563EB] rounded-full z-20 shadow-lg"></div>
 										{/if}
 										
 										<div
-											class="group flex items-center gap-2 rounded-lg border bg-white p-3 {dragOverIndex === index && draggedLayerIndex !== null && draggedLayerIndex !== index ? 'border-blue-500 border-2 border-dashed bg-blue-50/50 shadow-xl scale-[0.95] ring-2 ring-blue-200' : 'border-gray-200'} {draggedLayerIndex === index ? 'opacity-50 cursor-grabbing' : ''} {draggedLayerIndex === null ? 'transition-colors hover:border-blue-300 hover:shadow-md' : ''}"
+											class="group flex items-center gap-2 rounded-lg border bg-white p-3 {dragOverIndex === index && draggedLayerIndex !== null && draggedLayerIndex !== index ? 'border-[#2563EB] border-2 border-dashed bg-[#DBEAFE]/50 shadow-xl scale-[0.95] ring-2 ring-[#BFDBFE]' : 'border-[#D8E1EA]'} {draggedLayerIndex === index ? 'opacity-50 cursor-grabbing' : ''} {draggedLayerIndex === null ? 'transition-colors hover:border-[#93C5FD] hover:shadow-md' : ''}"
 											style="will-change: transform, opacity;"
 										>
 											<!-- Drag Handle -->
 											<div 
-												class="flex-shrink-0 cursor-move text-gray-400 hover:text-gray-600"
+												class="flex-shrink-0 cursor-move text-[#8A9BAD] hover:text-[#46637A]"
 												role="button"
 												tabindex="0"
 												draggable="true"
@@ -1836,16 +1812,16 @@
 												<GripVertical class="h-5 w-5" />
 											</div>
 											<div class="flex-1 min-w-0">
-												<h4 class="truncate text-sm font-medium text-gray-800">{(dataset as any).title || dataset.id}</h4>
+												<h4 class="truncate text-sm font-medium text-[#17324D]">{(dataset as any).title || dataset.id}</h4>
 													{#if pathParts.length > 0}
-														<p class="truncate text-xs text-gray-500">{pathParts.join(' → ')}</p>
+														<p class="truncate text-xs text-[#71869A]">{pathParts.join(' → ')}</p>
 													{/if}
 												</div>
 												<div class="flex items-center gap-1 {draggedLayerIndex !== null ? 'pointer-events-none opacity-40' : ''}">
 													<button
 														onclick={() => toggleLayerVisibility(layerPath)}
 														disabled={draggedLayerIndex !== null}
-														class="rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+														class="rounded p-1.5 text-[#46637A] transition-colors hover:bg-[#EEF6FB] disabled:opacity-40 disabled:cursor-not-allowed"
 														title={layerVisibility[layerPath] !== false ? 'Hide layer' : 'Show layer'}
 													>
 														{#if layerVisibility[layerPath] !== false}
@@ -1861,7 +1837,7 @@
 														ondragstart={(e) => e.stopPropagation()}
 														ondrag={(e) => e.stopPropagation()}
 														ondragover={(e) => e.stopPropagation()}
-														class="rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100 {opacityPanelOpen[layerPath] ? 'bg-blue-100 text-blue-600' : ''} disabled:opacity-40 disabled:cursor-not-allowed"
+														class="rounded p-1.5 text-[#46637A] transition-colors hover:bg-[#EEF6FB] {opacityPanelOpen[layerPath] ? 'bg-[#DBEAFE] text-[#2563EB]' : ''} disabled:opacity-40 disabled:cursor-not-allowed"
 														title="Adjust opacity"
 													>
 														<Sliders class="h-4 w-4" />
@@ -1883,7 +1859,7 @@
 												<div 
 													data-opacity-panel={layerPath}
 													role="group"
-													class="absolute left-0 right-0 top-full z-10 mt-1 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+													class="absolute left-0 right-0 top-full z-10 mt-1 rounded-lg border border-[#D8E1EA] bg-white p-3 shadow-lg"
 													ondragstart={(e) => e.stopPropagation()}
 													ondrag={(e) => e.stopPropagation()}
 													ondragover={(e) => e.stopPropagation()}
@@ -1892,8 +1868,8 @@
 													ondrop={(e) => e.stopPropagation()}
 												>
 													<div class="mb-2 flex items-center justify-between">
-														<span class="text-xs font-medium text-gray-700">Opacity</span>
-														<span class="text-xs text-gray-600">{Math.round(currentOpacity * 100)}%</span>
+														<span class="text-xs font-medium text-[#31506A]">Opacity</span>
+														<span class="text-xs text-[#46637A]">{Math.round(currentOpacity * 100)}%</span>
 													</div>
 													<input
 														type="range"
@@ -1905,7 +1881,7 @@
 														ondragstart={(e) => e.stopPropagation()}
 														ondrag={(e) => e.stopPropagation()}
 														ondragover={(e) => e.stopPropagation()}
-														class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-blue-600"
+														class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-[#E5EDF3] accent-[#2563EB]"
 													/>
 												</div>
 											{/if}
@@ -1915,28 +1891,25 @@
 						{/each}
 
 						{#if selectedLayers.size === 0}
-							<div class="py-8 text-center text-sm text-gray-500">
+							<div class="py-8 text-center text-sm text-[#71869A]">
 								<p>No layers selected</p>
 							</div>
 						{/if}
 					{/if}
 
 					{#if activeTab === 'available' && Object.keys(filteredGroupedDatasets).length === 0}
-						<div class="py-8 text-center text-sm text-gray-500">
+						<div class="py-8 text-center text-sm text-[#71869A]">
 							<p>No datasets found</p>
 						</div>
 					{/if}
 				</div>
-			</div>
-		</div>
+	</aside>
 
 		<!-- Main Map Area -->
-		<div class="col-span-12 lg:col-span-9">
-			<div class="sticky top-6 flex h-[calc(100vh-9rem)] flex-col rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
-				<!-- Map Container -->
-				<div
-					class="relative flex-1 min-h-0 overflow-hidden rounded-xl border border-gray-200"
-				>
+		<div class="relative h-full min-h-0">
+			<div class="map-frame h-full">
+				<div class="map-container relative flex h-full min-h-0 flex-col">
+					<div class="relative min-h-0 flex-1 overflow-hidden rounded-[10px]">
 					{#if swipeMode}
 						<!-- Swipe Mode: Overlay View with Clipping -->
 						<div class="relative h-full w-full">
@@ -1965,11 +1938,11 @@
 								<!-- Visible divider line -->
 								<div class="absolute top-0 bottom-0 w-0.5 bg-black pointer-events-none z-0"></div>
 								<!-- Holder with dots -->
-								<div class="relative w-4 h-12 bg-gray-700 rounded flex items-center justify-center shadow-lg pointer-events-none z-10">
+								<div class="relative w-4 h-12 bg-[#0F3557] rounded flex items-center justify-center shadow-lg pointer-events-none z-10">
 									<div class="flex flex-col gap-1.5">
-										<div class="w-1 h-1 bg-gray-300 rounded-full"></div>
-										<div class="w-1 h-1 bg-gray-300 rounded-full"></div>
-										<div class="w-1 h-1 bg-gray-300 rounded-full"></div>
+										<div class="w-1 h-1 bg-white/80 rounded-full"></div>
+										<div class="w-1 h-1 bg-white/80 rounded-full"></div>
+										<div class="w-1 h-1 bg-white/80 rounded-full"></div>
 									</div>
 								</div>
 							</button>
@@ -1982,53 +1955,43 @@
 						></div>
 					{/if}
 
-					<!-- Map Controls -->
-					<!-- Home Reset Button - positioned below zoom controls -->
 					<button
-						class="absolute left-12 top-[1.0rem] z-20 rounded border border-gray-200 bg-white p-1.5 shadow hover:bg-gray-100"
+						class="map-btn absolute top-3 left-[52px] z-20"
 						onclick={() => {
-							if (map) {
-								map.getView().setCenter(fromLonLat(HKH_CENTER));
-								map.getView().setZoom(HKH_ZOOM);
-							}
-							if (mapRight) {
-								mapRight.getView().setCenter(fromLonLat(HKH_CENTER));
-								mapRight.getView().setZoom(HKH_ZOOM);
-							}
+							fitMapToHkhOutline(map, 300);
+							fitMapToHkhOutline(mapRight, 300);
 						}}
 						title="Reset to Home View"
 					>
-						<House class="h-4 w-4 text-gray-700" />
+						<House class="size-4" />
 					</button>
 
-					<!-- Basemap Switcher Button -->
 					<button
 						data-basemap-button
-						class="absolute top-2 right-2 z-20 rounded border border-gray-200 bg-white p-1.5 shadow hover:bg-gray-100"
+						class="map-btn absolute top-3 right-[52px] z-20"
 						onclick={() => {
 							basemapPanelOpen = !basemapPanelOpen;
 							if (basemapPanelOpen) layerPanelOpen = false;
 						}}
 						title="Change Basemap"
 					>
-						<MapIcon class="h-4 w-4 text-gray-700" />
+						<MapIcon class="size-4" />
 					</button>
 
-					<!-- Basemap Switcher Panel -->
 					{#if basemapPanelOpen}
 						<div
 							data-basemap-panel
-							class="absolute top-10 right-2 z-20 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+							class="absolute top-14 right-[52px] z-20 w-48 overflow-hidden rounded-xl border border-[#D8E1EA] bg-white shadow-lg"
 						>
 							<div class="p-3">
-								<h3 class="mb-2 text-sm font-semibold">Basemap</h3>
+								<h3 class="mb-2 text-[11px] font-bold uppercase tracking-wider text-[#46637A]">Basemap</h3>
 								<div class="space-y-1">
 									{#each basemaps as basemap}
 										<button
-											class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
+											class="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
 											basemap.id
-												? 'bg-indigo-100 font-medium text-indigo-700'
-												: 'text-gray-700 hover:bg-gray-100'}"
+												? 'bg-[#DBEAFE] font-semibold text-[#2563EB]'
+												: 'text-[#46637A] hover:bg-[#F3F7FA]'}"
 											onclick={() => {
 												switchBasemap(basemap.id);
 												basemapPanelOpen = false;
@@ -2038,7 +2001,7 @@
 											<img
 												src={basemap.image}
 												alt={basemap.name}
-												class="h-8 w-12 rounded border border-gray-200 object-cover"
+												class="h-8 w-12 rounded border border-[#D8E1EA] object-cover"
 											/>
 										</button>
 									{/each}
@@ -2047,41 +2010,40 @@
 						</div>
 					{/if}
 
-					<!-- Layer Button -->
 					<button
 						data-layer-button
-						class="absolute top-12 right-2 z-20 rounded border border-gray-200 bg-white p-1.5 shadow hover:bg-gray-100"
+						class="map-btn absolute top-[52px] right-3 z-20"
 						onclick={() => {
 							layerPanelOpen = !layerPanelOpen;
 							if (layerPanelOpen) basemapPanelOpen = false;
 						}}
 						title="Toggle Layers"
 					>
-						<Layers class="h-4 w-4 text-gray-700" />
+						<Layers class="size-4" />
 					</button>
 
 					<!-- Layer Panel -->
 					{#if layerPanelOpen}
 						<div
 							data-layer-panel
-							class="absolute top-20 right-2 z-20 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+							class="absolute top-[92px] right-3 z-20 w-56 overflow-hidden rounded-xl border border-[#D8E1EA] bg-white shadow-lg"
 						>
 							<div class="p-3">
-								<h3 class="mb-2 text-sm font-semibold">Layers</h3>
+								<h3 class="mb-2 text-[11px] font-bold uppercase tracking-wider text-[#46637A]">Layers</h3>
 								<div class="space-y-1">
 									{#each basicLayers as layer}
 										{@const isActive = activeBasicLayers.has(layer.id)}
 										<button
 											class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors {isActive
-												? 'bg-indigo-100 font-medium text-indigo-700'
-												: 'text-gray-700 hover:bg-gray-100'}"
+												? 'bg-[#DBEAFE] font-semibold text-[#2563EB]'
+												: 'text-[#31506A] hover:bg-[#EEF6FB]'}"
 											onclick={() => toggleBasicLayer(layer.id)}
 										>
 											<div class="flex items-center gap-2 flex-1">
 												{#if isActive}
-													<CheckSquare class="h-4 w-4 fill-indigo-600 stroke-white stroke-[1.5] flex-shrink-0" />
+													<CheckSquare class="h-4 w-4 fill-[#2563EB] stroke-white stroke-[1.5] flex-shrink-0" />
 												{:else}
-													<Square class="h-4 w-4 stroke-gray-400 stroke-[1.5] flex-shrink-0" />
+													<Square class="h-4 w-4 stroke-[#8A9BAD] stroke-[1.5] flex-shrink-0" />
 												{/if}
 												<span class="flex-1">{layer.name}</span>
 											</div>
@@ -2101,28 +2063,32 @@
 								{@const topLayerPath = layerOrder[0]}
 								{@const topLegend = legendData[topLayerPath]}
 								<div
-									class="absolute bottom-2 left-2 z-20 w-56 max-h-[50vh] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+									class="pointer-events-none absolute inset-0 z-20"
+									style="clip-path: inset(0 {100 - swipePosition}% 0 0);"
 								>
+									<div
+										class="pointer-events-auto absolute bottom-2 left-2 w-56 max-h-[50vh] overflow-hidden rounded-xl border border-[#D8E1EA] bg-white shadow-lg"
+									>
 									<!-- Legend Header -->
 									<button
-										class="flex w-full items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+										class="flex w-full items-center justify-between p-3 text-left hover:bg-[#F3F7FA] transition-colors"
 										onclick={() => (leftLegendCollapsed = !leftLegendCollapsed)}
 									>
 										<div class="flex items-center gap-2">
-											<List class="h-4 w-4 text-gray-600" />
-											<h3 class="text-sm font-semibold text-gray-800">Left Map</h3>
+											<List class="h-4 w-4 text-[#46637A]" />
+											<h3 class="text-sm font-semibold text-[#17324D]">Left Map</h3>
 										</div>
 										{#if leftLegendCollapsed}
-											<ChevronUp class="h-4 w-4 text-gray-600" />
+											<ChevronUp class="h-4 w-4 text-[#46637A]" />
 										{:else}
-											<ChevronDown class="h-4 w-4 text-gray-600" />
+											<ChevronDown class="h-4 w-4 text-[#46637A]" />
 										{/if}
 									</button>
 									
 									{#if !leftLegendCollapsed}
-										<div class="max-h-[calc(50vh-3.5rem)] overflow-y-auto border-t border-gray-100">
+										<div class="max-h-[calc(50vh-3.5rem)] overflow-y-auto border-t border-[#E0E7EE]">
 											<div class="p-3">
-												<h4 class="mb-2 text-xs font-semibold text-gray-700">{topLegend.name}</h4>
+												<h4 class="mb-2 text-xs font-semibold text-[#31506A]">{topLegend.name}</h4>
 												<div class="space-y-1.5">
 													{#each topLegend.items as item}
 														<div class="flex items-center gap-2">
@@ -2142,13 +2108,14 @@
 																	}}
 																/>
 															{/if}
-															<span class="text-xs text-gray-600">{item.label}</span>
+															<span class="text-xs text-[#46637A]">{item.label}</span>
 														</div>
 													{/each}
 												</div>
 											</div>
 										</div>
 									{/if}
+									</div>
 								</div>
 							{/if}
 							
@@ -2156,31 +2123,35 @@
 							{@const otherLayers = layerOrder.slice(1).filter(path => legendData[path] && layerVisibility[path] !== false)}
 							{#if otherLayers.length > 0}
 								<div
-									class="absolute bottom-2 right-2 z-20 w-56 max-h-[50vh] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+									class="pointer-events-none absolute inset-0 z-20"
+									style="clip-path: inset(0 0 0 {swipePosition}%);"
 								>
+									<div
+										class="pointer-events-auto absolute bottom-2 right-2 w-56 max-h-[50vh] overflow-hidden rounded-xl border border-[#D8E1EA] bg-white shadow-lg"
+									>
 									<!-- Legend Header -->
 									<button
-										class="flex w-full items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+										class="flex w-full items-center justify-between p-3 text-left hover:bg-[#F3F7FA] transition-colors"
 										onclick={() => (rightLegendCollapsed = !rightLegendCollapsed)}
 									>
 										<div class="flex items-center gap-2">
-											<List class="h-4 w-4 text-gray-600" />
-											<h3 class="text-sm font-semibold text-gray-800">Right Map</h3>
+											<List class="h-4 w-4 text-[#46637A]" />
+											<h3 class="text-sm font-semibold text-[#17324D]">Right Map</h3>
 										</div>
 										{#if rightLegendCollapsed}
-											<ChevronUp class="h-4 w-4 text-gray-600" />
+											<ChevronUp class="h-4 w-4 text-[#46637A]" />
 										{:else}
-											<ChevronDown class="h-4 w-4 text-gray-600" />
+											<ChevronDown class="h-4 w-4 text-[#46637A]" />
 										{/if}
 									</button>
 									
 									{#if !rightLegendCollapsed}
-										<div class="max-h-[calc(50vh-3.5rem)] overflow-y-auto border-t border-gray-100">
+										<div class="max-h-[calc(50vh-3.5rem)] overflow-y-auto border-t border-[#E0E7EE]">
 											{#each otherLayers as layerPath}
 												{@const legend = legendData[layerPath]}
-												<div class="border-b border-gray-100 last:border-b-0">
+												<div class="border-b border-[#E0E7EE] last:border-b-0">
 													<div class="p-3">
-														<h4 class="mb-2 text-xs font-semibold text-gray-700">{legend.name}</h4>
+														<h4 class="mb-2 text-xs font-semibold text-[#31506A]">{legend.name}</h4>
 														<div class="space-y-1.5">
 															{#each legend.items as item}
 																<div class="flex items-center gap-2">
@@ -2200,7 +2171,7 @@
 																			}}
 																		/>
 																	{/if}
-																	<span class="text-xs text-gray-600">{item.label}</span>
+																	<span class="text-xs text-[#46637A]">{item.label}</span>
 																</div>
 															{/each}
 														</div>
@@ -2209,37 +2180,38 @@
 											{/each}
 										</div>
 									{/if}
+									</div>
 								</div>
 							{/if}
 						{:else}
 							<!-- Normal Mode: Single legend -->
 							<div
-								class="absolute bottom-2 left-2 z-20 w-64 max-h-[60vh] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+								class="absolute bottom-2 left-2 z-20 w-64 max-h-[60vh] overflow-hidden rounded-xl border border-[#D8E1EA] bg-white shadow-lg"
 							>
 								<!-- Legend Header -->
 								<button
-									class="flex w-full items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+									class="flex w-full items-center justify-between p-3 text-left hover:bg-[#F3F7FA] transition-colors"
 									onclick={() => (legendCollapsed = !legendCollapsed)}
 								>
 									<div class="flex items-center gap-2">
-										<List class="h-4 w-4 text-gray-600" />
-										<h3 class="text-sm font-semibold text-gray-800">Legends</h3>
+										<List class="h-4 w-4 text-[#46637A]" />
+										<h3 class="text-sm font-semibold text-[#17324D]">Legends</h3>
 									</div>
 									{#if legendCollapsed}
-										<ChevronUp class="h-4 w-4 text-gray-600" />
+										<ChevronUp class="h-4 w-4 text-[#46637A]" />
 									{:else}
-										<ChevronDown class="h-4 w-4 text-gray-600" />
+										<ChevronDown class="h-4 w-4 text-[#46637A]" />
 									{/if}
 								</button>
 								
 								{#if !legendCollapsed}
-									<div class="max-h-[calc(60vh-3.5rem)] overflow-y-auto border-t border-gray-100">
+									<div class="max-h-[calc(60vh-3.5rem)] overflow-y-auto border-t border-[#E0E7EE]">
 										{#each layerOrder as layerPath}
 											{#if legendData[layerPath] && layerVisibility[layerPath] !== false}
 												{@const legend = legendData[layerPath]}
-												<div class="border-b border-gray-100 last:border-b-0">
+												<div class="border-b border-[#E0E7EE] last:border-b-0">
 													<div class="p-3">
-														<h4 class="mb-2 text-xs font-semibold text-gray-700">{legend.name}</h4>
+														<h4 class="mb-2 text-xs font-semibold text-[#31506A]">{legend.name}</h4>
 														<div class="space-y-1.5">
 															{#each legend.items as item}
 																<div class="flex items-center gap-2">
@@ -2259,7 +2231,7 @@
 																			}}
 																		/>
 																	{/if}
-																	<span class="text-xs text-gray-600">{item.label}</span>
+																	<span class="text-xs text-[#46637A]">{item.label}</span>
 																</div>
 															{/each}
 														</div>
@@ -2272,6 +2244,7 @@
 							</div>
 						{/if}
 					{/if}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -2279,37 +2252,9 @@
 </div>
 
 <style>
-	:global(.map-wrapper .map-container) {
-		height: 100% !important;
-	}
-
-	:global(.ol-viewport) {
-		width: 100% !important;
-		height: 100% !important;
-	}
-
-	/* Ensure map containers in swipe mode have proper dimensions */
-	:global(.ol-map) {
-		width: 100% !important;
-		height: 100% !important;
-	}
-
-	/* Ensure map containers fill their parent in swipe mode */
 	:global(.ol-viewport),
 	:global(.ol-overlaycontainer-stopevent) {
 		width: 100% !important;
 		height: 100% !important;
-	}
-
-	/* Position home button below zoom controls */
-	:global(.ol-zoom) {
-		margin: 0.5em;
-	}
-
-	/* Ensure home button is positioned correctly relative to zoom controls */
-	:global(.ol-zoom-in),
-	:global(.ol-zoom-out) {
-		width: 2em;
-		height: 2em;
 	}
 </style>

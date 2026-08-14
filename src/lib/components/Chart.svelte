@@ -13,7 +13,9 @@
 		showLegend = true,
 		isPyramid = false,
 		unit = '',
-		isStacked = false
+		isStacked = false,
+		height = 400,
+		legendConfig = null
 	} = $props<{
 		chartData: {
 			categories?: (string | number)[];
@@ -53,6 +55,9 @@
 			labels?: {
 				formatter?: (this: { value: number }) => string;
 				style?: any;
+				rotation?: number;
+				autoRotation?: boolean | number[];
+				useHTML?: boolean;
 			};
 			tickInterval?: number;
 			gridLineWidth?: number;
@@ -68,6 +73,21 @@
 		isPyramid?: boolean;
 		unit?: string;
 		isStacked?: boolean;
+		height?: number;
+		legendConfig?: {
+			align?: 'left' | 'center' | 'right';
+			verticalAlign?: 'top' | 'middle' | 'bottom';
+			layout?: 'horizontal' | 'vertical' | 'proximate';
+			floating?: boolean;
+			itemStyle?: Record<string, string>;
+			symbolHeight?: number;
+			symbolWidth?: number;
+			symbolRadius?: number;
+			itemMarginTop?: number;
+			itemMarginBottom?: number;
+			padding?: number;
+			width?: number;
+		} | null;
 	}>();
 
 	let chartContainer: HTMLDivElement;
@@ -103,6 +123,8 @@
 
 		try {
 			// Configure chart for population pyramid
+			const chartHeight = isPyramid ? Math.max(height, 520) : height;
+
 			let chartConfig: any = {
 				chart: {
 					type: chart_type,
@@ -110,21 +132,22 @@
 					style: {
 						fontFamily: 'Inter, system-ui, sans-serif'
 					},
-					height: 400
+					height: chartHeight
 				},
 				title: {
 					text: title,
+					margin: 12,
 					style: {
-						fontSize: '18px',
+						fontSize: '15px',
 						fontWeight: '600',
-						color: '#1e293b'
+						color: '#17324D'
 					}
 				},
 				subtitle: {
 					text: subtitle,
 					style: {
-						fontSize: '14px',
-						color: '#64748b'
+						fontSize: '12px',
+						color: '#64788B'
 					}
 				},
 				exporting: {
@@ -178,6 +201,36 @@
 						}
 					}
 				];
+			} else if (chartData.categories) {
+				const labels: Record<string, unknown> = {
+					style: {
+						color: '#64748b',
+						fontSize: '12px',
+						...xAxisConfig?.labels?.style
+					}
+				};
+				if (xAxisConfig?.labels?.rotation !== undefined) {
+					labels.rotation = xAxisConfig.labels.rotation;
+				}
+				if (xAxisConfig?.labels?.autoRotation !== undefined) {
+					labels.autoRotation = xAxisConfig.labels.autoRotation;
+				}
+				if (xAxisConfig?.labels?.useHTML !== undefined) {
+					labels.useHTML = xAxisConfig.labels.useHTML;
+				}
+				if (xAxisConfig?.labels?.formatter) {
+					labels.formatter = xAxisConfig.labels.formatter;
+				}
+
+				chartConfig.xAxis = {
+					categories: chartData.categories,
+					gridLineWidth: xAxisConfig?.gridLineWidth ?? 1,
+					gridLineColor: '#e2e8f0',
+					lineColor: '#cbd5e1',
+					tickColor: '#cbd5e1',
+					plotLines: xAxisConfig?.plotLines || [],
+					labels
+				};
 			} else {
 				chartConfig.xAxis = xAxisConfig
 					? {
@@ -187,6 +240,8 @@
 							title: xAxisConfig.title,
 							labels: {
 								formatter: xAxisConfig.labels?.formatter,
+								rotation: xAxisConfig.labels?.rotation,
+								autoRotation: xAxisConfig.labels?.autoRotation,
 								style: {
 									color: '#64748b',
 									fontSize: '12px',
@@ -201,7 +256,6 @@
 							plotLines: xAxisConfig.plotLines || []
 						}
 					: {
-							categories: chartData.categories,
 							gridLineWidth: 1,
 							gridLineColor: '#e2e8f0',
 							lineColor: '#cbd5e1',
@@ -301,7 +355,7 @@
 						// Use point.category if available (for column charts), otherwise use this.x
 						const label = this.point?.category || this.key || this.x;
 						return `<b>${this.series.name}</b><br/>
-                                ${label}: <b>${this.y.toLocaleString()}${unit ? ' ' + unit : ''}</b>`;
+                                ${label}: <b>${this.y != null ? this.y.toLocaleString() : ''}${unit ? ' ' + unit : ''}</b>`;
 					}
 				};
 			}
@@ -431,17 +485,29 @@
 			// Configure legend
 			chartConfig.legend = showLegend
 				? {
-						align: 'center',
-						verticalAlign: 'bottom',
+						align: legendConfig?.align ?? 'center',
+						verticalAlign: legendConfig?.verticalAlign ?? 'bottom',
+						layout: legendConfig?.layout ?? 'horizontal',
 						borderWidth: 0,
 						itemStyle: {
 							color: '#64748b',
 							fontSize: '12px',
-							fontWeight: '500'
+							fontWeight: '500',
+							...legendConfig?.itemStyle
 						},
 						itemHoverStyle: {
 							color: '#1e293b'
-						}
+						},
+						...(legendConfig?.floating !== undefined ? { floating: legendConfig.floating } : {}),
+						...(legendConfig?.symbolHeight !== undefined ? { symbolHeight: legendConfig.symbolHeight } : {}),
+						...(legendConfig?.symbolWidth !== undefined ? { symbolWidth: legendConfig.symbolWidth } : {}),
+						...(legendConfig?.symbolRadius !== undefined ? { symbolRadius: legendConfig.symbolRadius } : {}),
+						...(legendConfig?.itemMarginTop !== undefined ? { itemMarginTop: legendConfig.itemMarginTop } : {}),
+						...(legendConfig?.itemMarginBottom !== undefined
+							? { itemMarginBottom: legendConfig.itemMarginBottom }
+							: {}),
+						...(legendConfig?.padding !== undefined ? { padding: legendConfig.padding } : {}),
+						...(legendConfig?.width !== undefined ? { width: legendConfig.width } : {})
 					}
 				: {
 						enabled: false
@@ -478,8 +544,10 @@
 
 <div
 	bind:this={chartContainer}
-	class="w-full {isPyramid ? 'min-h-[600px]' : 'h-96 min-h-[400px]'}"
-	style={isPyramid ? 'min-height: 450px;' : 'min-height: 400px;'}
+	class="w-full"
+	style="height: {isPyramid ? Math.max(height, 520) : height}px; min-height: {isPyramid
+		? Math.max(height, 520)
+		: height}px;"
 >
 	{#if !Highcharts}
 		<div class="flex h-full items-center justify-center">

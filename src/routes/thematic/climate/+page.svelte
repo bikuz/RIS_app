@@ -4,7 +4,7 @@
 	import View from 'ol/View';
 	import TileLayer from 'ol/layer/Tile';
 	import XYZ from 'ol/source/XYZ';
-	import { fromLonLat } from 'ol/proj';
+	import { fitMapToHkhOutline, HKH_OUTLINE_CENTER } from '$lib/map/hkh-extent';
 	import ImageLayer from 'ol/layer/Image';
 	import ImageArcGISRest from 'ol/source/ImageArcGISRest';
 	import ImageWMS from 'ol/source/ImageWMS';
@@ -19,29 +19,25 @@
 		CheckCircle,
 		Layers,
 		Info,
-		ChevronUp,
 		ChevronDown,
-		ChevronsLeft,
-		ChevronsRight,
 		HelpCircle,
 		Play,
 		Pause,
 		SkipBack,
 		SkipForward,
 		Calendar,
-		List,
 		House,
-		MapIcon
+		MapIcon,
+		SlidersHorizontal
 	} from '@lucide/svelte';
+	import AccordionLayer from '$lib/components/AccordionLayer.svelte';
+	import ThemeInfoButton from '$lib/components/ThemeInfoButton.svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
 
 	let mapContainer: HTMLDivElement;
 	let map: Map | null = null;
 
-	// Hindu Kush Himalaya region coordinates (optimized for full HKH view)
-	const HKH_CENTER = [82.94924, 27.6382055]; // Longitude, Latitude - adjusted for better HKH coverage
-	const HKH_ZOOM = 4.8; // Reduced zoom to show more of the HKH region
 
 	// Track fullscreen state
 	let isFullscreen = $state(false);
@@ -52,12 +48,6 @@
 	let isPlaying = $state(false);
 	let currentTimeIndex = $state(0);
 	let playInterval: ReturnType<typeof setInterval> | null = null;
-
-	// Track iframe loading state
-	let isStoryMapLoading = $state(true);
-
-	// Generate iframe key based on layout state to force reload on layout change
-	let iframeKey = $state(0);
 
 	// Time slider functions
 	function toggleTimeSlider() {
@@ -185,8 +175,7 @@
 				// }),
 				layers: [baseMapLayer],
 				view: new View({
-					center: fromLonLat(HKH_CENTER),
-					zoom: HKH_ZOOM
+					center: HKH_OUTLINE_CENTER
 				})
 			});
 
@@ -216,6 +205,9 @@
 			// Ensure map renders properly
 			if (map) {
 				map.updateSize();
+				fitMapToHkhOutline(map);
+				// Always show the HKH Outline, layered above everything else
+				toggleBaseLayer(0, true);
 				// Load default layers after map is initialized only if a dataset is selected
 				setTimeout(() => {
 					if (currentDataset) {
@@ -227,16 +219,11 @@
 	}
 
 	onMount(() => {
-		// Initialize layout state based on screen size
-		initializeLayoutState();
-
-		// Add window resize listener for responsive layout
-		const handleResize = () => {
-			initializeLayoutState();
-		};
-		window.addEventListener('resize', handleResize);
-
 		initializeMap();
+
+		// Warm the sidebar's legend cache for every layer right away, instead of
+		// waiting on a fetch each time a layer is clicked.
+		prefetchAllLegends();
 
 		// Add resize observer to handle container size changes
 		if (typeof ResizeObserver !== 'undefined' && mapContainer) {
@@ -254,7 +241,6 @@
 
 			// Cleanup on destroy
 			return () => {
-				window.removeEventListener('resize', handleResize);
 				resizeObserver.disconnect();
 			};
 		}
@@ -5069,23 +5055,6 @@
 	// Track seasonal selection for nested radio controls - dynamic based on dataset control_options
 	let selectedSeason = $state<string>('annual');
 
-	// Layout states: 'default' | 'hide-left' | 'left-full'
-	let layoutState = $state('default');
-
-	// Function to check if screen is small (laptop, tablet, or mobile)
-	function isSmallScreen() {
-		return typeof window !== 'undefined' && window.innerWidth < 1280; // lg breakpoint
-	}
-
-	// Initialize layout based on screen size
-	function initializeLayoutState() {
-		if (isSmallScreen()) {
-			layoutState = 'hide-left';
-		} else {
-			layoutState = 'default';
-		}
-	}
-
 	// Legend state management
 	let legendData = $state<
 		Record<
@@ -5093,7 +5062,15 @@
 			{ name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }
 		>
 	>({});
-	let legendCollapsed = $state(false);
+
+	// Legend for every information layer's default state, prefetched on mount so
+	// the sidebar doesn't have to wait on a network round-trip when a layer is clicked.
+	let layerLegends = $state<
+		Record<
+			string,
+			Record<string, { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }>
+		>
+	>({});
 
 	// Track questions panel state
 	let isQuestionsPanelOpen = $state(false);
@@ -5101,8 +5078,7 @@
 		isQuestionsPanelOpen = !isQuestionsPanelOpen;
 	}
 
-	// Add new state variables for layers panel
-	let layersPanelOpen = $state(false);
+	// Base layer visibility (Outline overlay toggle, controlled programmatically)
 	let activeBaseLayers = $state<Record<number, boolean>>({});
 
 	// Basemap switcher state
@@ -5185,7 +5161,7 @@
 			let layer;
 
 			if (layerId === 0) {
-				// Apply special styling or configuration for layerId 0 (Outline)
+				// HKH Outline always sits above every climate data layer (zIndex 10) and the basemap (zIndex 0)
 				layer = new ImageLayer({
 					source: new ImageArcGISRest({
 						url: layerInfo.url,
@@ -5195,7 +5171,7 @@
 							TRANSPARENT: true
 						}
 					}),
-					zIndex: 10, // Higher z-index for outline to ensure visibility
+					zIndex: 20,
 					opacity: 0.7 // Slightly higher opacity for better visibility
 				});
 			} else {
@@ -5326,38 +5302,6 @@
 		return index !== -1 ? index : 0;
 	});
 
-	// Watch for layout state changes and update map size
-	$effect(() => {
-		// This effect runs whenever layoutState changes
-		layoutState;
-
-		// Multiple resize attempts with different timings
-		if (map && mapContainer) {
-			// Immediate attempt
-			requestAnimationFrame(() => {
-				if (map) {
-					map.updateSize();
-				}
-			});
-
-			// Delayed attempt
-			setTimeout(() => {
-				if (map) {
-					map.updateSize();
-					map.render();
-				}
-			}, 150);
-
-			// Final attempt after all transitions
-			setTimeout(() => {
-				if (map) {
-					map.updateSize();
-					map.render();
-				}
-			}, 400);
-		}
-	});
-
 	// Get layer by ID from map (your better approach)
 	const getLayerById = (layerID: string): any | null => {
 		if (!map) return null;
@@ -5369,29 +5313,6 @@
 		}
 		return null;
 	};
-
-	// Function to fetch ArcGIS legend
-	async function fetchArcGISLegend(serviceUrl: string, layerId: number) {
-		try {
-			const legendUrl = `${serviceUrl}/legend?f=json`;
-			const response = await fetch(legendUrl);
-			const data = await response.json();
-
-			const layerLegend = data.layers.find((l: any) => l.layerId === layerId);
-			if (layerLegend) {
-				return {
-					name: layerLegend.layerName,
-					items: layerLegend.legend.map((item: any) => ({
-						label: item.label,
-						imageData: `data:image/png;base64,${item.imageData}`
-					}))
-				};
-			}
-		} catch (error) {
-			console.error('Error fetching ArcGIS legend:', error);
-		}
-		return null;
-	}
 
 	// Add layer to map based on layer configuration
 	function addWMSLayer(layerConfig: any) {
@@ -5480,6 +5401,127 @@
 		});
 	}
 
+	// Resolve which map-layer configs are active for a dataset given a control state
+	// (or the dataset's own defaults when no state is passed in). Shared by the live
+	// legend fetch and the on-mount prefetch so both agree on "what's showing".
+	function resolveLayersForDataset(
+		dataset: any,
+		opts: { trendAnalysisMode?: string; temperatureRiseThreshold?: string; season?: string; year?: string } = {}
+	): any[] {
+		if (!dataset || !dataset.map_layers) return [];
+		const mapLayers = dataset.map_layers;
+
+		if (dataset.control_type === 'radio') {
+			const mode = opts.trendAnalysisMode ?? dataset.default_option ?? 'overall';
+			const selected = (mapLayers as any)[mode];
+			return selected ? (Array.isArray(selected) ? selected : [selected]) : [];
+		}
+		if (dataset.control_type === 'threshold-control') {
+			const threshold = opts.temperatureRiseThreshold ?? dataset.default_option ?? '1.5';
+			const selected = (mapLayers as any)[threshold];
+			return selected ? (Array.isArray(selected) ? selected : [selected]) : [];
+		}
+		if (dataset.control_type === 'time_slider') {
+			const year = opts.year ?? String(dataset.time_dimension?.default_year ?? '');
+			const selected = (mapLayers as any)[year];
+			return selected ? [selected] : [];
+		}
+		if (dataset.control_type === 'nested_radio') {
+			const controlOpts = dataset.control_options as any;
+			const defaultOpt = dataset.default_option as any;
+			const trend =
+				opts.trendAnalysisMode ??
+				defaultOpt?.trend_analysis ??
+				(Array.isArray(controlOpts?.trend_analysis) ? controlOpts.trend_analysis[0] : undefined);
+			const season =
+				opts.season ??
+				defaultOpt?.season ??
+				(Array.isArray(controlOpts?.seasons) ? controlOpts.seasons[0] : undefined);
+			const trendLayers = trend ? (mapLayers as any)[trend] : undefined;
+			const selected = trendLayers && season ? trendLayers[season] : undefined;
+			return selected ? (Array.isArray(selected) ? selected : [selected]) : [];
+		}
+		return [];
+	}
+
+	// Fetch a single legend entry for one map-layer config (ArcGIS or WMS/GeoServer)
+	async function fetchLegendEntryForLayer(
+		layer: any,
+		controlType: string,
+		datasetId: string
+	): Promise<{ key: string; entry: { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> } } | null> {
+		if (!layer) return null;
+
+		const uniqueKey = controlType === 'time_slider' ? `${datasetId}_timeslider` : `${layer.url}_${layer.layerIndex}`;
+
+		let legendName = layer.name;
+		if (controlType === 'time_slider') {
+			if (datasetId.includes('temp')) legendName = 'Temperature Anomaly';
+			else if (datasetId.includes('ppt')) legendName = 'Precipitation Anomaly';
+			else legendName = 'Climate Anomaly';
+		}
+
+		if (layer.mapserver === 'arcgis') {
+			try {
+				const legendUrl = `${layer.url}/legend?f=json`;
+				const response = await fetch(legendUrl);
+				const data = await response.json();
+				const targetLayerId = parseInt(layer.layerIndex);
+				const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
+				if (layerLegend) {
+					return {
+						key: uniqueKey,
+						entry: {
+							name: legendName,
+							items: layerLegend.legend.map((item: any) => ({
+								label: item.label,
+								imageData: `data:image/png;base64,${item.imageData}`
+							}))
+						}
+					};
+				}
+			} catch (error) {
+				console.error('Error fetching ArcGIS legend:', error);
+			}
+			return null;
+		}
+
+		// WMS/GeoServer layers
+		const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
+		return {
+			key: uniqueKey,
+			entry: { name: legendName, items: [{ label: legendName, imageUrl: legendUrl }] }
+		};
+	}
+
+	// Prefetch the default legend for every information layer on mount, so the
+	// sidebar can show a legend instantly instead of waiting on a fetch per click.
+	async function prefetchAllLegends() {
+		const results = await Promise.all(
+			information_layers.map(async (infoLayer) => {
+				const dataset = climateDataset.find((d) => d.id === infoLayer.dataset_id);
+				if (!dataset) return null;
+
+				const layers = resolveLayersForDataset(dataset);
+				const entries = await Promise.all(
+					layers.map((layer) => fetchLegendEntryForLayer(layer, dataset.control_type, dataset.id))
+				);
+
+				const legendMap: Record<string, { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }> = {};
+				for (const result of entries) {
+					if (result) legendMap[result.key] = result.entry;
+				}
+				return { title: infoLayer.title, legendMap };
+			})
+		);
+
+		const combined: typeof layerLegends = {};
+		for (const result of results) {
+			if (result) combined[result.title] = result.legendMap;
+		}
+		layerLegends = combined;
+	}
+
 	// Debounce timer for legend fetching
 	let legendFetchTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -5490,141 +5532,30 @@
 			clearTimeout(legendFetchTimeout);
 		}
 
-		// Debounce the legend fetch to prevent rapid requests
+		// Clear immediately (not inside the debounce) so a stale legend from the
+		// previously selected layer never flashes under the newly selected one —
+		// the sidebar falls back to that layer's prefetched legend instead.
+		legendData = {};
+
+		// Debounce the actual fetch to prevent rapid requests while e.g. scrubbing the time slider
 		legendFetchTimeout = setTimeout(async () => {
-			// Clear legend data first
-			legendData = {};
-
-			// Get all layers from the map (including base layers)
-			if (map) {
-				const layers = map.getLayers().getArray();
-
-				for (const layer of layers) {
-					// Type guard to check if layer has getSource method
-					if ('getSource' in layer && typeof layer.getSource === 'function') {
-						const source = (layer as any).getSource();
-
-						if (source instanceof ImageArcGISRest) {
-							// Handle layerId 0 explicitly, without using || that treats 0 as falsy
-							let layerId = (layer as any).get('layerId');
-							if (layerId === undefined || layerId === null) {
-								layerId = (layer as any).get('baseLayerId');
-							}
-
-							const serviceUrl = source.getUrl();
-
-							if (layerId !== undefined && layerId !== null && serviceUrl) {
-								const legendKey = `${serviceUrl}_${layerId}`;
-
-								if (!legendData[legendKey]) {
-									const legend = await fetchArcGISLegend(serviceUrl, layerId);
-									if (legend) {
-										legendData[legendKey] = legend;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
 
 			// Also fetch legend for climate data layers if dataset is selected
 			if (currentDataset && currentMapLayers) {
+				const layersToFetch = resolveLayersForDataset(currentDataset, {
+					trendAnalysisMode,
+					temperatureRiseThreshold,
+					season: selectedSeason,
+					year: timePeriods[currentTimeIndex]?.year.toString() || '2024'
+				});
 
-				// Get current layers based on control type
-				let layersToFetch: any[] = [];
-
-				if (currentDataset.control_type === 'radio') {
-					const selectedLayers = (currentMapLayers as any)[trendAnalysisMode];
-					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-				} else if (currentDataset.control_type === 'threshold-control') {
-					const selectedLayers = currentMapLayers[temperatureRiseThreshold];
-					layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-				} else if (currentDataset.control_type === 'time_slider') {
-					const currentYear = timePeriods[currentTimeIndex]?.year.toString() || '2024';
-					const currentTimeLayer = (currentMapLayers as any)[currentYear];
-					if (currentTimeLayer) {
-						layersToFetch = [currentTimeLayer];
-					}
-				} else if (currentDataset.control_type === 'nested_radio') {
-					const trendLayers = (currentMapLayers as any)[trendAnalysisMode];
-					if (trendLayers && trendLayers[selectedSeason]) {
-						const selectedLayers = trendLayers[selectedSeason];
-						layersToFetch = Array.isArray(selectedLayers) ? selectedLayers : [selectedLayers];
-					}
-				}
-
-				// Fetch legend for each climate layer
-				for (const layer of layersToFetch) {
-					if (!layer) continue;
-
-					// Use a consistent key for time slider datasets to avoid multiple legends
-					let uniqueKey: string;
-					if (currentDataset.control_type === 'time_slider') {
-						uniqueKey = `${currentDataset.id}_timeslider`; // Single consistent key for time slider
-					} else {
-						uniqueKey = `${layer.url}_${layer.layerIndex}`;
-					}
-
-					if (layer.mapserver === 'arcgis') {
-						try {
-							const legendUrl = `${layer.url}/legend?f=json`;
-							const response = await fetch(legendUrl);
-							const data = await response.json();
-
-							const targetLayerId = parseInt(layer.layerIndex);
-							const layerLegend = data.layers?.find((l: any) => l.layerId === targetLayerId);
-
-							if (layerLegend) {
-								// For time slider, use a generic name without the year based on dataset type
-								let legendName = layer.name;
-								if (currentDataset.control_type === 'time_slider') {
-									if (currentDataset.id.includes('temp')) {
-										legendName = 'Temperature Anomaly';
-									} else if (currentDataset.id.includes('ppt')) {
-										legendName = 'Precipitation Anomaly';
-									} else {
-										legendName = 'Climate Anomaly';
-									}
-								}
-
-								legendData[uniqueKey] = {
-									name: legendName,
-									items: layerLegend.legend.map((item: any) => ({
-										label: item.label,
-										imageData: `data:image/png;base64,${item.imageData}`
-									}))
-								};
-							}
-						} catch (error) {
-							console.error('Error fetching ArcGIS legend:', error);
-						}
-					} else {
-						// Handle WMS/GeoServer layers
-						const legendUrl = `${layer.url}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=${layer.layerIndex}`;
-
-						// For time slider, use a generic name without the year based on dataset type
-						let legendName = layer.name;
-						if (currentDataset.control_type === 'time_slider') {
-							if (currentDataset.id.includes('temp')) {
-								legendName = 'Temperature Anomaly';
-							} else if (currentDataset.id.includes('ppt')) {
-								legendName = 'Precipitation Anomaly';
-							} else {
-								legendName = 'Climate Anomaly';
-							}
-						}
-
-						legendData[uniqueKey] = {
-							name: legendName,
-							items: [
-								{
-									label: legendName,
-									imageUrl: legendUrl
-								}
-							]
-						};
-					}
+				const results = await Promise.all(
+					layersToFetch.map((layer) =>
+						fetchLegendEntryForLayer(layer, currentDataset.control_type, currentDataset.id)
+					)
+				);
+				for (const result of results) {
+					if (result) legendData[result.key] = result.entry;
 				}
 			}
 
@@ -5836,828 +5767,444 @@
 
 	}
 
-	// Function to set specific layout state
-	function setLayoutState(state: 'default' | 'hide-left' | 'left-full') {
-		layoutState = state;
-
-		// Force iframe reload when expanding/collapsing story section
-		if (state === 'left-full' || state === 'default') {
-			isStoryMapLoading = true;
-			iframeKey++;
-		}
-
-		// Force map resize with multiple attempts to ensure it works
-		const forceMapResize = () => {
-			if (map && mapContainer) {
-				// Clear any existing size constraints
-				const mapElement = mapContainer;
-				mapElement.style.width = '100%';
-				mapElement.style.maxWidth = '100%';
-
-				// First immediate update
-				map.updateSize();
-
-				// Second update after a short delay
-				setTimeout(() => {
-					if (map) {
-						map.updateSize();
-						// Force a render
-						map.render();
-					}
-				}, 100);
-
-				// Third update after CSS transitions complete
-				setTimeout(() => {
-					if (map) {
-						// Force complete resize
-						const view = map.getView();
-						const currentCenter = view.getCenter();
-						const currentZoom = view.getZoom();
-
-						map.updateSize();
-						map.render();
-
-						// Restore view if it changed
-						if (currentCenter && currentZoom) {
-							view.setCenter(currentCenter);
-							view.setZoom(currentZoom);
-						}
-
-					}
-				}, 350);
-			}
-		};
-
-		// Use requestAnimationFrame to ensure DOM updates are complete
-		requestAnimationFrame(() => {
-			forceMapResize();
-		});
-	}
 </script>
 
-<!-- 3-Column Layout with Dynamic States -->
-<div class="relative grid grid-cols-12 items-stretch gap-4 lg:gap-6">
-	<!-- Floating Reopen Button - Only visible when left panel is hidden -->
-	{#if layoutState === 'hide-left'}
-		<button
-			onclick={() => setLayoutState('default')}
-			class="fixed top-[14rem] left-0 z-50 rounded-r-lg border border-l-0 border-slate-300 bg-white/50 p-2 text-slate-600 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 hover:shadow-2xl active:bg-slate-100 lg:p-1.5"
-			title="Show Story Panel"
-		>
-			<ChevronsRight class="h-5 w-5 lg:h-4 lg:w-4" />
-		</button>
-	{/if}
-	<!-- Left Sidebar - Story + Questions -->
+<svelte:head>
+	<title>Climate | ICIMOD RIS</title>
+</svelte:head>
 
-	<div
-		class="sticky top-9 col-span-12 h-[70vh] min-h-[450px] flex-1 overflow-hidden rounded-xl border border-slate-200/30 lg:col-span-3 lg:h-[calc(100vh-14rem)] lg:min-h-[550px]"
-		class:hidden={layoutState === 'hide-left'}
-		class:lg:col-span-12={layoutState === 'left-full'}
-		class:lg:h-[calc(100vh-8rem)]={layoutState === 'left-full'}
-	>
-		<!-- StoryMap Iframe Container -->
-		<div class="relative h-full w-full overflow-hidden">
-			<!-- Loading Screen -->
-			{#if isStoryMapLoading}
-				<div
-					class="absolute inset-0 z-30 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100"
-				>
-					<div class="text-center">
-						<!-- Animated Spinner -->
-						<div class="mb-4 flex justify-center">
-							<div
-								class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500"
-							></div>
-						</div>
-						<!-- Loading Text -->
-						<p class="text-sm font-medium text-slate-600">Loading Story...</p>
-						<p class="mt-1 text-xs text-slate-500">Please wait</p>
-					</div>
+<div
+	class="theme-heading sticky z-[53] flex items-start justify-between gap-4 bg-[#F1F5F9] pb-2"
+	style="top: var(--app-header-height, 6rem)"
+>
+	<div class="max-w-2xl">
+		<h1 class="text-[20px] font-semibold tracking-[-0.045em] text-[#0F3557] sm:text-[22px]">Climate</h1>
+		<p class="mt-2 max-w-2xl text-sm leading-6 text-[#64788B]">
+			The world's Third Pole and the most climate-sensitive mountain systems in the world.
+		</p>
+	</div>
+	<ThemeInfoButton
+		src="https://storymaps.arcgis.com/stories/591c56e9ae254c649df92c33c07cffce"
+		label="About climate in the HKH"
+	/>
+</div>
+
+<div class="mt-6 grid gap-4 lg:grid-cols-[0.7fr_1.7fr_0.7fr] lg:items-stretch">
+	<!-- Left: Information layers -->
+	<aside class="context-panel p-5" style="background-color: #EEF6FB">
+		<div class="flex items-center justify-between border-b border-[#E0E7EE] pb-4">
+			<div>
+				<p class="chart-kicker">Layers</p>
+				<h2 class="mt-1 text-base font-semibold text-[#17324D]">Information layer</h2>
+			</div>
+			<span class="grid size-8 place-items-center rounded-lg bg-[#E8EEF4]">
+				<SlidersHorizontal class="size-4 text-[#64788B]" />
+			</span>
+		</div>
+		<div class="mt-3 max-h-[560px] space-y-2 overflow-y-auto pr-1">
+			{#if information_layers && information_layers.length > 0}
+				{#each information_layers as layer, index}
+					<AccordionLayer
+						title={layer.title}
+						active={selectedInformationLayer === layer.title}
+						open={expandedLayer === layer.title}
+						onclick={() => {
+							selectInformationLayer(layer.title);
+							toggleLayerExpansion(layer.title);
+						}}
+					>
+						{@const activeLegend =
+							selectedInformationLayer === layer.title && Object.keys(legendData).length > 0
+								? legendData
+								: layerLegends[layer.title]}
+						{#if activeLegend && Object.keys(activeLegend).length > 0}
+							<div class="space-y-2">
+								{#each Object.keys(activeLegend) as uniqueKey}
+									<div class="space-y-1.5">
+										{#if Object.keys(activeLegend).length > 1}
+											<p class="text-[10px] font-bold uppercase tracking-wide text-[#8A9BAD]">
+												{activeLegend[uniqueKey].name}
+											</p>
+										{/if}
+										{#each activeLegend[uniqueKey].items as item}
+											<div class="flex items-center gap-2 text-[11px] text-[#46637A]">
+												{#if item.imageData}
+													<img src={item.imageData} alt={item.label} class="h-3.5 w-4 shrink-0" />
+												{:else if item.imageUrl}
+													<img src={item.imageUrl} alt={item.label} class="h-3.5 w-4 shrink-0" />
+												{/if}
+												<span>{item.label}</span>
+											</div>
+										{/each}
+									</div>
+								{/each}
+							</div>
+						{:else}
+							<p class="text-[11px] text-[#8A9BAD]">Loading legend…</p>
+						{/if}
+					</AccordionLayer>
+				{/each}
+			{:else}
+				<div class="flex h-40 flex-col items-center justify-center text-center text-[#8A9BAD]">
+					<Layers class="mx-auto mb-2 size-6" />
+					<p class="text-sm">No indicators available</p>
 				</div>
 			{/if}
+		</div>
+	</aside>
 
-			<!-- Iframe -->
-			{#key iframeKey}
-				<iframe
-					src="https://storymaps.arcgis.com/stories/591c56e9ae254c649df92c33c07cffce"
-					width="100%"
-					height="100%"
-					style="border:none;"
-					allowfullscreen
-					class="h-full w-full"
-					title="ArcGIS StoryMap - Climate"
-					onload={() => {
-						isStoryMapLoading = false;
-					}}
-				></iframe>
-			{/key}
+	<!-- Middle: Map -->
+	<div class="relative h-[60vh] min-h-[450px] lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]">
+		<div class="map-frame h-full">
+			<div class="map-container relative flex h-full flex-col">
+				<div bind:this={mapContainer} class="map-element h-full w-full overflow-hidden rounded-[10px]"></div>
 
-			<!-- Overlay Control Buttons -->
-			<div class="absolute top-2 right-5 z-20 flex items-center space-x-1 lg:space-x-2">
-				{#if layoutState !== 'left-full'}
-					<!-- Hide Left Panel Button - Show Map -->
-					<button
-						onclick={() => setLayoutState('hide-left')}
-						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-						title="Show Map"
+				<!-- Home Reset Button -->
+				<button
+					class="map-btn absolute top-3 left-[52px] z-20"
+					onclick={() => fitMapToHkhOutline(map, 300)}
+					title="Reset to Home View"
+				>
+					<House class="size-4" />
+				</button>
+
+				<!-- Basemap Switcher Button -->
+				<button
+					class="map-btn absolute top-3 right-[52px] z-20"
+					onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
+					title="Change Basemap"
+					aria-label="Change Basemap"
+				>
+					<MapIcon class="size-4" />
+				</button>
+
+				<!-- Basemap Switcher Panel -->
+				<div
+					class="absolute top-14 right-[52px] z-20 w-48 overflow-hidden rounded-xl border border-[#D8E1EA] bg-white shadow-lg transition-all duration-300 ease-in-out {basemapPanelOpen
+						? 'max-h-96 opacity-100'
+						: 'max-h-0 opacity-0'}"
+				>
+					<div class="p-3">
+						<h3 class="mb-2 text-[11px] font-bold uppercase tracking-wider text-[#46637A]">Basemap</h3>
+						<div class="space-y-1">
+							{#each basemaps as basemap}
+								<button
+									class="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
+									basemap.id
+										? 'bg-[#DBEAFE] font-semibold text-[#2563EB]'
+										: 'text-[#46637A] hover:bg-[#F3F7FA]'}"
+									onclick={() => {
+										switchBasemap(basemap.id);
+										basemapPanelOpen = false;
+									}}
+								>
+									<span class="flex-1">{basemap.name}</span>
+									<img
+										src={basemap.image}
+										alt={basemap.name}
+										class="h-8 w-12 rounded border border-[#D8E1EA] object-cover"
+									/>
+								</button>
+							{/each}
+						</div>
+					</div>
+				</div>
+
+				<!-- Dynamic Control Panel at Bottom -->
+				{#if currentDataset && currentDataset.control_type === 'time_slider'}
+					{#if !isTimeSliderVisible}
+						<!-- Time Control Toggle Button -->
+						<button
+							onclick={toggleTimeSlider}
+							class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-[#D8E1EA] bg-white/95 px-4 py-2 text-sm font-medium text-[#31506A] shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl {isFullscreen
+								? 'z-[9999]'
+								: 'z-10'}"
+							title="Show Time Controls"
+						>
+							<Calendar class="h-3.5 w-3.5" />
+							<span>Time</span>
+						</button>
+					{:else}
+						<!-- Expanded Time Slider Panel -->
+						<div
+							class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-[#D8E1EA] bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm {isFullscreen
+								? 'z-[9999]'
+								: 'z-10'}"
+						>
+							<!-- Step Backward -->
+							<button
+								onclick={stepBackward}
+								disabled={currentTimeIndex === 0}
+								class="rounded-full p-1.5 text-[#46637A] transition-all duration-200 hover:bg-[#DBEAFE] hover:text-[#2563EB] disabled:cursor-not-allowed disabled:opacity-30"
+								title="Previous Year"
+							>
+								<SkipBack class="h-3.5 w-3.5" />
+							</button>
+
+							<!-- Play/Pause -->
+							<button
+								onclick={togglePlayback}
+								class="rounded-full bg-[#2563EB] p-2 text-white shadow-sm transition-all duration-200 hover:bg-[#174D7C] hover:shadow-md"
+								title={isPlaying ? 'Pause' : 'Play'}
+							>
+								{#if isPlaying}
+									<Pause class="h-3.5 w-3.5" />
+								{:else}
+									<Play class="h-3.5 w-3.5" />
+								{/if}
+							</button>
+
+							<!-- Step Forward -->
+							<button
+								onclick={stepForward}
+								disabled={currentTimeIndex === timePeriods.length - 1}
+								class="rounded-full p-1.5 text-[#46637A] transition-all duration-200 hover:bg-[#DBEAFE] hover:text-[#2563EB] disabled:cursor-not-allowed disabled:opacity-30"
+								title="Next Year"
+							>
+								<SkipForward class="h-3.5 w-3.5" />
+							</button>
+
+							<!-- Compact Time Slider -->
+							<div class="flex items-center space-x-2">
+								<span class="min-w-[2.5rem] text-xs font-semibold text-[#2563EB]"
+									>{timePeriods[currentTimeIndex].label}</span
+								>
+								<input
+									type="range"
+									min="0"
+									max={timePeriods.length - 1}
+									bind:value={currentTimeIndex}
+									oninput={(e) => goToTime(parseInt((e.target as HTMLInputElement).value))}
+									class="compact-slider w-32"
+								/>
+							</div>
+
+							<!-- Close Button -->
+							<button
+								onclick={toggleTimeSlider}
+								class="rounded-full p-1 text-[#8A9BAD] transition-colors hover:bg-[#F3F7FA] hover:text-[#46637A]"
+								title="Collapse"
+							>
+								<ChevronDown class="h-3.5 w-3.5" />
+							</button>
+						</div>
+					{/if}
+				{:else if currentDataset && currentDataset.control_type === 'radio'}
+					<!-- Always show expanded Analysis Mode Radio Buttons Panel -->
+					<div
+						class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-[#D8E1EA] bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+							? 'z-[9999]'
+							: 'z-10'}"
 					>
-						<ChevronsLeft class="h-3.5 w-3.5" />
-					</button>
-					<!-- Expand Story Button - Desktop only -->
-					<button
-						onclick={() => setLayoutState('left-full')}
-						class="hidden rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 lg:block"
-						title="Expand Story"
+						<!-- Overall Option -->
+						<label class="flex cursor-pointer items-center space-x-2">
+							<input
+								type="radio"
+								bind:group={trendAnalysisMode}
+								value="overall"
+								class="h-3.5 w-3.5 border-[#D8E1EA] text-[#2563EB] focus:ring-[#2563EB]"
+							/>
+							<span class="text-sm font-medium text-[#31506A]">Overall</span>
+						</label>
+
+						<!-- Significant Option -->
+						<label class="flex cursor-pointer items-center space-x-2">
+							<input
+								type="radio"
+								bind:group={trendAnalysisMode}
+								value="significant"
+								class="h-3.5 w-3.5 border-[#D8E1EA] text-[#2563EB] focus:ring-[#2563EB]"
+							/>
+							<span class="text-sm font-medium text-[#31506A]">Significant</span>
+						</label>
+					</div>
+				{:else if currentDataset && currentDataset.control_type === 'nested_radio'}
+					<!-- Always show expanded Nested Radio Controls Panel (Trend Analysis + Seasons) -->
+					<div
+						class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-[#D8E1EA] bg-white/95 px-4 py-1 shadow-xl backdrop-blur-sm {isFullscreen
+							? 'z-[9999]'
+							: 'z-10'}"
 					>
-						<ChevronsRight class="h-3.5 w-3.5" />
-					</button>
-				{:else}
-					<!-- Back to Default Button -->
-					<button
-						onclick={() => setLayoutState('default')}
-						class="rounded-lg border border-slate-200/50 bg-white/90 p-1.5 text-slate-600 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-800 active:bg-slate-100 lg:p-1.5"
-						title="Back to Default"
+						<!-- Trend Analysis Section -->
+						<div class="flex items-center space-x-2">
+							{#if currentDataset.control_options && typeof currentDataset.control_options === 'object' && 'trend_analysis' in currentDataset.control_options}
+								{#each (currentDataset.control_options as any).trend_analysis as option}
+									<label class="flex cursor-pointer items-center space-x-1">
+										<input
+											type="radio"
+											bind:group={trendAnalysisMode}
+											value={option}
+											class="h-3 w-3 border-[#D8E1EA] text-[#2563EB] focus:ring-[#2563EB]"
+										/>
+										<span class="text-xs font-medium capitalize text-[#31506A]">{option}</span>
+									</label>
+								{/each}
+							{/if}
+						</div>
+
+						<!-- Separator -->
+						<div class="h-4 w-px bg-[#D8E1EA]"></div>
+
+						<!-- Seasonal Selection Section -->
+						<div class="flex items-center space-x-2">
+							{#if currentDataset.control_options && typeof currentDataset.control_options === 'object' && 'seasons' in currentDataset.control_options}
+								<div class="flex items-center space-x-0.5 rounded-full bg-[#F3F7FA] p-0.5">
+									{#each (currentDataset.control_options as any).seasons as seasonOption}
+										<label class="relative cursor-pointer">
+											<input
+												type="radio"
+												bind:group={selectedSeason}
+												value={seasonOption}
+												class="peer sr-only"
+											/>
+											<div
+												class="rounded-full px-2 py-1 text-xs font-medium text-[#46637A] transition-all duration-200 peer-checked:bg-[#2563EB] peer-checked:text-white peer-checked:shadow-sm hover:bg-[#E8EEF4]"
+											>
+												{seasonOption.charAt(0).toUpperCase() + seasonOption.slice(1)}
+											</div>
+										</label>
+									{/each}
+								</div>
+							{/if}
+						</div>
+					</div>
+				{:else if currentDataset && currentDataset.control_type === 'threshold-control'}
+					<!-- Always show expanded Temperature Rise Threshold Panel -->
+					<div
+						class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-[#D8E1EA] bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
+							? 'z-[9999]'
+							: 'z-10'}"
 					>
-						<ChevronsLeft class="h-3.5 w-3.5" />
-					</button>
+						<!-- Temperature Rise Label -->
+						<div class="flex items-center space-x-2">
+							<div class="rounded-full bg-[#2563EB] p-1">
+								<div class="h-2 w-2 rounded-full bg-white"></div>
+							</div>
+							<span class="text-sm font-medium text-[#31506A]">Temperature Rise &gt;</span>
+						</div>
+
+						<!-- Separator -->
+						<div class="h-4 w-px bg-[#D8E1EA]"></div>
+
+						<!-- Temperature Threshold Options -->
+						<div class="flex items-center space-x-0.5 rounded-full bg-[#F3F7FA] p-1">
+							{#each ['0.5', '1', '1.5', '2', '2.5'] as threshold}
+								<label class="relative cursor-pointer">
+									<input
+										type="radio"
+										bind:group={temperatureRiseThreshold}
+										value={threshold}
+										class="peer sr-only"
+									/>
+									<div
+										class="rounded-full px-2.5 py-1.5 text-xs font-medium text-[#46637A] transition-all duration-200 peer-checked:bg-[#2563EB] peer-checked:text-white peer-checked:shadow-sm hover:bg-[#E8EEF4]"
+									>
+										{threshold}°C
+									</div>
+								</label>
+							{/each}
+						</div>
+					</div>
 				{/if}
 			</div>
 		</div>
 	</div>
 
-	<!-- Main Content Area - Unified container with common white background -->
-	<div
-		class="sticky col-span-12 lg:col-span-9"
-		class:lg:col-span-12={layoutState === 'hide-left'}
-		class:hidden={layoutState !== 'hide-left'}
-		class:lg:block={layoutState === 'default'}
-		class:lg:hidden={layoutState === 'left-full'}
-	>
-		<div class="rounded-2xl border border-white/20 bg-white p-4 shadow-xl backdrop-blur-sm lg:p-6">
-			<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
-				<!-- Left part: Map and Charts - Shows second on mobile/tablet -->
-				<div
-					class="order-2 flex min-w-0 flex-col gap-2 lg:order-1 lg:gap-3 {layoutState ===
-					'hide-left'
-						? 'flex-1'
-						: 'flex-1'}"
-				>
-					<!-- Map Section -->
-					<div
-						class="relative h-[60vh] min-h-[450px] overflow-hidden rounded-xl border border-slate-200/30 lg:h-[68vh] lg:max-h-[850px] lg:min-h-[550px]"
-					>
-						<div class="map-container flex h-full flex-col">
-							<div
-								bind:this={mapContainer}
-								class="map-element h-full w-full overflow-hidden rounded-xl"
-							></div>
-
-							<!-- Home Reset Button -->
-							<button
-								class="absolute top-15 left-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
-								onclick={() => {
-									if (map) {
-										map.getView().setCenter(fromLonLat(HKH_CENTER));
-										map.getView().setZoom(HKH_ZOOM);
-									}
-								}}
-								title="Reset to Home View"
-							>
-								<House class="h-3.5 w-3.5 text-slate-800" />
-							</button>
-
-							<!-- Basemap Switcher Button -->
-							<button
-								class="absolute top-10 right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100 focus:outline focus:outline-1 focus:outline-black"
-								onclick={() => (basemapPanelOpen = !basemapPanelOpen)}
-								title="Change Basemap"
-								aria-label="Change Basemap"
-							>
-								<MapIcon class="h-3.5 w-3.5 text-slate-800" />
-							</button>
-
-							<!-- Basemap Switcher Panel -->
-							<div
-								class="absolute top-[4rem] right-10 z-20 w-48 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {basemapPanelOpen
-									? 'max-h-96 opacity-100'
-									: 'max-h-0 opacity-0'}"
-							>
-								<div class="p-3">
-									<h3 class="mb-2 text-sm font-semibold">Basemap</h3>
-									<div class="space-y-1">
-										{#each basemaps as basemap}
-											<button
-												class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors {selectedBasemap ===
-												basemap.id
-													? 'bg-indigo-100 font-medium text-indigo-700'
-													: 'text-slate-700 hover:bg-gray-100'}"
-												onclick={() => {
-													switchBasemap(basemap.id);
-													basemapPanelOpen = false;
-												}}
-											>
-												<span class="flex-1">{basemap.name}</span>
-												<img
-													src={basemap.image}
-													alt={basemap.name}
-													class="h-8 w-12 rounded border border-slate-200 object-cover"
-												/>
-											</button>
-										{/each}
-									</div>
-								</div>
-							</div>
-
-							<!-- Layer Toggler Button -->
-							<button
-								class="absolute top-[4.5rem] right-2 z-20 rounded border border-slate-200/50 bg-white p-1 shadow hover:bg-gray-100"
-								onclick={() => (layersPanelOpen = !layersPanelOpen)}
-							>
-								{#if layersPanelOpen}
-									<ChevronsRight class="h-3.5 w-3.5" />
-								{:else}
-									<Layers class="h-3.5 w-3.5" />
-								{/if}
-							</button>
-
-							<!-- Layer Toggler Panel -->
-							<div
-								class="absolute top-[6rem] right-10 z-20 w-40 overflow-hidden rounded-lg border border-slate-200/50 bg-white shadow-lg transition-all duration-300 ease-in-out {layersPanelOpen
-									? 'max-h-96 opacity-100'
-									: 'max-h-0 opacity-0'}"
-							>
-								<div class="p-3">
-									<h3 class="mb-2 text-sm font-semibold">Base Layers</h3>
-									<div class="space-y-2">
-										{#each baseLayers as layerInfo}
-											<label class="flex items-center space-x-2 text-sm">
-												<input
-													type="checkbox"
-													checked={!!activeBaseLayers[layerInfo.id]}
-													onchange={(e) => {
-														const target = e.target as HTMLInputElement;
-														toggleBaseLayer(layerInfo.id, target.checked);
-														target.blur(); // Removes focus from the checkbox
-													}}
-													class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-												/>
-												<span>{layerInfo.name}</span>
-											</label>
-										{/each}
-									</div>
-								</div>
-							</div>
-
-							<!-- Dynamic Control Panel at Bottom -->
-							{#if currentDataset && currentDataset.control_type === 'time_slider'}
-								{#if !isTimeSliderVisible}
-									<!-- Time Control Toggle Button -->
-									<button
-										onclick={toggleTimeSlider}
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-full border border-white/30 bg-white/95 px-4 py-2 text-sm font-medium text-slate-700 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl {isFullscreen
-											? 'z-[9999]'
-											: 'z-10'}"
-										title="Show Time Controls"
-									>
-										<Calendar class="h-3.5 w-3.5" />
-										<span>Time</span>
-									</button>
-								{:else}
-									<!-- Expanded Time Slider Panel -->
-									<div
-										class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-white/30 bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm {isFullscreen
-											? 'z-[9999]'
-											: 'z-10'}"
-									>
-										<!-- Time Label -->
-										<!-- <div class="flex items-center space-x-2">
-											<Calendar class="h-3.5 w-3.5 text-blue-600" />
-											<span class="text-sm font-medium text-slate-700">Time</span>
-										</div> -->
-
-										<!-- Separator -->
-										<!-- <div class="h-4 w-px bg-slate-300"></div> -->
-
-										<!-- Step Backward -->
-										<button
-											onclick={stepBackward}
-											disabled={currentTimeIndex === 0}
-											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
-											title="Previous Year"
-										>
-											<SkipBack class="h-3.5 w-3.5" />
-										</button>
-
-										<!-- Play/Pause -->
-										<button
-											onclick={togglePlayback}
-											class="rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 p-2 text-white shadow-sm transition-all duration-200 hover:from-blue-600 hover:to-cyan-600 hover:shadow-md"
-											title={isPlaying ? 'Pause' : 'Play'}
-										>
-											{#if isPlaying}
-												<Pause class="h-3.5 w-3.5" />
-											{:else}
-												<Play class="h-3.5 w-3.5" />
-											{/if}
-										</button>
-
-										<!-- Step Forward -->
-										<button
-											onclick={stepForward}
-											disabled={currentTimeIndex === timePeriods.length - 1}
-											class="rounded-full p-1.5 text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
-											title="Next Year"
-										>
-											<SkipForward class="h-3.5 w-3.5" />
-										</button>
-
-										<!-- Compact Time Slider -->
-										<div class="flex items-center space-x-2">
-											<span class="min-w-[2.5rem] text-xs font-medium text-blue-600"
-												>{timePeriods[currentTimeIndex].label}</span
-											>
-											<input
-												type="range"
-												min="0"
-												max={timePeriods.length - 1}
-												bind:value={currentTimeIndex}
-												oninput={(e) => goToTime(parseInt((e.target as HTMLInputElement).value))}
-												class="compact-slider w-32"
-											/>
-										</div>
-
-										<!-- Close Button -->
-										<button
-											onclick={toggleTimeSlider}
-											class="rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-											title="Collapse"
-										>
-											<ChevronDown class="h-3.5 w-3.5" />
-										</button>
-									</div>
-								{/if}
-							{:else if currentDataset && currentDataset.control_type === 'radio'}
-								<!-- Always show expanded Analysis Mode Radio Buttons Panel -->
-								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
-										? 'z-[9999]'
-										: 'z-10'}"
-								>
-									<!-- Analysis Label -->
-									<!-- <div class="flex items-center space-x-2">
-										<Layers class="h-3.5 w-3.5 text-blue-600" />
-										<span class="text-sm font-medium text-slate-700">Trend</span>
-									</div> -->
-
-									<!-- Separator -->
-									<!-- <div class="h-4 w-px bg-slate-300"></div> -->
-
-									<!-- Overall Option -->
-									<label class="flex cursor-pointer items-center space-x-2">
-										<input
-											type="radio"
-											bind:group={trendAnalysisMode}
-											value="overall"
-											class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
-										/>
-										<span class="text-sm font-medium text-slate-700">Overall</span>
-									</label>
-
-									<!-- Significant Option -->
-									<label class="flex cursor-pointer items-center space-x-2">
-										<input
-											type="radio"
-											bind:group={trendAnalysisMode}
-											value="significant"
-											class="h-3.5 w-3.5 border-gray-300 text-blue-600 focus:ring-blue-500"
-										/>
-										<span class="text-sm font-medium text-slate-700">Significant</span>
-									</label>
-								</div>
-							{:else if currentDataset && currentDataset.control_type === 'nested_radio'}
-								<!-- Always show expanded Nested Radio Controls Panel (Trend Analysis + Seasons) -->
-								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-4 py-1 shadow-xl backdrop-blur-sm {isFullscreen
-										? 'z-[9999]'
-										: 'z-10'}"
-								>
-									<!-- Trend Analysis Section -->
-									<div class="flex items-center space-x-2">
-										{#if currentDataset.control_options && typeof currentDataset.control_options === 'object' && 'trend_analysis' in currentDataset.control_options}
-											{#each (currentDataset.control_options as any).trend_analysis as option}
-												<label class="flex cursor-pointer items-center space-x-1">
-													<input
-														type="radio"
-														bind:group={trendAnalysisMode}
-														value={option}
-														class="h-3 w-3 border-gray-300 text-blue-600 focus:ring-blue-500"
-													/>
-													<span class="text-xs font-medium text-slate-700 capitalize">{option}</span
-													>
-												</label>
-											{/each}
-										{/if}
-									</div>
-
-									<!-- Separator -->
-									<div class="h-4 w-px bg-slate-300"></div>
-
-									<!-- Seasonal Selection Section -->
-									<div class="flex items-center space-x-2">
-										<!-- Season Options as Toggle Buttons -->
-										{#if currentDataset.control_options && typeof currentDataset.control_options === 'object' && 'seasons' in currentDataset.control_options}
-											<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-0.5">
-												{#each (currentDataset.control_options as any).seasons as seasonOption}
-													<label class="relative cursor-pointer">
-														<input
-															type="radio"
-															bind:group={selectedSeason}
-															value={seasonOption}
-															class="peer sr-only"
-														/>
-														<div
-															class="rounded-full px-2 py-1 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {selectedSeason ===
-															seasonOption
-																? 'text-white'
-																: 'text-slate-600'}"
-														>
-															{seasonOption.charAt(0).toUpperCase() + seasonOption.slice(1)}
-														</div>
-													</label>
-												{/each}
-											</div>
-										{/if}
-									</div>
-								</div>
-							{:else if currentDataset && currentDataset.control_type === 'threshold-control'}
-								<!-- Always show expanded Temperature Rise Threshold Panel -->
-								<div
-									class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-4 rounded-full border border-white/30 bg-white/95 px-5 py-3 shadow-xl backdrop-blur-sm {isFullscreen
-										? 'z-[9999]'
-										: 'z-10'}"
-								>
-									<!-- Temperature Rise Label -->
-									<div class="flex items-center space-x-2">
-										<div class="rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 p-1">
-											<div class="h-2 w-2 rounded-full bg-white"></div>
-										</div>
-										<span class="text-sm font-medium text-slate-700">Temperature Rise > </span>
-									</div>
-
-									<!-- Separator -->
-									<div class="h-4 w-px bg-slate-300"></div>
-
-									<!-- Temperature Threshold Options as Slider-like Radio Buttons -->
-									<div class="flex items-center space-x-0.5 rounded-full bg-slate-100/80 p-1">
-										<!-- 0.5°C Option -->
-										<label class="relative cursor-pointer">
-											<input
-												type="radio"
-												bind:group={temperatureRiseThreshold}
-												value="0.5"
-												class="peer sr-only"
-											/>
-											<div
-												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {temperatureRiseThreshold ===
-												'0.5'
-													? 'text-white'
-													: 'text-slate-600'}"
-											>
-												0.5°C
-											</div>
-										</label>
-
-										<!-- 1°C Option -->
-										<label class="relative cursor-pointer">
-											<input
-												type="radio"
-												bind:group={temperatureRiseThreshold}
-												value="1"
-												class="peer sr-only"
-											/>
-											<div
-												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {temperatureRiseThreshold ===
-												'1'
-													? 'text-white'
-													: 'text-slate-600'}"
-											>
-												1°C
-											</div>
-										</label>
-
-										<!-- 1.5°C Option -->
-										<label class="relative cursor-pointer">
-											<input
-												type="radio"
-												bind:group={temperatureRiseThreshold}
-												value="1.5"
-												class="peer sr-only"
-											/>
-											<div
-												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {temperatureRiseThreshold ===
-												'1.5'
-													? 'text-white'
-													: 'text-slate-600'}"
-											>
-												1.5°C
-											</div>
-										</label>
-
-										<!-- 2°C Option -->
-										<label class="relative cursor-pointer">
-											<input
-												type="radio"
-												bind:group={temperatureRiseThreshold}
-												value="2"
-												class="peer sr-only"
-											/>
-											<div
-												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {temperatureRiseThreshold ===
-												'2'
-													? 'text-white'
-													: 'text-slate-600'}"
-											>
-												2°C
-											</div>
-										</label>
-
-										<!-- 2.5°C Option -->
-										<label class="relative cursor-pointer">
-											<input
-												type="radio"
-												bind:group={temperatureRiseThreshold}
-												value="2.5"
-												class="peer sr-only"
-											/>
-											<div
-												class="rounded-full px-2.5 py-1.5 text-xs font-medium transition-all duration-200 peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500 peer-checked:text-white peer-checked:shadow-sm hover:bg-slate-200/60 peer-checked:hover:from-blue-600 peer-checked:hover:to-cyan-600 {temperatureRiseThreshold ===
-												'2.5'
-													? 'text-white'
-													: 'text-slate-600'}"
-											>
-												2.5°C
-											</div>
-										</label>
-									</div>
-								</div>
-							{/if}
-
-							<!-- Legend Panel - Bottom Right -->
-							{#if currentDataset && Object.keys(legendData).length > 0}
-								<div class="absolute right-4 bottom-4 {isFullscreen ? 'z-[9999]' : 'z-10'}">
-									<!-- Legend Toggle Button -->
-									<button
-										class="mb-2 flex w-full items-center justify-between rounded-lg border border-white/30 bg-white/95 p-2 text-sm shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-2xl"
-										onclick={() => (legendCollapsed = !legendCollapsed)}
-									>
-										<div class="flex items-center space-x-2">
-											<List class="h-3.5 w-3.5 text-blue-600" />
-											{#if !legendCollapsed}
-												<span class="font-medium text-slate-700">Legend</span>
-											{/if}
-										</div>
-										<!-- <svg
-											class="h-3.5 w-3.5 transform text-slate-600 transition-transform duration-300 {legendCollapsed
-												? 'rotate-180'
-												: ''}"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M19 9l-7 7-7-7"
-											/>
-										</svg> -->
-									</button>
-
-									<!-- Legend Content -->
-									{#if !legendCollapsed}
-										<div
-											class="max-w-xs rounded-lg border border-white/30 bg-white/95 p-3 shadow-xl backdrop-blur-sm"
-										>
-											<div class="max-h-[320px] space-y-4 overflow-y-auto">
-												{#each Object.keys(legendData) as uniqueKey}
-													<div class="space-y-2">
-														<h4 class="text-sm font-semibold text-slate-800">
-															{legendData[uniqueKey].name}
-														</h4>
-														<div class="space-y-1">
-															{#each legendData[uniqueKey].items as item}
-																<div class="flex items-center space-x-2">
-																	{#if item.imageData}
-																		<img
-																			src={item.imageData}
-																			alt={item.label}
-																			class="h-4 w-5 flex-shrink-0"
-																		/>
-																	{:else if item.imageUrl}
-																		<img
-																			src={item.imageUrl}
-																			alt={item.label}
-																			class="h-4 w-5 flex-shrink-0"
-																		/>
-																	{/if}
-																	<span class="text-xs text-slate-700">{item.label}</span>
-																</div>
-															{/each}
-														</div>
-													</div>
-												{/each}
-											</div>
-										</div>
-									{/if}
-								</div>
-							{/if}
-						</div>
-					</div>
-
-					<!-- Chart Section -->
-					<div class="flex-1 rounded-xl bg-slate-50/30 p-6">
-						<!-- <h3 class="mb-4 text-lg font-semibold text-slate-700">Climate Analytics</h3> -->
-						<div class="rounded-lg bg-slate-50/50">
-							{#if currentDataset && currentCharts && currentCharts.length > 0}
-								<div class="space-y-6">
-									{#each currentCharts as chart, index}
-										<div class="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
-											<Chart
-												chartData={chart.chart_data}
-												title={chart.title}
-												subtitle={(chart as any).subtitle}
-												chart_type={chart.chart_type}
-												yAxisTitle={(chart as any).yAxisTitle || 'Value'}
-												plotOptions={(chart.chart_data as any).plotOptions || {}}
-												showLegend={(chart as any).showLegend}
-											/>
-										</div>
-									{/each}
-								</div>
-								<!-- {:else}
-								<div class="flex h-80 items-center justify-center">
-									<div class="text-center text-slate-500">
-										<p class="text-sm">
-											Select a question or information layer to view related charts
-										</p>
-									</div>
-								</div> -->
-							{/if}
-						</div>
-					</div>
-				</div>
-
-				<!-- Right part: Information Layer and Questions - Shows first on mobile/tablet -->
-				<div class="order-1 w-full flex-shrink-0 lg:order-2 lg:w-75">
-					<div
-						class=" top-6 min-h-[calc(100vh-16rem)] flex-1 flex-col rounded-2xl border border-white/20 bg-white/70 pr-4 pl-4"
-					>
-						<!-- Information Layer Header -->
-						<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-							<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
-								<Layers class="h-5 w-5 text-white" />
-							</div>
-							<h3 class="text-lg font-bold text-slate-800">Information Layer</h3>
-						</div>
-
-						<!-- Information Layer Content -->
-						<div class="flex-1 overflow-y-auto">
-							{#if information_layers && information_layers.length > 0}
-								<div class="space-y-3">
-									{#each information_layers as layer, index}
-										<div
-											class="rounded-lg border backdrop-blur-sm transition-all duration-200 {selectedInformationLayer ===
-											layer.title
-												? 'border-blue-300 bg-gradient-to-r from-blue-50/90 to-cyan-50/90 shadow-md'
-												: 'border-slate-200/50 bg-gradient-to-r from-slate-50/80 to-slate-100/80'}"
-										>
-											<button
-												onclick={() => selectInformationLayer(layer.title)}
-												class="flex w-full items-start space-x-2 p-4 text-left transition-all duration-200 hover:opacity-80"
-											>
-												<h4
-													class="flex-1 text-sm font-medium {selectedInformationLayer ===
-													layer.title
-														? 'text-blue-800'
-														: 'text-slate-800'}"
-												>
-													{layer.title}
-												</h4>
-												<span
-													class="flex-shrink-0 cursor-pointer"
-													role="button"
-													tabindex="0"
-													onclick={(e) => {
-														e.stopPropagation();
-														toggleLayerExpansion(layer.title);
-													}}
-													onkeydown={(e) => {
-														if (e.key === 'Enter' || e.key === ' ') {
-															e.preventDefault();
-															e.stopPropagation();
-															toggleLayerExpansion(layer.title);
-														}
-													}}
-												>
-													{#if expandedLayer === layer.title}
-														<ChevronUp class="h-3.5 w-3.5 text-slate-600" />
-													{:else}
-														<ChevronDown class="h-3.5 w-3.5 text-slate-600" />
-													{/if}
-												</span>
-											</button>
-
-											<!-- Expandable content -->
-											{#if expandedLayer === layer.title}
-												<div
-													class="border-t border-slate-200/50 px-4 py-3 text-justify text-xs leading-relaxed text-slate-600"
-												>
-													<p>{layer.info}</p>
-													<p class="pt-1 text-left text-xs text-slate-600">
-														<span class="font-bold"> Data Source: </span>
-														{layer.source}
-													</p>
-												</div>
-											{/if}
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<div class="flex h-40 items-center justify-center">
-									<div class="text-center text-slate-500">
-										<Layers class="mx-auto mb-2 h-8 w-8 text-slate-400" />
-										<p class="text-sm">No indicators available</p>
-										<p class="text-xs">Select a question to view map layers</p>
-									</div>
-								</div>
-							{/if}
-						</div>
-
-						<!-- Questions section - now empty, button moved to fixed position -->
-						<div class="relative mt-6 flex min-h-0 flex-1 flex-col pt-6"></div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+	<!-- Right: Description panel -->
+	<aside class="context-panel">
+		{#if selectedInformationLayer}
+			{@const activeLayer = information_layers.find((l) => l.title === selectedInformationLayer)}
+			{#if activeLayer}
+				<h2 class="text-xl font-semibold tracking-[-0.03em] text-[#17324D]">{activeLayer.title}</h2>
+				<p class="mt-4 text-sm leading-6 text-[#71869A]">{activeLayer.info}</p>
+				<p class="mt-4 text-sm leading-6 text-[#71869A]">
+					<span class="font-semibold text-[#46637A]">Data Source: </span>{activeLayer.source}
+				</p>
+			{/if}
+		{:else}
+			<p class="text-sm leading-6 text-[#71869A]">Select a layer to see its description.</p>
+		{/if}
+	</aside>
 </div>
 
-<!-- Fixed Floating Questions Button and Panel -->
-{#if layoutState !== 'left-full'}
-	<div class="fixed right-12 bottom-6 z-50 flex flex-col items-end">
-		{#if isQuestionsPanelOpen}
-			<div
-				class="questions-panel mb-4 flex h-80 w-80 origin-bottom-right scale-100 transform flex-col rounded-2xl border border-white/20 bg-white/95 px-4 py-4 opacity-100 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
-			>
-				<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
-					<div class="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 p-2">
-						<Info class="h-3.5 w-3.5 text-white" />
-					</div>
-					<h3 class="text-base font-bold text-slate-800">Explore Questions</h3>
-				</div>
-
-				<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
-					{#each questions as questionItem, index}
-						<button
-							class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
-							questionItem.id
-								? 'border-blue-500 bg-blue-50 shadow-md'
-								: 'border-slate-200/50 bg-white/50 hover:border-blue-300 hover:bg-blue-50/70 hover:shadow-sm'}"
-							onclick={() => selectQuestion(questionItem.id)}
-						>
-							<div class="flex items-start space-x-2">
-								<div class="mt-1 flex-shrink-0">
-									{#if selectedQuestionId === questionItem.id}
-										<CheckCircle class="h-3.5 w-3.5 text-blue-600" />
-									{:else}
-										<div
-											class="h-3.5 w-3.5 rounded-full border-2 border-slate-300 group-hover:border-blue-400"
-										></div>
-									{/if}
-								</div>
-								<p
-									class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
-										? 'font-medium text-blue-700'
-										: 'text-slate-600 group-hover:text-slate-800'}"
-								>
-									{questionItem.question}
-								</p>
-							</div>
-						</button>
-					{/each}
-				</div>
+<!-- Chart Section -->
+{#if currentDataset && currentCharts && currentCharts.length > 0}
+	<div
+		class="mt-6 grid gap-4 {currentCharts.length === 1
+			? ''
+			: currentCharts.length === 2
+				? 'sm:grid-cols-2'
+				: 'sm:grid-cols-2 xl:grid-cols-3'}"
+	>
+		{#each currentCharts as chart, index}
+			<div class="data-card">
+				<Chart
+					chartData={chart.chart_data}
+					title={chart.title}
+					subtitle={(chart as any).subtitle}
+					chart_type={chart.chart_type}
+					yAxisTitle={(chart as any).yAxisTitle || 'Value'}
+					plotOptions={(chart.chart_data as any).plotOptions || {}}
+					showLegend={(chart as any).showLegend}
+					height={260}
+				/>
 			</div>
-		{/if}
-
-		<button
-			onclick={toggleQuestionsPanel}
-			class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl"
-			aria-label="Toggle questions panel"
-		>
-			<HelpCircle class="h-6 w-6" />
-		</button>
+		{/each}
 	</div>
 {/if}
+
+<!-- Fixed Floating Questions Button and Panel -->
+<div class="fixed right-8 bottom-6 z-50 flex flex-col items-end">
+	{#if isQuestionsPanelOpen}
+		<div
+			class="mb-4 flex h-80 w-80 origin-bottom-right flex-col rounded-2xl border border-[#D8E1EA] bg-white/95 px-4 py-4 shadow-xl backdrop-blur-sm transition-all duration-300 ease-in-out"
+		>
+			<div class="mb-4 flex flex-shrink-0 items-center space-x-3">
+				<div class="rounded-lg bg-[#2563EB] p-2">
+					<Info class="h-3.5 w-3.5 text-white" />
+				</div>
+				<h3 class="text-base font-bold text-[#17324D]">Explore Questions</h3>
+			</div>
+
+			<div class="max-h-60 flex-1 space-y-3 overflow-y-auto">
+				{#each questions as questionItem, index}
+					<button
+						class="group w-full cursor-pointer rounded-lg border p-3 text-left transition-all duration-200 {selectedQuestionId ===
+						questionItem.id
+							? 'border-[#2563EB] bg-[#DBEAFE] shadow-md'
+							: 'border-[#D8E1EA] bg-white/50 hover:border-[#93C5FD] hover:bg-[#EEF6FB] hover:shadow-sm'}"
+						onclick={() => selectQuestion(questionItem.id)}
+					>
+						<div class="flex items-start space-x-2">
+							<div class="mt-1 flex-shrink-0">
+								{#if selectedQuestionId === questionItem.id}
+									<CheckCircle class="h-3.5 w-3.5 text-[#2563EB]" />
+								{:else}
+									<div class="h-3.5 w-3.5 rounded-full border-2 border-[#D8E1EA] group-hover:border-[#93C5FD]"></div>
+								{/if}
+							</div>
+							<p
+								class="text-xs leading-relaxed {selectedQuestionId === questionItem.id
+									? 'font-medium text-[#174D7C]'
+									: 'text-[#64788B] group-hover:text-[#31506A]'}"
+							>
+								{questionItem.question}
+							</p>
+						</div>
+					</button>
+				{/each}
+			</div>
+		</div>
+	{/if}
+
+	<button
+		onclick={toggleQuestionsPanel}
+		class="flex h-12 w-12 items-center justify-center rounded-full bg-[#0F3557] text-white shadow-xl transition-all duration-300 hover:scale-110 hover:bg-[#174D7C] hover:shadow-2xl"
+		aria-label="Toggle questions panel"
+	>
+		<HelpCircle class="h-6 w-6" />
+	</button>
+</div>
 
 <style>
 	/* Ensure map containers resize properly */
