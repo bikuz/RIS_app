@@ -5100,7 +5100,7 @@
 		{
 			id: 'light',
 			name: 'Light',
-			url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+			url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key=cb1_2a03_1_fbf9a31c72de9a2979799ebc',
 			attribution: '© OpenStreetMap contributors, © CARTO',
 			image: lightMap
 		},
@@ -6137,6 +6137,13 @@
 				: 'sm:grid-cols-2 xl:grid-cols-3'}"
 	>
 		{#each currentCharts as chart, index}
+			{@const isSeasonalDistribution = [
+				'seasonal-temp-trend',
+				'min-temp-trend-10y',
+				'max-temp-trend-10y',
+				'seasonal-ppt-trend',
+				'seasonal-snowfall-trend-10y'
+			].includes(currentDataset.id)}
 			<div class="data-card">
 				<Chart
 					chartData={chart.chart_data}
@@ -6146,7 +6153,23 @@
 					yAxisTitle={(chart as any).yAxisTitle || 'Value'}
 					plotOptions={(chart.chart_data as any).plotOptions || {}}
 					showLegend={(chart as any).showLegend}
-					height={260}
+					xAxisConfig={(chart as any).xAxisConfig ??
+						(isSeasonalDistribution
+							? {
+									labels: {
+										rotation: -45,
+										align: 'right',
+										autoRotation: false,
+										step: 3,
+										y: 8,
+										x: 0,
+										reserveSpace: true,
+										style: { fontSize: '10px' }
+									}
+								}
+							: undefined)}
+					height={isSeasonalDistribution ? 380 : 260}
+					legendConfig={isSeasonalDistribution ? { margin: 2, padding: 2 } : undefined}
 				/>
 			</div>
 		{/each}

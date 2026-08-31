@@ -6,7 +6,9 @@
 
 	let { children } = $props();
 
-	const showFooter = $derived(!$page.route.id?.startsWith('/integrated'));
+	const showFooter = $derived(
+		!$page.route.id?.startsWith('/integrated') && !$page.route.id?.startsWith('/agent')
+	);
 </script>
 
 <svelte:head>

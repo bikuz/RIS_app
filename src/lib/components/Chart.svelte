@@ -58,6 +58,11 @@
 				rotation?: number;
 				autoRotation?: boolean | number[];
 				useHTML?: boolean;
+				step?: number;
+				y?: number;
+				x?: number;
+				align?: 'left' | 'center' | 'right';
+				reserveSpace?: boolean;
 			};
 			tickInterval?: number;
 			gridLineWidth?: number;
@@ -79,6 +84,7 @@
 			verticalAlign?: 'top' | 'middle' | 'bottom';
 			layout?: 'horizontal' | 'vertical' | 'proximate';
 			floating?: boolean;
+			margin?: number;
 			itemStyle?: Record<string, string>;
 			symbolHeight?: number;
 			symbolWidth?: number;
@@ -132,7 +138,13 @@
 					style: {
 						fontFamily: 'Inter, system-ui, sans-serif'
 					},
-					height: chartHeight
+					height: chartHeight,
+					...(typeof xAxisConfig?.labels?.rotation === 'number'
+						? {
+								marginBottom: Math.abs(xAxisConfig.labels.rotation) >= 45 ? 78 : 55,
+								spacingBottom: 4
+							}
+						: {})
 				},
 				title: {
 					text: title,
@@ -220,6 +232,21 @@
 				}
 				if (xAxisConfig?.labels?.formatter) {
 					labels.formatter = xAxisConfig.labels.formatter;
+				}
+				if (xAxisConfig?.labels?.step !== undefined) {
+					labels.step = xAxisConfig.labels.step;
+				}
+				if (xAxisConfig?.labels?.y !== undefined) {
+					labels.y = xAxisConfig.labels.y;
+				}
+				if (xAxisConfig?.labels?.x !== undefined) {
+					labels.x = xAxisConfig.labels.x;
+				}
+				if (xAxisConfig?.labels?.align !== undefined) {
+					labels.align = xAxisConfig.labels.align;
+				}
+				if (xAxisConfig?.labels?.reserveSpace !== undefined) {
+					labels.reserveSpace = xAxisConfig.labels.reserveSpace;
 				}
 
 				chartConfig.xAxis = {
@@ -498,6 +525,7 @@
 						itemHoverStyle: {
 							color: '#1e293b'
 						},
+						margin: legendConfig?.margin ?? 8,
 						...(legendConfig?.floating !== undefined ? { floating: legendConfig.floating } : {}),
 						...(legendConfig?.symbolHeight !== undefined ? { symbolHeight: legendConfig.symbolHeight } : {}),
 						...(legendConfig?.symbolWidth !== undefined ? { symbolWidth: legendConfig.symbolWidth } : {}),

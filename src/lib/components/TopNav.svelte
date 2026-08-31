@@ -2,6 +2,7 @@
 	import { Menu, X } from '@lucide/svelte';
 	import { base } from '$app/paths';
 	import { themes } from '$lib/data/themes';
+	import servirLogo from '$lib/assets/logo/logo-servir-global.png';
 	import icimodLogo from '$lib/assets/logo/logo-icimod_white.png';
 	import Logo from './Logo.svelte';
 	import ThemeMenu from './ThemeMenu.svelte';
@@ -25,7 +26,9 @@
 				<Menu class="size-5" />
 			{/if}
 		</button>
-		<div class="ml-auto hidden items-center gap-3 md:flex">
+		<div class="ml-auto hidden items-center gap-6 md:flex">
+			 
+			<img src={servirLogo} alt="SERVIR Global" class="h-6 w-auto -translate-y-1" />
 			<span
 				role="img"
 				aria-label="ICIMOD"
@@ -56,6 +59,13 @@
 					class={active === 'integrated' ? 'font-bold text-[#2563EB]' : ''}
 				>
 					Integrated
+				</a>
+				<a
+					href={`${base}/agent`}
+					onclick={() => (open = false)}
+					class={active === 'agent' ? 'font-bold text-[#2563EB]' : ''}
+				>
+					Agent
 				</a>
 				{#each themes as theme (theme.slug)}
 					<a

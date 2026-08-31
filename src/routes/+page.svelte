@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { ArrowUpRight, Mountain, MoonStar, Pentagon, Snowflake } from '@lucide/svelte';
+	import { ArrowUpRight, Bot, Mountain, MoonStar, Pentagon, Snowflake } from '@lucide/svelte';
 	import { base } from '$app/paths';
 	import TopNav from '$lib/components/TopNav.svelte';
 	import SectionEyebrow from '$lib/components/SectionEyebrow.svelte';
@@ -49,17 +49,26 @@
 					A comprehensive platform that integrates critical information about the Hindu Kush Himalaya
 					region.
 				</p>
-				<a
-					href={`${base}/integrated`}
-					class="mt-8 inline-flex items-center rounded-full bg-[#0F3557] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#174D7C]"
-				>
-					Integrated Viewer <ArrowUpRight class="ml-1.5 size-4" />
-				</a>
+				<div class="mt-8 flex flex-wrap items-center gap-3">
+					<a
+						href={`${base}/integrated`}
+						class="inline-flex items-center rounded-full bg-[#0F3557] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#174D7C]"
+					>
+						Integrated Viewer <ArrowUpRight class="ml-1.5 size-4" />
+					</a>
+					<a
+						href={`${base}/agent`}
+						class="inline-flex items-center rounded-full border border-[#C8D5E1] bg-white/70 px-5 py-3 text-sm font-semibold text-[#31506A] shadow-sm transition hover:border-[#8EA8BE] hover:bg-white hover:text-[#0F3557]"
+					>
+						<Bot class="mr-1.5 size-4" />
+						Geospatial AI
+					</a>
+				</div>
 				<div class="mt-12 grid max-w-lg grid-cols-2 gap-x-8 gap-y-7 sm:grid-cols-4">
 					<Stat value="54K" label="glaciers" note="mapped in the HKH" />
 					<Stat value="4.2M" label="sq. km" note="regional extent" />
 					<Stat value="233M+" label="people" note="across 8 countries" />
-					<Stat value="28–8,848m" label="elevation" note="vertical range" />
+					<Stat value="8,848m" label="elevation" note="vertical range" />
 				</div>
 			</div>
 			<div class="relative">

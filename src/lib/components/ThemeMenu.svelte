@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Home, Layers } from '@lucide/svelte';
+	import { Bot, Home, Layers } from '@lucide/svelte';
 	import { base } from '$app/paths';
 	import { themes } from '$lib/data/themes';
 	import { themeIcons } from '$lib/theme-icons';
@@ -27,5 +27,11 @@
 		class="theme-menu-item {active === 'integrated' ? 'theme-menu-item-active' : ''}"
 	>
 		<Layers class="size-4" strokeWidth={2} />Integrated
+	</a>
+	<a
+		href={`${base}/agent`}
+		class="theme-menu-item {active === 'agent' ? 'theme-menu-item-active' : ''}"
+	>
+		<Bot class="size-4" strokeWidth={2} />Geo AI
 	</a>
 </nav>
