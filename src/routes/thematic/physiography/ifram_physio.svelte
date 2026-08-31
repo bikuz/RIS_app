@@ -94,7 +94,7 @@
 		{
 			id: 'light',
 			name: 'Light',
-			url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+			url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key=cb1_2a03_1_fbf9a31c72de9a2979799ebc',
 			attribution: '© OpenStreetMap contributors, © CARTO',
 			image: lightMap
 		},
