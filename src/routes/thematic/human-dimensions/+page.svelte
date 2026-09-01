@@ -14,9 +14,10 @@
 	import osmMap from '$lib/assets/images/basemaps/osm-map.png';
 	import satelliteMap from '$lib/assets/images/basemaps/satellite-map.png';
 	import terrainMap from '$lib/assets/images/basemaps/terrain-map.png';
-	import { House, CheckCircle, Layers, Info, HelpCircle, MapIcon, SlidersHorizontal } from '@lucide/svelte';
+	import { House, CheckCircle, Layers, Info, HelpCircle, MapIcon } from '@lucide/svelte';
 	import AccordionLayer from '$lib/components/AccordionLayer.svelte';
 	import ThemeInfoButton from '$lib/components/ThemeInfoButton.svelte';
+	import DataSourceText from '$lib/components/DataSourceText.svelte';
 	import FullScreen from 'ol/control/FullScreen';
 	import { defaults as defaultControls } from 'ol/control/defaults.js';
 
@@ -879,14 +880,9 @@
 <div class="mt-6 grid gap-4 lg:grid-cols-[0.7fr_1.7fr_0.7fr] lg:items-stretch">
 	<!-- Left: Information layers -->
 	<aside class="context-panel p-5" style="background-color: #EEF6FB">
-		<div class="flex items-center justify-between border-b border-[#E0E7EE] pb-4">
-			<div>
-				<p class="chart-kicker">Layers</p>
-				<h2 class="mt-1 text-base font-semibold text-[#17324D]">Information layer</h2>
-			</div>
-			<span class="grid size-8 place-items-center rounded-lg bg-[#E8EEF4]">
-				<SlidersHorizontal class="size-4 text-[#64788B]" />
-			</span>
+		<div class="border-b border-[#E0E7EE] pb-4">
+			<p class="chart-kicker">Layers</p>
+			<h2 class="mt-1 text-base font-semibold text-[#17324D]">Information layer</h2>
 		</div>
 		<div class="mt-3 max-h-[560px] space-y-2 overflow-y-auto pr-1">
 			{#if information_layers && information_layers.length > 0}
@@ -1008,7 +1004,7 @@
 				<h2 class="text-xl font-semibold tracking-[-0.03em] text-[#17324D]">{activeLayer.title}</h2>
 				<p class="mt-4 text-sm leading-6 text-[#71869A]">{activeLayer.info}</p>
 				<p class="mt-4 break-all text-sm leading-6 text-[#71869A]">
-					<span class="font-semibold text-[#46637A]">Data Source: </span>{activeLayer.source}
+					<span class="font-semibold text-[#46637A]">Data Source: </span><DataSourceText source={activeLayer.source} />
 				</p>
 			{/if}
 		{:else}

@@ -36,7 +36,7 @@ export const allMapLayers = {
 				'0.5': [
 					{
 						id: 'temp-trend-0.5',
-						name: 'Annual Temperature Trend (0.5)',
+						name: 'Annual Temp. Trend (0.5°C)',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
 						layerIndex: 1,
 						mapserver: 'arcgis'
@@ -45,7 +45,7 @@ export const allMapLayers = {
 				'1.0': [
 					{
 						id: 'temp-trend-1',
-						name: 'Annual Temperature Trend (1.0)',
+						name: 'Annual Temp. Trend (1.0°C)',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
 						layerIndex: 2,
 						mapserver: 'arcgis'
@@ -54,7 +54,7 @@ export const allMapLayers = {
 				'1.5': [
 					{
 						id: 'temp-trend-1.5',
-						name: 'Annual Temperature Trend (1.5)',
+						name: 'Annual Temp. Trend (1.5°C)',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
 						layerIndex: 3,
 						mapserver: 'arcgis'
@@ -63,7 +63,7 @@ export const allMapLayers = {
 				'2.0': [
 					{
 						id: 'temp-trend-2',
-						name: 'Annual Temperature Trend (2.0)' ,
+						name: 'Annual Temp. Trend (2.0°C)' ,
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
 						layerIndex: 4,
 						mapserver: 'arcgis'
@@ -72,7 +72,7 @@ export const allMapLayers = {
 				'2.5': [
 					{
 						id: 'temp-trend-2.5',
-						name: 'Annual Temperature Trend (2.5)',
+						name: 'Annual Temp. Trend (2.5°C)',
 						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_30Years/MapServer',
 						layerIndex: 5,
 						mapserver: 'arcgis'
@@ -133,214 +133,214 @@ export const allMapLayers = {
 		// },
 		{
 			id: 'annual-temp-anamoly-series',
-			title: 'Time Series Temperature Anomaly',
+			title: 'Temperature Anomaly',
 			map_layers: {
 				'1995': [{
 					id: 'temp-time-series-1995',
-					name: 'Temperature Anamoly 1995',
+					name: 'Temp. Anamoly 1995',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 0,
 					mapserver: 'arcgis'
 				}],
 				'1996': [{
 					id: 'temp-time-series-1996',
-					name: 'Temperature Anamoly 1996',
+					name: 'Temp. Anamoly 1996',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 1,
 					mapserver: 'arcgis'
 				}],
 				'1997': [{
 					id: 'temp-time-series-1997',
-					name: 'Temperature Anamoly 1997',
+					name: 'Temp. Anamoly 1997',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 2,
 					mapserver: 'arcgis'
 				}],
 				'1998': [{
 					id: 'temp-time-series-1998',
-					name: 'Temperature Anamoly 1998',
+					name: 'Temp. Anamoly 1998',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 3,
 					mapserver: 'arcgis'
 				}],
 				'1999': [{
 					id: 'temp-time-series-1999',
-					name: 'Temperature Anamoly 1999',
+					name: 'Temp. Anamoly 1999',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 4,
 					mapserver: 'arcgis'
 				}],
 				'2000': [{
 					id: 'temp-time-series-2000',
-					name: 'Temperature Anamoly 2000',
+					name: 'Temp. Anamoly 2000',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 5,
 					mapserver: 'arcgis'
 				}],
 				'2001': [{
 					id: 'temp-time-series-2001',
-					name: 'Temperature Anamoly 2001',
+					name: 'Temp. Anamoly 2001',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 6,
 					mapserver: 'arcgis'
 				}],
 				'2002': [{
 					id: 'temp-time-series-2002',
-					name: 'Temperature Anamoly 2002',
+					name: 'Temp. Anamoly 2002',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 7,
 					mapserver: 'arcgis'
 				}],
 				'2003': [{
 					id: 'temp-time-series-2003',
-					name: 'Temperature Anamoly 2003',
+					name: 'Temp. Anamoly 2003',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 8,
 					mapserver: 'arcgis'
 				}],
 				'2004': [{
 					id: 'temp-time-series-2004',
-					name: 'Temperature Anamoly 2004',
+					name: 'Temp. Anamoly 2004',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 9,
 					mapserver: 'arcgis'
 				}],
 				'2005': [{
 					id: 'temp-time-series-2005',
-					name: 'Temperature Anamoly 2005',
+					name: 'Temp. Anamoly 2005',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 10,
 					mapserver: 'arcgis'
 				}],
 				'2006': [{
 					id: 'temp-time-series-2006',
-					name: 'Temperature Anamoly 2006',
+					name: 'Temp. Anamoly 2006',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 11,
 					mapserver: 'arcgis'
 				}],
 				'2007': [{
 					id: 'temp-time-series-2007',
-					name: 'Temperature Anamoly 2007',
+					name: 'Temp. Anamoly 2007',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 12,
 					mapserver: 'arcgis'
 				}],
 				'2008': [{
 					id: 'temp-time-series-2008',
-					name: 'Temperature Anamoly 2008',
+					name: 'Temp. Anamoly 2008',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 13,
 					mapserver: 'arcgis'
 				}],
 				'2009': [{
 					id: 'temp-time-series-2009',
-					name: 'Temperature Anamoly 2009',
+					name: 'Temp. Anamoly 2009',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 14,
 					mapserver: 'arcgis'
 				}],
 				'2010': [{
 					id: 'temp-time-series-2010',
-					name: 'Temperature Anamoly 2010',
+					name: 'Temp. Anamoly 2010',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 15,
 					mapserver: 'arcgis'
 				}],
 				'2011': [{
 					id: 'temp-time-series-2011',
-					name: 'Temperature Anamoly 2011',
+					name: 'Temp. Anamoly 2011',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 16,
 					mapserver: 'arcgis'
 				}],
 				'2012': [{
 					id: 'temp-time-series-2012',
-					name: 'Temperature Anamoly 2012',
+					name: 'Temp. Anamoly 2012',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 17,
 					mapserver: 'arcgis'
 				}],
 				'2013': [{
 					id: 'temp-time-series-2013',
-					name: 'Temperature Anamoly 2013',
+					name: 'Temp. Anamoly 2013',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 18,
 					mapserver: 'arcgis'
 				}],
 				'2014': [{
 					id: 'temp-time-series-2014',
-					name: 'Temperature Anamoly 2014',
+					name: 'Temp. Anamoly 2014',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 19,
 					mapserver: 'arcgis'
 				}],
 				'2015': [{
 					id: 'temp-time-series-2015',
-					name: 'Temperature Anamoly 2015',
+					name: 'Temp. Anamoly 2015',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 20,
 					mapserver: 'arcgis'
 				}],
 				'2016': [{
 					id: 'temp-time-series-2016',
-					name: 'Temperature Anamoly 2016',
+					name: 'Temp. Anamoly 2016',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 21,
 					mapserver: 'arcgis'
 				}],
 				'2017': [{
 					id: 'temp-time-series-2017',
-					name: 'Temperature Anamoly 2017',
+					name: 'Temp. Anamoly 2017',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 22,
 					mapserver: 'arcgis'
 				}],
 				'2018': [{
 					id: 'temp-time-series-2018',
-					name: 'Temperature Anamoly 2018',
+					name: 'Temp. Anamoly 2018',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 23,
 					mapserver: 'arcgis'
 				}],
 				'2019': [{
 					id: 'temp-time-series-2019',
-					name: 'Temperature Anamoly 2019',
+					name: 'Temp. Anamoly 2019',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 24,
 					mapserver: 'arcgis'
 				}],
 				'2020': [{
 					id: 'temp-time-series-2020',
-					name: 'Temperature Anamoly 2020',
+					name: 'Temp. Anamoly 2020',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 25,
 					mapserver: 'arcgis'
 				}],
 				'2021': [{
 					id: 'temp-time-series-2021',
-					name: 'Temperature Anamoly 2021',
+					name: 'Temp. Anamoly 2021',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 26,
 					mapserver: 'arcgis'
 				}],
 				'2022': [{
 					id: 'temp-time-series-2022',
-					name: 'Temperature Anamoly 2022',
+					name: 'Temp. Anamoly 2022',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 27,
 					mapserver: 'arcgis'
 				}],
 				'2023': [{
 					id: 'temp-time-series-2023',
-					name: 'Temperature Anamoly 2023',
+					name: 'Temp. Anamoly 2023',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 28,
 					mapserver: 'arcgis'
 				}],
 				'2024': [{
 					id: 'temp-time-series-2024',
-					name: 'Temperature Anamoly 2024',
+					name: 'Temp. Anamoly 2024',
 					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Anomaly/MapServer',
 					layerIndex: 29,
 					mapserver: 'arcgis'
@@ -356,7 +356,7 @@ export const allMapLayers = {
 					annual: [
 						{
 							id: 'seasonal-overall-annual',
-							name: 'Annual Temperature Trend',
+							name: 'Annual Temp. Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 							layerIndex: 0,
 							mapserver: 'arcgis'
@@ -365,7 +365,7 @@ export const allMapLayers = {
 					spring: [
 						{
 							id: 'seasonal-overall-spring',
-							name: 'Spring Temperature Trend',
+							name: 'Spring Temp. Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 							layerIndex: 2,
 							mapserver: 'arcgis'
@@ -374,7 +374,7 @@ export const allMapLayers = {
 					summer: [
 						{
 							id: 'seasonal-overall-summer',
-							name: 'Summer Temperature Trend',
+							name: 'Summer Temp. Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 							layerIndex: 4,
 							mapserver: 'arcgis'
@@ -383,7 +383,7 @@ export const allMapLayers = {
 					autumn: [
 						{
 							id: 'seasonal-overall-autumn',
-							name: 'Autumn Temperature Trend',
+							name: 'Autumn Temp. Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 							layerIndex: 6,
 							mapserver: 'arcgis'
@@ -392,7 +392,7 @@ export const allMapLayers = {
 					winter: [
 						{
 							id: 'seasonal-overall-winter',
-							name: 'Winter Temperature Trend',
+							name: 'Winter Temp. Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 							layerIndex: 8,
 							mapserver: 'arcgis'
@@ -403,7 +403,7 @@ export const allMapLayers = {
 					annual: [
 						{
 							id: 'seasonal-significant-annual',
-							name: 'Annual Temperature Trend',
+							name: 'Annual Temp. Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 							layerIndex: 1,
 							mapserver: 'arcgis'
@@ -412,7 +412,7 @@ export const allMapLayers = {
 					spring: [
 						{
 							id: 'seasonal-significant-spring',
-							name: 'Spring Temperature Trend',
+							name: 'Spring Temp. Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 							layerIndex: 3,
 							mapserver: 'arcgis'
@@ -421,7 +421,7 @@ export const allMapLayers = {
 					summer: [
 						{
 							id: 'seasonal-significant-summer',
-							name: 'Summer Temperature Trend',
+							name: 'Summer Temp. Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 							layerIndex: 5,
 							mapserver: 'arcgis'
@@ -430,7 +430,7 @@ export const allMapLayers = {
 					autumn: [
 						{
 							id: 'seasonal-significant-autumn',
-							name: 'Autumn Temperature Trend',
+							name: 'Autumn Temp. Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 							layerIndex: 7,
 							mapserver: 'arcgis'
@@ -439,7 +439,7 @@ export const allMapLayers = {
 					winter: [
 						{
 							id: 'seasonal-significant-winter',
-							name: 'Winter Temperature Trend',
+							name: 'Winter Temp. Trend',
 							url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Temperature_Trend_Decadal/MapServer',
 							layerIndex: 9,
 							mapserver: 'arcgis'
@@ -553,7 +553,7 @@ export const allMapLayers = {
 		},
 		{
 			id: 'annual-ppt-anamoly-series',
-			title: 'Time Series Precipitation Anomaly',
+			title: 'Precipitation Anomaly',
 			description: 'Time series analysis of annual precipitation with temporal controls',
 			 
 			map_layers: {
@@ -771,7 +771,7 @@ export const allMapLayers = {
 		},
 		{
 			id: 'seasonal-snowfall-trend-10y',
-			title: 'Seasonal Snowfall Trend Analysis of 10 Years',
+			title: 'Seasonal Snowfall Trend',
 			 
 			map_layers: {
 				// Nested structure: trend_analysis -> season -> layer_config
@@ -873,7 +873,7 @@ export const allMapLayers = {
 		},
 		{
 			id: 'min-temp-trend-10y',
-			title: 'Annual Minimum Temperature Trend Analysis of 10 Years',
+			title: 'Annual Min. Temp.Trend',
 		 
 			map_layers: {
 				// Nested structure: trend_analysis -> season -> layer_config
@@ -975,7 +975,7 @@ export const allMapLayers = {
 		},
 		{
 			id: 'max-temp-trend-10y',
-			title: 'Annual Maximum Temperature Trend Analysis of 10 Years',
+			title: 'Annual Max. Temp. Trend',
 		 
 			map_layers: {
 				// Nested structure: trend_analysis -> season -> layer_config

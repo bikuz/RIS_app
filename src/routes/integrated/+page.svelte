@@ -25,8 +25,7 @@
 		Sliders,
 		GripVertical,
 		Columns,
-		List,
-		SlidersHorizontal
+		List
 	} from '@lucide/svelte';
 	import { themes } from '$lib/data/themes';
 	import { themeIcons } from '$lib/theme-icons';
@@ -38,6 +37,7 @@
 	import { allMapLayers } from './mapLayers.js';
 
 	let mapContainer: HTMLDivElement;
+	let mapShellEl: HTMLDivElement;
 	let map: Map | null = null;
 	
 	// Swipe mode state
@@ -501,6 +501,16 @@
 	function handleDividerMouseUp() {
 		isDraggingDivider = false;
 		// No map size updates needed - both maps are full width, just clipping changes
+	}
+
+	function toggleMapFullscreen() {
+		if (!mapShellEl) return;
+
+		if (!document.fullscreenElement) {
+			void mapShellEl.requestFullscreen();
+		} else {
+			void document.exitFullscreen();
+		}
 	}
 
 	// Dataset management state
@@ -1200,6 +1210,10 @@
 						map.updateSize();
 						map.render();
 					}
+					if (mapRight) {
+						mapRight.updateSize();
+						mapRight.render();
+					}
 				}, 100);
 			};
 
@@ -1438,14 +1452,9 @@
 	<div class="mt-3 grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_minmax(0,1.5fr)] gap-4 lg:grid-cols-[0.7fr_2.4fr] lg:grid-rows-[minmax(0,1fr)]">
 	<!-- Left Sidebar: Dataset Management -->
 	<aside class="context-panel flex h-full min-h-0 flex-col overflow-hidden p-5" style="background-color: #EEF6FB">
-		<div class="flex items-center justify-between border-b border-[#E0E7EE] pb-4">
-			<div>
-				<p class="chart-kicker">Viewer</p>
-				<h2 class="mt-1 text-base font-semibold text-[#17324D]">Datasets</h2>
-			</div>
-			<span class="grid size-8 place-items-center rounded-lg bg-[#E8EEF4]">
-				<SlidersHorizontal class="size-4 text-[#64788B]" />
-			</span>
+		<div class="border-b border-[#E0E7EE] pb-4">
+			<p class="chart-kicker">Viewer</p>
+			<h2 class="mt-1 text-base font-semibold text-[#17324D]">Datasets</h2>
 		</div>
 
 		<div class="relative mt-4">
@@ -1908,8 +1917,8 @@
 		<!-- Main Map Area -->
 		<div class="relative h-full min-h-0">
 			<div class="map-frame h-full">
-				<div class="map-container relative flex h-full min-h-0 flex-col">
-					<div class="relative min-h-0 flex-1 overflow-hidden rounded-[10px]">
+				<div bind:this={mapShellEl} class="map-container relative flex h-full min-h-0 flex-col">
+					<div class="relative min-h-0 flex-1 overflow-hidden rounded-[10px]" class:swipe-mode={swipeMode}>
 					{#if swipeMode}
 						<!-- Swipe Mode: Overlay View with Clipping -->
 						<div class="relative h-full w-full">
@@ -1977,6 +1986,20 @@
 					>
 						<MapIcon class="size-4" />
 					</button>
+
+					{#if swipeMode}
+						<div class="swipe-fullscreen-control ol-full-screen ol-unselectable ol-control z-30">
+							<button
+								type="button"
+								class={isFullscreen ? 'ol-full-screen-true' : 'ol-full-screen-false'}
+								onclick={toggleMapFullscreen}
+								title="Toggle full-screen"
+								aria-label="Toggle full-screen"
+							>
+								{isFullscreen ? '\u00d7' : '\u2922'}
+							</button>
+						</div>
+					{/if}
 
 					{#if basemapPanelOpen}
 						<div
@@ -2256,5 +2279,27 @@
 	:global(.ol-overlaycontainer-stopevent) {
 		width: 100% !important;
 		height: 100% !important;
+	}
+
+	:global(.swipe-mode .ol-overlaycontainer-stopevent .ol-full-screen) {
+		display: none !important;
+	}
+
+	:global(:fullscreen .map-container),
+	:global(:-webkit-full-screen .map-container),
+	:global(:-moz-full-screen .map-container),
+	:global(:-ms-fullscreen .map-container) {
+		position: relative !important;
+		width: 100vw !important;
+		height: 100vh !important;
+		z-index: 9998 !important;
+	}
+
+	:global(:fullscreen .absolute),
+	:global(:-webkit-full-screen .absolute),
+	:global(:-moz-full-screen .absolute),
+	:global(:-ms-fullscreen .absolute) {
+		position: fixed !important;
+		z-index: 9999 !important;
 	}
 </style>
