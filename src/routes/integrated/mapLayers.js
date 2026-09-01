@@ -1226,6 +1226,16 @@ export const allMapLayers = {
 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/GLOF/MapServer',
 				mapserver: 'arcgis'
 			},
+		},
+		{
+			id: 'pdgl',
+			title: 'Potentially Dangerous Glacial Lake',
+			map_layers: {
+				name: 'Potentially Dangerous Glacial Lake 2015',
+				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/GlacialLake/MapServer',
+				layer_id: 2,
+				mapserver: 'arcgis'
+			},
 		}
 	],
 

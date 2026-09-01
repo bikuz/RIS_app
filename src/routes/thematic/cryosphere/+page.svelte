@@ -345,6 +345,22 @@
 					}
 				]
 			}
+		},
+		{
+			id: 'pdgl',
+			charts: [],
+			control_type: 'none',
+			map_layers: {
+				default: [
+					{
+						id: 'pdgl',
+						name: 'Potentially Dangerous Glacial Lake 2015',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/GlacialLake/MapServer',
+						layerIndex: 2,
+						mapserver: 'arcgis'
+					}
+				]
+			}
 		}
 	];
 
@@ -371,6 +387,14 @@
 			dataset_id: 'glof',
 			info: 'The map represents the Glacier Lake Outburst Floods (GLOFs) events across High Mountain Asia (HMA). The dataset is sourced from the ICIMODs Regional DataBase System  which have documented 697 individual GLOFs that occurred between 1833 and 2022.',
 			source: 'ICIMOD (https://rds.icimod.org/Home/DataDetail?metadataId=1973283)'
+		},
+		{
+			id: 'info-layer-4',
+			title: 'Potentially Dangerous Glacial Lake',
+			dataset_id: 'pdgl',
+			info: 'The map shows potentially dangerous glacial lake in Koshi, Gandaki and Karnali basins classified into ranks I, II and III.',
+			source: 'ICIMOD (https://rds.icimod.org/Home/DataDetail?metadataId=1971950)',
+			report: 'ICIMOD (https://lib.icimod.org/records/p869r-n4132)'
 		}
 	];
 
@@ -831,6 +855,11 @@
 				<p class="mt-4 text-sm leading-6 text-[#71869A]">
 					<span class="font-semibold text-[#46637A]">Data Source: </span><DataSourceText source={activeLayer.source} />
 				</p>
+				{#if 'report' in activeLayer && activeLayer.report}
+					<p class="mt-4 text-sm leading-6 text-[#71869A]">
+						<span class="font-semibold text-[#46637A]">Report: </span><DataSourceText source={activeLayer.report} />
+					</p>
+				{/if}
 			{/if}
 		{:else}
 			<p class="text-sm leading-6 text-[#71869A]">Select a layer to see its description.</p>
