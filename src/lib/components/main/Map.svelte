@@ -1,14 +1,17 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import { List, HomeIcon, ChevronDown } from '@lucide/svelte';
+	import { List, HomeIcon, ChevronDown, Maximize2, Minimize2 } from '@lucide/svelte';
 
 	import '@arcgis/core/assets/esri/themes/light/main.css';
 
+	let mapRoot: HTMLDivElement;
 	let mapContainer: HTMLDivElement;
 	let view: any = null;
 	let isLoading = $state(true);
+	let isFullscreen = $state(false);
 	let wheelHandler: ((event: WheelEvent) => void) | null = null;
+	let fullscreenHandler: (() => void) | null = null;
 
 	// Camera parameters (used by the hidden debug overlay)
 	let latitude = $state(0);
@@ -67,6 +70,50 @@
 		if (layerName === 'nightTime' && nightTimeLayer) {
 			const sublayer = nightTimeLayer.findSublayerById(7);
 			if (sublayer) sublayer.visible = layerVisibility.nightTime;
+		}
+	}
+
+	function resizeSceneView() {
+		if (!view || typeof view.resize !== 'function') return;
+		const run = () => view.resize();
+		requestAnimationFrame(() => {
+			run();
+			setTimeout(run, 50);
+			setTimeout(run, 200);
+		});
+	}
+
+	function getFullscreenElement() {
+		return (
+			document.fullscreenElement ||
+			(document as any).webkitFullscreenElement ||
+			(document as any).mozFullScreenElement ||
+			(document as any).msFullscreenElement ||
+			null
+		);
+	}
+
+	async function toggleFullscreen() {
+		if (!mapRoot) return;
+
+		try {
+			if (!getFullscreenElement()) {
+				const request =
+					mapRoot.requestFullscreen?.bind(mapRoot) ||
+					(mapRoot as any).webkitRequestFullscreen?.bind(mapRoot) ||
+					(mapRoot as any).mozRequestFullScreen?.bind(mapRoot) ||
+					(mapRoot as any).msRequestFullscreen?.bind(mapRoot);
+				await request?.();
+			} else {
+				const exit =
+					document.exitFullscreen?.bind(document) ||
+					(document as any).webkitExitFullscreen?.bind(document) ||
+					(document as any).mozCancelFullScreen?.bind(document) ||
+					(document as any).msExitFullscreen?.bind(document);
+				await exit?.();
+			}
+		} catch (error) {
+			console.error('Fullscreen error:', error);
 		}
 	}
 
@@ -201,9 +248,19 @@
 			// Disable default mouse wheel zoom
 			view.navigation.mouseWheelZoomEnabled = false;
 
-			// Custom wheel handler: only zoom when Ctrl is pressed
+			const handleFullscreenChange = () => {
+				isFullscreen = getFullscreenElement() === mapRoot;
+				resizeSceneView();
+			};
+			fullscreenHandler = handleFullscreenChange;
+			document.addEventListener('fullscreenchange', handleFullscreenChange);
+			document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+			// Custom wheel handler: only zoom when Ctrl is pressed (or while fullscreen)
 			wheelHandler = (event: WheelEvent) => {
-				if (event.ctrlKey || event.metaKey) {
+				if (event.ctrlKey || event.metaKey || isFullscreen) {
 					// Zoom map when Ctrl (or Cmd on Mac) is pressed
 					event.preventDefault();
 					const delta = event.deltaY;
@@ -252,6 +309,13 @@
 
 	onDestroy(() => {
 		// Clean up on component unmount
+		if (fullscreenHandler) {
+			document.removeEventListener('fullscreenchange', fullscreenHandler);
+			document.removeEventListener('webkitfullscreenchange', fullscreenHandler);
+			document.removeEventListener('mozfullscreenchange', fullscreenHandler);
+			document.removeEventListener('MSFullscreenChange', fullscreenHandler);
+			fullscreenHandler = null;
+		}
 		if (mapContainer && wheelHandler) {
 			// Remove wheel event listener
 			mapContainer.removeEventListener('wheel', wheelHandler);
@@ -266,16 +330,18 @@
 	export { view, toggleLayer, layerVisibility };
 </script>
 
-<div class="overflow-hidden rounded-[5px] bg-[#DCEAF5]">
-	<div class="flex flex-col lg:flex-row">
-		<!-- Map Controls -->
-
-		<!-- Map Display -->
-		<div class="relative flex-1">
-			<div
-				class="map-container relative flex h-full items-center justify-center overflow-hidden rounded-[5px] sm:h-80 md:h-96 lg:h-[550px]"
-				bind:this={mapContainer}
-			>
+<div
+	class="map-3d-root overflow-hidden rounded-[5px] bg-[#DCEAF5]"
+	class:is-fullscreen={isFullscreen}
+	bind:this={mapRoot}
+>
+	<div class="relative h-full min-h-0">
+		<div
+			class="map-container relative overflow-hidden rounded-[5px] {isFullscreen
+				? 'h-full w-full'
+				: 'h-full sm:h-80 md:h-96 lg:h-[550px]'}"
+			bind:this={mapContainer}
+		>
 				{#if isLoading}
 					<div
 						class="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-gray-100"
@@ -311,8 +377,8 @@
 					</div>
 				</div>
 
-				<!-- Reset button — stacked below the ArcGIS zoom widget (top-left) -->
-				<div class="absolute top-[15px] left-[60px] z-20 overflow-hidden  shadow-md">
+				<!-- Reset button — beside the ArcGIS zoom widget (top-left) -->
+				<div class="absolute top-[15px] left-[60px] z-20 overflow-hidden shadow-md">
 					<button
 						type="button"
 						class="flex size-8 cursor-pointer items-center justify-center bg-white text-gray-600 transition hover:bg-gray-50"
@@ -321,6 +387,22 @@
 						aria-label="Reset to Home View"
 					>
 						<HomeIcon class="h-4 w-4" />
+					</button>
+				</div>
+
+				<div class="absolute top-[15px] right-[15px] z-20 overflow-hidden shadow-md">
+					<button
+						type="button"
+						class="flex size-8 cursor-pointer items-center justify-center bg-white text-gray-600 transition hover:bg-gray-50"
+						onclick={toggleFullscreen}
+						title={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+						aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+					>
+						{#if isFullscreen}
+							<Minimize2 class="h-4 w-4" />
+						{:else}
+							<Maximize2 class="h-4 w-4" />
+						{/if}
 					</button>
 				</div>
 
@@ -356,9 +438,52 @@
 			</div>
 		</div>
 	</div>
-</div>
 
 <style>
+	:global(.map-3d-root:fullscreen),
+	:global(.map-3d-root:-webkit-full-screen),
+	:global(.map-3d-root:-moz-full-screen),
+	:global(.map-3d-root:-ms-fullscreen),
+	:global(.map-3d-root.is-fullscreen) {
+		display: flex !important;
+		flex-direction: column !important;
+		width: 100% !important;
+		height: 100% !important;
+		max-height: 100% !important;
+		border-radius: 0;
+		background: #0b1a28;
+	}
+
+	:global(.map-3d-root:fullscreen > div),
+	:global(.map-3d-root:-webkit-full-screen > div),
+	:global(.map-3d-root.is-fullscreen > div),
+	:global(.map-3d-root:fullscreen .map-container),
+	:global(.map-3d-root:-webkit-full-screen .map-container),
+	:global(.map-3d-root:-moz-full-screen .map-container),
+	:global(.map-3d-root:-ms-fullscreen .map-container),
+	:global(.map-3d-root.is-fullscreen .map-container) {
+		flex: 1 1 auto !important;
+		width: 100% !important;
+		height: 100% !important;
+		min-height: 0 !important;
+		max-height: none !important;
+		border-radius: 0;
+	}
+
+	:global(.map-3d-root:fullscreen .esri-view),
+	:global(.map-3d-root:fullscreen .esri-view-root),
+	:global(.map-3d-root:fullscreen .esri-view-surface),
+	:global(.map-3d-root:-webkit-full-screen .esri-view),
+	:global(.map-3d-root:-webkit-full-screen .esri-view-root),
+	:global(.map-3d-root:-webkit-full-screen .esri-view-surface),
+	:global(.map-3d-root.is-fullscreen .esri-view),
+	:global(.map-3d-root.is-fullscreen .esri-view-root),
+	:global(.map-3d-root.is-fullscreen .esri-view-surface) {
+		width: 100% !important;
+		height: 100% !important;
+		border-radius: 0 !important;
+	}
+
 	:global(.esri-view-root) {
 		width: 100% !important;
 		height: 100% !important;
