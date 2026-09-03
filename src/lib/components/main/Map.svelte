@@ -5,13 +5,13 @@
 
 	import '@arcgis/core/assets/esri/themes/light/main.css';
 
-	let mapRoot: HTMLDivElement;
 	let mapContainer: HTMLDivElement;
 	let view: any = null;
 	let isLoading = $state(true);
 	let isFullscreen = $state(false);
 	let wheelHandler: ((event: WheelEvent) => void) | null = null;
 	let fullscreenHandler: (() => void) | null = null;
+	let resizeObserver: ResizeObserver | null = null;
 
 	// Camera parameters (used by the hidden debug overlay)
 	let latitude = $state(0);
@@ -47,13 +47,6 @@
 	function toggleLayer(layerName: string) {
 		layerVisibility[layerName] = !layerVisibility[layerName];
 
-		// Update river layer visibility if it exists
-		// if (layerName === 'river' && physioLayer) {
-		//     const sublayer = physioLayer.findSublayerById(3);
-		//     if (sublayer)
-		//         sublayer.visible = layerVisibility.river;
-		// }
-
 		if (layerName === 'hkhOutline' && hkhOutline) {
 			const sublayer = hkhOutline.findSublayerById(0);
 			if (sublayer) sublayer.visible = layerVisibility.hkhOutline;
@@ -73,16 +66,6 @@
 		}
 	}
 
-	function resizeSceneView() {
-		if (!view || typeof view.resize !== 'function') return;
-		const run = () => view.resize();
-		requestAnimationFrame(() => {
-			run();
-			setTimeout(run, 50);
-			setTimeout(run, 200);
-		});
-	}
-
 	function getFullscreenElement() {
 		return (
 			document.fullscreenElement ||
@@ -94,15 +77,15 @@
 	}
 
 	async function toggleFullscreen() {
-		if (!mapRoot) return;
+		if (!mapContainer) return;
 
 		try {
 			if (!getFullscreenElement()) {
 				const request =
-					mapRoot.requestFullscreen?.bind(mapRoot) ||
-					(mapRoot as any).webkitRequestFullscreen?.bind(mapRoot) ||
-					(mapRoot as any).mozRequestFullScreen?.bind(mapRoot) ||
-					(mapRoot as any).msRequestFullscreen?.bind(mapRoot);
+					mapContainer.requestFullscreen?.bind(mapContainer) ||
+					(mapContainer as any).webkitRequestFullscreen?.bind(mapContainer) ||
+					(mapContainer as any).mozRequestFullScreen?.bind(mapContainer) ||
+					(mapContainer as any).msRequestFullscreen?.bind(mapContainer);
 				await request?.();
 			} else {
 				const exit =
@@ -130,7 +113,6 @@
 	onMount(async () => {
 		if (!browser) return;
 
-		// Initialize your map here
 		try {
 			const [Map, SceneView, ElevationLayer, MapImageLayer, Legend] = await Promise.all([
 				import('@arcgis/core/Map'),
@@ -140,12 +122,10 @@
 				import('@arcgis/core/widgets/Legend')
 			]);
 
-			// Create elevation layer for 3D terrain
 			const elevationLayer = new ElevationLayer.default({
 				url: '//elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer'
 			});
 
-			// create HKH outline layer
 			hkhOutline = new MapImageLayer.default({
 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Outline/MapServer',
 				title: '',
@@ -157,7 +137,7 @@
 					}
 				]
 			});
-			// Create the river network layer
+
 			physioLayer = new MapImageLayer.default({
 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Physiography/MapServer',
 				title: '',
@@ -167,15 +147,9 @@
 						title: 'Mountain Region',
 						visible: layerVisibility.mountainRegion
 					}
-					// {
-					//     id:3,
-					//     title:'River',
-					//     visible:layerVisibility.river
-					// },
 				]
 			});
 
-			// create glacier layer
 			glacierLayer = new MapImageLayer.default({
 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier/MapServer',
 				title: '',
@@ -187,7 +161,7 @@
 					}
 				]
 			});
-			// create night time layer
+
 			nightTimeLayer = new MapImageLayer.default({
 				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/RIS/HKH_Demography/MapServer',
 				title: '',
@@ -201,7 +175,7 @@
 			});
 
 			const map = new Map.default({
-				basemap: 'satellite', // You can use "streets", "hybrid", "terrain", etc.
+				basemap: 'satellite',
 				ground: {
 					layers: [elevationLayer],
 					opacity: 1,
@@ -224,7 +198,6 @@
 				}
 			});
 
-			// Add collapsible legend widget
 			const legend = new Legend.default({
 				view: view,
 				style: {
@@ -233,24 +206,17 @@
 				}
 			});
 
-			// Add legend content
 			const legendContent = document.getElementById('legend-content');
 			legend.container = legendContent;
 
-			// Optional: add a Mount Everest label with Graphic + Point + TextSymbol (86.9250, 27.9881)
-
-			// Wait for view to load
 			await view.when(() => {
-				// Store the original camera position for reset functionality
 				view.goTo(initialPosition);
 			});
 
-			// Disable default mouse wheel zoom
 			view.navigation.mouseWheelZoomEnabled = false;
 
 			const handleFullscreenChange = () => {
-				isFullscreen = getFullscreenElement() === mapRoot;
-				resizeSceneView();
+				isFullscreen = getFullscreenElement() === mapContainer;
 			};
 			fullscreenHandler = handleFullscreenChange;
 			document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -258,34 +224,31 @@
 			document.addEventListener('mozfullscreenchange', handleFullscreenChange);
 			document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-			// Custom wheel handler: only zoom when Ctrl is pressed (or while fullscreen)
+			// Keep SceneView in sync whenever the container size changes
+			// (including enter/exit fullscreen).
+			resizeObserver = new ResizeObserver(() => {
+				if (view && typeof view.resize === 'function') {
+					view.resize();
+				}
+			});
+			resizeObserver.observe(mapContainer);
+
 			wheelHandler = (event: WheelEvent) => {
 				if (event.ctrlKey || event.metaKey || isFullscreen) {
-					// Zoom map when Ctrl (or Cmd on Mac) is pressed
 					event.preventDefault();
 					const delta = event.deltaY;
 					const camera = view.camera.clone();
-					
-					// Calculate zoom factor
 					const zoomFactor = delta > 0 ? 0.9 : 1.1;
-					
-					// Adjust camera altitude for zoom effect
 					camera.position.z = camera.position.z * zoomFactor;
-					
 					view.goTo(camera, { duration: 0 });
 				}
-				// When Ctrl is not pressed, allow default behavior (page scroll)
 			};
 
-			// Add wheel event listener to the map container
 			mapContainer.addEventListener('wheel', wheelHandler, { passive: false });
 
-			// 
 			isLoading = false;
 
-			// Update camera parameters on move
 			view.watch('camera', (camera: any) => {
-				// Convert camera position to geographic coordinates
 				const point = camera.position;
 				const spatialReference = view.spatialReference;
 				const geographicPoint = point.clone();
@@ -294,7 +257,6 @@
 					geographicPoint.spatialReference = spatialReference;
 				}
 
-				// Update reactive variables
 				longitude = geographicPoint.longitude;
 				latitude = geographicPoint.latitude;
 				altitude = geographicPoint.z;
@@ -308,7 +270,6 @@
 	});
 
 	onDestroy(() => {
-		// Clean up on component unmount
 		if (fullscreenHandler) {
 			document.removeEventListener('fullscreenchange', fullscreenHandler);
 			document.removeEventListener('webkitfullscreenchange', fullscreenHandler);
@@ -316,8 +277,11 @@
 			document.removeEventListener('MSFullscreenChange', fullscreenHandler);
 			fullscreenHandler = null;
 		}
+		if (resizeObserver) {
+			resizeObserver.disconnect();
+			resizeObserver = null;
+		}
 		if (mapContainer && wheelHandler) {
-			// Remove wheel event listener
 			mapContainer.removeEventListener('wheel', wheelHandler);
 		}
 		if (view && typeof view.destroy === 'function') {
@@ -326,148 +290,111 @@
 		}
 	});
 
-	// Export view + layer controls for parent component access
 	export { view, toggleLayer, layerVisibility };
 </script>
 
 <div
-	class="map-3d-root overflow-hidden rounded-[5px] bg-[#DCEAF5]"
-	class:is-fullscreen={isFullscreen}
-	bind:this={mapRoot}
+	class="map-3d-root map-container relative flex h-full items-center justify-center overflow-hidden rounded-[5px] bg-[#DCEAF5] sm:h-80 md:h-96 lg:h-[550px]"
+	bind:this={mapContainer}
 >
-	<div class="relative h-full min-h-0">
-		<div
-			class="map-container relative overflow-hidden rounded-[5px] {isFullscreen
-				? 'h-full w-full'
-				: 'h-full sm:h-80 md:h-96 lg:h-[550px]'}"
-			bind:this={mapContainer}
-		>
-				{#if isLoading}
-					<div
-						class="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-gray-100"
-					>
-						<div class="text-center">
-							<div
-								class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500"
-							></div>
-							<p class="text-gray-600">Loading 3D Map...</p>
-						</div>
-					</div>
-				{/if}
-
-				<!-- Camera parameters display -->
+	{#if isLoading}
+		<div class="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-gray-100">
+			<div class="text-center">
 				<div
-					class="bg-opacity-80 absolute right-4 bottom-4 rounded-lg bg-white p-3 text-sm shadow-md hidden"
-				>
-					<div class="grid grid-cols-2 gap-2">
-						<div class="font-semibold">Latitude:</div>
-						<div>{latitude.toFixed(6)}°</div>
-
-						<div class="font-semibold">Longitude:</div>
-						<div>{longitude.toFixed(6)}°</div>
-
-						<div class="font-semibold">Altitude:</div>
-						<div>{altitude?.toFixed(0) || 0} m</div>
-
-						<div class="font-semibold">Tilt:</div>
-						<div>{tilt?.toFixed(1) || 0}°</div>
-
-						<div class="font-semibold">Heading:</div>
-						<div>{heading?.toFixed(1) || 0}°</div>
-					</div>
-				</div>
-
-				<!-- Reset button — beside the ArcGIS zoom widget (top-left) -->
-				<div class="absolute top-[15px] left-[60px] z-20 overflow-hidden shadow-md">
-					<button
-						type="button"
-						class="flex size-8 cursor-pointer items-center justify-center bg-white text-gray-600 transition hover:bg-gray-50"
-						onclick={resetMapView}
-						title="Reset to Home View"
-						aria-label="Reset to Home View"
-					>
-						<HomeIcon class="h-4 w-4" />
-					</button>
-				</div>
-
-				<div class="absolute top-[15px] right-[15px] z-20 overflow-hidden shadow-md">
-					<button
-						type="button"
-						class="flex size-8 cursor-pointer items-center justify-center bg-white text-gray-600 transition hover:bg-gray-50"
-						onclick={toggleFullscreen}
-						title={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
-						aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
-					>
-						{#if isFullscreen}
-							<Minimize2 class="h-4 w-4" />
-						{:else}
-							<Maximize2 class="h-4 w-4" />
-						{/if}
-					</button>
-				</div>
-
-				<!-- Legend overlay -->
-				<div
-					class="absolute bottom-6 right-2 w-[150px] overflow-hidden rounded-xl border border-white/70 bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-300"
-					style="max-height: {legendCollapsed ? '37px' : '260px'}"
-				>
-					<button
-						type="button"
-						class="flex w-full cursor-pointer items-center justify-between gap-2 border-b border-[#E5EAF0] bg-[#F8FAFC] px-2.5 py-1.5"
-						onclick={() => (legendCollapsed = !legendCollapsed)}
-					>
-						<span class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#46637A]">
-							<List class="h-3.5 w-3.5" />
-							Legend
-						</span>
-						<ChevronDown
-							class="h-3.5 w-3.5 shrink-0 text-[#8A9BAD] transition-transform duration-200 {legendCollapsed
-								? '-rotate-90'
-								: ''}"
-						/>
-					</button>
-
-					<!-- Content -->
-					<div
-						class="overflow-y-auto bg-white p-1.5 transition-all duration-300"
-						style="max-height: {legendCollapsed ? '0px' : '220px'}"
-					>
-						<div id="legend-content"></div>
-					</div>
-				</div>
+					class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500"
+				></div>
+				<p class="text-gray-600">Loading 3D Map...</p>
 			</div>
+		</div>
+	{/if}
+
+	<div class="bg-opacity-80 absolute right-4 bottom-4 hidden rounded-lg bg-white p-3 text-sm shadow-md">
+		<div class="grid grid-cols-2 gap-2">
+			<div class="font-semibold">Latitude:</div>
+			<div>{latitude.toFixed(6)}°</div>
+			<div class="font-semibold">Longitude:</div>
+			<div>{longitude.toFixed(6)}°</div>
+			<div class="font-semibold">Altitude:</div>
+			<div>{altitude?.toFixed(0) || 0} m</div>
+			<div class="font-semibold">Tilt:</div>
+			<div>{tilt?.toFixed(1) || 0}°</div>
+			<div class="font-semibold">Heading:</div>
+			<div>{heading?.toFixed(1) || 0}°</div>
 		</div>
 	</div>
 
-<style>
-	:global(.map-3d-root:fullscreen),
-	:global(.map-3d-root:-webkit-full-screen),
-	:global(.map-3d-root:-moz-full-screen),
-	:global(.map-3d-root:-ms-fullscreen),
-	:global(.map-3d-root.is-fullscreen) {
-		display: flex !important;
-		flex-direction: column !important;
-		width: 100% !important;
-		height: 100% !important;
-		max-height: 100% !important;
-		border-radius: 0;
-		background: #0b1a28;
-	}
+	<!-- Home — beside ArcGIS zoom (top-left) -->
+	<div class="absolute top-[15px] left-[60px] z-20 overflow-hidden shadow-md">
+		<button
+			type="button"
+			class="flex size-8 cursor-pointer items-center justify-center bg-white text-gray-600 transition hover:bg-gray-50"
+			onclick={resetMapView}
+			title="Reset to Home View"
+			aria-label="Reset to Home View"
+		>
+			<HomeIcon class="h-4 w-4" />
+		</button>
+	</div>
 
-	:global(.map-3d-root:fullscreen > div),
-	:global(.map-3d-root:-webkit-full-screen > div),
-	:global(.map-3d-root.is-fullscreen > div),
-	:global(.map-3d-root:fullscreen .map-container),
-	:global(.map-3d-root:-webkit-full-screen .map-container),
-	:global(.map-3d-root:-moz-full-screen .map-container),
-	:global(.map-3d-root:-ms-fullscreen .map-container),
-	:global(.map-3d-root.is-fullscreen .map-container) {
-		flex: 1 1 auto !important;
-		width: 100% !important;
-		height: 100% !important;
-		min-height: 0 !important;
-		max-height: none !important;
-		border-radius: 0;
+	<!-- Fullscreen — top-right -->
+	<div class="absolute top-[15px] right-[15px] z-20 overflow-hidden shadow-md">
+		<button
+			type="button"
+			class="flex size-8 cursor-pointer items-center justify-center bg-white text-gray-600 transition hover:bg-gray-50"
+			onclick={toggleFullscreen}
+			title={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+			aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+		>
+			{#if isFullscreen}
+				<Minimize2 class="h-4 w-4" />
+			{:else}
+				<Maximize2 class="h-4 w-4" />
+			{/if}
+		</button>
+	</div>
+
+	<!-- Legend overlay -->
+	<div
+		class="absolute right-2 bottom-6 w-[150px] overflow-hidden rounded-xl border border-white/70 bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-300"
+		style="max-height: {legendCollapsed ? '37px' : '260px'}"
+	>
+		<button
+			type="button"
+			class="flex w-full cursor-pointer items-center justify-between gap-2 border-b border-[#E5EAF0] bg-[#F8FAFC] px-2.5 py-1.5"
+			onclick={() => (legendCollapsed = !legendCollapsed)}
+		>
+			<span
+				class="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-[#46637A] uppercase"
+			>
+				<List class="h-3.5 w-3.5" />
+				Legend
+			</span>
+			<ChevronDown
+				class="h-3.5 w-3.5 shrink-0 text-[#8A9BAD] transition-transform duration-200 {legendCollapsed
+					? '-rotate-90'
+					: ''}"
+			/>
+		</button>
+
+		<div
+			class="overflow-y-auto bg-white p-1.5 transition-all duration-300"
+			style="max-height: {legendCollapsed ? '0px' : '220px'}"
+		>
+			<div id="legend-content"></div>
+		</div>
+	</div>
+</div>
+
+<style>
+	/* Fill the real viewport while fullscreen — use 100vh/100vw so ArcGIS gets a non-zero size */
+	:global(.map-3d-root:fullscreen),
+	:global(.map-3d-root:-webkit-full-screen) {
+		width: 100vw !important;
+		height: 100vh !important;
+		max-width: 100vw !important;
+		max-height: 100vh !important;
+		border-radius: 0 !important;
+		background: #0b1a28;
 	}
 
 	:global(.map-3d-root:fullscreen .esri-view),
@@ -475,10 +402,7 @@
 	:global(.map-3d-root:fullscreen .esri-view-surface),
 	:global(.map-3d-root:-webkit-full-screen .esri-view),
 	:global(.map-3d-root:-webkit-full-screen .esri-view-root),
-	:global(.map-3d-root:-webkit-full-screen .esri-view-surface),
-	:global(.map-3d-root.is-fullscreen .esri-view),
-	:global(.map-3d-root.is-fullscreen .esri-view-root),
-	:global(.map-3d-root.is-fullscreen .esri-view-surface) {
+	:global(.map-3d-root:-webkit-full-screen .esri-view-surface) {
 		width: 100% !important;
 		height: 100% !important;
 		border-radius: 0 !important;
@@ -497,8 +421,6 @@
 		border-radius: 5px;
 	}
 
-	/* Compact the default Esri Legend widget so it's proportionate to the map card.
-	   Swatch/symbol sizes are left at their default — only spacing is tightened. */
 	:global(#legend-content .esri-legend) {
 		padding: 0 !important;
 		font-family: inherit !important;
