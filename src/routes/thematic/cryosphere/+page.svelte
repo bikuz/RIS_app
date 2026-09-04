@@ -217,6 +217,22 @@
 			}
 		},
 		{
+			id: 'glacier_2020',
+			charts: [],
+			control_type: 'none',
+			map_layers: {
+				default: [
+					{
+						id: 'glacier-2020',
+						name: 'Glacier 2020',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HKHGlacier/MapServer',
+						layerIndex: 0,
+						mapserver: 'arcgis'
+					}
+				]
+			}
+		},
+		{
 			id: 'glacial_lake',
 			charts: [
 				{
@@ -373,6 +389,13 @@
 			dataset_id: 'glacier',
 			info: 'The map shows percentage of glacier area change over the period of 1990 – 2020 in each one degree longitudinal and latitudinal grid in the HKH region.',
 			source: 'ICIMOD (https://rds.icimod.org/Home/DataDetail?metadataId=1973447)'
+		},
+		{
+			id: 'info-layer-1b',
+			title: 'Glacier 2020',
+			dataset_id: 'glacier_2020',
+			info: 'This dataset shows outline of glaciers across the HKH region in 2020.',
+			source: 'ICIMOD (https://rds.icimod.org/metadata/b80287b9-2978-48c2-b386-bd5f1449d84f)'
 		},
 		{
 			id: 'info-layer-2',

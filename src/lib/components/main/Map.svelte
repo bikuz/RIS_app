@@ -23,7 +23,7 @@
 	let layerVisibility = $state<Record<string, boolean>>({
 		hkhOutline: true,
 		// river: true, // Physiography sublayer id 3 — enable when river network is needed
-		glacier: false,
+		glacier: true,
 		mountainRegion: false,
 		nightTime: false
 	});
@@ -151,12 +151,12 @@
 			});
 
 			glacierLayer = new MapImageLayer.default({
-				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier/MapServer',
+				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HKHGlacier/MapServer',
 				title: '',
 				sublayers: [
 					{
 						id: 0,
-						title: 'Glacier',
+						title: 'Glacier 2020',
 						visible: layerVisibility.glacier
 					}
 				]

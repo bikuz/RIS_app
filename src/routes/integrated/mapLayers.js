@@ -1197,12 +1197,22 @@ export const allMapLayers = {
 
 	// ========== CRYOSPHERE LAYERS ==========
 	cryosphere: [
+		// {
+		// 	id: 'glacier',
+		// 	title: 'Glacier',
+		// 	map_layers: {
+		// 		name: 'Glacier Numbers across HKH',
+		// 		url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier/MapServer',
+		// 		layer_id: 0,
+		// 		mapserver: 'arcgis'
+		// 	},
+		// },
 		{
-			id: 'glacier',
-			title: 'Glacier',
+			id: 'glacier_2020',
+			title: 'Glacier 2020',
 			map_layers: {
-				name: 'Glacier Numbers across HKH',
-				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/Glacier/MapServer',
+				name: 'Glacier 2020',
+				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HKHGlacier/MapServer',
 				layer_id: 0,
 				mapserver: 'arcgis'
 			},

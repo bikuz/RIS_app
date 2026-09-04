@@ -94,7 +94,7 @@
 							onclick={() => mapInstance?.toggleLayer('hkhOutline')}
 						/>
 						<LayerPill
-							label="Glacier"
+							label="Glacier 2020"
 							active={mapInstance?.layerVisibility.glacier}
 							color="#0891B2"
 							icon={Snowflake}
