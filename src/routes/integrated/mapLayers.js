@@ -1208,13 +1208,34 @@ export const allMapLayers = {
 		// 	},
 		// },
 		{
-			id: 'glacier_2020',
-			title: 'Glacier 2020',
+			id: 'glacier_1990_2020',
+			title: 'Glacier',
 			map_layers: {
-				name: 'Glacier 2020',
-				url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HKHGlacier/MapServer',
-				layer_id: 0,
-				mapserver: 'arcgis'
+				'1990':[{
+					name: 'Glacier 1990',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HKHGlacier/MapServer',
+					layer_id: 3,
+					mapserver: 'arcgis'
+				}],
+				'2000':[{
+					name: 'Glacier 2000',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HKHGlacier/MapServer',
+					layer_id: 2,
+					mapserver: 'arcgis'
+				}],
+				'2010':[{
+					name: 'Glacier 2010',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HKHGlacier/MapServer',
+					layer_id: 1,
+					mapserver: 'arcgis'
+				}],
+				'2020':[{
+					name: 'Glacier 2020',
+					url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HKHGlacier/MapServer',
+					layer_id: 0,
+					mapserver: 'arcgis'
+				}],
+				
 			},
 		},
 		{

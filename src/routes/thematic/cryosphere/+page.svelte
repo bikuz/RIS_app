@@ -217,11 +217,39 @@
 			}
 		},
 		{
-			id: 'glacier_2020',
+			id: 'glacier_1990_2020',
 			charts: [],
-			control_type: 'none',
+			control_type: 'year',
+			default_year: '2020',
 			map_layers: {
-				default: [
+				'1990': [
+					{
+						id: 'glacier-1990',
+						name: 'Glacier 1990',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HKHGlacier/MapServer',
+						layerIndex: 3,
+						mapserver: 'arcgis'
+					}
+				],
+				'2000': [
+					{
+						id: 'glacier-2000',
+						name: 'Glacier 2000',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HKHGlacier/MapServer',
+						layerIndex: 2,
+						mapserver: 'arcgis'
+					}
+				],
+				'2010': [
+					{
+						id: 'glacier-2010',
+						name: 'Glacier 2010',
+						url: 'https://geoapps.icimod.org/icimodarcgis/rest/services/HKH/HKHGlacier/MapServer',
+						layerIndex: 1,
+						mapserver: 'arcgis'
+					}
+				],
+				'2020': [
 					{
 						id: 'glacier-2020',
 						name: 'Glacier 2020',
@@ -392,9 +420,9 @@
 		},
 		{
 			id: 'info-layer-1b',
-			title: 'Glacier 2020',
-			dataset_id: 'glacier_2020',
-			info: 'This dataset shows outline of glaciers across the HKH region in 2020.',
+			title: 'Glacier',
+			dataset_id: 'glacier_1990_2020',
+			info: 'This dataset represents a region-wide glacier inventory created using a consistent methodology and data source, providing a comprehensive assessment of glacier distribution across the HKH region for 1990, 2000, 2010 and 2020.',
 			source: 'ICIMOD (https://rds.icimod.org/metadata/b80287b9-2978-48c2-b386-bd5f1449d84f)'
 		},
 		{
@@ -425,6 +453,7 @@
 	let selectedQuestionId = $state('');
 	let selectedInformationLayer = $state<string | null>('Glacier Area Change');
 	let expandedLayer = $state<string | null>(null);
+	let selectedGlacierYear = $state('2020');
 
 	// Get current dataset based on selected question or information layer
 	let currentDataset = $derived.by(() => {
@@ -449,10 +478,14 @@
 
 	let currentCharts = $derived(currentDataset?.charts || []);
 
-	// Resolve which map-layer configs are active for a dataset. All cryosphere
-	// datasets use control_type 'none', so this is just the default layer list.
+	// Resolve which map-layer configs are active for a dataset.
 	function resolveLayersForDataset(dataset: any): any[] {
 		if (!dataset || !dataset.map_layers) return [];
+		if (dataset.control_type === 'year') {
+			const layers = (dataset.map_layers as any)[selectedGlacierYear];
+			if (!layers) return [];
+			return Array.isArray(layers) ? layers : [layers];
+		}
 		const layers = (dataset.map_layers as any).default;
 		if (!layers) return [];
 		return Array.isArray(layers) ? layers : [layers];
@@ -491,19 +524,37 @@
 
 	// Prefetch the default legend for every information layer on mount, so the
 	// sidebar can show a legend instantly instead of waiting on a fetch per click.
+	// Year-control datasets prefetch legends for ALL years under the same title.
 	async function prefetchAllLegends() {
 		const results = await Promise.all(
 			information_layers.map(async (infoLayer) => {
 				const dataset = cryoDataset.find((d) => d.id === infoLayer.dataset_id);
 				if (!dataset) return null;
 
-				const layers = resolveLayersForDataset(dataset);
-				const entries = await Promise.all(layers.map((layer) => fetchLegendEntryForLayer(layer)));
-
 				const legendMap: Record<string, { name: string; items: Array<{ label: string; imageData?: string; imageUrl?: string }> }> = {};
-				for (const result of entries) {
-					if (result) legendMap[result.key] = result.entry;
+
+				if (dataset.control_type === 'year') {
+					const yearKeys = Object.keys(dataset.map_layers).sort(
+						(a, b) => Number(a) - Number(b)
+					);
+					for (const year of yearKeys) {
+						const layers = (dataset.map_layers as any)[year];
+						const layerList = Array.isArray(layers) ? layers : layers ? [layers] : [];
+						const entries = await Promise.all(
+							layerList.map((layer: any) => fetchLegendEntryForLayer(layer))
+						);
+						for (const result of entries) {
+							if (result) legendMap[result.key] = result.entry;
+						}
+					}
+				} else {
+					const layers = resolveLayersForDataset(dataset);
+					const entries = await Promise.all(layers.map((layer) => fetchLegendEntryForLayer(layer)));
+					for (const result of entries) {
+						if (result) legendMap[result.key] = result.entry;
+					}
 				}
+
 				return { title: infoLayer.title, legendMap };
 			})
 		);
@@ -594,6 +645,7 @@
 
 	$effect(() => {
 		const dataset = currentDataset;
+		const year = selectedGlacierYear;
 		if (dataset) updateMapLayers();
 	});
 
@@ -864,6 +916,25 @@
 						</div>
 					</div>
 				</div>
+
+				{#if currentDataset && currentDataset.control_type === 'year'}
+					<div
+						class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center space-x-3 rounded-full border border-[#D8E1EA] bg-white/95 px-4 py-2 shadow-xl backdrop-blur-sm {isFullscreen ? 'z-[9999]' : 'z-10'}"
+					>
+						<span class="text-xs font-semibold uppercase tracking-wider text-[#46637A]">Year</span>
+						<div class="h-4 w-px bg-[#D8E1EA]"></div>
+						<div class="flex items-center space-x-0.5 rounded-full bg-[#F3F7FA] p-1">
+							{#each Object.keys(currentDataset.map_layers).sort((a, b) => Number(a) - Number(b)) as year (year)}
+								<label class="relative cursor-pointer">
+									<input type="radio" bind:group={selectedGlacierYear} value={year} class="peer sr-only" />
+									<div class="rounded-full px-2.5 py-1.5 text-xs font-medium text-[#46637A] transition-all duration-200 peer-checked:bg-[#2563EB] peer-checked:text-white peer-checked:shadow-sm hover:bg-[#E8EEF4]">
+										{year}
+									</div>
+								</label>
+							{/each}
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
